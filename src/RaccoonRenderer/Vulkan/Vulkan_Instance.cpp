@@ -11,17 +11,16 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::CreateInstance (
 // Layers
 #if defined(DEBUG) && defined(PATATA_USE_VVL)
   const char * layer{ "VK_LAYER_KHRONOS_validation" };
-  std::future<void> ReturnVulkanList0 = std::async(std::launch::async, Patata::Log::VulkanList, &layer, 0, "Layers");
+  {
+    std::future<void> ReturnVulkanList = std::async(std::launch::async, Patata::Log::VulkanList, &layer, 0, "Layers");
+  }
 #endif
 
   // Get Extensions
   // Array Index 0 "SDL Extensions". Array Index 1 "My Extensions"
-  // Por alguna razon, aqui hay que comenzar a contar desde 1 cuando se inicia
-  // un array con valores, eso es raro. mas abajo se comienza a contar desde 0,
-  // como tiene que ser.
+  // El conteo comienza desde el 1 con las extensiones.
   uint32_t extensionInstanceCount[2]{ 0, 1 };
 
-  // SDL devuelve un numero extra (Conteo Humano desde el 1)
   SDL_Vulkan_GetInstanceExtensions (WINDOW, &extensionInstanceCount[0],
                                     nullptr);
 
@@ -38,7 +37,7 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::CreateInstance (
   pExtensionInstanceNames[extensionInstanceCount[0]] = "VK_KHR_get_surface_capabilities2";
 
   if (found_extensions)
-	  std::future<void> ReturnVulkanList1 = std::async(std::launch::async, Patata::Log::VulkanList, pExtensionInstanceNames, extensionInstanceCount[1] - 1, "Instance Extensions");
+	  std::future<void> ReturnVulkanList = std::async(std::launch::async, Patata::Log::VulkanList, pExtensionInstanceNames, extensionInstanceCount[1] - 1, "Instance Extensions");
 
   // Create Instance
   vk::InstanceCreateInfo InstanceInfo ({}, &PatataEngineInfo,

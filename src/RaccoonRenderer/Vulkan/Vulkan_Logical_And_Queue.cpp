@@ -21,7 +21,7 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::
 #endif
     PATATA_TERM_COLOR_PATATA, "Raccoon Renderer", PATATA_TERM_RESET,
     " : Found ", QueueCount, " Queues");
-  
+
   vk::QueueFamilyProperties * QueueFamilyProperties = new vk::QueueFamilyProperties[QueueCount];
 
   PhysicalDevice.getQueueFamilyProperties (&QueueCount, QueueFamilyProperties);
@@ -104,7 +104,7 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::
 
   Result = PhysicalDevice.createDevice (&DeviceCreateInfo, nullptr, &Device);
 
-  Patata::Log::VulkanCheck ("Physical Device", Result);
+  Patata::Log::VulkanCheck ("Logical Device", Result);
 
   Queue = Device.getQueue (GraphicsQueueFamilyIndex, 0);
   return GraphicsQueueFamilyIndex;

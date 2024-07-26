@@ -11,35 +11,45 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::CreateSwapChain (
   vk::Result Result;
 
   Result = PhysicalDevice.getSurfacePresentModesKHR(Surface, &PresentModesCount, nullptr);
-  std::future<void> ReturnVulkanCheck0 = std::async(std::launch::async, Patata::Log::VulkanCheck, "Get Surface Present Modes - Obtaining the count", Result);
+  {
+	  std::future<void> ReturnVulkanCheck0 = std::async(std::launch::async, Patata::Log::VulkanCheck, "Get Surface Present Modes - Obtaining the count", Result);
+  }
 
   PresentModes = new vk::PresentModeKHR[PresentModesCount];
 
   Result = PhysicalDevice.getSurfacePresentModesKHR(Surface, &PresentModesCount, PresentModes);
-  std::future<void> ReturnVulkanCheck1 = std::async(std::launch::async, Patata::Log::VulkanCheck, "Get Surface Present Modes", Result);
+  {
+	  std::future<void> ReturnVulkanCheck1 = std::async(std::launch::async, Patata::Log::VulkanCheck, "Get Surface Present Modes", Result);
+  }
 
   // Surface Formats
   vk::SurfaceFormatKHR * SurfaceFormats;
   uint32_t SurfaceFormatsCount = 0;
 
   Result = PhysicalDevice.getSurfaceFormatsKHR(Surface, &SurfaceFormatsCount, nullptr);
-  std::future<void> ReturnVulkanCheck2 = std::async(std::launch::async, Patata::Log::VulkanCheck, "Get Surface Formats - Obtaining the count", Result);
+  {
+	  std::future<void> ReturnVulkanCheck2 = std::async(std::launch::async, Patata::Log::VulkanCheck, "Get Surface Formats - Obtaining the count", Result);
+  }
 
   SurfaceFormats = new vk::SurfaceFormatKHR[SurfaceFormatsCount];
 
   Result = PhysicalDevice.getSurfaceFormatsKHR(Surface, &SurfaceFormatsCount, SurfaceFormats);
-  std::future<void> ReturnVulkanCheck3 = std::async(std::launch::async, Patata::Log::VulkanCheck, "Get Surface Formats", Result);
-
-  // Extent
   {
-	  int * w, * h; 
-	  SDL_Vulkan_GetDrawableSize(WINDOW, w, h);
+	  std::future<void> ReturnVulkanCheck3 = std::async(std::launch::async, Patata::Log::VulkanCheck, "Get Surface Formats", Result);
+  }
 
-	  SwapChainExtent.width  = *w;
-	  SwapChainExtent.height = *h;
+  // Extent2D
+  {
+	  int w = 1, h = 1;
+	  SDL_Vulkan_GetDrawableSize(WINDOW, &w, &h);
+
+	  SwapChainExtent.width  = w;
+	  SwapChainExtent.height = h;
   }
 
   // Encontrar un Modo de presentacion
+  vk::PresentModeKHR PresentMode;
+
   if (CONFIG["patata-engine"]["raccoon-renderer"]["vsync"].as<bool> ())
     {
       for (uint32_t i = 0; i < PresentModesCount; ++i)
@@ -60,6 +70,8 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::CreateSwapChain (
 	  PresentMode = vk::PresentModeKHR::eImmediate;
 
   // Encontrar un formato de superficie
+  vk::SurfaceFormatKHR SurfaceFormat;
+
   for (uint32_t i = 0; i < SurfaceFormatsCount; ++i) {
 	  if (CONFIG["patata-engine"]["raccoon-renderer"]["10bit-image"].as<bool> ()) {
 		  // 10 Bits
@@ -83,14 +95,17 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::CreateSwapChain (
   vk::SurfaceCapabilitiesKHR SurfaceCapabilities
       = PhysicalDevice.getSurfaceCapabilitiesKHR (Surface);
 
-  vk::SwapchainCreateInfoKHR SwapChainCreateInfo{};
+  // Create SwapChain
+  vk::SwapchainCreateInfoKHR SwapChainCreateInfo {};
+  SwapChainCreateInfo.sType = vk::StructureType::eSwapchainCreateInfoKHR;
+  SwapChainCreateInfo.pNext = nullptr;
   SwapChainCreateInfo.surface          = Surface;
   SwapChainCreateInfo.minImageCount    = SurfaceCapabilities.minImageCount;
   SwapChainCreateInfo.imageFormat      = SurfaceFormat.format;
   SwapChainCreateInfo.imageColorSpace  = SurfaceFormat.colorSpace;
   SwapChainCreateInfo.imageExtent      = SwapChainExtent;
   SwapChainCreateInfo.imageArrayLayers = 1;
-  SwapChainCreateInfo.imageUsage   = vk::ImageUsageFlagBits::eColorAttachment;
+  SwapChainCreateInfo.imageUsage   = vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eTransferDst;
   SwapChainCreateInfo.preTransform = SurfaceCapabilities.currentTransform;
   SwapChainCreateInfo.compositeAlpha = vk::CompositeAlphaFlagBitsKHR::eOpaque;
   SwapChainCreateInfo.presentMode    = PresentMode;
@@ -99,10 +114,26 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::CreateSwapChain (
   SwapChainCreateInfo.oldSwapchain          = nullptr;
 
   Result = Device.createSwapchainKHR (&SwapChainCreateInfo, nullptr, &SwapChain);
-
   delete[] PresentModes;
 
-  std::future<void> ReturnVulkanCheck4 = std::async(std::launch::async, Patata::Log::VulkanCheck, "SwapChain", Result);
+  {
+	  std::future<void> ReturnVulkanCheck = std::async(std::launch::async, Patata::Log::VulkanCheck, "SwapChain", Result);
+  }
+
+  // SwapChain Images
+  uint32_t tmpSwapChainImageCount = 0;
+  Result = Device.getSwapchainImagesKHR(SwapChain, &tmpSwapChainImageCount, nullptr);
+  {
+	  std::future<void> ReturnVulkanCheck = std::async(std::launch::async, Patata::Log::VulkanCheck, "Get SwapChain Images KHR - Obtaining the count", Result);
+  }
+
+  SwapChainImages = new vk::Image[tmpSwapChainImageCount];
+  Result = Device.getSwapchainImagesKHR(SwapChain, &tmpSwapChainImageCount, SwapChainImages);
+  {
+	  std::future<void> ReturnVulkanCheck = std::async(std::launch::async, Patata::Log::VulkanCheck, "Get SwapChain Images KHR", Result);
+  }
+
+  SwapChainImageCount = tmpSwapChainImageCount;
 
   return { PresentMode, SurfaceFormat.format, SurfaceFormat.colorSpace };
 }

@@ -30,11 +30,7 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::VulkanBackend (
 #else
           "[", std::string_view{ typeid (Surface).name () }, "]",
 #endif
-#if defined(_WIN64)
-          PATATA_TERM_COLOR_WHITE,
-#else
           PATATA_TERM_RESET,
-#endif
 #if !defined(_WIN64)
           PATATA_TERM_BOLD,
 #endif
@@ -59,11 +55,7 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::VulkanBackend (
 #else
           "[", std::string_view{ typeid (Surface).name () }, "]",
 #endif
-#if defined(_WIN64)
-          PATATA_TERM_COLOR_WHITE,
-#else
           PATATA_TERM_RESET,
-#endif
 #if !defined(_WIN64)
           PATATA_TERM_BOLD,
 #endif
@@ -76,26 +68,93 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::VulkanBackend (
 
   std::tuple<vk::PresentModeKHR, vk::Format, vk::ColorSpaceKHR> swapchaininfo
       = CreateSwapChain (GraphicsQueueFamilyIndex, CONFIG, WINDOW);
-  CreateImageView (GraphicsQueueFamilyIndex);
-  CreateCommandBuffer (GraphicsQueueFamilyIndex);
-  CreateRenderPass ();
 
-  Semaphore = Device.createSemaphore (vk::SemaphoreCreateInfo ());
+  if (!CreateDepthBuffer(CONFIG)) return;
+
+  // Command Pool
+  {
+    vk::CommandPoolCreateInfo CommandPoolInfo {};
+    CommandPoolInfo.sType = vk::StructureType::eCommandPoolCreateInfo;
+    CommandPoolInfo.pNext = nullptr;
+    CommandPoolInfo.flags = vk::CommandPoolCreateFlagBits::eTransient;
+    CommandPoolInfo.queueFamilyIndex = GraphicsQueueFamilyIndex;
+
+    vk::Result Result = Device.createCommandPool (&CommandPoolInfo,
+                                                  nullptr, &CommandPool);
+    {
+      std::future<void> ReturnVulkanCheck
+          = std::async (std::launch::async, Patata::Log::VulkanCheck,
+                        "Command Pool", Result);
+    }
+  }
+
+  // Fence
+  {
+    vk::FenceCreateInfo FenceInfo {};
+    FenceInfo.sType = vk::StructureType::eFenceCreateInfo;
+    FenceInfo.pNext = nullptr;
+    FenceInfo.flags = vk::FenceCreateFlagBits::eSignaled;
+
+    vk::Result Result = Device.createFence (&FenceInfo, nullptr, &Fence);
+    {
+      std::future<void> ReturnVulkanCheck = std::async (
+          std::launch::async, Patata::Log::VulkanCheck, "Fence", Result);
+    }
+  }
+
+  // Semaphores
+  {
+      vk::SemaphoreCreateInfo SemaphoreInfo {};
+      SemaphoreInfo.sType = vk::StructureType::eSemaphoreCreateInfo;
+      SemaphoreInfo.pNext = nullptr;
+
+      vk::Result Result = Device.createSemaphore (&SemaphoreInfo, nullptr, &AcquireSemaphore);
+      {
+        std::future<void> ReturnVulkanCheck = std::async (
+            std::launch::async, Patata::Log::VulkanCheck, "Acquire Next Image 2 KHR - Semaphore", Result);
+      }
+
+      Result = Device.createSemaphore (&SemaphoreInfo, nullptr, &SubmitSemaphore);
+      {
+        std::future<void> ReturnVulkanCheck = std::async (
+            std::launch::async, Patata::Log::VulkanCheck, "Submit Semaphore", Result);
+      }
+  }
+
+  //CreateRenderPass ();
 
   VulkanInfo (CONFIG, swapchaininfo);
 }
 
 Patata::Graphics::RaccoonRenderer::VulkanBackend::~VulkanBackend (void)
 {
-  Device.destroySemaphore (Semaphore);
-  Device.destroyRenderPass (RenderPass);
-  Device.freeCommandBuffers (CommandPool, CommandBuffers);
+  delete[] SwapChainImages;
+  SwapChainImages = nullptr;
+
+  Device.destroySemaphore (AcquireSemaphore);
+  Device.destroySemaphore (SubmitSemaphore);
+  vk::Result Result = Device.waitForFences(1, &Fence, true, 0);
+  #if defined(DEBUG)
+  {
+	    std::future<void> ReturnVulkanCheck = std::async (
+			std::launch::async, Patata::Log::VulkanCheck, "Wait For Fences", Result);
+  }
+  #endif
+  Device.destroyFence (Fence);
+
   Device.destroyCommandPool (CommandPool);
-  Device.freeMemory (ImageMemory);
-  Device.destroyImage (DepthImage);
-  // Device.destroyImageView(ImageView);
+
+  // Depth
+  Device.freeMemory(DepthMemory);
+  Device.destroyImageView(DepthView);
+  Device.destroyImage(DepthImage);
+
+  // Color
+
   Device.destroySwapchainKHR (SwapChain);
+
   Instance.destroySurfaceKHR (Surface);
+
   Device.destroy ();
   Instance.destroy ();
 }

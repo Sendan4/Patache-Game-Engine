@@ -393,7 +393,7 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::VulkanInfo (
   }
 
   // SwapChain Images
-  fast_io::io::println (PATATA_TERM_BOLD, "    Images : ", PATATA_TERM_RESET, SwapChainBuffers.size ());
+  fast_io::io::println (PATATA_TERM_BOLD, "    Images : ", PATATA_TERM_RESET, SwapChainImageCount);
 
   // SwapChain Image Color Format
   fast_io::io::println (

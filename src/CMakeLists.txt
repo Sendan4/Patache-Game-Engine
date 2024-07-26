@@ -21,8 +21,8 @@ target_sources (${PROJECT_NAME} PRIVATE
 	"RaccoonRenderer/Vulkan/Vulkan_Select_Device.cpp"
 	"RaccoonRenderer/Vulkan/Vulkan_Logical_And_Queue.cpp"
 	"RaccoonRenderer/Vulkan/Vulkan_SwapChain.cpp"
-	"RaccoonRenderer/Vulkan/Vulkan_ImageView.cpp"
-	"RaccoonRenderer/Vulkan/Vulkan_CommandBuffer.cpp"
+	"RaccoonRenderer/Vulkan/Vulkan_DepthBuffer.cpp"
+	"RaccoonRenderer/Vulkan/Vulkan_Render.cpp"
 	"RaccoonRenderer/Vulkan/Vulkan_PipeLine.cpp"
 	"RaccoonRenderer/Vulkan/Vulkan_RenderPass.cpp"
 	"Log/Messages.cpp"
@@ -297,7 +297,7 @@ if (MSVC)
 		set_target_properties(loader-unknown-chain PROPERTIES FOLDER "Engine/Others/Vulkan")
 		set_target_properties(loader-opt PROPERTIES FOLDER "Engine/Others/Vulkan")
 		set_target_properties(loader_asm_gen_files PROPERTIES FOLDER "Engine/Others/Vulkan")
-		if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo")
+		if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo" OR USE_VVL)
 			set_target_properties(vvl PROPERTIES FOLDER "Engine/Dependencies/Vulkan")
 			set_target_properties(VkLayer_utils PROPERTIES FOLDER "Engine/Dependencies/Vulkan")
 			set_target_properties(vulkan PROPERTIES FOLDER "Engine/Dependencies/Vulkan")

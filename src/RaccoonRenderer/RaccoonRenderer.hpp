@@ -17,60 +17,56 @@ public:
   RaccoonRenderer (YAML::Node &, SDL_Window *);
   ~RaccoonRenderer (void);
 
+  void Render (void) { pVulkanBackend->VulkanRender(); }
+
 private:
   class VulkanBackend
   {
   public:
+    VulkanBackend (SDL_Window *, YAML::Node &);
+    ~VulkanBackend (void);
+
+    void VulkanRender (void);
+
+  private:
     bool     CreateInstance (SDL_Window *&, YAML::Node &);
     bool     SelectDevice (YAML::Node &);
     uint32_t CreateLogicalDeviceAndCreateQueue (YAML::Node &);
     std::tuple<vk::PresentModeKHR, vk::Format, vk::ColorSpaceKHR>
          CreateSwapChain (uint32_t &, YAML::Node, SDL_Window *);
-    void CreateImageView (uint32_t &);
-    void CreateCommandBuffer (uint32_t &);
+    bool CreateDepthBuffer (YAML::Node &);
     void CreateRenderPass (void);
     void CreatePipeline (void);
     void
     VulkanInfo (YAML::Node CONFIG,
                 std::tuple<vk::PresentModeKHR, vk::Format, vk::ColorSpaceKHR>);
 
-    VulkanBackend (SDL_Window *, YAML::Node &);
-    ~VulkanBackend (void);
-
-  private:
     vk::Instance   Instance = nullptr;
-    vk::SurfaceKHR Surface  = nullptr;
-
+    vk::PhysicalDevice PhysicalDevice = nullptr;
     vk::Queue          Queue;
     vk::Device         Device         = nullptr;
-    vk::PhysicalDevice PhysicalDevice = nullptr;
 
-    vk::CommandPool                CommandPool = nullptr;
-    std::vector<vk::CommandBuffer> CommandBuffers;
+    vk::SurfaceKHR Surface  = nullptr;
 
-    vk::Format           ColorFormat;
-    vk::Extent2D         SwapChainExtent;
-    vk::PresentModeKHR   PresentMode;
-    vk::SurfaceFormatKHR SurfaceFormat;
+    vk::SwapchainKHR SwapChain = nullptr;
+    vk::Extent2D SwapChainExtent {};
 
-    vk::Image DepthImage;
+    // Color
+    uint32_t    SwapChainImageCount = 0;
+    vk::Image * SwapChainImages = nullptr;
 
-    vk::SwapchainKHR SwapChain;
-    struct SwapChainBuffer
-    {
-      vk::Image                    Image;
-      std::array<vk::ImageView, 2> Views;
-      vk::Framebuffer              FrameBuffer;
-    };
-    std::vector<SwapChainBuffer> SwapChainBuffers;
+    // Depth
+    vk::Image     DepthImage = nullptr;
+    vk::ImageView DepthView  = nullptr;
+    vk::DeviceMemory DepthMemory = nullptr;
 
-    std::vector<vk::Image> SwapChainImages;
-    vk::ImageView          ImageView;
-    vk::DeviceMemory       ImageMemory;
+    vk::CommandPool CommandPool;
+    vk::CommandBuffer cmd;
 
-    vk::RenderPass RenderPass;
-    vk::Semaphore  Semaphore;
-    vk::Semaphore  RenderCompleteSemaphore;
+    vk::RenderPass RenderPass = nullptr;
+    vk::Semaphore AcquireSemaphore = nullptr;
+    vk::Semaphore SubmitSemaphore = nullptr;
+    vk::Fence Fence = nullptr;
 
     vk::Pipeline       PipeLine;
     vk::PipelineLayout PipeLineLayout;
