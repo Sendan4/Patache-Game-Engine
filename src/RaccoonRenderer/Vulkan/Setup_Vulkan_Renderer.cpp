@@ -80,8 +80,9 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::VulkanBackend (
           fast_io::out (),
       #endif
           PATATA_TERM_BOLD,
-          "\nSwapChain Color Image Views :",
-          PATATA_TERM_RESET);
+          "\nSwapChain Color Image Views : ",
+          PATATA_TERM_RESET,
+          SwapChainImageCount);
 
       ColorView = new vk::ImageView[SwapChainImageCount];
 
@@ -140,6 +141,8 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::VulkanBackend (
     }
   }
 
+  if (!CreateRenderPass (swapchaininfo)) return;
+
   // Fence
   {
     vk::FenceCreateInfo FenceInfo {};
@@ -173,15 +176,25 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::VulkanBackend (
       }
   }
 
-  //CreateRenderPass ();
-
   VulkanInfo (CONFIG, swapchaininfo);
 }
 
 Patata::Graphics::RaccoonRenderer::VulkanBackend::~VulkanBackend (void)
 {
+  Device.destroyPipelineLayout(PipeLineLayout);
+  Device.destroyRenderPass(RenderPass);
+
+  // Color
   for (uint8_t i = 0; i < SwapChainImageCount; ++i)
     Device.destroyImageView(ColorView[i]);
+
+  delete[] ColorView;
+  ColorView = nullptr;
+
+  // Depth
+  Device.freeMemory(DepthMemory);
+  Device.destroyImageView(DepthView);
+  Device.destroyImage(DepthImage);
 
   delete[] SwapChainImages;
   SwapChainImages = nullptr;
@@ -199,13 +212,6 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::~VulkanBackend (void)
   Device.destroyFence (Fence);
 
   Device.destroyCommandPool (CommandPool);
-
-  // Depth
-  Device.freeMemory(DepthMemory);
-  Device.destroyImageView(DepthView);
-  Device.destroyImage(DepthImage);
-
-  // Color
 
   Device.destroySwapchainKHR (SwapChain);
 

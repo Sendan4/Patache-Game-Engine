@@ -53,7 +53,7 @@ private:
     std::tuple<vk::PresentModeKHR, vk::Format, vk::ColorSpaceKHR>
          CreateSwapChain (uint32_t &, YAML::Node, SDL_Window *);
     bool CreateDepthBuffer (YAML::Node &);
-    void CreateRenderPass (void);
+    bool CreateRenderPass (const std::tuple<vk::PresentModeKHR, vk::Format, vk::ColorSpaceKHR> &);
     void CreatePipeline (void);
     void
     VulkanInfo (YAML::Node CONFIG,

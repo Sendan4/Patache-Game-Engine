@@ -120,25 +120,21 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::CreateSwapChain (
 
   Result = Device.createSwapchainKHR (&SwapChainCreateInfo, nullptr, &SwapChain);
   delete[] PresentModes;
-
   {
 	  std::future<void> ReturnVulkanCheck = std::async(std::launch::async, Patata::Log::VulkanCheck, "SwapChain", Result);
   }
 
   // SwapChain Images
-  uint32_t tmpSwapChainImageCount = 0;
-  Result = Device.getSwapchainImagesKHR(SwapChain, &tmpSwapChainImageCount, nullptr);
+  Result = Device.getSwapchainImagesKHR(SwapChain, &SwapChainImageCount, nullptr);
   {
 	  std::future<void> ReturnVulkanCheck = std::async(std::launch::async, Patata::Log::VulkanCheck, "Get SwapChain Images KHR - Obtaining the count", Result);
   }
 
-  SwapChainImages = new vk::Image[tmpSwapChainImageCount];
-  Result = Device.getSwapchainImagesKHR(SwapChain, &tmpSwapChainImageCount, SwapChainImages);
+  SwapChainImages = new vk::Image[SwapChainImageCount];
+  Result = Device.getSwapchainImagesKHR(SwapChain, &SwapChainImageCount, SwapChainImages);
   {
 	  std::future<void> ReturnVulkanCheck = std::async(std::launch::async, Patata::Log::VulkanCheck, "Get SwapChain Images KHR", Result);
   }
-
-  SwapChainImageCount = tmpSwapChainImageCount;
 
   return { SelectedPresentMode, SelectedSurfaceFormat.format, SelectedSurfaceFormat.colorSpace };
 }
