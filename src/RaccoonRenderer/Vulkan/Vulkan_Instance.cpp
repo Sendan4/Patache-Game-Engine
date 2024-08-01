@@ -8,7 +8,11 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::CreateInstance (
       PATATA_GAME_NAME, PATATA_GAME_VERSION, PATATA_ENGINE_NAME,
       PATATA_ENGINE_VERSION_VK, VK_API_VERSION_1_3);
 
-// Layers
+  /*
+  Las capas de validacion se activan con USE_VVL=ON.
+  Son para el desarrollo y prueba de este backend.
+  */
+  // Layers
 #if defined(DEBUG) && defined(PATATA_USE_VVL)
   const char * layer{ "VK_LAYER_KHRONOS_validation" };
   {
@@ -16,28 +20,29 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::CreateInstance (
   }
 #endif
 
-  // Get Extensions
-  // Array Index 0 "SDL Extensions". Array Index 1 "My Extensions"
-  // El conteo comienza desde el 1 con las extensiones.
-  uint32_t extensionInstanceCount[2]{ 0, 1 };
+  /*
+  Get Extensions
 
-  SDL_Vulkan_GetInstanceExtensions (WINDOW, &extensionInstanceCount[0],
+  if you want to add an extension, take into account TotalExtensionCount
+  */
+  uint32_t SDLExtensionCount = 0, TotalExtensionCount = 1;
+
+  SDL_Vulkan_GetInstanceExtensions (WINDOW, &SDLExtensionCount,
                                     nullptr);
 
-  extensionInstanceCount[1] += extensionInstanceCount[0];
+  TotalExtensionCount += SDLExtensionCount;
 
   const char ** pExtensionInstanceNames
-      = new const char *[extensionInstanceCount[1]];
+      = new const char *[TotalExtensionCount];
 
-  bool found_extensions = SDL_Vulkan_GetInstanceExtensions (
-      WINDOW, &extensionInstanceCount[0], pExtensionInstanceNames);
+  bool FoundExtensions = SDL_Vulkan_GetInstanceExtensions (
+      WINDOW, &SDLExtensionCount, pExtensionInstanceNames);
 
-  // Desde aqui se deben agregar las otras extensiones, desde el conteo que
-  // devuelve SDL en adelante
-  pExtensionInstanceNames[extensionInstanceCount[0]] = "VK_KHR_get_surface_capabilities2";
+  // From here the other extensions should be added, from the count returned by SDL onwards.
+  pExtensionInstanceNames[SDLExtensionCount] = "VK_KHR_get_surface_capabilities2";
 
-  if (found_extensions)
-	  std::future<void> ReturnVulkanList = std::async(std::launch::async, Patata::Log::VulkanList, pExtensionInstanceNames, extensionInstanceCount[1] - 1, "Instance Extensions");
+  if (FoundExtensions)
+	  std::future<void> ReturnVulkanList = std::async(std::launch::async, Patata::Log::VulkanList, pExtensionInstanceNames, TotalExtensionCount - 1, "Instance Extensions");
 
   // Create Instance
   vk::InstanceCreateInfo InstanceInfo ({}, &PatataEngineInfo,
@@ -46,7 +51,7 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::CreateInstance (
 #else
                                        0, nullptr,
 #endif
-                                       extensionInstanceCount[1],
+                                       TotalExtensionCount,
                                        pExtensionInstanceNames);
 
   vk::Result Result;

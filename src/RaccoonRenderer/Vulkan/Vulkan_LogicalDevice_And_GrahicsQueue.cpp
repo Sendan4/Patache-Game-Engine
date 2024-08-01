@@ -1,15 +1,15 @@
-#include "Vulkan_Logical_And_Queue.hpp"
+#include "Vulkan_LogicalDevice_And_GrahicsQueue.hpp"
 
 uint32_t
 Patata::Graphics::RaccoonRenderer::VulkanBackend::
     CreateLogicalDeviceAndCreateQueue (YAML::Node & Config)
 {
   uint32_t QueueCount = 0;
-  uint32_t                               GraphicsQueueFamilyIndex = 0;
-  float                                  QueuePriority            = 1.0f;
-  vk::Result Result;
-  bool FoundGraphicsQueue = false;
+  uint32_t GraphicsQueueFamilyIndex = 0;
+  float    QueuePriority            = 1.0f;
+  bool     FoundGraphicsQueue       = false;
 
+  // find a queue of graphs
   PhysicalDevice.getQueueFamilyProperties (&QueueCount, nullptr);
 
   fast_io::io::println (
@@ -20,7 +20,7 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::
     PATATA_TERM_BOLD,
 #endif
     PATATA_TERM_COLOR_PATATA, "Raccoon Renderer", PATATA_TERM_RESET,
-    " : Found ", QueueCount, " Queues");
+    PATATA_TERM_BOLD, " : Found ", QueueCount, " queues");
 
   vk::QueueFamilyProperties * QueueFamilyProperties = new vk::QueueFamilyProperties[QueueCount];
 
@@ -48,12 +48,14 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::
                         "] ",
 #endif
 	  PATATA_TERM_RESET,
+	  PATATA_TERM_BOLD,
+	  "Index [", PATATA_TERM_RESET, i, PATATA_TERM_BOLD, "] : ", PATATA_TERM_RESET,
 	  vk::to_string(QueueFamilyProperties[i].queueFlags));
 
-  for (uint32_t indexFlag = 0; indexFlag < QueueCount; ++indexFlag) {
-    if (QueueFamilyProperties[indexFlag].queueFlags & vk::QueueFlagBits::eGraphics)
+  for (uint32_t index = 0; index < QueueCount; ++index) {
+    if (QueueFamilyProperties[index].queueFlags & vk::QueueFlagBits::eGraphics)
       {
-        GraphicsQueueFamilyIndex = indexFlag;
+        GraphicsQueueFamilyIndex = index;
 		FoundGraphicsQueue = true;
 
 	  	fast_io::io::println (
@@ -64,7 +66,7 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::
     		PATATA_TERM_BOLD,
 #endif
     		PATATA_TERM_COLOR_PATATA, "Raccoon Renderer", PATATA_TERM_RESET,
-    		" : Found graphics queue");
+    		PATATA_TERM_BOLD, " : Found index ", GraphicsQueueFamilyIndex, " that contains a graphics queue", PATATA_TERM_RESET);
 
         break;
       }
@@ -92,6 +94,7 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::
   const char * DeviceExtensions[]
       = { "VK_KHR_swapchain" };
 
+  // Logical Device
   vk::DeviceCreateInfo DeviceCreateInfo{};
   DeviceCreateInfo.enabledExtensionCount   = 1;
   DeviceCreateInfo.ppEnabledExtensionNames = DeviceExtensions;
@@ -102,10 +105,11 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::
   Patata::Log::VulkanList (DeviceExtensions, std::size (DeviceExtensions) - 1,
                            "Device Extensions");
 
-  Result = PhysicalDevice.createDevice (&DeviceCreateInfo, nullptr, &Device);
+  vk::Result Result = PhysicalDevice.createDevice (&DeviceCreateInfo, nullptr, &Device);
 
   Patata::Log::VulkanCheck ("Logical Device", Result);
 
+  // Graphic queue associated with the logic device
   Queue = Device.getQueue (GraphicsQueueFamilyIndex, 0);
   return GraphicsQueueFamilyIndex;
 }

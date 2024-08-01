@@ -19,7 +19,7 @@ target_sources (${PROJECT_NAME} PRIVATE
 	"RaccoonRenderer/Vulkan/Setup_Vulkan_Renderer.cpp"
 	"RaccoonRenderer/Vulkan/Vulkan_Instance.cpp"
 	"RaccoonRenderer/Vulkan/Vulkan_Select_Device.cpp"
-	"RaccoonRenderer/Vulkan/Vulkan_Logical_And_Queue.cpp"
+	"RaccoonRenderer/Vulkan/Vulkan_LogicalDevice_And_GrahicsQueue.cpp"
 	"RaccoonRenderer/Vulkan/Vulkan_SwapChain.cpp"
 	"RaccoonRenderer/Vulkan/Vulkan_DepthBuffer.cpp"
 	"RaccoonRenderer/Vulkan/Vulkan_Render.cpp"
@@ -238,7 +238,7 @@ if (USE_EXTERNAL_LIBS)
 		# Shared
 		target_link_libraries(${PROJECT_NAME} PUBLIC SDL2::SDL2)
 	else()
-		if (CMAKE_SYSTEM_NAME STREQUAL "Windows")	
+		if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
 			# Shared on windows
 			target_link_libraries(${PROJECT_NAME} PUBLIC SDL2::SDL2)
 		else()
@@ -315,4 +315,3 @@ endif()
 set_target_properties(${PROJECT_NAME}
 	PROPERTIES
 	VERSION "${PATATA_ENGINE_VERSION}")
-
