@@ -5,6 +5,7 @@
 #endif
 #include <SDL.h>
 #include <yaml-cpp/yaml.h>
+#include <fast_io.h>
 
 #include "PatataEngine/PatataEngine.hpp"
 #include "RaccoonRenderer.hpp"

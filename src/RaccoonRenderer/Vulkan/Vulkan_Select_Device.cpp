@@ -38,11 +38,10 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::SelectDevice (
 #if defined(_WIN64)
           fast_io::out (),
 #endif
-#if !defined(_WIN64)
           PATATA_TERM_BOLD,
-#endif
           PATATA_TERM_COLOR_PATATA, "\nRaccoon Renderer", PATATA_TERM_RESET,
-          PATATA_TERM_BOLD, " : Only one vulkan compatible device found\n", PATATA_TERM_RESET);
+          PATATA_TERM_BOLD,
+          " : Only one vulkan compatible device found\n", PATATA_TERM_RESET);
 
       PhysicalDevice = Instance.enumeratePhysicalDevices ().front ();
       vk::PhysicalDeviceFeatures DeviceFeatures
@@ -71,10 +70,7 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::SelectDevice (
 #if defined(_WIN64)
       fast_io::out (),
 #endif
-#if !defined(_WIN64)
-      PATATA_TERM_BOLD,
-#endif
-      PATATA_TERM_COLOR_PATATA, "\nRaccoon Renderer", PATATA_TERM_RESET,
+      PATATA_TERM_BOLD, PATATA_TERM_COLOR_PATATA, "\nRaccoon Renderer", PATATA_TERM_RESET,
       PATATA_TERM_BOLD, " : Found ", GpuCount, " vulkan compatible devices", PATATA_TERM_RESET);
 
   uint64_t * GpuScore = new uint64_t[GpuCount];
@@ -128,7 +124,7 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::SelectDevice (
   fast_io::io::println (
 #if defined(_WIN64)
       fast_io::out (),
-#endif
+#endif 
       "");
 
   uint64_t HighestScore   = 0;

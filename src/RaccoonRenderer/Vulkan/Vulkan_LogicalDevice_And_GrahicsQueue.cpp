@@ -14,20 +14,19 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::
 
   fast_io::io::println (
 #if defined(_WIN64)
-    fast_io::out (),
+      fast_io::out (),
 #endif
-#if !defined(_WIN64)
-    PATATA_TERM_BOLD,
-#endif
-    PATATA_TERM_COLOR_PATATA, "Raccoon Renderer", PATATA_TERM_RESET,
-    PATATA_TERM_BOLD, " : Found ", QueueCount, " queues");
+    PATATA_TERM_BOLD, PATATA_TERM_COLOR_PATATA,
+    "Raccoon Renderer",
+    PATATA_TERM_RESET, PATATA_TERM_BOLD,
+    " : Found ", QueueCount, " queues");
 
   vk::QueueFamilyProperties * QueueFamilyProperties = new vk::QueueFamilyProperties[QueueCount];
 
   PhysicalDevice.getQueueFamilyProperties (&QueueCount, QueueFamilyProperties);
 
   for (uint32_t i = 0; i < QueueCount; ++i)
-	fast_io::io::println(
+    fast_io::io::println (
 #if defined(_WIN64)
       fast_io::out (),
 #endif
@@ -47,9 +46,9 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::
                             typeid (QueueFamilyProperties[i].queueFlags).name () },
                         "] ",
 #endif
-	  PATATA_TERM_RESET,
-	  PATATA_TERM_BOLD,
-	  "Index [", PATATA_TERM_RESET, i, PATATA_TERM_BOLD, "] : ", PATATA_TERM_RESET,
+	  PATATA_TERM_RESET, PATATA_TERM_BOLD,
+	  "Index [", PATATA_TERM_RESET, i,
+      PATATA_TERM_BOLD, "] : ", PATATA_TERM_RESET,
 	  vk::to_string(QueueFamilyProperties[i].queueFlags));
 
   for (uint32_t index = 0; index < QueueCount; ++index) {
@@ -60,13 +59,10 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::
 
 	  	fast_io::io::println (
 #if defined(_WIN64)
-    		fast_io::out (),
+            fast_io::out (),
 #endif
-#if !defined(_WIN64)
-    		PATATA_TERM_BOLD,
-#endif
-    		PATATA_TERM_COLOR_PATATA, "Raccoon Renderer", PATATA_TERM_RESET,
-    		PATATA_TERM_BOLD, " : Found index ", GraphicsQueueFamilyIndex, " that contains a graphics queue", PATATA_TERM_RESET);
+    		PATATA_TERM_BOLD, PATATA_TERM_COLOR_PATATA, "Raccoon Renderer", PATATA_TERM_RESET, PATATA_TERM_BOLD,
+            " : Found index ", GraphicsQueueFamilyIndex, " that contains a graphics queue", PATATA_TERM_RESET);
 
         break;
       }
@@ -79,11 +75,11 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::
 
   delete[] QueueFamilyProperties;
 
-  fast_io::io::println(
+  fast_io::io::println (
 #if defined(_WIN64)
-    fast_io::out (),
+      fast_io::out (),
 #endif
-	"");
+      "");
 
   vk::DeviceQueueCreateInfo DeviceQueueCreateInfo{};
   DeviceQueueCreateInfo.flags 			 = vk::DeviceQueueCreateFlagBits ();

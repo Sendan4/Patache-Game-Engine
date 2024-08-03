@@ -6,6 +6,7 @@
 #include <SDL.h>
 #include <vulkan/vulkan.hpp>
 #include <yaml-cpp/yaml.h>
+#include <fast_io.h>
 
 namespace Patata
 {
@@ -53,7 +54,8 @@ private:
     std::tuple<vk::PresentModeKHR, vk::Format, vk::ColorSpaceKHR>
          CreateSwapChain (uint32_t &, YAML::Node, SDL_Window *);
     bool CreateDepthBuffer (YAML::Node &);
-    bool CreateRenderPass (const std::tuple<vk::PresentModeKHR, vk::Format, vk::ColorSpaceKHR> &);
+    bool CreateRenderPass (
+        const std::tuple<vk::PresentModeKHR, vk::Format, vk::ColorSpaceKHR> &);
     void CreatePipeline (void);
     void
     VulkanInfo (YAML::Node CONFIG,
@@ -75,7 +77,7 @@ private:
     // Color
     uint32_t    SwapChainImageCount = 0;
     vk::Image * SwapChainImages = nullptr;
-    vk::ImageView * ColorView = nullptr;
+    vk::ImageView * SwapChainColorImageView = nullptr;
 
     /*
     Depth buffer will not be useful for now.
@@ -92,6 +94,8 @@ private:
     vk::CommandPool CommandPool;
     vk::CommandBuffer cmd;
 
+    vk::Framebuffer * SwapChainFrameBuffer = nullptr;
+
     vk::RenderPass RenderPass = nullptr;
 
     // Synchronization Primitives
@@ -99,9 +103,9 @@ private:
     vk::Semaphore SubmitSemaphore = nullptr;
     vk::Fence Fence = nullptr;
 
-    vk::Pipeline       PipeLine;
-    vk::PipelineLayout PipeLineLayout;
-    vk::PipelineCache  PipeLineCache;
+    //vk::Pipeline       PipeLine;
+    //vk::PipelineLayout PipeLineLayout;
+    //vk::PipelineCache  PipeLineCache;
   } * pVulkanBackend = nullptr;
 };
 }

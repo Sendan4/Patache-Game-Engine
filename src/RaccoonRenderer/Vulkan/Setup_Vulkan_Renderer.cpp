@@ -16,6 +16,14 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::VulkanBackend (
   */
   uint32_t GraphicsQueueFamilyIndex = CreateLogicalDeviceAndCreateQueue (CONFIG);
 
+  fast_io::io::print (
+#if defined(_WIN64)
+      fast_io::out (),
+#endif
+      PATATA_TERM_RESET,
+      PATATA_TERM_BOLD,
+      "SDL Create Window Surface : ", PATATA_TERM_RESET);
+
   // Create a surface for the window to draw on
   if (SDL_Vulkan_CreateSurface (WINDOW, Instance,
                                 reinterpret_cast<VkSurfaceKHR *> (&Surface)))
@@ -24,21 +32,6 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::VulkanBackend (
 #if defined(_WIN64)
           fast_io::out (),
 #endif
-#if !defined(_WIN64)
-          PATATA_TERM_DIM,
-#endif
-          PATATA_TERM_COLOR_GRAY0,
-#if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
-          "[",
-          std::string_view{ abi::__cxa_demangle (typeid (Surface).name (),
-                                                 nullptr, nullptr, nullptr) },
-          "]",
-#else
-          "[", std::string_view{ typeid (Surface).name () }, "]",
-#endif
-          PATATA_TERM_RESET,
-          PATATA_TERM_BOLD,
-          " SDL Create Window Surface : ", PATATA_TERM_RESET,
           PATATA_TERM_COLOR_GREEN, "Success", PATATA_TERM_RESET);
     }
   else
@@ -47,21 +40,6 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::VulkanBackend (
 #if defined(_WIN64)
           fast_io::out (),
 #endif
-#if !defined(_WIN64)
-          PATATA_TERM_DIM,
-#endif
-          PATATA_TERM_COLOR_GRAY0,
-#if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
-          "[",
-          std::string_view{ abi::__cxa_demangle (typeid (Surface).name (),
-                                                 nullptr, nullptr, nullptr) },
-          "]",
-#else
-          "[", std::string_view{ typeid (Surface).name () }, "]",
-#endif
-          PATATA_TERM_RESET,
-          PATATA_TERM_BOLD,
-          " SDL Create Window Surface : ", PATATA_TERM_RESET,
           PATATA_TERM_COLOR_YELLOW, "Fail", PATATA_TERM_RESET);
 
       Patata::Log::FatalErrorMessage ("SDL", SDL_GetError (), CONFIG);
@@ -76,15 +54,15 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::VulkanBackend (
   // Color Image View
   {
       fast_io::io::println(
-      #if defined(_WIN64)
+#if defined(_WIN64)
           fast_io::out (),
-      #endif
+#endif
           PATATA_TERM_BOLD,
-          "\nSwapChain Color Image Views : ",
+          "\nSwapChain Color Image View : ",
           PATATA_TERM_RESET,
           SwapChainImageCount);
 
-      ColorView = new vk::ImageView[SwapChainImageCount];
+      SwapChainColorImageView = new vk::ImageView[SwapChainImageCount];
 
       for (uint8_t i = 0; i < SwapChainImageCount; ++i) {
           vk::ImageViewCreateInfo ColorImageViewInfo {};
@@ -103,18 +81,23 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::VulkanBackend (
           ColorImageViewInfo.subresourceRange.baseArrayLayer = 0;
           ColorImageViewInfo.subresourceRange.layerCount = 1;
 
-          Result = Device.createImageView(&ColorImageViewInfo, nullptr, &ColorView[i]);
+          Result = Device.createImageView(&ColorImageViewInfo, nullptr, &SwapChainColorImageView[i]);
           {
-            fast_io::io::print("  ");
-            std::future<void> ReturnVulkanCheck = std::async (
-                std::launch::async, Patata::Log::VulkanCheck, "Color Image View", Result);
+            fast_io::io::print (
+#if defined(_WIN64)
+                fast_io::out (),
+#endif
+                "  ");
+
+            std::future<void> ReturnVulkanCheck = std::async (std::launch::async, Patata::Log::VulkanCheck,
+                              "Color Image View", Result);
           }
       }
 
-      fast_io::io::println(
-      #if defined(_WIN64)
+      fast_io::io::println (
+#if defined(_WIN64)
           fast_io::out (),
-      #endif
+#endif
           "");
   }
 
@@ -122,7 +105,56 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::VulkanBackend (
   Depthbuffer will not be useful for now.
   It will be useful for advanced 2D effects and even more so for 3D performance.
   */
-  if (!CreateDepthBuffer(CONFIG)) return;
+  if (!CreateDepthBuffer (CONFIG))
+    return;
+
+  if (!CreateRenderPass (swapchaininfo))
+    return;
+
+  // Frame Buffer
+  {
+    fast_io::io::println (
+#if defined(_WIN64)
+      fast_io::out (),
+#endif
+      PATATA_TERM_BOLD,
+      "\nSwapChain Frame Buffer : ",
+      PATATA_TERM_RESET,
+      SwapChainImageCount);
+
+      SwapChainFrameBuffer = new vk::Framebuffer[SwapChainImageCount];
+
+      for (uint8_t i = 0; i < SwapChainImageCount; ++i) {
+          vk::FramebufferCreateInfo FrameBufferInfo {};
+          FrameBufferInfo.sType = vk::StructureType::eFramebufferCreateInfo;
+          FrameBufferInfo.pNext = nullptr;
+          FrameBufferInfo.renderPass = RenderPass;
+          FrameBufferInfo.attachmentCount = 1;
+          FrameBufferInfo.pAttachments = &SwapChainColorImageView[i];
+          FrameBufferInfo.width = SwapChainExtent.width;
+          FrameBufferInfo.height = SwapChainExtent.height;
+          FrameBufferInfo.layers = 1;
+
+          Result = Device.createFramebuffer(&FrameBufferInfo, nullptr, &SwapChainFrameBuffer[i]);
+          {
+            fast_io::io::print (
+#if defined(_WIN64)
+                fast_io::out (),
+#endif
+                "  ");
+
+            std::future<void> ReturnVulkanCheck
+                = std::async (std::launch::async, Patata::Log::VulkanCheck,
+                              "Frame Buffer", Result);
+          }
+      }
+
+      fast_io::io::println (
+#if defined(_WIN64)
+          fast_io::out (),
+#endif
+          "");
+  }
 
   // Command Pool
   {
@@ -141,8 +173,6 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::VulkanBackend (
     }
   }
 
-  if (!CreateRenderPass (swapchaininfo)) return;
-
   // Fence
   {
     vk::FenceCreateInfo FenceInfo {};
@@ -152,8 +182,8 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::VulkanBackend (
 
     Result = Device.createFence (&FenceInfo, nullptr, &Fence);
     {
-      std::future<void> ReturnVulkanCheck = std::async (
-          std::launch::async, Patata::Log::VulkanCheck, "Fence", Result);
+      std::future<void> ReturnVulkanCheck = std::async (std::launch::async, Patata::Log::VulkanCheck, "Fence",
+                        Result);
     }
   }
 
@@ -166,13 +196,14 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::VulkanBackend (
       Result = Device.createSemaphore (&SemaphoreInfo, nullptr, &AcquireSemaphore);
       {
         std::future<void> ReturnVulkanCheck = std::async (
-            std::launch::async, Patata::Log::VulkanCheck, "Acquire Next Image 2 KHR - Semaphore", Result);
+            std::launch::async, Patata::Log::VulkanCheck,
+            "Acquire Next Image 2 KHR - Semaphore", Result);
       }
 
       Result = Device.createSemaphore (&SemaphoreInfo, nullptr, &SubmitSemaphore);
       {
-        std::future<void> ReturnVulkanCheck = std::async (
-            std::launch::async, Patata::Log::VulkanCheck, "Submit Semaphore", Result);
+        std::future<void> ReturnVulkanCheck = std::async (std::launch::async, Patata::Log::VulkanCheck,
+                          "Submit Semaphore", Result);
       }
   }
 
@@ -181,15 +212,21 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::VulkanBackend (
 
 Patata::Graphics::RaccoonRenderer::VulkanBackend::~VulkanBackend (void)
 {
-  Device.destroyPipelineLayout(PipeLineLayout);
+  for (uint8_t i = 0; i < SwapChainImageCount; ++i)
+    Device.destroyFramebuffer(SwapChainFrameBuffer[i]);
+
+  delete[] SwapChainFrameBuffer;
+  SwapChainFrameBuffer = nullptr;
+
+  //Device.destroyPipelineLayout(PipeLineLayout);
   Device.destroyRenderPass(RenderPass);
 
   // Color
   for (uint8_t i = 0; i < SwapChainImageCount; ++i)
-    Device.destroyImageView(ColorView[i]);
+    Device.destroyImageView(SwapChainColorImageView[i]);
 
-  delete[] ColorView;
-  ColorView = nullptr;
+  delete[] SwapChainColorImageView;
+  SwapChainColorImageView = nullptr;
 
   // Depth
   Device.freeMemory(DepthMemory);
@@ -205,8 +242,8 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::~VulkanBackend (void)
   #if defined(DEBUG)
   vk::Result Result = Device.waitForFences(1, &Fence, true, 0);
   {
-	    std::future<void> ReturnVulkanCheck = std::async (
-			std::launch::async, Patata::Log::VulkanCheck, "Wait For Fences", Result);
+	    std::future<void> ReturnVulkanCheck = std::async (std::launch::async, Patata::Log::VulkanCheck,
+                      "Wait For Fences", Result);
   }
   #endif
   Device.destroyFence (Fence);

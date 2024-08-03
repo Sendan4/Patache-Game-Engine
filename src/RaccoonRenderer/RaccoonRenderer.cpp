@@ -23,15 +23,14 @@ si se llega a tener varios, lo mejor seria iniciarlos
 mediante el valor de una configuracion.
 */
 
-Patata::Graphics::RaccoonRenderer::RaccoonRenderer (YAML::Node &  Config,
-                                                    SDL_Window * Window)
+Patata::Graphics::RaccoonRenderer::RaccoonRenderer (YAML::Node & Config, SDL_Window * Window)
 {
   // Backend Principal
-  pVulkanBackend
-      = new Patata::Graphics::RaccoonRenderer::VulkanBackend (Window, Config);
+  pVulkanBackend = new Patata::Graphics::RaccoonRenderer::VulkanBackend (
+      Window, Config);
 }
 
 Patata::Graphics::RaccoonRenderer::~RaccoonRenderer (void)
 {
-  Patata::Log::DeleteAndLogPtr ("Vulkan Backend", pVulkanBackend);
+  Patata::Log::DeleteAndLogPtr ("Deallocate Vulkan Backend", pVulkanBackend);
 }

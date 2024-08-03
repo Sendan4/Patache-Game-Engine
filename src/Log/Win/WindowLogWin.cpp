@@ -20,7 +20,7 @@ Patata::Log::WindowLog (SDL_Window * Window)
 #endif
 
   fast_io::io::println (fast_io::out (), PATATA_TERM_COLOR_PATATA, "Window ",
-                        PATATA_TERM_COLOR_WHITE, "INFO :");
+                        PATATA_TERM_BOLD, "INFO :");
 
   SDL_SysWMinfo WindowInfo;
   SDL_VERSION (&WindowInfo.version);
@@ -46,19 +46,19 @@ Patata::Log::WindowLog (SDL_Window * Window)
           "]");
 #endif
 
-      fast_io::io::println (fast_io::out (), PATATA_TERM_COLOR_WHITE,
+      fast_io::io::println (fast_io::out (), PATATA_TERM_BOLD,
                             " Window Type");
       break;
 
     case SDL_SYSWM_WINRT:
-      fast_io::io::print (fast_io::out (), PATATA_TERM_COLOR_WHITE,
+      fast_io::io::print (fast_io::out (), PATATA_TERM_BOLD,
                           "  Window System : ", PATATA_TERM_COLOR_GRAY1,
                           "WinRT");
       break;
 
     default:
     case SDL_SYSWM_UNKNOWN:
-      fast_io::io::print (fast_io::out (), PATATA_TERM_COLOR_WHITE,
+      fast_io::io::print (fast_io::out (), PATATA_TERM_BOLD,
                           "  Window System : ", PATATA_TERM_COLOR_YELLOW,
                           "Unknown");
       break;

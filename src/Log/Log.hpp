@@ -13,7 +13,6 @@ namespace Log
 {
 void StartMapache (void);
 void StartPatataLogInfo (void);
-void OpenGLInfo (const YAML::Node &);
 void WindowLog (SDL_Window *);
 
 // Vulkan Setup

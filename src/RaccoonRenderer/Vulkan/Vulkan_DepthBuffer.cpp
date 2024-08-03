@@ -1,6 +1,9 @@
 #include "Vulkan_DepthBuffer.hpp"
 
-bool Patata::Graphics::RaccoonRenderer::VulkanBackend::CreateDepthBuffer (YAML::Node & CONFIG) {
+bool
+Patata::Graphics::RaccoonRenderer::VulkanBackend::CreateDepthBuffer (
+    YAML::Node & CONFIG)
+{
   // Depth Image
   vk::FormatProperties2 FormatProperties
       = PhysicalDevice.getFormatProperties2 (vk::Format::eD16Unorm);
@@ -41,8 +44,8 @@ bool Patata::Graphics::RaccoonRenderer::VulkanBackend::CreateDepthBuffer (YAML::
 
   vk::Result Result = Device.createImage (&ImageInfo, nullptr, &DepthImage);
   {
-    std::future<void> ReturnVulkanCheck = std::async (
-        std::launch::async, Patata::Log::VulkanCheck, "Depth Image", Result);
+    std::future<void> ReturnVulkanCheck = std::async (std::launch::async, Patata::Log::VulkanCheck,
+                      "Depth Image", Result);
   }
   if (Result != vk::Result::eSuccess) return false;
 
@@ -67,8 +70,8 @@ bool Patata::Graphics::RaccoonRenderer::VulkanBackend::CreateDepthBuffer (YAML::
 
   Result = Device.allocateMemory(&DepthMemoryAllocateInfo, nullptr, &DepthMemory);
   {
-    std::future<void> ReturnVulkanCheck = std::async (
-        std::launch::async, Patata::Log::VulkanCheck, "Allocate Depth Memory", Result);
+    std::future<void> ReturnVulkanCheck = std::async (std::launch::async, Patata::Log::VulkanCheck,
+                      "Allocate Depth Memory", Result);
   }
   if (Result != vk::Result::eSuccess) return false;
 
@@ -96,8 +99,8 @@ bool Patata::Graphics::RaccoonRenderer::VulkanBackend::CreateDepthBuffer (YAML::
 
   Result = Device.createImageView(&ImageDepthViewInfo, nullptr, &DepthView);
   {
-    std::future<void> ReturnVulkanCheck = std::async (
-        std::launch::async, Patata::Log::VulkanCheck, "Depth Image View", Result);
+    std::future<void> ReturnVulkanCheck = std::async (std::launch::async, Patata::Log::VulkanCheck,
+                      "Depth Image View", Result);
   }
   if (Result != vk::Result::eSuccess) return false;
   else return true;

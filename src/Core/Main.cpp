@@ -3,15 +3,8 @@
 #endif
 
 #include <fast_io.h>
-
 #if defined(_WIN64)
 #include <windows.h>
-
-extern "C"
-{
-  __declspec (dllexport) unsigned long NvOptimusEnablement        = 0x00000001;
-  __declspec (dllexport) int AmdPowerXpressRequestHighPerformance = 1;
-}
 #endif
 
 // Patata Engine
@@ -27,7 +20,7 @@ extern "C"
 
 // Public API
 Patata::Engine::Engine (const std::string & WindowTitle,
-                        const uint64_t & Width, const uint64_t & Height)
+                        const uint32_t & Width, const uint32_t & Height)
     : pPatataEngine (new EngineImpl (WindowTitle, Width, Height))
 {
 }
@@ -59,13 +52,12 @@ Patata::Engine::EngineImpl::EngineImpl (const std::string & WindowTitle,
 
   try
     {
-      Config = YAML::LoadFile (
-          strcpy (SDL_GetBasePath (), GAME_CONFIG_FILE_NAME));
+      Config = YAML::LoadFile (strcpy (SDL_GetBasePath (), GAME_CONFIG_FILE_NAME));
     }
-  catch (const YAML::BadFile & BadFile)
+  catch (const YAML::BadFile BadFile)
     {
       Patata::Log::YamlFileErrorMessage ();
-      exit (1);
+      return;
     }
 
 #if defined(__linux__)
@@ -138,7 +130,7 @@ Patata::Engine::EngineImpl::EngineImpl (const std::string & WindowTitle,
 
 Patata::Engine::EngineImpl::~EngineImpl (void)
 {
-  Patata::Log::DeleteAndLogPtr ("Raccoon Renderer", RaccoonRenderer);
+  Patata::Log::DeleteAndLogPtr ("Deallocate Raccoon Renderer", RaccoonRenderer);
 
   SDL_DestroyWindow (GameWindow);
 }

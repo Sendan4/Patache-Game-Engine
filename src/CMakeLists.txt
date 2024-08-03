@@ -11,7 +11,7 @@ if (DEFINED SHARED_BUILD AND NOT SHARED_BUILD)
 endif()
 
 target_sources (${PROJECT_NAME} PRIVATE
-	"Core/PatataEngine.cpp"
+	"Core/Main.cpp"
 	"Core/Input.cpp"
 	"Core/Render.cpp"
 	"Window/Window.cpp"
