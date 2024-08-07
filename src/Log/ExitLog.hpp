@@ -14,6 +14,9 @@ DeleteAndLogPtr (const std::string & Message, pointer * ptr)
 #if defined(_WIN64)
           fast_io::out (),
 #endif
+#if !defined(_WIN64)
+          PATATA_TERM_DIM,
+#endif
           PATATA_TERM_COLOR_GRAY0,
 #if defined(__GNUC__) || defined(__MINGW64__)
           "[",
@@ -23,6 +26,7 @@ DeleteAndLogPtr (const std::string & Message, pointer * ptr)
 #else
           "[", std::string_view{ typeid (*ptr).name () }, "] ",
 #endif
+          PATATA_TERM_RESET,
           PATATA_TERM_BOLD, Message, " : ", PATATA_TERM_RESET,
           PATATA_TERM_COLOR_GREEN, "Deleted", PATATA_TERM_RESET);
     }
@@ -32,6 +36,9 @@ DeleteAndLogPtr (const std::string & Message, pointer * ptr)
 #if defined(_WIN64)
           fast_io::out (),
 #endif
+#if !defined(_WIN64)
+          PATATA_TERM_DIM,
+#endif
           PATATA_TERM_COLOR_GRAY0,
 #if defined(__GNUC__) || defined(__MINGW64__)
           "[",
@@ -41,6 +48,7 @@ DeleteAndLogPtr (const std::string & Message, pointer * ptr)
 #else
           "[", std::string_view{ typeid (*ptr).name () }, "] ",
 #endif
+          PATATA_TERM_RESET,
           PATATA_TERM_BOLD, Message, " : ", PATATA_TERM_RESET,
           PATATA_TERM_COLOR_YELLOW, "Not deleted", PATATA_TERM_RESET, " : ",
           fast_io::mnp::pointervw (ptr));
@@ -59,6 +67,9 @@ DeleteAndLogArrPtr (const std::string & Message, pointer * ptr)
 #if defined(_WIN64)
           fast_io::out (),
 #endif
+#if !defined(_WIN64)
+          PATATA_TERM_DIM,
+#endif
           PATATA_TERM_COLOR_GRAY0,
 #if defined(__GNUC__) || defined(__MINGW64__)
           "[",
@@ -68,6 +79,7 @@ DeleteAndLogArrPtr (const std::string & Message, pointer * ptr)
 #else
           "[", std::string_view{ typeid (*ptr).name () }, "] ",
 #endif
+          PATATA_TERM_RESET,
           PATATA_TERM_BOLD, Message, " : ", PATATA_TERM_RESET,
           PATATA_TERM_COLOR_GREEN, "Deleted", PATATA_TERM_RESET);
     }
@@ -77,6 +89,9 @@ DeleteAndLogArrPtr (const std::string & Message, pointer * ptr)
 #if defined(_WIN64)
           fast_io::out (),
 #endif
+#if !defined(_WIN64)
+          PATATA_TERM_DIM,
+#endif
           PATATA_TERM_COLOR_GRAY0,
 #if defined(__GNUC__) || defined(__MINGW64__)
           "[",
@@ -86,6 +101,7 @@ DeleteAndLogArrPtr (const std::string & Message, pointer * ptr)
 #else
           "[", std::string_view{ typeid (*ptr).name () }, "] ",
 #endif
+          PATATA_TERM_RESET,
           PATATA_TERM_BOLD, Message, " : ", PATATA_TERM_RESET,
           PATATA_TERM_COLOR_YELLOW, "Not deleted", PATATA_TERM_RESET, " : ",
           fast_io::mnp::pointervw (ptr));

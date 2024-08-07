@@ -30,22 +30,22 @@ if not cpp.has_argument('-std=c++20')
   error('your compiler does not support C++20')
 endif
 cpp.has_argument('-std=gnu++20')
+cpp.has_argument('-std=c++2b')
+cpp.has_argument('-std=gnu++2b')
 
-cpp_arguments = []
+cpp_arguments = ['-std=c++2b', '-std=gnu++2b']
 
 if get_option('default_library') == 'static' or get_option('prefer_static') == true
   cpp.has_argument('-static-libgcc')
   cpp.has_argument('-static-libstdc++')
 
-  cpp_arguments += ['-static-libgcc', '-static-libstdc++'] 
+  cpp_arguments += ['-static-libgcc', '-static-libstdc++']
 endif
 
 bin_dir = meson.global_build_root()
 if get_option('use_bin_dir')
   bin_dir = join_paths(meson.global_build_root(), '../bin')
 endif
-
-cpp.has_link_argument('-Wl,-rpath')
 
 if (cpp.has_link_argument('-ffast-math'))
   cpp_arguments += ['-ffast-math']
@@ -54,16 +54,17 @@ endif
 cpp.check_header('string', required : true)
 cpp.check_header('cstdint', required : true)
 
+uint16_t = cpp.has_type('uint8_t', prefix : '#include <cstdint>')
 uint16_t = cpp.has_type('uint16_t', prefix : '#include <cstdint>')
 uint32_t = cpp.has_type('uint32_t', prefix : '#include <cstdint>')
 uint64_t = cpp.has_type('uint64_t', prefix : '#include <cstdint>')
+int16_t = cpp.has_type('int8_t', prefix : '#include <cstdint>')
 int16_t = cpp.has_type('int16_t', prefix : '#include <cstdint>')
 int32_t = cpp.has_type('int32_t', prefix : '#include <cstdint>')
 int64_t = cpp.has_type('int64_t', prefix : '#include <cstdint>')
 size_t = cpp.has_type('size_t', prefix : '#include <iterator>')
 const_char_p = cpp.has_type('const char *')
 const_char_p = cpp.has_type('bool')
-const_char_p = cpp.has_type('const bool *')
 string = cpp.has_type('std::string', prefix : '#include <string>')
 
 cpp.has_function('strcmp')
@@ -227,7 +228,7 @@ if get_option('use_external_libs') == true and build_machine.system() != 'window
 
   if get_option('xorg_support') == false
     sdl2_opt.add_cmake_defines(
-      { 'SDL_X11' : false }, 
+      { 'SDL_X11' : false },
       { 'SDL_X11_SHARED' : false })
   else
     add_project_arguments('-DPATATA_LINUX_XORG_SUPPORT=1', language : 'cpp')

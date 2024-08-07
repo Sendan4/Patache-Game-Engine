@@ -49,53 +49,87 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::CreateSwapChain (
   }
 
   /*
-  Select a desired display mode based on the configuration.
+  Two presentation modes are discarded depending on the configuration.
+  If you use Vsync, the Immediate and Mailbox modes are discarded, and
+  the available presentation modes that wait for a screen update before
+  presenting are sought.
 
-  Mailbox is preferred for a vsync mode, if not available select Fifo
-
-  Immediate mode is used if vsync mode will not be used.
+  Mailbox and FIFO are modes that have priority.
   */
   vk::PresentModeKHR SelectedPresentMode;
+  bool Found = false;
 
-  if (CONFIG["patata-engine"]["raccoon-renderer"]["vsync"].as<bool> ())
+  if (!CONFIG["patata-engine"]["raccoon-renderer"]["vsync"].as<bool> ())
     {
-      for (uint32_t i = 0; i < PresentModesCount; ++i)
+      // No Vsync
+      for (uint8_t i = 0; i < PresentModesCount; ++i)
         {
-          if (PresentModes[i] == vk::PresentModeKHR::eMailbox)
-            {
-              SelectedPresentMode = vk::PresentModeKHR::eMailbox;
-              break;
+            if (PresentModes[i] == vk::PresentModeKHR::eMailbox) {
+                SelectedPresentMode = vk::PresentModeKHR::eMailbox;
+                Found = true;
+                break;
             }
-          if (PresentModes[i] == vk::PresentModeKHR::eFifo)
-            {
-              SelectedPresentMode = vk::PresentModeKHR::eFifo;
-              break;
+            else if (PresentModes[i] == vk::PresentModeKHR::eImmediate) {
+                SelectedPresentMode = vk::PresentModeKHR::eImmediate;
+                Found = true;
+                break;
             }
         }
     }
-  else SelectedPresentMode = vk::PresentModeKHR::eImmediate;
+  else {
+      // Vsync
+      for (uint8_t i = 0; i < PresentModesCount; ++i)
+        {
+            if (PresentModes[i] == vk::PresentModeKHR::eFifo) {
+                SelectedPresentMode = vk::PresentModeKHR::eFifo;
+                Found = true;
+                break;
+            }
+            else if (PresentModes[i] == vk::PresentModeKHR::eFifoRelaxed) {
+                SelectedPresentMode = vk::PresentModeKHR::eFifoRelaxed;
+                Found = true;
+                break;
+            }
+        }
+  }
+
+  if (!Found) {
+      Patata::Log::FatalErrorMessage("Patata - Raccoon Renderer", "No presentation modes found", CONFIG);
+      return {vk::PresentModeKHR::eImmediate, vk::Format::eUndefined, vk::ColorSpaceKHR::eSrgbNonlinear};
+  }
 
   // Finding a surface format.
   vk::SurfaceFormatKHR SelectedSurfaceFormat;
+  Found = false;
 
   for (uint32_t i = 0; i < SurfaceFormatsCount; ++i) {
-	  if (CONFIG["patata-engine"]["raccoon-renderer"]["10bit-image"].as<bool> ()) {
+	  if (CONFIG["patata-engine"]["raccoon-renderer"]["10bit-depth"].as<bool> ()) {
 		  // 10 Bits
-		  if (SurfaceFormats[i].format == vk::Format::eA2B10G10R10UnormPack32) {
+		  if (SurfaceFormats[i].format == vk::Format::eA2R10G10B10UnormPack32
+				|| SurfaceFormats[i].format == vk::Format::eA2B10G10R10UnormPack32) {
 			  SelectedSurfaceFormat = SurfaceFormats[i];
+              Found                 = true;
 			  break;
 		  }
 	  }
 	  else {
 		  // 8 Bits
-		  if (SurfaceFormats[i].format == vk::Format::eB8G8R8A8Srgb ||
-				  SurfaceFormats[i].format == vk::Format::eR8G8B8A8Unorm ||
-				  SurfaceFormats[i].format == vk::Format::eR8G8B8Srgb) {
+		  if (SurfaceFormats[i].format == vk::Format::eR8G8B8A8Unorm
+				|| SurfaceFormats[i].format == vk::Format::eB8G8R8A8Unorm) {
 			  SelectedSurfaceFormat = SurfaceFormats[i];
+              Found                 = true;
 			  break;
 		  }
 	  }
   }
+
+  if (!Found)
+    {
+      Patata::Log::FatalErrorMessage ("Patata - Raccoon Renderer",
+                                      "No surface formats found", CONFIG);
+      return { vk::PresentModeKHR::eImmediate, vk::Format::eUndefined,
+               vk::ColorSpaceKHR::eSrgbNonlinear };
+    }
 
   vk::SurfaceCapabilitiesKHR SurfaceCapabilities
       = PhysicalDevice.getSurfaceCapabilitiesKHR (Surface);
@@ -107,7 +141,7 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::CreateSwapChain (
   SwapChainCreateInfo.surface          = Surface;
   SwapChainCreateInfo.minImageCount    = SurfaceCapabilities.minImageCount;
   SwapChainCreateInfo.imageFormat      = SelectedSurfaceFormat.format;
-  SwapChainCreateInfo.imageColorSpace  = SelectedSurfaceFormat.colorSpace;
+  SwapChainCreateInfo.imageColorSpace  = vk::ColorSpaceKHR::eSrgbNonlinear;
   SwapChainCreateInfo.imageExtent      = SwapChainExtent;
   SwapChainCreateInfo.imageArrayLayers = 1;
   SwapChainCreateInfo.imageUsage   = vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eTransferDst;
@@ -120,6 +154,7 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::CreateSwapChain (
 
   Result = Device.createSwapchainKHR (&SwapChainCreateInfo, nullptr, &SwapChain);
   delete[] PresentModes;
+  delete[] SurfaceFormats;
   {
 	  std::future<void> ReturnVulkanCheck = std::async(std::launch::async, Patata::Log::VulkanCheck, "SwapChain", Result);
   }
@@ -136,5 +171,5 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::CreateSwapChain (
 	  std::future<void> ReturnVulkanCheck = std::async(std::launch::async, Patata::Log::VulkanCheck, "Get SwapChain Images KHR", Result);
   }
 
-  return { SelectedPresentMode, SelectedSurfaceFormat.format, SelectedSurfaceFormat.colorSpace };
+  return { SelectedPresentMode, SelectedSurfaceFormat.format, vk::ColorSpaceKHR::eSrgbNonlinear };
 }

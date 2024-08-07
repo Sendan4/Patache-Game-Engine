@@ -1,4 +1,5 @@
 #include "Vulkan_Render.hpp"
+#include <cmath>
 
 void
 Patata::Graphics::RaccoonRenderer::VulkanBackend::VulkanRender (void)

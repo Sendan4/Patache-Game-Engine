@@ -9,8 +9,8 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::CreateInstance (
       PATATA_ENGINE_VERSION_VK, VK_API_VERSION_1_3);
 
   /*
-  Las capas de validacion se activan con USE_VVL=ON.
-  Son para el desarrollo y prueba de este backend.
+  The validation layers are activated with USE_VVVL=ON.
+  They are for the development and testing of this backend.
   */
   // Layers
 #if defined(DEBUG) && defined(PATATA_USE_VVL)
@@ -25,24 +25,22 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::CreateInstance (
 
   if you want to add an extension, take into account TotalExtensionCount
   */
-  uint32_t SDLExtensionCount = 0, TotalExtensionCount = 1;
+  uint32_t SDLExtensionCount = 0;
 
   SDL_Vulkan_GetInstanceExtensions (WINDOW, &SDLExtensionCount,
                                     nullptr);
 
-  TotalExtensionCount += SDLExtensionCount;
-
-  const char ** pExtensionInstanceNames
-      = new const char *[TotalExtensionCount];
+  const char ** pExtensionInstanceNames = new const char *[SDLExtensionCount];
 
   bool FoundExtensions = SDL_Vulkan_GetInstanceExtensions (
       WINDOW, &SDLExtensionCount, pExtensionInstanceNames);
 
-  // From here the other extensions should be added, from the count returned by SDL onwards.
-  pExtensionInstanceNames[SDLExtensionCount] = "VK_KHR_get_surface_capabilities2";
+
 
   if (FoundExtensions)
-	  std::future<void> ReturnVulkanList = std::async(std::launch::async, Patata::Log::VulkanList, pExtensionInstanceNames, TotalExtensionCount - 1, "Instance Extensions");
+    std::future<void> ReturnVulkanList = std::async (
+        std::launch::async, Patata::Log::VulkanList, pExtensionInstanceNames,
+        SDLExtensionCount - 1, "Instance Extensions");
 
   // Create Instance
   vk::InstanceCreateInfo InstanceInfo ({}, &PatataEngineInfo,
@@ -51,7 +49,7 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::CreateInstance (
 #else
                                        0, nullptr,
 #endif
-                                       TotalExtensionCount,
+                                       SDLExtensionCount,
                                        pExtensionInstanceNames);
 
   vk::Result Result;

@@ -368,7 +368,9 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::VulkanInfo (
   }
 
   // SwapChain Images
-  fast_io::io::println (fast_io::out (), "    Images : ", SwapChainImageCount);
+  fast_io::io::println (fast_io::out (), PATATA_TERM_BOLD,
+                        "    Images : ", PATATA_TERM_RESET,
+                        SwapChainImageCount);
 
   // SwapChain Image Color Format
   fast_io::io::println (fast_io::out (), PATATA_TERM_COLOR_GRAY0,

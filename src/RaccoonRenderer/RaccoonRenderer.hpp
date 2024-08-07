@@ -106,6 +106,7 @@ private:
     //vk::Pipeline       PipeLine;
     //vk::PipelineLayout PipeLineLayout;
     //vk::PipelineCache  PipeLineCache;
+
   } * pVulkanBackend = nullptr;
 };
 }

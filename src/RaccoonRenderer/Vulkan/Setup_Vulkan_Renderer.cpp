@@ -216,7 +216,6 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::~VulkanBackend (void)
     Device.destroyFramebuffer(SwapChainFrameBuffer[i]);
 
   delete[] SwapChainFrameBuffer;
-  SwapChainFrameBuffer = nullptr;
 
   //Device.destroyPipelineLayout(PipeLineLayout);
   Device.destroyRenderPass(RenderPass);
@@ -226,15 +225,11 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::~VulkanBackend (void)
     Device.destroyImageView(SwapChainColorImageView[i]);
 
   delete[] SwapChainColorImageView;
-  SwapChainColorImageView = nullptr;
 
   // Depth
   Device.freeMemory(DepthMemory);
   Device.destroyImageView(DepthView);
   Device.destroyImage(DepthImage);
-
-  delete[] SwapChainImages;
-  SwapChainImages = nullptr;
 
   Device.destroySemaphore (AcquireSemaphore);
   Device.destroySemaphore (SubmitSemaphore);
@@ -246,10 +241,19 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::~VulkanBackend (void)
                       "Wait For Fences", Result);
   }
   #endif
+
+  Result = Device.resetFences(1, &Fence);
+  #if defined(DEBUG)
+	if (Result != vk::Result::eSuccess) {
+	    std::future<void> ReturnVulkanCheck = std::async (
+			std::launch::async, Patata::Log::VulkanCheck, "Reset Fences", Result);
+  }
+  #endif
   Device.destroyFence (Fence);
 
   Device.destroyCommandPool (CommandPool);
 
+  delete[] SwapChainImages;
   Device.destroySwapchainKHR (SwapChain);
 
   Instance.destroySurfaceKHR (Surface);

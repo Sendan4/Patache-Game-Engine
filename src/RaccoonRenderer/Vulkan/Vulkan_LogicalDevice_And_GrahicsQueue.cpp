@@ -87,8 +87,7 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::
   DeviceQueueCreateInfo.queueCount       = 1;
   DeviceQueueCreateInfo.pQueuePriorities = &QueuePriority;
 
-  const char * DeviceExtensions[]
-      = { "VK_KHR_swapchain" };
+  const char * DeviceExtensions[1] { "VK_KHR_swapchain" };
 
   // Logical Device
   vk::DeviceCreateInfo DeviceCreateInfo{};

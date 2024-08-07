@@ -48,6 +48,9 @@ if (MSVC OR LINUX)
 	if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo" AND USE_VVL)
 		message("")
 		message("  - Vulkan ValidationLayers -")
+
+	    set (VVL_CODEGEN OFF CACHE INTERNAL "..." FORCE)
+
 		add_subdirectory(Vulkan-ValidationLayers)
 	endif()
 
@@ -74,7 +77,7 @@ endif ()
 
 set(SDL_UNUSED_SUBSYSTEMS
     File
-    Locale 
+    Locale
 	Power
 	Render
 	Sensor

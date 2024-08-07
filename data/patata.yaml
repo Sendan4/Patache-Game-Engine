@@ -9,7 +9,7 @@ patata-engine :
     vsync : true
     # true enables the Vertical Sync, false disables the Vertical Sync
 
-    10bit-image : false
+    10bit-depth : false
     # true to use a pixel format for 10-bit displays, if you have a
     # monitor with a 10-bit depth you must enable this option.
     # false to use a pixel format for 8-bit displays.
