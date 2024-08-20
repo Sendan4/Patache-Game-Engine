@@ -1,20 +1,24 @@
 #include "Setup_Vulkan_Renderer.hpp"
 
 Patata::Graphics::RaccoonRenderer::VulkanBackend::VulkanBackend (
-    SDL_Window * WINDOW, YAML::Node & CONFIG)
+    Patata::Config & Config, SDL_Window * Window, bool & WindowResized)
 {
-  if (!CreateInstance (WINDOW, CONFIG))
+  pWindow = Window;
+  pWindowResized = &WindowResized;
+  pConfiguration = &Config;
+
+  if (!CreateInstance ())
     return;
 
   // Search a Physical Device
-  if (!SelectDevice (CONFIG))
+  if (!SelectDevice ())
     return;
 
   /*
   Search a queue of graphics from the selected physical device.
   Create a logical device from the selected physical device.
   */
-  uint32_t GraphicsQueueFamilyIndex = CreateLogicalDeviceAndCreateQueue (CONFIG);
+  GraphicsQueueFamilyIndex = CreateLogicalDeviceAndCreateQueue ();
 
   fast_io::io::print (
 #if defined(_WIN64)
@@ -25,7 +29,7 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::VulkanBackend (
       "SDL Create Window Surface : ", PATATA_TERM_RESET);
 
   // Create a surface for the window to draw on
-  if (SDL_Vulkan_CreateSurface (WINDOW, Instance,
+  if (SDL_Vulkan_CreateSurface (pWindow, Instance,
                                 reinterpret_cast<VkSurfaceKHR *> (&Surface)))
     {
       fast_io::io::println (
@@ -42,119 +46,28 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::VulkanBackend (
 #endif
           PATATA_TERM_COLOR_YELLOW, "Fail", PATATA_TERM_RESET);
 
-      Patata::Log::FatalErrorMessage ("SDL", SDL_GetError (), CONFIG);
+      Patata::Log::FatalErrorMessage ("SDL", SDL_GetError (), *pConfiguration);
       return;
     }
 
-  std::tuple<vk::PresentModeKHR, vk::Format, vk::ColorSpaceKHR> swapchaininfo
-      = CreateSwapChain (GraphicsQueueFamilyIndex, CONFIG, WINDOW);
+  std::tuple<vk::PresentModeKHR, vk::Format, vk::ColorSpaceKHR> SwapChainInfo;
+  if (!CreateSwapChain (SwapChainInfo)) return;
 
-  vk::Result Result;
-
-  // Color Image View
-  {
-      fast_io::io::println(
-#if defined(_WIN64)
-          fast_io::out (),
-#endif
-          PATATA_TERM_BOLD,
-          "\nSwapChain Color Image View : ",
-          PATATA_TERM_RESET,
-          SwapChainImageCount);
-
-      SwapChainColorImageView = new vk::ImageView[SwapChainImageCount];
-
-      for (uint8_t i = 0; i < SwapChainImageCount; ++i) {
-          vk::ImageViewCreateInfo ColorImageViewInfo {};
-          ColorImageViewInfo.sType = vk::StructureType::eImageViewCreateInfo;
-          ColorImageViewInfo.pNext = nullptr;
-          ColorImageViewInfo.image = SwapChainImages[i];
-          ColorImageViewInfo.viewType = vk::ImageViewType::e2D;
-          ColorImageViewInfo.format = std::get<1>(swapchaininfo);
-          ColorImageViewInfo.components.r = vk::ComponentSwizzle::eIdentity;
-          ColorImageViewInfo.components.g = vk::ComponentSwizzle::eIdentity;
-          ColorImageViewInfo.components.b = vk::ComponentSwizzle::eIdentity;
-          ColorImageViewInfo.components.a = vk::ComponentSwizzle::eIdentity;
-          ColorImageViewInfo.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
-          ColorImageViewInfo.subresourceRange.baseMipLevel = 0;
-          ColorImageViewInfo.subresourceRange.levelCount = 1;
-          ColorImageViewInfo.subresourceRange.baseArrayLayer = 0;
-          ColorImageViewInfo.subresourceRange.layerCount = 1;
-
-          Result = Device.createImageView(&ColorImageViewInfo, nullptr, &SwapChainColorImageView[i]);
-          {
-            fast_io::io::print (
-#if defined(_WIN64)
-                fast_io::out (),
-#endif
-                "  ");
-
-            std::future<void> ReturnVulkanCheck = std::async (std::launch::async, Patata::Log::VulkanCheck,
-                              "Color Image View", Result);
-          }
-      }
-
-      fast_io::io::println (
-#if defined(_WIN64)
-          fast_io::out (),
-#endif
-          "");
-  }
+  if (!CreateImageView(SwapChainInfo)) return;
 
   /*
   Depthbuffer will not be useful for now.
   It will be useful for advanced 2D effects and even more so for 3D performance.
   */
-  if (!CreateDepthBuffer (CONFIG))
+  if (!CreateDepthBuffer ())
     return;
 
-  if (!CreateRenderPass (swapchaininfo))
+  if (!CreateRenderPass (SwapChainInfo))
     return;
 
-  // Frame Buffer
-  {
-    fast_io::io::println (
-#if defined(_WIN64)
-      fast_io::out (),
-#endif
-      PATATA_TERM_BOLD,
-      "\nSwapChain Frame Buffer : ",
-      PATATA_TERM_RESET,
-      SwapChainImageCount);
+  if (!CreateFrameBuffer()) return;
 
-      SwapChainFrameBuffer = new vk::Framebuffer[SwapChainImageCount];
-
-      for (uint8_t i = 0; i < SwapChainImageCount; ++i) {
-          vk::FramebufferCreateInfo FrameBufferInfo {};
-          FrameBufferInfo.sType = vk::StructureType::eFramebufferCreateInfo;
-          FrameBufferInfo.pNext = nullptr;
-          FrameBufferInfo.renderPass = RenderPass;
-          FrameBufferInfo.attachmentCount = 1;
-          FrameBufferInfo.pAttachments = &SwapChainColorImageView[i];
-          FrameBufferInfo.width = SwapChainExtent.width;
-          FrameBufferInfo.height = SwapChainExtent.height;
-          FrameBufferInfo.layers = 1;
-
-          Result = Device.createFramebuffer(&FrameBufferInfo, nullptr, &SwapChainFrameBuffer[i]);
-          {
-            fast_io::io::print (
-#if defined(_WIN64)
-                fast_io::out (),
-#endif
-                "  ");
-
-            std::future<void> ReturnVulkanCheck
-                = std::async (std::launch::async, Patata::Log::VulkanCheck,
-                              "Frame Buffer", Result);
-          }
-      }
-
-      fast_io::io::println (
-#if defined(_WIN64)
-          fast_io::out (),
-#endif
-          "");
-  }
+  vk::Result Result;
 
   // Command Pool
   {
@@ -173,41 +86,11 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::VulkanBackend (
     }
   }
 
-  // Fence
-  {
-    vk::FenceCreateInfo FenceInfo {};
-    FenceInfo.sType = vk::StructureType::eFenceCreateInfo;
-    FenceInfo.pNext = nullptr;
-    FenceInfo.flags = vk::FenceCreateFlagBits::eSignaled;
+  if(!CreateFence()) return;
 
-    Result = Device.createFence (&FenceInfo, nullptr, &Fence);
-    {
-      std::future<void> ReturnVulkanCheck = std::async (std::launch::async, Patata::Log::VulkanCheck, "Fence",
-                        Result);
-    }
-  }
+  if(!CreateSemaphores()) return;
 
-  // Semaphores
-  {
-      vk::SemaphoreCreateInfo SemaphoreInfo {};
-      SemaphoreInfo.sType = vk::StructureType::eSemaphoreCreateInfo;
-      SemaphoreInfo.pNext = nullptr;
-
-      Result = Device.createSemaphore (&SemaphoreInfo, nullptr, &AcquireSemaphore);
-      {
-        std::future<void> ReturnVulkanCheck = std::async (
-            std::launch::async, Patata::Log::VulkanCheck,
-            "Acquire Next Image 2 KHR - Semaphore", Result);
-      }
-
-      Result = Device.createSemaphore (&SemaphoreInfo, nullptr, &SubmitSemaphore);
-      {
-        std::future<void> ReturnVulkanCheck = std::async (std::launch::async, Patata::Log::VulkanCheck,
-                          "Submit Semaphore", Result);
-      }
-  }
-
-  VulkanInfo (CONFIG, swapchaininfo);
+  VulkanInfo (SwapChainInfo);
 }
 
 Patata::Graphics::RaccoonRenderer::VulkanBackend::~VulkanBackend (void)
@@ -240,15 +123,20 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::~VulkanBackend (void)
 	    std::future<void> ReturnVulkanCheck = std::async (std::launch::async, Patata::Log::VulkanCheck,
                       "Wait For Fences", Result);
   }
+  #else
+  Device.waitForFences(1, &Fence, true, 0);
   #endif
 
-  Result = Device.resetFences(1, &Fence);
   #if defined(DEBUG)
-	if (Result != vk::Result::eSuccess) {
-	    std::future<void> ReturnVulkanCheck = std::async (
-			std::launch::async, Patata::Log::VulkanCheck, "Reset Fences", Result);
+  Result = Device.resetFences(1, &Fence);
+  if (Result != vk::Result::eSuccess) {
+      std::future<void> ReturnVulkanCheck = std::async (
+          std::launch::async, Patata::Log::VulkanCheck, "Reset Fences", Result);
   }
+  #else
+  Device.resetFences(1, &Fence);
   #endif
+
   Device.destroyFence (Fence);
 
   Device.destroyCommandPool (CommandPool);

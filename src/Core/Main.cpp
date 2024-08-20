@@ -10,12 +10,7 @@
 // Patata Engine
 #include "Log.hpp"
 
-#if defined(PATATA_GAME_NAME)
-#define GAME_CONFIG_FILE_NAME PATATA_GAME_NAME ".yaml"
-#else
-#define GAME_CONFIG_FILE_NAME "patata.yaml"
-#endif
-
+#include "Config.hpp"
 #include "PatataEngineImpl.hpp"
 
 // Public API
@@ -50,21 +45,19 @@ Patata::Engine::EngineImpl::EngineImpl (const std::string & WindowTitle,
 {
   Patata::Log::StartPatataLogInfo ();
 
-  try
-    {
-      Config = YAML::LoadFile (strcpy (SDL_GetBasePath (), GAME_CONFIG_FILE_NAME));
-    }
-  catch (const YAML::BadFile BadFile)
-    {
-      Patata::Log::YamlFileErrorMessage ();
-      return;
-    }
+  if (!LoadConfig(Configuration)) return;
 
 #if defined(__linux__)
-  if (Config["patata-engine"]["prefer-wayland"].as<bool> ())
+  if (Configuration.PreferWayland)
     if (setenv ("SDL_VIDEODRIVER", "wayland", 1) != 0)
       Patata::Log::ErrorMessage (
           "Cannot set enviroment varible SDL_VIDEODRIVER");
+
+  if (Configuration.EnableMangoHud) {
+      if (setenv ("MANGOHUD", "1", 1) != 0)
+        Patata::Log::ErrorMessage (
+            "Cannot set enviroment varible MANGOHUD");
+  }
 #endif
 
 #if defined(PATATA_FIND_VVL_IN_THE_CURRENT_PATH)
@@ -86,21 +79,21 @@ Patata::Engine::EngineImpl::EngineImpl (const std::string & WindowTitle,
   if (SDL_Init (SDL_INIT_VIDEO) != 0)
     {
       Patata::Log::FatalErrorMessage (
-          "SDL2", "Cannot init the video subsystem", Config);
+          "SDL2", "Cannot init the video subsystem", Configuration);
       throw Patata::RunTimeError ("SDL Cannot init the video subsystem");
     }
 
   if (SDL_Init (SDL_INIT_EVENTS) != 0)
     {
       Patata::Log::FatalErrorMessage (
-          "SDL2", "Cannot init the events subsystem", Config);
+          "SDL2", "Cannot init the events subsystem", Configuration);
       throw Patata::RunTimeError ("SDL Cannot init the events subsystem");
     }
 
   if (SDL_Init (SDL_INIT_GAMECONTROLLER) != 0)
     {
       Patata::Log::FatalErrorMessage (
-          "SDL2", "Cannot init the gamecontroller subsystem", Config);
+          "SDL2", "Cannot init the gamecontroller subsystem", Configuration);
       throw Patata::RunTimeError (
           "SDL Cannot init the GameController subsystem");
     }
@@ -110,7 +103,7 @@ Patata::Engine::EngineImpl::EngineImpl (const std::string & WindowTitle,
   SetWindowIcon ();
 #endif
 
-  RaccoonRenderer = new Patata::Graphics::RaccoonRenderer (Config, GameWindow);
+  RaccoonRenderer = new Patata::Graphics::RaccoonRenderer (Configuration, GameWindow, WindowResized);
 
 #if defined(DEBUG)
   SetupImGUIBackend ();

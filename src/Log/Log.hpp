@@ -7,6 +7,8 @@
 #include <vulkan/vulkan.hpp>
 #include <yaml-cpp/yaml.h>
 
+#include "Config.hpp"
+
 namespace Patata
 {
 namespace Log
@@ -21,8 +23,7 @@ void VulkanList (const char * List[], const size_t &, const std::string &);
 
 // Errors
 void YamlFileErrorMessage (void);
-void FatalErrorMessage (const std::string &, const std::string &,
-                        const YAML::Node &);
+void FatalErrorMessage (const std::string &, const std::string &, const Patata::Config &);
 void ErrorMessage (const std::string &);
 void WarningMessage (const std::string &);
 }

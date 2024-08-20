@@ -3,12 +3,12 @@
 void
 Patata::Log::FatalErrorMessage (const std::string & Title,
                                 const std::string & Message,
-                                const YAML::Node &  Config)
+                                const Patata::Config & Config)
 {
   std::string PatataErrorTitle = "Patata Engine - ";
   PatataErrorTitle += Title;
 
-  if (Config["patata-engine"]["show-fatal-error-messagebox"].as<bool> ())
+  if (Config.ShowFatalErrorMessagebox)
     {
       SDL_ShowSimpleMessageBox (SDL_MESSAGEBOX_ERROR,
                                 PatataErrorTitle.c_str (), Message.c_str (),

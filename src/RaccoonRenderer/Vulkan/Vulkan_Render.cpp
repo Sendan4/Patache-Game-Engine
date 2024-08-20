@@ -1,5 +1,4 @@
 #include "Vulkan_Render.hpp"
-#include <cmath>
 
 void
 Patata::Graphics::RaccoonRenderer::VulkanBackend::VulkanRender (void)
@@ -39,6 +38,27 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::VulkanRender (void)
     }
     #endif
 
+    #if defined(__linux__)
+    if (*pWindowResized) {
+    #else
+    if (Result == vk::Result::eErrorOutOfDateKHR || Result == vk::Result::eSuboptimalKHR) {
+    #endif
+        fast_io::io::println (
+            #if defined(_WIN64)
+            fast_io::out(),
+            #endif
+            "\n", PATATA_TERM_BOLD,
+            PATATA_TERM_COLOR_PATATA,
+            "Raccoon Renderer", PATATA_TERM_RESET,
+            " : Recreating SwapChain");
+        RecreateSwapChain();
+        #if defined(__linux__)
+        *pWindowResized = false;
+        #endif
+        return;
+    }
+
+
     vk::CommandBufferAllocateInfo cmdAllocateInfo {};
     cmdAllocateInfo.sType = vk::StructureType::eCommandBufferAllocateInfo;
     cmdAllocateInfo.pNext = nullptr;
@@ -66,7 +86,6 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::VulkanRender (void)
 			std::launch::async, Patata::Log::VulkanCheck, "Command Buffer Begin", Result);
     }
     #endif
-
 
     // Rendering Commands
     {
@@ -118,6 +137,25 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::VulkanRender (void)
 			std::launch::async, Patata::Log::VulkanCheck, "Present KHR", Result);
     }
     #endif
+
+    #if defined(__linux__)
+    if (*pWindowResized) {
+    #else
+    if (Result == vk::Result::eErrorOutOfDateKHR || Result == vk::Result::eSuboptimalKHR) {
+    #endif
+        fast_io::io::println (
+            #if defined(_WIN64)
+            fast_io::out(),
+            #endif
+            "\n", PATATA_TERM_BOLD,
+            PATATA_TERM_COLOR_PATATA,
+            "Raccoon Renderer", PATATA_TERM_RESET,
+            " : Recreating SwapChain");
+        RecreateSwapChain();
+        #if defined(__linux__)
+        *pWindowResized = false;
+        #endif
+    }
 
     Result = Device.waitIdle();
     #if defined(DEBUG)

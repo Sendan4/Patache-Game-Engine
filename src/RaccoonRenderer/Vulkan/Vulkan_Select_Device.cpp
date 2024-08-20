@@ -10,8 +10,7 @@ The larger the maximum image size the GPU can handle, the better.
 #include "Vulkan_Select_Device.hpp"
 
 bool
-Patata::Graphics::RaccoonRenderer::VulkanBackend::SelectDevice (
-    YAML::Node & Config)
+Patata::Graphics::RaccoonRenderer::VulkanBackend::SelectDevice (void)
 {
   uint32_t GpuCount = 0;
 
@@ -25,7 +24,7 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::SelectDevice (
     {
       Patata::Log::FatalErrorMessage ("Patata - Raccoon Renderer",
                                       "No vulkan compatible device found",
-                                      Config);
+                                      *pConfiguration);
       return false;
     }
 
@@ -124,7 +123,7 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::SelectDevice (
   fast_io::io::println (
 #if defined(_WIN64)
       fast_io::out (),
-#endif 
+#endif
       "");
 
   uint64_t HighestScore   = 0;
@@ -144,7 +143,7 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::SelectDevice (
     {
       Patata::Log::FatalErrorMessage ("Patata - Raccoon Renderer",
                                       "Cannot select a device (GPU) which does not support geometry shader",
-                                      Config);
+                                      *pConfiguration);
       return false;
     }
 

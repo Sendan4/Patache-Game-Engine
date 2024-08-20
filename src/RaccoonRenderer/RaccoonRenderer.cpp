@@ -6,14 +6,9 @@
 #include <windows.h>
 #endif
 
-#include <fast_io.h>
+#include <SDL.h>
 
-// Patata Engine
-#include "PatataEngineImpl.hpp"
-#include "TerminalColors.hpp"
-
-// Provee una funcion para eliminar un puntero y su vez lo muestra en el stdout
-#include "ExitLog.hpp"
+#include "RaccoonRenderer.hpp"
 
 /*
 Punto de entrada para el motor de renderizado
@@ -23,12 +18,26 @@ si se llega a tener varios, lo mejor seria iniciarlos
 mediante el valor de una configuracion.
 */
 
-Patata::Graphics::RaccoonRenderer::RaccoonRenderer (YAML::Node & Config, SDL_Window * Window)
+Patata::Graphics::RaccoonRenderer::RaccoonRenderer (Patata::Config & Config, SDL_Window * Window, bool & WindowResized)
 {
   // Backend Principal
-  pVulkanBackend = new Patata::Graphics::RaccoonRenderer::VulkanBackend (
-      Window, Config);
+  pVulkanBackend = new Patata::Graphics::RaccoonRenderer::VulkanBackend (Config, Window, WindowResized);
 }
+
+/*
+The rendering process of each backend must pass through here,
+each one will be called according to the configuration.
+THIS MAY CHANGE IN THE FUTURE.
+*/
+void Patata::Graphics::RaccoonRenderer::Render (void) {
+    pVulkanBackend->VulkanRender();
+}
+
+#include <fast_io.h>
+
+#include "TerminalColors.hpp"
+// Provee una funcion para eliminar un puntero y su vez lo muestra en el stdout
+#include "ExitLog.hpp"
 
 Patata::Graphics::RaccoonRenderer::~RaccoonRenderer (void)
 {

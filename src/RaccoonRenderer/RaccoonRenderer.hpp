@@ -8,38 +8,33 @@
 #include <yaml-cpp/yaml.h>
 #include <fast_io.h>
 
+#include "Config.hpp"
+
 namespace Patata
 {
 namespace Graphics
 {
-// Raccoon
-class RaccoonRenderer
+class RaccoonRenderer // Raccoon
 {
-public:
-  // Raccoon Frontend
-  RaccoonRenderer (YAML::Node &, SDL_Window *);
+public: // Raccoon Frontend
+  RaccoonRenderer (Patata::Config &, SDL_Window *, bool &);
   ~RaccoonRenderer (void);
 
-  /*
-  The rendering process of each backend must pass through here,
-  each one will be called according to the configuration.
-  THIS MAY CHANGE IN THE FUTURE.
-  */
-  void Render (void) { pVulkanBackend->VulkanRender(); }
+  void Render(void);
 
 private:
-  // Backend
-  class VulkanBackend
+  class VulkanBackend // Backend
   {
   public:
-    // Frontend
-    VulkanBackend (SDL_Window *, YAML::Node &);
+    VulkanBackend (Patata::Config &, SDL_Window *, bool &);
     ~VulkanBackend (void);
 
     void VulkanRender (void);
 
   private:
-    // Backend
+    SDL_Window * pWindow = nullptr;
+    bool * pWindowResized = nullptr;
+    Patata::Config * pConfiguration = nullptr;
 
     /*
     These functions cover the creation or configuration of one or more
@@ -48,18 +43,20 @@ private:
     Those simple objects or elements are written directly to the constructor.
     */
 
-    bool     CreateInstance (SDL_Window *&, YAML::Node &);
-    bool     SelectDevice (YAML::Node &);
-    uint32_t CreateLogicalDeviceAndCreateQueue (YAML::Node &);
-    std::tuple<vk::PresentModeKHR, vk::Format, vk::ColorSpaceKHR>
-         CreateSwapChain (uint32_t &, YAML::Node, SDL_Window *);
-    bool CreateDepthBuffer (YAML::Node &);
-    bool CreateRenderPass (
-        const std::tuple<vk::PresentModeKHR, vk::Format, vk::ColorSpaceKHR> &);
+    bool     CreateInstance (void);
+    bool     SelectDevice (void);
+    uint32_t CreateLogicalDeviceAndCreateQueue (void);
+    bool CreateSwapChain (std::tuple<vk::PresentModeKHR, vk::Format, vk::ColorSpaceKHR> &);
+    bool CreateImageView (const std::tuple<vk::PresentModeKHR, vk::Format, vk::ColorSpaceKHR> &);
+    bool CreateFrameBuffer (void);
+    bool CreateDepthBuffer (void);
+    bool CreateRenderPass (const std::tuple<vk::PresentModeKHR, vk::Format, vk::ColorSpaceKHR> &);
     void CreatePipeline (void);
+    bool CreateSemaphores(void);
+    bool CreateFence(void);
+    void RecreateSwapChain(void);
     void
-    VulkanInfo (YAML::Node CONFIG,
-                std::tuple<vk::PresentModeKHR, vk::Format, vk::ColorSpaceKHR>);
+    VulkanInfo (const std::tuple<vk::PresentModeKHR, vk::Format, vk::ColorSpaceKHR> &);
 
     vk::Instance   Instance = nullptr;
 
@@ -67,6 +64,7 @@ private:
     vk::PhysicalDevice PhysicalDevice = nullptr;
     vk::Queue          Queue;
     vk::Device         Device         = nullptr;
+    uint32_t GraphicsQueueFamilyIndex = 0;
 
     // Window Surface
     vk::SurfaceKHR Surface  = nullptr;
@@ -103,11 +101,7 @@ private:
     vk::Semaphore SubmitSemaphore = nullptr;
     vk::Fence Fence = nullptr;
 
-    //vk::Pipeline       PipeLine;
-    //vk::PipelineLayout PipeLineLayout;
-    //vk::PipelineCache  PipeLineCache;
-
-  } * pVulkanBackend = nullptr;
-};
+  } * pVulkanBackend = nullptr; // End Vulkan Backend
+}; // End Raccoon Renderer
 }
-}
+} // End Patata Namespace

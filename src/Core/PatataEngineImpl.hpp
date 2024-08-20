@@ -9,30 +9,34 @@
 
 #include "PatataEngine/PatataEngine.hpp"
 #include "RaccoonRenderer.hpp"
+#include "Config.hpp"
 
 namespace Patata
 {
 class Engine::EngineImpl
 {
 public:
-  YAML::Node Config;
-
   EngineImpl (const std::string &, const uint32_t &, const uint32_t &);
   ~EngineImpl (void);
+
+  Patata::Config Configuration;
 
   void HandleEvent (SDL_Event &);
   void Render (void);
 
 private:
-  SDL_Event *                         MainEvent       = nullptr;
   SDL_Window *                        GameWindow      = nullptr;
   Patata::Graphics::RaccoonRenderer * RaccoonRenderer = nullptr;
+  bool WindowResized = false;
+
+  bool LoadConfig (Config &);
 
   void CreateGameWindow (const std::string &, const uint32_t &,
                          const uint32_t &);
-#if defined(USE_ICON)
+
+  #if defined(USE_ICON)
   void SetWindowIcon (void);
-#endif
+  #endif
 
 #if defined(DEBUG)
   void SetupImGUIBackend (void);

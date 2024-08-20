@@ -12,6 +12,7 @@ endif()
 
 target_sources (${PROJECT_NAME} PRIVATE
 	"Core/Main.cpp"
+	"Core/LoadConfig.cpp"
 	"Core/Input.cpp"
 	"Core/Render.cpp"
 	"Window/Window.cpp"
@@ -21,7 +22,10 @@ target_sources (${PROJECT_NAME} PRIVATE
 	"RaccoonRenderer/Vulkan/Vulkan_Select_Device.cpp"
 	"RaccoonRenderer/Vulkan/Vulkan_LogicalDevice_And_GrahicsQueue.cpp"
 	"RaccoonRenderer/Vulkan/Vulkan_SwapChain.cpp"
+	"RaccoonRenderer/Vulkan/Vulkan_ImageView.cpp"
+	"RaccoonRenderer/Vulkan/Vulkan_FrameBuffer.cpp"
 	"RaccoonRenderer/Vulkan/Vulkan_DepthBuffer.cpp"
+	"RaccoonRenderer/Vulkan/Vulkan_SincronizationPrimitives.cpp"
 	"RaccoonRenderer/Vulkan/Vulkan_Render.cpp"
 	"RaccoonRenderer/Vulkan/Vulkan_PipeLine.cpp"
 	"RaccoonRenderer/Vulkan/Vulkan_RenderPass.cpp"

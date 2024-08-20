@@ -1,13 +1,11 @@
 #include "Vulkan_LogicalDevice_And_GrahicsQueue.hpp"
 
 uint32_t
-Patata::Graphics::RaccoonRenderer::VulkanBackend::
-    CreateLogicalDeviceAndCreateQueue (YAML::Node & Config)
+Patata::Graphics::RaccoonRenderer::VulkanBackend::CreateLogicalDeviceAndCreateQueue (void)
 {
-  uint32_t QueueCount = 0;
-  uint32_t GraphicsQueueFamilyIndex = 0;
-  float    QueuePriority            = 1.0f;
-  bool     FoundGraphicsQueue       = false;
+  uint32_t QueueCount         = 0;
+  float    QueuePriority      = 1.0f;
+  bool     FoundGraphicsQueue = false;
 
   // find a queue of graphs
   PhysicalDevice.getQueueFamilyProperties (&QueueCount, nullptr);
@@ -35,16 +33,15 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::
 #endif
 	  PATATA_TERM_COLOR_GRAY0,
 #if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
-                        "  [",
-                        std::string_view{ abi::__cxa_demangle (
-                            typeid (QueueFamilyProperties[i].queueFlags).name (), nullptr,
-                            nullptr, nullptr) },
-                        "] ",
+      "  [",
+      std::string_view{ abi::__cxa_demangle (
+        typeid (QueueFamilyProperties[i].queueFlags).name (), nullptr, nullptr, nullptr) },
+      "] ",
 #else
-                        "  [",
-                        std::string_view{
-                            typeid (QueueFamilyProperties[i].queueFlags).name () },
-                        "] ",
+      "  [",
+      std::string_view{
+        typeid (QueueFamilyProperties[i].queueFlags).name () },
+      "] ",
 #endif
 	  PATATA_TERM_RESET, PATATA_TERM_BOLD,
 	  "Index [", PATATA_TERM_RESET, i,
@@ -69,7 +66,7 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::
   }
 
   if (!FoundGraphicsQueue) {
-	  Patata::Log::FatalErrorMessage("Patata - Raccoon Renderer", "No Queue found for graphics", Config);
+	  Patata::Log::FatalErrorMessage("Patata - Raccoon Renderer", "No Queue found for graphics", *pConfiguration);
 	  return false;
   }
 

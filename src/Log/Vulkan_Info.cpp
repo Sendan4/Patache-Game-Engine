@@ -1,10 +1,7 @@
 #include "Vulkan_Info.hpp"
 
 void
-Patata::Graphics::RaccoonRenderer::VulkanBackend::VulkanInfo (
-    YAML::Node CONFIG,
-    std::tuple<vk::PresentModeKHR, vk::Format, vk::ColorSpaceKHR>
-        SWAPCHAIN_INFO)
+Patata::Graphics::RaccoonRenderer::VulkanBackend::VulkanInfo (const std::tuple<vk::PresentModeKHR, vk::Format, vk::ColorSpaceKHR> & SWAPCHAIN_INFO)
 {
   fast_io::io::println ("\n", PATATA_TERM_BOLD, PATATA_TERM_COLOR_PATATA,
                         "Raccoon Renderer ", PATATA_TERM_RESET, "INFO");
@@ -362,7 +359,7 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::VulkanInfo (
 		PATATA_TERM_RESET);
 
   // SwapChain Present Mode
-  fast_io::io::println (
+  fast_io::io::print (
       PATATA_TERM_DIM, PATATA_TERM_COLOR_GRAY0,
 #if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
       "    [",
@@ -376,21 +373,13 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::VulkanInfo (
 	  PATATA_TERM_BOLD,
 	" Present Mode : ",
 	PATATA_TERM_RESET,
-	vk::to_string (std::get<0> (SWAPCHAIN_INFO)));
+	vk::to_string (std::get<0> (SWAPCHAIN_INFO)), " ");
 
   // Vulkan Vsync
-  {
-    fast_io::io::print (PATATA_TERM_BOLD, "    Vsync : ", PATATA_TERM_RESET);
-
-    if ((std::get<0> (SWAPCHAIN_INFO) == vk::PresentModeKHR::eMailbox
-         || std::get<0> (SWAPCHAIN_INFO) == vk::PresentModeKHR::eFifo)
-        && CONFIG["patata-engine"]["raccoon-renderer"]["vsync"].as<bool> ())
-      fast_io::io::println (PATATA_TERM_COLOR_GREEN, "Yes", PATATA_TERM_RESET);
-    else if (std::get<0> (SWAPCHAIN_INFO) == vk::PresentModeKHR::eImmediate
-             && !CONFIG["patata-engine"]["raccoon-renderer"]["vsync"]
-                     .as<bool> ())
-      fast_io::io::println (PATATA_TERM_COLOR_YELLOW, "No", PATATA_TERM_RESET);
-  }
+  if ((std::get<0> (SWAPCHAIN_INFO) == vk::PresentModeKHR::eFifo
+        || std::get<0> (SWAPCHAIN_INFO) == vk::PresentModeKHR::eFifoRelaxed)
+        && pConfiguration->Vsync)
+      fast_io::io::println (PATATA_TERM_COLOR_GREEN, "Vertical Sync", PATATA_TERM_RESET);
 
   // SwapChain Images
   fast_io::io::println (PATATA_TERM_BOLD, "    Images : ", PATATA_TERM_RESET, SwapChainImageCount);

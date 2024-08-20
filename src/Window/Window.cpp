@@ -40,7 +40,7 @@ Patata::Engine::EngineImpl::CreateGameWindow (const std::string & Title,
   if (!GameWindow)
     {
       Patata::Log::FatalErrorMessage ("Window cannot be created",
-                                      SDL_GetError (), Config);
+                                      SDL_GetError (), Configuration);
       return;
     }
 
@@ -53,7 +53,7 @@ Patata::Engine::EngineImpl::CreateGameWindow (const std::string & Title,
 void
 Patata::Engine::EngineImpl::SetWindowIcon (void)
 {
-#if defined(_WIN64)
+#if defined(_WIN64) // Only Windows
   SDL_Surface * Icon = SDL_LoadBMP (PATATA_GAME_ICON_FILE);
 
   if (Icon == nullptr)

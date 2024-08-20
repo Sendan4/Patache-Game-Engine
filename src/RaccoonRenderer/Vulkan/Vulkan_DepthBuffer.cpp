@@ -1,9 +1,13 @@
 #include "Vulkan_DepthBuffer.hpp"
 
 bool
-Patata::Graphics::RaccoonRenderer::VulkanBackend::CreateDepthBuffer (
-    YAML::Node & CONFIG)
+Patata::Graphics::RaccoonRenderer::VulkanBackend::CreateDepthBuffer (void)
 {
+  fast_io::io::println (
+    #if defined(_WIN64)
+      fast_io::out (),
+    #endif
+      "");
   // Depth Image
   vk::FormatProperties2 FormatProperties
       = PhysicalDevice.getFormatProperties2 (vk::Format::eD16Unorm);
@@ -24,7 +28,7 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::CreateDepthBuffer (
       Patata::Log::FatalErrorMessage ("Patata - Raccoon Renderer",
                                       "DepthStencilAttachment is not "
                                       "supported for D16Unorm depth format",
-                                      CONFIG);
+                                      *pConfiguration);
       return false;
     }
 

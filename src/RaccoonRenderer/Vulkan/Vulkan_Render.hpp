@@ -2,6 +2,7 @@
 
 #include <future>
 
+#include <SDL.h>
 #include <fast_io.h>
 
 #include "Log.hpp"

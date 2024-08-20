@@ -1,8 +1,8 @@
 #include "Vulkan_SwapChain.hpp"
 
-std::tuple<vk::PresentModeKHR, vk::Format, vk::ColorSpaceKHR>
+bool
 Patata::Graphics::RaccoonRenderer::VulkanBackend::CreateSwapChain (
-    uint32_t & GraphicsQueueFamilyIndex, YAML::Node CONFIG, SDL_Window * WINDOW)
+    std::tuple<vk::PresentModeKHR, vk::Format, vk::ColorSpaceKHR> & SwapChainInfo)
 {
   // Search Presentation modes
   vk::PresentModeKHR * PresentModes;
@@ -41,11 +41,11 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::CreateSwapChain (
   Extent2D
   */
   {
-	  int w = 1, h = 1;
-	  SDL_Vulkan_GetDrawableSize(WINDOW, &w, &h);
+    int w = 1, h = 1;
+    SDL_Vulkan_GetDrawableSize(pWindow, &w, &h);
 
-	  SwapChainExtent.width  = w;
-	  SwapChainExtent.height = h;
+    SwapChainExtent.width  = w;
+    SwapChainExtent.height = h;
   }
 
   /*
@@ -55,11 +55,13 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::CreateSwapChain (
   presenting are sought.
 
   Mailbox and FIFO are modes that have priority.
+
+  Finding a Present Mode
   */
   vk::PresentModeKHR SelectedPresentMode;
   bool Found = false;
 
-  if (!CONFIG["patata-engine"]["raccoon-renderer"]["vsync"].as<bool> ())
+  if (!pConfiguration->Vsync)
     {
       // No Vsync
       for (uint8_t i = 0; i < PresentModesCount; ++i)
@@ -94,8 +96,8 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::CreateSwapChain (
   }
 
   if (!Found) {
-      Patata::Log::FatalErrorMessage("Patata - Raccoon Renderer", "No presentation modes found", CONFIG);
-      return {vk::PresentModeKHR::eImmediate, vk::Format::eUndefined, vk::ColorSpaceKHR::eSrgbNonlinear};
+      Patata::Log::FatalErrorMessage("Patata - Raccoon Renderer", "No presentation modes found", *pConfiguration);
+      return false;
   }
 
   // Finding a surface format.
@@ -103,7 +105,7 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::CreateSwapChain (
   Found = false;
 
   for (uint32_t i = 0; i < SurfaceFormatsCount; ++i) {
-	  if (CONFIG["patata-engine"]["raccoon-renderer"]["10bit-depth"].as<bool> ()) {
+	  if (pConfiguration->BitDepth10) {
 		  // 10 Bits
 		  if (SurfaceFormats[i].format == vk::Format::eA2R10G10B10UnormPack32
 				|| SurfaceFormats[i].format == vk::Format::eA2B10G10R10UnormPack32) {
@@ -126,9 +128,8 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::CreateSwapChain (
   if (!Found)
     {
       Patata::Log::FatalErrorMessage ("Patata - Raccoon Renderer",
-                                      "No surface formats found", CONFIG);
-      return { vk::PresentModeKHR::eImmediate, vk::Format::eUndefined,
-               vk::ColorSpaceKHR::eSrgbNonlinear };
+                                      "No surface formats found", *pConfiguration);
+      return false;
     }
 
   vk::SurfaceCapabilitiesKHR SurfaceCapabilities
@@ -152,6 +153,7 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::CreateSwapChain (
   SwapChainCreateInfo.queueFamilyIndexCount = GraphicsQueueFamilyIndex;
   SwapChainCreateInfo.oldSwapchain          = nullptr;
 
+
   Result = Device.createSwapchainKHR (&SwapChainCreateInfo, nullptr, &SwapChain);
   delete[] PresentModes;
   delete[] SurfaceFormats;
@@ -171,5 +173,35 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::CreateSwapChain (
 	  std::future<void> ReturnVulkanCheck = std::async(std::launch::async, Patata::Log::VulkanCheck, "Get SwapChain Images KHR", Result);
   }
 
-  return { SelectedPresentMode, SelectedSurfaceFormat.format, vk::ColorSpaceKHR::eSrgbNonlinear };
+  std::get<0>(SwapChainInfo) = SelectedPresentMode;
+  std::get<1>(SwapChainInfo) = SelectedSurfaceFormat.format;
+  std::get<2>(SwapChainInfo) = vk::ColorSpaceKHR::eSrgbNonlinear;
+
+  return true;
+}
+
+// Recreate SwapChain
+void Patata::Graphics::RaccoonRenderer::VulkanBackend::RecreateSwapChain (void)
+{
+    Device.waitIdle();
+
+    Device.destroySemaphore (AcquireSemaphore);
+    Device.destroySemaphore (SubmitSemaphore);
+
+    for (uint8_t i = 0; i < SwapChainImageCount; ++i)
+        Device.destroyFramebuffer(SwapChainFrameBuffer[i]);
+
+    for (uint8_t i = 0; i < SwapChainImageCount; ++i)
+        Device.destroyImageView(SwapChainColorImageView[i]);
+
+    Device.destroySwapchainKHR (SwapChain);
+
+    std::tuple<vk::PresentModeKHR, vk::Format, vk::ColorSpaceKHR> SwapChainInfo;
+    CreateSwapChain (SwapChainInfo);
+
+    if (!CreateImageView(SwapChainInfo)) return;
+
+    if (!CreateFrameBuffer()) return;
+
+    if(!CreateSemaphores()) return;
 }

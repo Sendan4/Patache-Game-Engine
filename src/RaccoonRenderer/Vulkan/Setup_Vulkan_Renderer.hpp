@@ -4,9 +4,11 @@
 #include <tuple>
 #include <future>
 
+#include <SDL.h>
 #include <SDL_vulkan.h>
 #include <fast_io.h>
 
+#include "Config.hpp"
 #include "Log.hpp"
 #include "RaccoonRenderer.hpp"
 #include "TerminalColors.hpp"

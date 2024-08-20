@@ -4,5 +4,6 @@
 #include <windows.h>
 #endif
 
+#include "Config.hpp"
 #include "Log.hpp"
 #include "TerminalColors.hpp"

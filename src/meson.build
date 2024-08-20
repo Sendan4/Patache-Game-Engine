@@ -1,5 +1,6 @@
 source = files([
   'Core/Main.cpp',
+  'Core/LoadConfig.cpp',
   'Core/Input.cpp',
   'Core/Render.cpp',
   'Window/Window.cpp',

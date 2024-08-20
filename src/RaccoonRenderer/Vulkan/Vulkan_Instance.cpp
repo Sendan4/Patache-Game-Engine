@@ -1,8 +1,7 @@
 #include "Vulkan_Instance.hpp"
 
 bool
-Patata::Graphics::RaccoonRenderer::VulkanBackend::CreateInstance (
-    SDL_Window *& WINDOW, YAML::Node & CONFIG)
+Patata::Graphics::RaccoonRenderer::VulkanBackend::CreateInstance (void)
 {
   vk::ApplicationInfo PatataEngineInfo (
       PATATA_GAME_NAME, PATATA_GAME_VERSION, PATATA_ENGINE_NAME,
@@ -27,15 +26,13 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::CreateInstance (
   */
   uint32_t SDLExtensionCount = 0;
 
-  SDL_Vulkan_GetInstanceExtensions (WINDOW, &SDLExtensionCount,
+  SDL_Vulkan_GetInstanceExtensions (pWindow, &SDLExtensionCount,
                                     nullptr);
 
   const char ** pExtensionInstanceNames = new const char *[SDLExtensionCount];
 
   bool FoundExtensions = SDL_Vulkan_GetInstanceExtensions (
-      WINDOW, &SDLExtensionCount, pExtensionInstanceNames);
-
-
+      pWindow, &SDLExtensionCount, pExtensionInstanceNames);
 
   if (FoundExtensions)
     std::future<void> ReturnVulkanList = std::async (
@@ -45,12 +42,12 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::CreateInstance (
   // Create Instance
   vk::InstanceCreateInfo InstanceInfo ({}, &PatataEngineInfo,
 #if defined(DEBUG) && defined(PATATA_USE_VVL)
-                                       1, &layer,
+    1, &layer,
 #else
-                                       0, nullptr,
+    0, nullptr,
 #endif
-                                       SDLExtensionCount,
-                                       pExtensionInstanceNames);
+    SDLExtensionCount,
+    pExtensionInstanceNames);
 
   vk::Result Result;
   try
@@ -60,8 +57,7 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::CreateInstance (
     }
   catch (const vk::Result & Error)
     {
-      Patata::Log::FatalErrorMessage ("Vulkan Error", vk::to_string (Error),
-                                      CONFIG);
+      Patata::Log::FatalErrorMessage ("Vulkan Error", vk::to_string (Error), *pConfiguration);
       return false;
     }
 
