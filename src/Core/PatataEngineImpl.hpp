@@ -22,7 +22,9 @@ public:
   Patata::Config Configuration;
 
   void HandleEvent (SDL_Event &);
-  void Render (void);
+  void BeginRender (void);
+  void EndRender (void);
+  void ClearColor (const float & R, const float & G, const float & B, const float & A);
 
 private:
   SDL_Window *                        GameWindow      = nullptr;

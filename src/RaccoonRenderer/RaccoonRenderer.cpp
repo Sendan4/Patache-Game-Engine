@@ -24,15 +24,6 @@ Patata::Graphics::RaccoonRenderer::RaccoonRenderer (Patata::Config & Config, SDL
   pVulkanBackend = new Patata::Graphics::RaccoonRenderer::VulkanBackend (Config, Window, WindowResized);
 }
 
-/*
-The rendering process of each backend must pass through here,
-each one will be called according to the configuration.
-THIS MAY CHANGE IN THE FUTURE.
-*/
-void Patata::Graphics::RaccoonRenderer::Render (void) {
-    pVulkanBackend->VulkanRender();
-}
-
 #include <fast_io.h>
 
 #include "TerminalColors.hpp"

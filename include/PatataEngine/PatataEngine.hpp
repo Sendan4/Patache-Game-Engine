@@ -5,10 +5,6 @@
 #include <cstdint>
 #include <string>
 
-#if defined(_MSC_VER)
-#include <SDL.h>
-#endif
-
 namespace Patata
 {
 class Engine
@@ -17,8 +13,10 @@ public:
   PATATA_API Engine (const std::string &, const uint32_t &, const uint32_t &);
   PATATA_API ~Engine (void);
 
-  PATATA_API void HandleEvent (SDL_Event & Event);
-  PATATA_API void Render (void);
+  PATATA_API void HandleEvent (SDL_Event & Event); // Patata Events
+  PATATA_API void BeginRender (void);
+  PATATA_API void EndRender (void);
+  PATATA_API void ClearColor (const float &, const float &, const float &, const float &); // R G B A
 
 private:
   class EngineImpl;

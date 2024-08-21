@@ -11,32 +11,8 @@
 #include "Log.hpp"
 
 #include "Config.hpp"
+#include "PatataEngine/PatataEngine.hpp"
 #include "PatataEngineImpl.hpp"
-
-// Public API
-Patata::Engine::Engine (const std::string & WindowTitle,
-                        const uint32_t & Width, const uint32_t & Height)
-    : pPatataEngine (new EngineImpl (WindowTitle, Width, Height))
-{
-}
-
-Patata::Engine::~Engine ()
-{
-  delete pPatataEngine;
-  pPatataEngine = nullptr;
-}
-
-void
-Patata::Engine::HandleEvent (SDL_Event & Event)
-{
-  pPatataEngine->HandleEvent (Event);
-}
-
-void
-Patata::Engine::Render (void)
-{
-  pPatataEngine->Render ();
-}
 
 // Private API
 Patata::Engine::EngineImpl::EngineImpl (const std::string & WindowTitle,

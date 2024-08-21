@@ -20,7 +20,9 @@ public: // Raccoon Frontend
   RaccoonRenderer (Patata::Config &, SDL_Window *, bool &);
   ~RaccoonRenderer (void);
 
-  void Render(void);
+  void BeginRender(void);
+  void EndRender(void);
+  void ClearColor(const float & R, const float & G, const float & B, const float & A);
 
 private:
   class VulkanBackend // Backend
@@ -29,12 +31,15 @@ private:
     VulkanBackend (Patata::Config &, SDL_Window *, bool &);
     ~VulkanBackend (void);
 
-    void VulkanRender (void);
+    void BeginVulkanRender (void);
+    void EndVulkanRender (void);
+    void VulkanClearColor(const float & R, const float & G, const float & B, const float & A);
 
   private:
     SDL_Window * pWindow = nullptr;
     bool * pWindowResized = nullptr;
     Patata::Config * pConfiguration = nullptr;
+    bool CmdIsReady = false;
 
     /*
     These functions cover the creation or configuration of one or more
@@ -70,6 +75,7 @@ private:
     vk::SurfaceKHR Surface  = nullptr;
 
     vk::SwapchainKHR SwapChain = nullptr;
+    uint32_t ImageIndex = 0;
     vk::Extent2D SwapChainExtent {};
 
     // Color

@@ -95,25 +95,7 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::VulkanBackend (
 
 Patata::Graphics::RaccoonRenderer::VulkanBackend::~VulkanBackend (void)
 {
-  for (uint8_t i = 0; i < SwapChainImageCount; ++i)
-    Device.destroyFramebuffer(SwapChainFrameBuffer[i]);
-
-  delete[] SwapChainFrameBuffer;
-
-  //Device.destroyPipelineLayout(PipeLineLayout);
-  Device.destroyRenderPass(RenderPass);
-
-  // Color
-  for (uint8_t i = 0; i < SwapChainImageCount; ++i)
-    Device.destroyImageView(SwapChainColorImageView[i]);
-
-  delete[] SwapChainColorImageView;
-
-  // Depth
-  Device.freeMemory(DepthMemory);
-  Device.destroyImageView(DepthView);
-  Device.destroyImage(DepthImage);
-
+  // Primitivas de sincronizacion
   Device.destroySemaphore (AcquireSemaphore);
   Device.destroySemaphore (SubmitSemaphore);
 
@@ -138,6 +120,25 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::~VulkanBackend (void)
   #endif
 
   Device.destroyFence (Fence);
+
+  for (uint8_t i = 0; i < SwapChainImageCount; ++i)
+    Device.destroyFramebuffer(SwapChainFrameBuffer[i]);
+
+  delete[] SwapChainFrameBuffer;
+
+  //Device.destroyPipelineLayout(PipeLineLayout);
+  Device.destroyRenderPass(RenderPass);
+
+  // Color
+  for (uint8_t i = 0; i < SwapChainImageCount; ++i)
+    Device.destroyImageView(SwapChainColorImageView[i]);
+
+  delete[] SwapChainColorImageView;
+
+  // Depth
+  Device.freeMemory(DepthMemory);
+  Device.destroyImageView(DepthView);
+  Device.destroyImage(DepthImage);
 
   Device.destroyCommandPool (CommandPool);
 

@@ -1,7 +1,7 @@
 #include "Vulkan_Render.hpp"
 
 void
-Patata::Graphics::RaccoonRenderer::VulkanBackend::VulkanRender (void)
+Patata::Graphics::RaccoonRenderer::VulkanBackend::BeginVulkanRender (void)
 {
     vk::Result Result = Device.waitForFences(1, &Fence, true, 0);
     #if defined(DEBUG)
@@ -18,8 +18,6 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::VulkanRender (void)
 			std::launch::async, Patata::Log::VulkanCheck, "Reset Fences", Result);
     }
     #endif
-
-	uint32_t ImageIndex = 0;
 
 	vk::AcquireNextImageInfoKHR NextImageInfo {};
 	NextImageInfo.sType = vk::StructureType::eAcquireNextImageInfoKHR;
@@ -43,6 +41,7 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::VulkanRender (void)
     #else
     if (Result == vk::Result::eErrorOutOfDateKHR || Result == vk::Result::eSuboptimalKHR) {
     #endif
+
         fast_io::io::println (
             #if defined(_WIN64)
             fast_io::out(),
@@ -51,13 +50,15 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::VulkanRender (void)
             PATATA_TERM_COLOR_PATATA,
             "Raccoon Renderer", PATATA_TERM_RESET,
             " : Recreating SwapChain");
+
         RecreateSwapChain();
+
         #if defined(__linux__)
         *pWindowResized = false;
         #endif
+
         return;
     }
-
 
     vk::CommandBufferAllocateInfo cmdAllocateInfo {};
     cmdAllocateInfo.sType = vk::StructureType::eCommandBufferAllocateInfo;
@@ -87,18 +88,23 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::VulkanRender (void)
     }
     #endif
 
-    // Rendering Commands
-    {
+    CmdIsReady = true;
+}
 
-    }
+void
+Patata::Graphics::RaccoonRenderer::VulkanBackend::EndVulkanRender (void)
+{
+    if(!CmdIsReady) return;
 
-    Result = cmd.end();
+    vk::Result Result = cmd.end();
     #if defined(DEBUG)
 	if (Result != vk::Result::eSuccess) {
 	    std::future<void> ReturnVulkanCheck = std::async (
 			std::launch::async, Patata::Log::VulkanCheck, "Command Buffer End", Result);
     }
     #endif
+
+    CmdIsReady = false;
 
     vk::PipelineStageFlags PipeLineStageFlags = vk::PipelineStageFlagBits::eColorAttachmentOutput;
 
@@ -143,6 +149,7 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::VulkanRender (void)
     #else
     if (Result == vk::Result::eErrorOutOfDateKHR || Result == vk::Result::eSuboptimalKHR) {
     #endif
+
         fast_io::io::println (
             #if defined(_WIN64)
             fast_io::out(),
@@ -151,7 +158,9 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::VulkanRender (void)
             PATATA_TERM_COLOR_PATATA,
             "Raccoon Renderer", PATATA_TERM_RESET,
             " : Recreating SwapChain");
+
         RecreateSwapChain();
+
         #if defined(__linux__)
         *pWindowResized = false;
         #endif

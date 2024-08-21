@@ -12,11 +12,13 @@ endif()
 
 target_sources (${PROJECT_NAME} PRIVATE
 	"Core/Main.cpp"
+	"Core/PrivateToPublicWrapper.cpp"
 	"Core/LoadConfig.cpp"
 	"Core/Input.cpp"
-	"Core/Render.cpp"
+	"Core/RenderWrapper.cpp"
 	"Window/Window.cpp"
 	"RaccoonRenderer/RaccoonRenderer.cpp"
+	"RaccoonRenderer/RaccoonRendererWrapper.cpp"
 	"RaccoonRenderer/Vulkan/Setup_Vulkan_Renderer.cpp"
 	"RaccoonRenderer/Vulkan/Vulkan_Instance.cpp"
 	"RaccoonRenderer/Vulkan/Vulkan_Select_Device.cpp"
@@ -29,6 +31,7 @@ target_sources (${PROJECT_NAME} PRIVATE
 	"RaccoonRenderer/Vulkan/Vulkan_Render.cpp"
 	"RaccoonRenderer/Vulkan/Vulkan_PipeLine.cpp"
 	"RaccoonRenderer/Vulkan/Vulkan_RenderPass.cpp"
+	"RaccoonRenderer/Vulkan/ClearColor.cpp"
 	"Log/Messages.cpp"
 	"Log/YamlErrors.cpp")
 
