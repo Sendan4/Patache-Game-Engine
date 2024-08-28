@@ -10,9 +10,9 @@
 #if __clang__
 #define PATATA_COMPILER "Clang"
 #elif __MINGW64__
-#define PATATA_COMPILER "MinGW"
+#define PATATA_COMPILER "Minimalist GNU for Windows (MinGW-w64 / GCC)"
 #else
-#define PATATA_COMPILER "GCC"
+#define PATATA_COMPILER "GNU Compiler Collection (GCC)"
 #endif
 #elif _MSC_VER <= 1929
 #define PATATA_COMPILER "Old Microsoft Visual C++ (MSVC)"
@@ -26,10 +26,10 @@
 #ifndef YAML_CPP_API
 #define YAML_CPP_API
 #endif
+#include <vulkan/vulkan.hpp>
 #include "Log.hpp"
 #include "TerminalColors.hpp"
 #include <SDL.h>
-#include <vulkan/vulkan.hpp>
 #include <yaml-cpp/yaml.h>
 
 #if defined(_WIN64)

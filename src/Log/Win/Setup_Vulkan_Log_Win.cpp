@@ -72,7 +72,7 @@ Patata::Log::VulkanCheck (const std::string & Message,
       PATATA_TERM_COLOR_GRAY0, "[",
       std::string_view{ abi::__cxa_demangle (typeid (Result).name (), nullptr,
                                              nullptr, nullptr) },
-      "] ");
+      "] ",
 #else
       PATATA_TERM_COLOR_GRAY0, "[",
       std::string_view{ typeid (Result).name () }, "] ",

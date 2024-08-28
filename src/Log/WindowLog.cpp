@@ -52,7 +52,7 @@ Patata::Log::WindowLog (SDL_Window * Window)
                             "]",
 #endif
                             PATATA_TERM_RESET, PATATA_TERM_BOLD,
-                            " Window Type", PATATA_TERM_RESET);
+                            " Window Type", PATATA_TERM_RESET, " : Wayland display" );
 
       fast_io::io::println (PATATA_TERM_DIM, PATATA_TERM_COLOR_GRAY0,
 #if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
@@ -68,7 +68,7 @@ Patata::Log::WindowLog (SDL_Window * Window)
                             "]",
 #endif
                             PATATA_TERM_RESET, PATATA_TERM_BOLD,
-                            " Surface Type", PATATA_TERM_RESET);
+                            " Surface Type", PATATA_TERM_RESET, " : Wayland surface");
       break;
 
 #if defined(PATATA_LINUX_XORG_SUPPORT) && defined(SDL_VIDEO_DRIVER_X11)
@@ -118,7 +118,7 @@ Patata::Log::WindowLog (SDL_Window * Window)
               std::string_view{ typeid (WindowInfo.info.x11.window).name () },
               "]",
 #endif
-              PATATA_TERM_RESET, PATATA_TERM_BOLD, " Window Type",
+              PATATA_TERM_RESET, PATATA_TERM_BOLD, " Window Type : The X11 window",
               PATATA_TERM_RESET);
 
           fast_io::io::println (
@@ -134,7 +134,7 @@ Patata::Log::WindowLog (SDL_Window * Window)
               std::string_view{ typeid (WindowInfo.info.x11.display).name () },
               "]",
 #endif
-              PATATA_TERM_RESET, PATATA_TERM_BOLD, " Surface Type",
+              PATATA_TERM_RESET, PATATA_TERM_BOLD, " Surface Type : The X11 display",
               PATATA_TERM_RESET);
         }
       break;

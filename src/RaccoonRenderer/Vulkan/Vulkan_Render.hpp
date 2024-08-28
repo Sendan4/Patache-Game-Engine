@@ -1,9 +1,7 @@
-#define VULKAN_HPP_DISABLE_ENHANCED_MODE
-
 #include <future>
 
-#include <SDL.h>
 #include <fast_io.h>
+#include <vulkan/vulkan.hpp>
 
 #include "Log.hpp"
 #include "RaccoonRenderer.hpp"

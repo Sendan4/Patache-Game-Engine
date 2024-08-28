@@ -3,7 +3,7 @@
 void
 Patata::Graphics::RaccoonRenderer::VulkanBackend::BeginVulkanRender (void)
 {
-    vk::Result Result = Device.waitForFences(1, &Fence, true, 0);
+    vk::Result Result = Device.waitForFences(1, &Fence, true, std::numeric_limits<uint64_t>::max());
     #if defined(DEBUG)
 	if (Result != vk::Result::eSuccess) {
 	    std::future<void> ReturnVulkanCheck = std::async (
@@ -25,7 +25,7 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::BeginVulkanRender (void)
 	NextImageInfo.swapchain = SwapChain;
 	NextImageInfo.semaphore = AcquireSemaphore;
 	NextImageInfo.deviceMask = 1;
-	NextImageInfo.timeout = 30000000000;
+    NextImageInfo.timeout    = std::numeric_limits<uint64_t>::max ();
 	NextImageInfo.fence = Fence;
 
 	Result = Device.acquireNextImage2KHR(&NextImageInfo, &ImageIndex);
@@ -36,12 +36,9 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::BeginVulkanRender (void)
     }
     #endif
 
-    #if defined(__linux__)
-    if (*pWindowResized) {
-    #else
-    if (Result == vk::Result::eErrorOutOfDateKHR || Result == vk::Result::eSuboptimalKHR) {
-    #endif
-
+    if (*pWindowResized || Result == vk::Result::eErrorOutOfDateKHR
+            || Result == vk::Result::eSuboptimalKHR)
+    {
         fast_io::io::println (
             #if defined(_WIN64)
             fast_io::out(),
@@ -96,13 +93,7 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::EndVulkanRender (void)
 {
     if(!CmdIsReady) return;
 
-    vk::Result Result = cmd.end();
-    #if defined(DEBUG)
-	if (Result != vk::Result::eSuccess) {
-	    std::future<void> ReturnVulkanCheck = std::async (
-			std::launch::async, Patata::Log::VulkanCheck, "Command Buffer End", Result);
-    }
-    #endif
+    cmd.end();
 
     CmdIsReady = false;
 
@@ -119,7 +110,7 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::EndVulkanRender (void)
     SubmitInfo.pWaitSemaphores = &AcquireSemaphore;
     SubmitInfo.pWaitDstStageMask = &PipeLineStageFlags;
 
-    Result = Queue.submit(1, &SubmitInfo, nullptr);
+    vk::Result Result = Queue.submit(1, &SubmitInfo, nullptr);
     #if defined(DEBUG)
 	if (Result != vk::Result::eSuccess) {
 	    std::future<void> ReturnVulkanCheck = std::async (
@@ -144,12 +135,9 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::EndVulkanRender (void)
     }
     #endif
 
-    #if defined(__linux__)
-    if (*pWindowResized) {
-    #else
-    if (Result == vk::Result::eErrorOutOfDateKHR || Result == vk::Result::eSuboptimalKHR) {
-    #endif
-
+    if (*pWindowResized || Result == vk::Result::eErrorOutOfDateKHR
+        || Result == vk::Result::eSuboptimalKHR)
+      {
         fast_io::io::println (
             #if defined(_WIN64)
             fast_io::out(),
@@ -161,26 +149,12 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::EndVulkanRender (void)
 
         RecreateSwapChain();
 
-        #if defined(__linux__)
         *pWindowResized = false;
-        #endif
     }
 
-    Result = Device.waitIdle();
-    #if defined(DEBUG)
-	if (Result != vk::Result::eSuccess) {
-	    std::future<void> ReturnVulkanCheck = std::async (
-			std::launch::async, Patata::Log::VulkanCheck, "Device Wait Idle", Result);
-    }
-    #endif
+    Device.waitIdle();
 
-    Result = Queue.waitIdle();
-    #if defined(DEBUG)
-	if (Result != vk::Result::eSuccess) {
-	    std::future<void> ReturnVulkanCheck = std::async (
-			std::launch::async, Patata::Log::VulkanCheck, "Graphics Queue Wait Idle", Result);
-    }
-    #endif
+    Queue.waitIdle();
 
     Device.freeCommandBuffers (CommandPool, 1, &cmd);
 }

@@ -1,8 +1,8 @@
 #include <fast_io.h>
-
 #if defined(_WIN64)
 #include <windows.h>
 #endif
+#include <vulkan/vulkan.hpp>
 
 #include "Config.hpp"
 #include "Log.hpp"

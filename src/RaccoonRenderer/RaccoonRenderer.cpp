@@ -6,6 +6,7 @@
 #include <windows.h>
 #endif
 
+#include <vulkan/vulkan.hpp>
 #include <SDL.h>
 
 #include "RaccoonRenderer.hpp"

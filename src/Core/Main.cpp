@@ -7,6 +7,8 @@
 #include <windows.h>
 #endif
 
+#include <vulkan/vulkan.hpp>
+
 // Patata Engine
 #include "Log.hpp"
 

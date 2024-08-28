@@ -4,7 +4,6 @@
 #define YAML_CPP_API
 #endif
 #include <SDL.h>
-#include <vulkan/vulkan.hpp>
 #include <yaml-cpp/yaml.h>
 
 #include "Config.hpp"

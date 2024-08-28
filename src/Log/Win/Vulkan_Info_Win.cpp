@@ -178,7 +178,7 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::VulkanInfo (
 
     // Hexadecimal VendorID
     fast_io::io::print (fast_io::out (), PATATA_TERM_COLOR_GRAY0,
-                        " [Hexadecimal] ", PATATA_TERM_RESET);
+                        " | [Hexadecimal] ", PATATA_TERM_RESET);
     switch (PhysicalDeviceProperties.properties.vendorID)
       {
       case 32902:
@@ -197,7 +197,7 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::VulkanInfo (
         PATATA_TERM_RESET, " ");
 
     // Decimal VendorID
-    fast_io::io::print (fast_io::out (), PATATA_TERM_COLOR_GRAY0, "[Decimal] ",
+    fast_io::io::print (fast_io::out (), PATATA_TERM_COLOR_GRAY0, "| [Decimal] ",
                         PATATA_TERM_RESET);
     switch (PhysicalDeviceProperties.properties.vendorID)
       {

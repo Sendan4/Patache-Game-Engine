@@ -1,5 +1,9 @@
+#ifndef YAML_CPP_API
+#define YAML_CPP_API
+#endif
 #include <yaml-cpp/yaml.h>
 #include <SDL.h>
+#include <vulkan/vulkan.hpp>
 
 #include "Config.hpp"
 #include "PatataEngineImpl.hpp"

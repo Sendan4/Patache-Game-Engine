@@ -62,22 +62,22 @@ Patata::Log::StartPatataLogInfo (void)
                         " ", __TIME__);
 
   fast_io::io::println (fast_io::out (), PATATA_TERM_BOLD,
-                        "  Compiler : ", PATATA_TERM_COLOR_GRAY0, "[",
-                        PATATA_COMPILER_PROGRAM, "]", PATATA_TERM_COLOR_GRAY1,
-                        " ", PATATA_COMPILER, " ", PATATA_COMPILER_VERSION);
+                        "  Compiler : ", PATATA_TERM_COLOR_GRAY1,
+                        PATATA_COMPILER_PROGRAM, " | ",
+                        PATATA_COMPILER, " ", PATATA_COMPILER_VERSION);
 
-  fast_io::io::print (fast_io::out (), PATATA_TERM_BOLD,
-                      "  Build System : ", PATATA_TERM_COLOR_GRAY0, "[",
-                      PATATA_BUILD_SYSTEM_GENERATOR);
-
-#if defined(PATATA_BUILD_SYSTEM_GENERATOR_VERSION)
-  fast_io::io::print (fast_io::out (), " ",
-                      PATATA_BUILD_SYSTEM_GENERATOR_VERSION, "] ");
-#else
-  fast_io::io::print (fast_io::out (), "] ");
+  fast_io::io::println (fast_io::out (), PATATA_TERM_BOLD,
+                        "  Build System : ", PATATA_TERM_COLOR_GRAY1,
+                        PATATA_BUILD_SYSTEM,
+#if defined(PATATA_BUILD_SYSTEM_VERSION)
+                        " ", PATATA_BUILD_SYSTEM_VERSION,
 #endif
-  fast_io::io::println (fast_io::out (), PATATA_TERM_COLOR_GRAY1,
-                        PATATA_BUILD_SYSTEM, " ", PATATA_BUILD_SYSTEM_VERSION);
+                      " | ", PATATA_BUILD_SYSTEM_GENERATOR
+#if defined(PATATA_BUILD_SYSTEM_GENERATOR_VERSION)
+                      ," ", PATATA_BUILD_SYSTEM_GENERATOR_VERSION);
+#else
+                      );
+#endif
 
   fast_io::io::println (fast_io::out (), PATATA_TERM_BOLD,
                         "  Build Type : ", PATATA_TERM_COLOR_GRAY1,

@@ -1,10 +1,9 @@
 // All internal functions that will be used publicly must be wrapped
 // Engine Implementation (Wrapping) -> Public API (Wrapping)
 
-#include <SDL.h>
-
-#include "PatataEngine/PatataEngine.hpp"
+#include <vulkan/vulkan.hpp>
 #include "PatataEngineImpl.hpp"
+#include "PatataEngine/PatataEngine.hpp"
 
 // Public API
 Patata::Engine::Engine (const std::string & WindowTitle,

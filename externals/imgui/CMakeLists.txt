@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.18)
 
-project("Imgui" LANGUAGES CXX VERSION 1.90.8)
+project("Imgui" LANGUAGES CXX C VERSION 1.90.8)
 
 set(Imgui_VERSION "1.90.8-docking" CACHE INTERNAL "Imgui version")
 
@@ -108,17 +108,7 @@ if (USE_EXTERNAL_LIBS)
 	if (LIBS_SHARED_BUILD)
 		target_link_libraries(${PROJECT_NAME} PUBLIC SDL2::SDL2)
 	else()
-		if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
-			target_link_libraries(${PROJECT_NAME} PUBLIC SDL2::SDL2)
-		else()
-			target_link_libraries(${PROJECT_NAME} PUBLIC SDL2-static)
-		endif()
-
-		if (NOT MSVC)
-				if ((WIN32 OR CMAKE_SYSTEM_NAME STREQUAL "Windows") OR (LINUX OR CMAKE_SYSTEM_NAME STREQUAL "Linux"))
-					target_link_libraries(${PROJECT_NAME} PRIVATE -static-libgcc -static-libstdc++)
-				endif()
-		endif()
+		target_link_libraries(${PROJECT_NAME} PUBLIC SDL2-static)
 	endif()
 else()
 	# Package Mananger

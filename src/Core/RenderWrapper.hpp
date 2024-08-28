@@ -1,4 +1,5 @@
-// Patata Engine
+#include <vulkan/vulkan.hpp>
+
 #include "PatataEngineImpl.hpp"
 
 #if defined(DEBUG)

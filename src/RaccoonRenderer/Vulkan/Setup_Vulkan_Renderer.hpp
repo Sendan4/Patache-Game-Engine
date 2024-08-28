@@ -4,7 +4,7 @@
 #include <tuple>
 #include <future>
 
-#include <SDL.h>
+#include <vulkan/vulkan.hpp>
 #include <SDL_vulkan.h>
 #include <fast_io.h>
 

@@ -1,4 +1,6 @@
 // Vulkan Backend -> Raccoon Renderer (Wrapping)
+
+#include <vulkan/vulkan.hpp>
 #include "RaccoonRenderer.hpp"
 
 /*
