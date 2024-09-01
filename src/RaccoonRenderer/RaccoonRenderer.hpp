@@ -51,6 +51,8 @@ private:
     uint32_t CreateLogicalDeviceAndCreateQueue (void);
     bool CreateSwapChain (std::tuple<vk::PresentModeKHR, vk::Format, vk::ColorSpaceKHR> &);
     bool CreateImageView (const std::tuple<vk::PresentModeKHR, vk::Format, vk::ColorSpaceKHR> &);
+    bool CreateCommandPool(void);
+    bool CreateCommandBuffer (void);
     bool CreateFrameBuffer (void);
     bool CreateDepthBuffer (void);
     bool CreateRenderPass (const std::tuple<vk::PresentModeKHR, vk::Format, vk::ColorSpaceKHR> &);
@@ -73,6 +75,7 @@ private:
     vk::SurfaceKHR Surface  = nullptr;
 
     vk::SwapchainKHR SwapChain = nullptr;
+    vk::SwapchainKHR OldSwapChain = nullptr;
     uint32_t ImageIndex = 0;
     vk::Extent2D SwapChainExtent {};
 
@@ -103,7 +106,7 @@ private:
     // Synchronization Primitives
     vk::Semaphore AcquireSemaphore = nullptr;
     vk::Semaphore SubmitSemaphore = nullptr;
-    vk::Fence Fence = nullptr;
+    vk::Fence     Fence = nullptr;
 
   } * pVulkanBackend = nullptr; // End Vulkan Backend
 }; // End Raccoon Renderer

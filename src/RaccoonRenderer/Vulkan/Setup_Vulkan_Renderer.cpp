@@ -59,32 +59,17 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::VulkanBackend (
   Depthbuffer will not be useful for now.
   It will be useful for advanced 2D effects and even more so for 3D performance.
   */
-  if (!CreateDepthBuffer ())
-    return;
+  // if (!CreateDepthBuffer ()) return;
 
   if (!CreateRenderPass (SwapChainInfo))
     return;
 
   if (!CreateFrameBuffer()) return;
 
-  vk::Result Result;
+  if (!CreateCommandPool()) return;
 
-  // Command Pool
-  {
-    vk::CommandPoolCreateInfo CommandPoolInfo {};
-    CommandPoolInfo.sType = vk::StructureType::eCommandPoolCreateInfo;
-    CommandPoolInfo.pNext = nullptr;
-    CommandPoolInfo.flags = vk::CommandPoolCreateFlagBits::eTransient;
-    CommandPoolInfo.queueFamilyIndex = GraphicsQueueFamilyIndex;
-
-    Result = Device.createCommandPool (&CommandPoolInfo,
-                                                  nullptr, &CommandPool);
-    {
-      std::future<void> ReturnVulkanCheck
-          = std::async (std::launch::async, Patata::Log::VulkanCheck,
-                        "Command Pool", Result);
-    }
-  }
+  if (!CreateCommandBuffer ())
+    return;
 
   if(!CreateFence()) return;
 
@@ -99,51 +84,37 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::~VulkanBackend (void)
   Device.destroySemaphore (AcquireSemaphore);
   Device.destroySemaphore (SubmitSemaphore);
 
-  #if defined(DEBUG)
-  vk::Result Result = Device.waitForFences(1, &Fence, true, 0);
+  vk::Result Result = Device.waitForFences (1, &Fence, true, std::numeric_limits<uint64_t>::max ());
   {
-	    std::future<void> ReturnVulkanCheck = std::async (std::launch::async, Patata::Log::VulkanCheck,
-                      "Wait For Fences", Result);
-  }
-  #else
-  Device.waitForFences(1, &Fence, true, 0);
-  #endif
-
-  #if defined(DEBUG)
-  Result = Device.resetFences(1, &Fence);
-  if (Result != vk::Result::eSuccess) {
       std::future<void> ReturnVulkanCheck = std::async (
-          std::launch::async, Patata::Log::VulkanCheck, "Reset Fences", Result);
+          std::launch::async, Patata::Log::VulkanCheck, "Wait For Fences", Result);
   }
-  #else
-  Device.resetFences(1, &Fence);
-  #endif
 
   Device.destroyFence (Fence);
-
-  for (uint8_t i = 0; i < SwapChainImageCount; ++i)
-    Device.destroyFramebuffer(SwapChainFrameBuffer[i]);
-
-  delete[] SwapChainFrameBuffer;
 
   //Device.destroyPipelineLayout(PipeLineLayout);
   Device.destroyRenderPass(RenderPass);
 
   // Color
   for (uint8_t i = 0; i < SwapChainImageCount; ++i)
-    Device.destroyImageView(SwapChainColorImageView[i]);
+    {
+      Device.destroyFramebuffer (SwapChainFrameBuffer[i]);
+      Device.destroyImageView (SwapChainColorImageView[i]);
+    }
 
+  delete[] SwapChainFrameBuffer;
   delete[] SwapChainColorImageView;
 
   // Depth
-  Device.freeMemory(DepthMemory);
-  Device.destroyImageView(DepthView);
-  Device.destroyImage(DepthImage);
+  //Device.freeMemory(DepthMemory);
+  //Device.destroyImageView(DepthView);
+  //Device.destroyImage(DepthImage);
 
+  Device.freeCommandBuffers (CommandPool, 1, &cmd);
   Device.destroyCommandPool (CommandPool);
 
-  delete[] SwapChainImages;
   Device.destroySwapchainKHR (SwapChain);
+  delete[] SwapChainImages;
 
   Instance.destroySurfaceKHR (Surface);
 

@@ -5,4 +5,5 @@
 #include <SDL_vulkan.h>
 
 #include "Log.hpp"
+#include "TerminalColors.hpp"
 #include "RaccoonRenderer.hpp"

@@ -10,14 +10,14 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::CreateSwapChain (
 
   vk::Result Result = PhysicalDevice.getSurfacePresentModesKHR(Surface, &PresentModesCount, nullptr);
   {
-	  std::future<void> ReturnVulkanCheck0 = std::async(std::launch::async, Patata::Log::VulkanCheck, "Get Surface Present Modes - Obtaining the count", Result);
+	  std::future<void> ReturnVulkanCheck = std::async(std::launch::async, Patata::Log::VulkanCheck, "Get Surface Present Modes - Obtaining the count", Result);
   }
 
   PresentModes = new vk::PresentModeKHR[PresentModesCount];
 
   Result = PhysicalDevice.getSurfacePresentModesKHR(Surface, &PresentModesCount, PresentModes);
   {
-	  std::future<void> ReturnVulkanCheck1 = std::async(std::launch::async, Patata::Log::VulkanCheck, "Get Surface Present Modes", Result);
+	  std::future<void> ReturnVulkanCheck = std::async(std::launch::async, Patata::Log::VulkanCheck, "Get Surface Present Modes", Result);
   }
 
   // Search for window surface formats
@@ -26,14 +26,14 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::CreateSwapChain (
 
   Result = PhysicalDevice.getSurfaceFormatsKHR(Surface, &SurfaceFormatsCount, nullptr);
   {
-	  std::future<void> ReturnVulkanCheck2 = std::async(std::launch::async, Patata::Log::VulkanCheck, "Get Surface Formats - Obtaining the count", Result);
+	  std::future<void> ReturnVulkanCheck = std::async(std::launch::async, Patata::Log::VulkanCheck, "Get Surface Formats - Obtaining the count", Result);
   }
 
   SurfaceFormats = new vk::SurfaceFormatKHR[SurfaceFormatsCount];
 
   Result = PhysicalDevice.getSurfaceFormatsKHR(Surface, &SurfaceFormatsCount, SurfaceFormats);
   {
-	  std::future<void> ReturnVulkanCheck3 = std::async(std::launch::async, Patata::Log::VulkanCheck, "Get Surface Formats", Result);
+	  std::future<void> ReturnVulkanCheck = std::async(std::launch::async, Patata::Log::VulkanCheck, "Get Surface Formats", Result);
   }
 
   /*
@@ -46,6 +46,19 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::CreateSwapChain (
 
     SwapChainExtent.width  = w;
     SwapChainExtent.height = h;
+
+    fast_io::io::println (
+#if defined(_WIN64)
+        fast_io::out (),
+#endif
+        PATATA_TERM_BOLD,
+        PATATA_TERM_COLOR_PATATA,
+        "Raccoon Renderer",
+        PATATA_TERM_RESET,
+        PATATA_TERM_BOLD,
+        " : Window Drawable Size : ",
+        PATATA_TERM_RESET,
+        w, " x ", h);
   }
 
   /*
@@ -151,8 +164,7 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::CreateSwapChain (
   SwapChainCreateInfo.presentMode    = SelectedPresentMode;
   SwapChainCreateInfo.clipped        = true;
   SwapChainCreateInfo.queueFamilyIndexCount = GraphicsQueueFamilyIndex;
-  SwapChainCreateInfo.oldSwapchain          = nullptr;
-
+  SwapChainCreateInfo.oldSwapchain          = OldSwapChain;
 
   Result = Device.createSwapchainKHR (&SwapChainCreateInfo, nullptr, &SwapChain);
   delete[] PresentModes;
@@ -185,23 +197,73 @@ void Patata::Graphics::RaccoonRenderer::VulkanBackend::RecreateSwapChain (void)
 {
     Device.waitIdle();
 
+    // Destroy SwapChain Related Resources
+
     Device.destroySemaphore (AcquireSemaphore);
     Device.destroySemaphore (SubmitSemaphore);
 
-    for (uint8_t i = 0; i < SwapChainImageCount; ++i)
-        Device.destroyFramebuffer(SwapChainFrameBuffer[i]);
+    Device.destroyRenderPass (RenderPass);
 
     for (uint8_t i = 0; i < SwapChainImageCount; ++i)
-        Device.destroyImageView(SwapChainColorImageView[i]);
+      {
+        Device.destroyFramebuffer (SwapChainFrameBuffer[i]);
+        Device.destroyImageView (SwapChainColorImageView[i]);
+      }
 
-    Device.destroySwapchainKHR (SwapChain);
+
+    Device.freeCommandBuffers (CommandPool, 1, &cmd);
+    Device.destroyCommandPool(CommandPool);
+
+    OldSwapChain = SwapChain;
+
+    // Create Swapchain And Resources
 
     std::tuple<vk::PresentModeKHR, vk::Format, vk::ColorSpaceKHR> SwapChainInfo;
     CreateSwapChain (SwapChainInfo);
+    // the new swapchain is ready, I don't need the old swapchain.
+    Device.destroySwapchainKHR (OldSwapChain);
 
-    if (!CreateImageView(SwapChainInfo)) return;
+    if (!CreateImageView(SwapChainInfo)) {
+        Patata::Log::FatalErrorMessage ("Patata Engine - Raccoon Renderer",
+                                        "color image view recreation failed",
+                                        *pConfiguration);
+        return;
+    }
 
-    if (!CreateFrameBuffer()) return;
+    if (!CreateRenderPass(SwapChainInfo)) {
+        Patata::Log::FatalErrorMessage ("Patata Engine - Raccoon Renderer",
+                                        "failed to recreate the rendering pass",
+                                        *pConfiguration);
+        return;
+    }
 
-    if(!CreateSemaphores()) return;
+    if (!CreateFrameBuffer()) {
+        Patata::Log::FatalErrorMessage ("Patata Engine - Raccoon Renderer",
+                                        "frame buffer recreation failed",
+                                        *pConfiguration);
+        return;
+    }
+
+    if(!CreateCommandPool()) {
+        Patata::Log::FatalErrorMessage ("Patata Engine - Raccoon Renderer",
+                                        "command pool recreation failed",
+                                        *pConfiguration);
+        return;
+    }
+
+    if (!CreateCommandBuffer ())
+      {
+        Patata::Log::FatalErrorMessage ("Patata Engine - Raccoon Renderer",
+                                        "command buffer reallocation failed",
+                                        *pConfiguration);
+        return;
+      }
+
+    if (!CreateSemaphores ())
+      {
+        Patata::Log::FatalErrorMessage ("Patata Engine - Raccoon Renderer",
+                                        "semaphore recreation failed",
+                                        *pConfiguration);
+        return;
+    }
 }

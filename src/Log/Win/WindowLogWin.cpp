@@ -33,21 +33,52 @@ Patata::Log::WindowLog (SDL_Window * Window)
                             "  Window System : ", PATATA_TERM_COLOR_GRAY1,
                             "Windows");
 
+      // The window handle
+      fast_io::io::println (fast_io::out (),
 #if defined(__GNUC__) || defined(__MINGW64__)
-      fast_io::io::print (fast_io::out (), PATATA_TERM_COLOR_GRAY0, "  [",
+      PATATA_TERM_COLOR_GRAY0, "  [",
                           std::string_view{ abi::__cxa_demangle (
                               typeid (WindowInfo.info.win.window).name (),
                               nullptr, nullptr, nullptr) },
-                          "]");
+                          "]",
 #else
-      fast_io::io::print (
-          fast_io::out (), PATATA_TERM_COLOR_GRAY0, "  [",
+          PATATA_TERM_COLOR_GRAY0, "  [",
           std::string_view{ typeid (WindowInfo.info.win.window).name () },
-          "]");
+          "]",
 #endif
+      PATATA_TERM_BOLD, " The window handle");
 
-      fast_io::io::println (fast_io::out (), PATATA_TERM_BOLD,
-                            " Window Type");
+      // The window device context
+      fast_io::io::println (fast_io::out (),
+#if defined(__GNUC__) || defined(__MINGW64__)
+                            PATATA_TERM_COLOR_GRAY0, "  [",
+                            std::string_view{ abi::__cxa_demangle (
+                                typeid (WindowInfo.info.win.hdc).name (),
+                                nullptr, nullptr, nullptr) },
+                            "]",
+#else
+                            PATATA_TERM_COLOR_GRAY0, "  [",
+                            std::string_view{ typeid (WindowInfo.info.win.hdc).name () },
+                            "]",
+#endif
+                            PATATA_TERM_BOLD,
+                            " The window device context");
+
+      // The instance handle
+      fast_io::io::println (fast_io::out (),
+#if defined(__GNUC__) || defined(__MINGW64__)
+                            PATATA_TERM_COLOR_GRAY0, "  [",
+                            std::string_view{ abi::__cxa_demangle (
+                                typeid (WindowInfo.info.win.hinstance).name (),
+                                nullptr, nullptr, nullptr) },
+                            "]",
+#else
+                            PATATA_TERM_COLOR_GRAY0, "  [",
+                            std::string_view{ typeid (WindowInfo.info.win.hinstance).name () },
+                            "]",
+#endif
+                            PATATA_TERM_BOLD, " The instance handle");
+
       break;
 
     case SDL_SYSWM_WINRT:
@@ -63,6 +94,86 @@ Patata::Log::WindowLog (SDL_Window * Window)
                           "Unknown");
       break;
     }
+
+  fast_io::io::println (fast_io::out (), PATATA_TERM_BOLD,
+                        "  Window creation flags :", PATATA_TERM_COLOR_GRAY1);
+
+  uint32_t WindowFlags = SDL_GetWindowFlags (Window);
+
+  if (WindowFlags & SDL_WINDOW_FULLSCREEN)
+    fast_io::io::println (fast_io::out (), "    fullscreen window");
+
+  if (WindowFlags & SDL_WINDOW_OPENGL)
+    fast_io::io::println (fast_io::out (), "    window usable with OpenGL context");
+
+  if (WindowFlags & SDL_WINDOW_SHOWN)
+    fast_io::io::println (fast_io::out (), "    window is visible");
+
+  if (WindowFlags & SDL_WINDOW_HIDDEN)
+    fast_io::io::println (fast_io::out (), "    window is not visible");
+
+  if (WindowFlags & SDL_WINDOW_BORDERLESS)
+    fast_io::io::println (fast_io::out (), "    no window decoration");
+
+  if (WindowFlags & SDL_WINDOW_RESIZABLE)
+    fast_io::io::println (fast_io::out (), "    window can be resized");
+
+  if (WindowFlags & SDL_WINDOW_MINIMIZED)
+    fast_io::io::println (fast_io::out (), "    window is minimized");
+
+  if (WindowFlags & SDL_WINDOW_MAXIMIZED)
+    fast_io::io::println (fast_io::out (), "    window is maximized");
+
+  if (WindowFlags & SDL_WINDOW_MOUSE_GRABBED)
+    fast_io::io::println (fast_io::out (), "    window has grabbed mouse input");
+
+  if (WindowFlags & SDL_WINDOW_INPUT_FOCUS)
+    fast_io::io::println (fast_io::out (), "    window has input focus");
+
+  if (WindowFlags & SDL_WINDOW_MOUSE_FOCUS)
+    fast_io::io::println (fast_io::out (), "    window has mouse focus");
+
+  if (WindowFlags & SDL_WINDOW_FOREIGN)
+    fast_io::io::println (fast_io::out (), "    window not created by SDL");
+
+  if (WindowFlags & SDL_WINDOW_ALLOW_HIGHDPI)
+    fast_io::io::println (fast_io::out (), "    window should be created in high-DPI mode if supported");
+
+  if (WindowFlags & SDL_WINDOW_MOUSE_CAPTURE)
+    fast_io::io::println (
+        fast_io::out (),
+        "    window has mouse captured (unrelated to MOUSE_GRABBED)");
+
+  if (WindowFlags & SDL_WINDOW_ALWAYS_ON_TOP)
+    fast_io::io::println (fast_io::out (),
+                          "    window should always be above others");
+
+  if (WindowFlags & SDL_WINDOW_SKIP_TASKBAR)
+    fast_io::io::println (fast_io::out (),
+                          "    window should not be added to the taskbar");
+
+  if (WindowFlags & SDL_WINDOW_UTILITY)
+    fast_io::io::println (fast_io::out (),
+                          "    window should be treated as a utility window");
+
+  if (WindowFlags & SDL_WINDOW_TOOLTIP)
+    fast_io::io::println (fast_io::out (),
+                          "    window should be treated as a tooltip");
+
+  if (WindowFlags & SDL_WINDOW_POPUP_MENU)
+    fast_io::io::println (fast_io::out (),
+                          "    window should be treated as a popup menu");
+
+  if (WindowFlags & SDL_WINDOW_KEYBOARD_GRABBED)
+    fast_io::io::println (fast_io::out (),
+                          "    window has grabbed keyboard input");
+
+  if (WindowFlags & SDL_WINDOW_VULKAN)
+    fast_io::io::println (fast_io::out (),
+                          "    window usable for Vulkan surface");
+
+  if (WindowFlags & SDL_WINDOW_METAL)
+    fast_io::io::println (fast_io::out (), "    window usable for Metal view");
 
   fast_io::io::println (fast_io::out (), PATATA_TERM_RESET);
   SetConsoleMode (Terminal, mode);

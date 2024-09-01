@@ -6,9 +6,8 @@
 #include "PatataEngine/PatataEngine.hpp"
 
 // Public API
-Patata::Engine::Engine (const std::string & WindowTitle,
-                        const uint32_t & Width, const uint32_t & Height)
-    : pPatataEngine (new EngineImpl (WindowTitle, Width, Height))
+Patata::Engine::Engine (const std::string & WindowTitle)
+    : pPatataEngine (new EngineImpl (WindowTitle))
 {
 }
 

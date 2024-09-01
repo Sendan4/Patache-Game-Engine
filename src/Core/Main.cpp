@@ -17,9 +17,7 @@
 #include "PatataEngineImpl.hpp"
 
 // Private API
-Patata::Engine::EngineImpl::EngineImpl (const std::string & WindowTitle,
-                                        const uint32_t &    WindowWidth,
-                                        const uint32_t &    WindowHeight)
+Patata::Engine::EngineImpl::EngineImpl (const std::string & WindowTitle)
 {
   Patata::Log::StartPatataLogInfo ();
 
@@ -76,7 +74,7 @@ Patata::Engine::EngineImpl::EngineImpl (const std::string & WindowTitle,
           "SDL Cannot init the GameController subsystem");
     }
 
-  CreateGameWindow (WindowTitle, WindowWidth, WindowHeight);
+  CreateGameWindow (WindowTitle);
 #if defined(USE_ICON)
   SetWindowIcon ();
 #endif

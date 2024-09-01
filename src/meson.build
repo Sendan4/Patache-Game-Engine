@@ -13,6 +13,7 @@ source = files([
   'RaccoonRenderer/Vulkan/Vulkan_LogicalDevice_And_GrahicsQueue.cpp',
   'RaccoonRenderer/Vulkan/Vulkan_SwapChain.cpp',
   'RaccoonRenderer/Vulkan/Vulkan_ImageView.cpp',
+  'RaccoonRenderer/Vulkan/Vulkan_CommandPoolAndBuffer.cpp',
   'RaccoonRenderer/Vulkan/Vulkan_FrameBuffer.cpp',
   'RaccoonRenderer/Vulkan/Vulkan_DepthBuffer.cpp',
   'RaccoonRenderer/Vulkan/Vulkan_SincronizationPrimitives.cpp',

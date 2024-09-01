@@ -3,15 +3,18 @@
 void
 Patata::Graphics::RaccoonRenderer::VulkanBackend::BeginVulkanRender (void)
 {
-    vk::Result Result = Device.waitForFences(1, &Fence, true, std::numeric_limits<uint64_t>::max());
+    vk::Result Result = Device.waitForFences (1, &Fence, true, std::numeric_limits<uint64_t>::max ());
+
     #if defined(DEBUG)
-	if (Result != vk::Result::eSuccess) {
-	    std::future<void> ReturnVulkanCheck = std::async (
-			std::launch::async, Patata::Log::VulkanCheck, "Wait For Fences", Result);
-    }
+    if (Result != vk::Result::eSuccess)
+      {
+        std::future<void> ReturnVulkanCheck = std::async (
+            std::launch::async, Patata::Log::VulkanCheck, "Wait For Fence", Result);
+      }
     #endif
 
-    Result = Device.resetFences(1, &Fence);
+    Result = Device.resetFences (1, &Fence);
+
     #if defined(DEBUG)
 	if (Result != vk::Result::eSuccess) {
 	    std::future<void> ReturnVulkanCheck = std::async (
@@ -26,58 +29,46 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::BeginVulkanRender (void)
 	NextImageInfo.semaphore = AcquireSemaphore;
 	NextImageInfo.deviceMask = 1;
     NextImageInfo.timeout    = std::numeric_limits<uint64_t>::max ();
-	NextImageInfo.fence = Fence;
+    NextImageInfo.fence      = Fence;
 
-	Result = Device.acquireNextImage2KHR(&NextImageInfo, &ImageIndex);
-	#if defined(DEBUG)
-	if (Result != vk::Result::eSuccess) {
-	    std::future<void> ReturnVulkanCheck = std::async (
-			std::launch::async, Patata::Log::VulkanCheck, "Acquire Next Image 2 KHR", Result);
-    }
+    Result = Device.acquireNextImage2KHR(&NextImageInfo, &ImageIndex);
+
+    #if defined(DEBUG)
+    if (Result != vk::Result::eSuccess)
+      {
+        std::future<void> ReturnVulkanCheck = std::async (
+            std::launch::async, Patata::Log::VulkanCheck, "Acquire Next Image 2 KHR", Result);
+      }
     #endif
 
-    if (*pWindowResized || Result == vk::Result::eErrorOutOfDateKHR
-            || Result == vk::Result::eSuboptimalKHR)
-    {
+    if (*pWindowResized || Result == vk::Result::eErrorOutOfDateKHR)
+      {
         fast_io::io::println (
             #if defined(_WIN64)
             fast_io::out(),
             #endif
             "\n", PATATA_TERM_BOLD,
             PATATA_TERM_COLOR_PATATA,
-            "Raccoon Renderer", PATATA_TERM_RESET,
-            " : Recreating SwapChain");
+            "Raccoon Renderer",
+            PATATA_TERM_RESET,
+            PATATA_TERM_BOLD,
+            " : Recreating SwapChain",
+            PATATA_TERM_RESET);
 
-        RecreateSwapChain();
+            RecreateSwapChain();
 
-        #if defined(__linux__)
-        *pWindowResized = false;
-        #endif
+            *pWindowResized = false;
 
         return;
-    }
-
-    vk::CommandBufferAllocateInfo cmdAllocateInfo {};
-    cmdAllocateInfo.sType = vk::StructureType::eCommandBufferAllocateInfo;
-    cmdAllocateInfo.pNext = nullptr;
-    cmdAllocateInfo.commandPool = CommandPool;
-    cmdAllocateInfo.level = vk::CommandBufferLevel::ePrimary;
-    cmdAllocateInfo.commandBufferCount = 1;
-
-    Result = Device.allocateCommandBuffers(&cmdAllocateInfo, &cmd);
-    #if defined(DEBUG)
-	if (Result != vk::Result::eSuccess) {
-	    std::future<void> ReturnVulkanCheck = std::async (
-			std::launch::async, Patata::Log::VulkanCheck, "Allocate Command Buffers", Result);
-    }
-    #endif
+      }
 
     vk::CommandBufferBeginInfo cmdBufferBeginInfo {};
     cmdBufferBeginInfo.sType = vk::StructureType::eCommandBufferBeginInfo;
     cmdBufferBeginInfo.pNext = nullptr;
-    cmdBufferBeginInfo.flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit;
+    cmdBufferBeginInfo.flags = vk::CommandBufferUsageFlagBits::eSimultaneousUse;
 
     Result = cmd.begin(&cmdBufferBeginInfo);
+
     #if defined(DEBUG)
 	if (Result != vk::Result::eSuccess) {
 	    std::future<void> ReturnVulkanCheck = std::async (
@@ -97,6 +88,26 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::EndVulkanRender (void)
 
     CmdIsReady = false;
 
+    vk::Result Result = Device.waitForFences (1, &Fence, true, std::numeric_limits<uint64_t>::max ());
+
+    #if defined(DEBUG)
+    if (Result != vk::Result::eSuccess)
+      {
+        std::future<void> ReturnVulkanCheck = std::async (
+            std::launch::async, Patata::Log::VulkanCheck, "Wait For Adquire Image Fence", Result);
+      }
+    #endif
+
+    Result = Device.resetFences (1, &Fence);
+
+    #if defined(DEBUG)
+    if (Result != vk::Result::eSuccess)
+      {
+        std::future<void> ReturnVulkanCheck = std::async (
+            std::launch::async, Patata::Log::VulkanCheck, "Reset Fences", Result);
+      }
+    #endif
+
     vk::PipelineStageFlags PipeLineStageFlags = vk::PipelineStageFlagBits::eColorAttachmentOutput;
 
     vk::SubmitInfo SubmitInfo {};
@@ -110,7 +121,8 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::EndVulkanRender (void)
     SubmitInfo.pWaitSemaphores = &AcquireSemaphore;
     SubmitInfo.pWaitDstStageMask = &PipeLineStageFlags;
 
-    vk::Result Result = Queue.submit(1, &SubmitInfo, nullptr);
+    Result = Queue.submit (1, &SubmitInfo, Fence);
+
     #if defined(DEBUG)
 	if (Result != vk::Result::eSuccess) {
 	    std::future<void> ReturnVulkanCheck = std::async (
@@ -128,6 +140,7 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::EndVulkanRender (void)
     PresentInfo.pWaitSemaphores = &SubmitSemaphore;
 
     Result = Queue.presentKHR(&PresentInfo);
+
     #if defined(DEBUG)
 	if (Result != vk::Result::eSuccess) {
 	    std::future<void> ReturnVulkanCheck = std::async (
@@ -135,8 +148,7 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::EndVulkanRender (void)
     }
     #endif
 
-    if (*pWindowResized || Result == vk::Result::eErrorOutOfDateKHR
-        || Result == vk::Result::eSuboptimalKHR)
+    if (*pWindowResized || Result == vk::Result::eErrorOutOfDateKHR)
       {
         fast_io::io::println (
             #if defined(_WIN64)
@@ -144,17 +156,41 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::EndVulkanRender (void)
             #endif
             "\n", PATATA_TERM_BOLD,
             PATATA_TERM_COLOR_PATATA,
-            "Raccoon Renderer", PATATA_TERM_RESET,
-            " : Recreating SwapChain");
+            "Raccoon Renderer",
+            PATATA_TERM_RESET, 
+            PATATA_TERM_BOLD,
+            " : Recreating SwapChain",
+            PATATA_TERM_RESET);
 
         RecreateSwapChain();
 
         *pWindowResized = false;
-    }
+      }
+    else if (Result == vk::Result::eSuboptimalKHR)
+      {
+          vk::SurfaceCapabilitiesKHR Sc;
+          vk::Result ScResult = PhysicalDevice.getSurfaceCapabilitiesKHR(Surface, &Sc);
+
+          if (ScResult == vk::Result::eSuccess
+              && Sc.currentExtent.width != SwapChainExtent.width
+              || Sc.currentExtent.height != SwapChainExtent.height)
+            {
+              fast_io::io::println (
+                  #if defined(_WIN64)
+                  fast_io::out (),
+                  #endif
+                  "\n", PATATA_TERM_BOLD,
+                  PATATA_TERM_COLOR_PATATA,
+                  "Raccoon Renderer",
+                  PATATA_TERM_RESET,
+                  PATATA_TERM_BOLD,
+                  " : Recreating SwapChain",
+                  PATATA_TERM_RESET);
+
+                RecreateSwapChain();
+            }
+      }
 
     Device.waitIdle();
-
     Queue.waitIdle();
-
-    Device.freeCommandBuffers (CommandPool, 1, &cmd);
 }

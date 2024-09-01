@@ -79,18 +79,18 @@ Patata::Log::VulkanCheck (const std::string & Message,
 #endif
       PATATA_TERM_BOLD, Message, " : ");
 
-  if (Result != vk::Result::eSuccess)
-    fast_io::io::print (
+  if (Result == vk::Result::eSuccess || Result == vk::Result::eSuboptimalKHR)
+      fast_io::io::print (
 #if defined(_WIN64)
-        fast_io::out (),
+          fast_io::out (),
 #endif
-        PATATA_TERM_COLOR_YELLOW);
+          PATATA_TERM_COLOR_GREEN);
   else
     fast_io::io::print (
 #if defined(_WIN64)
         fast_io::out (),
 #endif
-        PATATA_TERM_COLOR_GREEN);
+        PATATA_TERM_COLOR_YELLOW);
 
   fast_io::io::println (
 #if defined(_WIN64)

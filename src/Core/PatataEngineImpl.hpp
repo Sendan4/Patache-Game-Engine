@@ -16,7 +16,7 @@ namespace Patata
 class Engine::EngineImpl
 {
 public:
-  EngineImpl (const std::string &, const uint32_t &, const uint32_t &);
+  EngineImpl (const std::string &);
   ~EngineImpl (void);
 
   Patata::Config Configuration;
@@ -33,8 +33,7 @@ private:
 
   bool LoadConfig (Config &);
 
-  void CreateGameWindow (const std::string &, const uint32_t &,
-                         const uint32_t &);
+  void CreateGameWindow (const std::string &);
 
   #if defined(USE_ICON)
   void SetWindowIcon (void);

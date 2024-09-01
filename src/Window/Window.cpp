@@ -1,9 +1,7 @@
 #include "Window.hpp"
 
 void
-Patata::Engine::EngineImpl::CreateGameWindow (const std::string & Title,
-                                              const uint32_t &    WindowWidth,
-                                              const uint32_t &    WindowHeight)
+Patata::Engine::EngineImpl::CreateGameWindow (const std::string & Title)
 {
   std::string PatataWindowTitle;
 
@@ -31,9 +29,24 @@ Patata::Engine::EngineImpl::CreateGameWindow (const std::string & Title,
 #endif
     }
 
+  uint32_t w = 0, h = 0;
+  SDL_DisplayMode CurrentMode;
+
+  if (SDL_GetCurrentDisplayMode (0, &CurrentMode) == 0)
+    {
+      w = static_cast<uint32_t> (CurrentMode.w * 0.64);
+      h = static_cast<uint32_t> (CurrentMode.h * 0.64);
+    }
+  else
+    {
+      Patata::Log::ErrorMessage ("can't get the current resolution. starting with 480p (1.78)");
+      w = 854;
+      h = 480;
+    }
+
   GameWindow
       = SDL_CreateWindow (PatataWindowTitle.c_str (), SDL_WINDOWPOS_CENTERED,
-                          SDL_WINDOWPOS_CENTERED, WindowWidth, WindowHeight,
+                          SDL_WINDOWPOS_CENTERED, w, h,
                           SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE
                               | SDL_WINDOW_VULKAN | SDL_WINDOW_ALLOW_HIGHDPI);
 

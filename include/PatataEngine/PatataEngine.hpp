@@ -10,7 +10,7 @@ namespace Patata
 class Engine
 {
 public:
-  PATATA_API Engine (const std::string &, const uint32_t &, const uint32_t &);
+  PATATA_API Engine (const std::string &);
   PATATA_API ~Engine (void);
 
   PATATA_API void HandleEvent (SDL_Event & Event); // Patata Events

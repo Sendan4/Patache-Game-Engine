@@ -346,14 +346,15 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::VulkanInfo (
                          "]",
 #endif
       PATATA_TERM_RESET, PATATA_TERM_BOLD, " Present Mode : ", PATATA_TERM_RESET,
-                      vk::to_string (std::get<0> (SWAPCHAIN_INFO)), " ");
+                      vk::to_string (std::get<0> (SWAPCHAIN_INFO)));
 
   // Vulkan Vsync
-    if ((std::get<0> (SWAPCHAIN_INFO) == vk::PresentModeKHR::eFifo
-         || std::get<0> (SWAPCHAIN_INFO) == vk::PresentModeKHR::eFifoRelaxed)
-        && pConfiguration->Vsync)
-      fast_io::io::println (fast_io::out (), PATATA_TERM_COLOR_GREEN, "Vertical Sync",
-                            PATATA_TERM_RESET);
+  if ((std::get<0> (SWAPCHAIN_INFO) == vk::PresentModeKHR::eFifo
+       || std::get<0> (SWAPCHAIN_INFO) == vk::PresentModeKHR::eFifoRelaxed)
+      && pConfiguration->Vsync)
+    fast_io::io::println (fast_io::out (), " ", PATATA_TERM_COLOR_GREEN,
+                          "Vertical Sync", PATATA_TERM_RESET);
+  else fast_io::io::println (fast_io::out ());
 
   // SwapChain Images
   fast_io::io::println (fast_io::out (), PATATA_TERM_BOLD,
