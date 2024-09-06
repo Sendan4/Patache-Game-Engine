@@ -3,9 +3,9 @@
 bool Patata::Graphics::RaccoonRenderer::VulkanBackend::CreateFrameBuffer(void)
 {
     fast_io::io::println (
-    #if defined(_WIN64)
+        #if defined(_WIN64)
         fast_io::out (),
-    #endif
+        #endif
         PATATA_TERM_BOLD,
         "\nSwapChain Frame Buffer : ",
         PATATA_TERM_RESET,
@@ -16,22 +16,22 @@ bool Patata::Graphics::RaccoonRenderer::VulkanBackend::CreateFrameBuffer(void)
     vk::Result Result;
 
     for (uint8_t i = 0; i < SwapChainImageCount; ++i) {
-        vk::FramebufferCreateInfo FrameBufferInfo {};
-        FrameBufferInfo.sType = vk::StructureType::eFramebufferCreateInfo;
-        FrameBufferInfo.pNext = nullptr;
-        FrameBufferInfo.renderPass = RenderPass;
-        FrameBufferInfo.attachmentCount = 1;
-        FrameBufferInfo.pAttachments = &SwapChainColorImageView[i];
-        FrameBufferInfo.width = SwapChainExtent.width;
-        FrameBufferInfo.height = SwapChainExtent.height;
-        FrameBufferInfo.layers = 1;
+        vk::FramebufferCreateInfo FrameBufferInfo ({},
+            RenderPass,                  // renderPass
+            1,                           // attachmentCount
+            &SwapChainColorImageView[i], // pAttachments
+            SwapChainExtent.width,       // width
+            SwapChainExtent.height,      // height
+            1,                           // layers
+            nullptr                      // pNext
+        );
 
         Result = Device.createFramebuffer(&FrameBufferInfo, nullptr, &SwapChainFrameBuffer[i]);
         {
             fast_io::io::print (
-            #if defined(_WIN64)
+                #if defined(_WIN64)
                 fast_io::out (),
-            #endif
+                #endif
                 "  ");
 
             std::future<void> ReturnVulkanCheck
@@ -42,9 +42,9 @@ bool Patata::Graphics::RaccoonRenderer::VulkanBackend::CreateFrameBuffer(void)
     }
 
     fast_io::io::println (
-    #if defined(_WIN64)
+        #if defined(_WIN64)
         fast_io::out (),
-    #endif
+        #endif
         "");
 
     return true;

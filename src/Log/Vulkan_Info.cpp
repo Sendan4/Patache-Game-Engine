@@ -380,6 +380,7 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::VulkanInfo (const std::tuple<v
         || std::get<0> (SWAPCHAIN_INFO) == vk::PresentModeKHR::eFifoRelaxed)
         && pConfiguration->Vsync)
       fast_io::io::println (PATATA_TERM_COLOR_GREEN, "Vertical Sync", PATATA_TERM_RESET);
+  else fast_io::io::println("");
 
   // SwapChain Images
   fast_io::io::println (PATATA_TERM_BOLD, "    Images : ", PATATA_TERM_RESET, SwapChainImageCount);

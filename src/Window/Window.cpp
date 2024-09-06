@@ -44,20 +44,23 @@ Patata::Engine::EngineImpl::CreateGameWindow (const std::string & Title)
       h = 480;
     }
 
-  GameWindow
-      = SDL_CreateWindow (PatataWindowTitle.c_str (), SDL_WINDOWPOS_CENTERED,
+  GameWindow = SDL_CreateWindow (PatataWindowTitle.c_str (), SDL_WINDOWPOS_CENTERED,
                           SDL_WINDOWPOS_CENTERED, w, h,
                           SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE
                               | SDL_WINDOW_VULKAN | SDL_WINDOW_ALLOW_HIGHDPI);
 
   if (!GameWindow)
     {
-      Patata::Log::FatalErrorMessage ("Window cannot be created",
-                                      SDL_GetError (), Configuration);
-      return;
+        std::future<void> Err = std::async(
+            std::launch::async, Patata::Log::FatalErrorMessage, "Window cannot be created", SDL_GetError (), Configuration);
+
+        return;
     }
 
-  Patata::Log::WindowLog (GameWindow);
+  SDL_SetWindowMinimumSize(GameWindow, 640, 360);
+
+  std::future<void> WindowLog = std::async(
+      std::launch::async, Patata::Log::WindowLog, GameWindow);
 }
 
 #if defined(USE_ICON)
@@ -70,27 +73,29 @@ Patata::Engine::EngineImpl::SetWindowIcon (void)
   SDL_Surface * Icon = SDL_LoadBMP (PATATA_GAME_ICON_FILE);
 
   if (Icon == nullptr)
-    Patata::Log::ErrorMessage ("Icon cannot be loaded");
+    std::future<void> Err = std::async(
+        std::launch::async, Patata::Log::ErrorMessage, "Icon cannot be loaded");
   else
     SDL_SetWindowIcon (GameWindow, Icon);
 
   SDL_FreeSurface (Icon);
-#else
+#else // Linux
   SDL_SysWMinfo WindowInfo;
   SDL_VERSION (&WindowInfo.version);
   SDL_GetWindowWMInfo (GameWindow, &WindowInfo);
 
   if (WindowInfo.subsystem == SDL_SYSWM_WAYLAND)
     {
-      Patata::Log::WarningMessage (
-          "Dynamic icons are not supported in Wayland");
+      std::future<void> Err = std::async(
+          std::launch::async, Patata::Log::WarningMessage, "Dynamic icons are not supported in Wayland");
     }
   else
     {
       SDL_Surface * Icon = SDL_LoadBMP (PATATA_GAME_ICON_FILE);
 
       if (Icon == nullptr)
-        Patata::Log::ErrorMessage ("Icon cannot be loaded");
+        std::future<void> Err = std::async(
+            std::launch::async, Patata::Log::ErrorMessage, "Icon cannot be loaded");
       else
         SDL_SetWindowIcon (GameWindow, Icon);
 

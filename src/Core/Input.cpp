@@ -18,12 +18,53 @@ Patata::Engine::EngineImpl::HandleEvent (SDL_Event & Event)
                     if (!PatataFullScreen)
                       {
                         PatataFullScreen = true;
-                        SDL_SetWindowFullscreen (GameWindow, SDL_WINDOW_FULLSCREEN);
+                        SDL_DisplayMode DesktopMode;
+
+                        if (SDL_GetDesktopDisplayMode (0, &DesktopMode) == 0)
+                          {
+                            if (SDL_SetWindowDisplayMode (GameWindow, &DesktopMode) != 0)
+                              {
+                                std::future<void> Err = std::async (
+                                    std::launch::async,
+                                    Patata::Log::ErrorMessage,
+                                    "Unable to apply full screen resolution");
+                              }
+                            else
+                              {
+                                fast_io::io::println (
+                                    #if defined(_WIN64)
+                                    fast_io::out (),
+                                    #endif
+                                    PATATA_TERM_BOLD,
+                                    "FullScreen Resolution : ",
+                                    PATATA_TERM_RESET, DesktopMode.w, " x ", DesktopMode.h,
+                                    " | ", DesktopMode.refresh_rate, " Hz");
+                              }
+                          }
+                        else
+                          {
+                            std::future<void> Err = std::async (
+                                std::launch::async, Patata::Log::ErrorMessage,
+                                "Could not obtain desktop display mode");
+                          }
+
+                        if (SDL_SetWindowFullscreen (GameWindow, SDL_WINDOW_FULLSCREEN) != 0)
+                          {
+                            std::future<void> Err = std::async (
+                                std::launch::async,
+                                Patata::Log::ErrorMessage,
+                                "Could not switch to full screen mode");
+                          }
                       }
                     else
                       {
                         PatataFullScreen = false;
-                        SDL_SetWindowFullscreen (GameWindow, 0);
+                        if (SDL_SetWindowFullscreen (GameWindow, 0) != 0)
+                          {
+                            std::future<void> Err = std::async (
+                                std::launch::async, Patata::Log::ErrorMessage,
+                                "could not switch to window mode");
+                          }
                       }
                   }
             }

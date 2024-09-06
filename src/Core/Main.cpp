@@ -1,6 +1,7 @@
 #if defined(__linux__)
 #include <cstdlib>
 #endif
+#include <future>
 
 #include <fast_io.h>
 #if defined(_WIN64)
@@ -19,19 +20,25 @@
 // Private API
 Patata::Engine::EngineImpl::EngineImpl (const std::string & WindowTitle)
 {
-  Patata::Log::StartPatataLogInfo ();
+  {
+     std::future<void> PatataStarLogInfo = std::async(
+         std::launch::async, Patata::Log::StartPatataLogInfo);
+  }
 
+  // TODO : async load config
   if (!LoadConfig(Configuration)) return;
 
 #if defined(__linux__)
   if (Configuration.PreferWayland)
     if (setenv ("SDL_VIDEODRIVER", "wayland", 1) != 0)
-      Patata::Log::ErrorMessage (
-          "Cannot set enviroment varible SDL_VIDEODRIVER");
+        std::future<void> Err = std::async(std::launch::async,
+           Patata::Log::ErrorMessage,
+           "Cannot set enviroment varible SDL_VIDEODRIVER");
 
   if (Configuration.EnableMangoHud) {
       if (setenv ("MANGOHUD", "1", 1) != 0)
-        Patata::Log::ErrorMessage (
+        std::future<void> Err = std::async(std::launch::async,
+            Patata::Log::ErrorMessage,
             "Cannot set enviroment varible MANGOHUD");
   }
 #endif
@@ -39,39 +46,57 @@ Patata::Engine::EngineImpl::EngineImpl (const std::string & WindowTitle)
 #if defined(PATATA_FIND_VVL_IN_THE_CURRENT_PATH)
 #if defined(_WIN64)
   if (SetEnvironmentVariable ("VK_LAYER_PATH", SDL_GetBasePath ()) == 0)
-    Patata::Log::ErrorMessage ("Cannot set enviroment varible VK_LAYER_PATH");
+    std::future<void> Err = std::async(std::launch::async,
+      Patata::Log::ErrorMessage,
+      "Cannot set enviroment varible VK_LAYER_PATH");
 #else
   if (setenv ("VK_LAYER_PATH", SDL_GetBasePath (), 1) != 0)
-    Patata::Log::ErrorMessage ("Cannot set enviroment varible VK_LAYER_PATH");
+    std::future<void> Err = std::async(std::launch::async,
+        Patata::Log::ErrorMessage,
+        "Cannot set enviroment varible VK_LAYER_PATH");
 #endif
 #endif
 
 #if defined(PATATA_FIND_VVL_FROM_SDK) && defined(_WIN64)
   if (SetEnvironmentVariable ("VK_LAYER_PATH", PATATA_VVL_SDK_PATH) == 0)
-    Patata::Log::ErrorMessage ("Cannot set enviroment varible VK_LAYER_PATH");
+    std::future<void> Err = std::async(std::launch::async,
+        Patata::Log::ErrorMessage,
+        "Cannot set enviroment varible VK_LAYER_PATH");
 #endif
 
+  // Wait LoadConfig here
   // SDL Subsystems
   if (SDL_Init (SDL_INIT_VIDEO) != 0)
     {
-      Patata::Log::FatalErrorMessage (
-          "SDL2", "Cannot init the video subsystem", Configuration);
-      throw Patata::RunTimeError ("SDL Cannot init the video subsystem");
+      std::future<void> Err = std::async(std::launch::async,
+            Patata::Log::FatalErrorMessage,
+            "Patata Engine - SDL2",
+            "Cannot init the video subsystem",
+            Configuration);
+
+      return;
     }
 
   if (SDL_Init (SDL_INIT_EVENTS) != 0)
     {
-      Patata::Log::FatalErrorMessage (
-          "SDL2", "Cannot init the events subsystem", Configuration);
-      throw Patata::RunTimeError ("SDL Cannot init the events subsystem");
+        std::future<void> Err = std::async(std::launch::async,
+              Patata::Log::FatalErrorMessage,
+              "Patata Engine - SDL2",
+              "Cannot init the events subsystem",
+              Configuration);
+
+        return;
     }
 
   if (SDL_Init (SDL_INIT_GAMECONTROLLER) != 0)
     {
-      Patata::Log::FatalErrorMessage (
-          "SDL2", "Cannot init the gamecontroller subsystem", Configuration);
-      throw Patata::RunTimeError (
-          "SDL Cannot init the GameController subsystem");
+        std::future<void> Err = std::async(std::launch::async,
+              Patata::Log::FatalErrorMessage,
+              "Patata Engine - SDL2",
+              "Cannot init the gamecontroller subsystem",
+              Configuration);
+
+        return;
     }
 
   CreateGameWindow (WindowTitle);

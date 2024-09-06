@@ -21,12 +21,12 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::VulkanBackend (
   GraphicsQueueFamilyIndex = CreateLogicalDeviceAndCreateQueue ();
 
   fast_io::io::print (
-#if defined(_WIN64)
-      fast_io::out (),
-#endif
-      PATATA_TERM_RESET,
-      PATATA_TERM_BOLD,
-      "SDL Create Window Surface : ", PATATA_TERM_RESET);
+    #if defined(_WIN64)
+    fast_io::out (),
+    #endif
+    PATATA_TERM_RESET,
+    PATATA_TERM_BOLD,
+    "SDL Create Window Surface : ", PATATA_TERM_RESET);
 
   // Create a surface for the window to draw on
   if (SDL_Vulkan_CreateSurface (pWindow, Instance,
@@ -80,6 +80,9 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::VulkanBackend (
 
 Patata::Graphics::RaccoonRenderer::VulkanBackend::~VulkanBackend (void)
 {
+  Device.waitIdle();
+  Queue.waitIdle();
+
   // Primitivas de sincronizacion
   Device.destroySemaphore (AcquireSemaphore);
   Device.destroySemaphore (SubmitSemaphore);

@@ -22,8 +22,8 @@ public:
   Patata::Config Configuration;
 
   void HandleEvent (SDL_Event &);
-  void BeginRender (void);
-  void EndRender (void);
+  void BeginRender (SDL_Event &);
+  void EndRender (SDL_Event &);
   void ClearColor (const float & R, const float & G, const float & B, const float & A);
 
 private:

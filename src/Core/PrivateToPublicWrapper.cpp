@@ -24,15 +24,15 @@ Patata::Engine::HandleEvent (SDL_Event & Event)
 }
 
 void
-Patata::Engine::BeginRender (void)
+Patata::Engine::BeginRender (SDL_Event & Event)
 {
-  pPatataEngine->BeginRender ();
+  pPatataEngine->BeginRender (Event);
 }
 
 void
-Patata::Engine::EndRender (void)
+Patata::Engine::EndRender (SDL_Event & Event)
 {
-  pPatataEngine->EndRender ();
+  pPatataEngine->EndRender (Event);
 }
 
 void

@@ -3,15 +3,15 @@
 #include "RenderWrapper.hpp"
 
 void
-Patata::Engine::EngineImpl::BeginRender (void)
+Patata::Engine::EngineImpl::BeginRender (SDL_Event & Event)
 {
-	RaccoonRenderer->BeginRender();
+	RaccoonRenderer->BeginRender(Event);
 }
 
 void
-Patata::Engine::EngineImpl::EndRender (void)
+Patata::Engine::EngineImpl::EndRender (SDL_Event & Event)
 {
-	RaccoonRenderer->EndRender();
+	RaccoonRenderer->EndRender(Event);
 }
 
 void

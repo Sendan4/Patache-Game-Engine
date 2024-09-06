@@ -18,8 +18,8 @@ public: // Raccoon Frontend
   RaccoonRenderer (Patata::Config &, SDL_Window *, bool &);
   ~RaccoonRenderer (void);
 
-  void BeginRender(void);
-  void EndRender(void);
+  void BeginRender (SDL_Event &);
+  void EndRender (SDL_Event &);
   void ClearColor(const float & R, const float & G, const float & B, const float & A);
 
 private:
@@ -29,8 +29,8 @@ private:
     VulkanBackend (Patata::Config &, SDL_Window *, bool &);
     ~VulkanBackend (void);
 
-    void BeginVulkanRender (void);
-    void EndVulkanRender (void);
+    void BeginVulkanRender (SDL_Event &);
+    void EndVulkanRender (SDL_Event &);
     void VulkanClearColor(const float & R, const float & G, const float & B, const float & A);
 
   private:
@@ -59,7 +59,7 @@ private:
     void CreatePipeline (void);
     bool CreateSemaphores(void);
     bool CreateFence(void);
-    void RecreateSwapChain(void);
+    void RecreateSwapChain (SDL_Event &);
     void
     VulkanInfo (const std::tuple<vk::PresentModeKHR, vk::Format, vk::ColorSpaceKHR> &);
 

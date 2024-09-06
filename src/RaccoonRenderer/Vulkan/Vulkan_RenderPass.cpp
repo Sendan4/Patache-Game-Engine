@@ -3,31 +3,43 @@
 bool
 Patata::Graphics::RaccoonRenderer::VulkanBackend::CreateRenderPass (const std::tuple<vk::PresentModeKHR, vk::Format, vk::ColorSpaceKHR> & SwapChainInfo)
 {
-    vk::AttachmentDescription ColorAttachmentDescriptionInfo {};
-    ColorAttachmentDescriptionInfo.format = std::get<1>(SwapChainInfo);
-    ColorAttachmentDescriptionInfo.samples = vk::SampleCountFlagBits::e1;
-    ColorAttachmentDescriptionInfo.loadOp = vk::AttachmentLoadOp::eClear;
-    ColorAttachmentDescriptionInfo.storeOp = vk::AttachmentStoreOp::eStore;
-    ColorAttachmentDescriptionInfo.stencilLoadOp = vk::AttachmentLoadOp::eDontCare;
-    ColorAttachmentDescriptionInfo.stencilStoreOp = vk::AttachmentStoreOp::eDontCare;
-    ColorAttachmentDescriptionInfo.initialLayout = vk::ImageLayout::eUndefined;
-    ColorAttachmentDescriptionInfo.finalLayout = vk::ImageLayout::ePresentSrcKHR;
+    vk::AttachmentDescription ColorAttachmentDescriptionInfo ({},
+        std::get<1>(SwapChainInfo),       // format
+        vk::SampleCountFlagBits::e1,      // samples
+        vk::AttachmentLoadOp::eClear,     // loadOp
+        vk::AttachmentStoreOp::eStore,    // storeOp
+        vk::AttachmentLoadOp::eDontCare,  // stencilLoadOp
+        vk::AttachmentStoreOp::eDontCare, // stencilStoreOp
+        vk::ImageLayout::eUndefined,      // initialLayout
+        vk::ImageLayout::ePresentSrcKHR   // finalLayout
+    );
 
-    vk::AttachmentReference ColorAttachmentRef {};
-    ColorAttachmentRef.attachment = 0;
-    ColorAttachmentRef.layout = vk::ImageLayout::eColorAttachmentOptimal;
+    vk::AttachmentReference ColorAttachmentRef (
+        0,                                        // attachment
+        vk::ImageLayout::eColorAttachmentOptimal  // layout
+    );
 
-    vk::SubpassDescription SubpassDescriptionInfo {};
-    SubpassDescriptionInfo.pipelineBindPoint = vk::PipelineBindPoint::eGraphics;
-    SubpassDescriptionInfo.colorAttachmentCount = 1;
-    SubpassDescriptionInfo.pColorAttachments = &ColorAttachmentRef;
+    vk::SubpassDescription SubpassDescriptionInfo ({},
+        vk::PipelineBindPoint::eGraphics, // pipelineBindPoint
+        0,                                // inputAttachmentCount
+        nullptr,                          // pInputAttachments
+        1,                                // colorAttachmentCount
+        &ColorAttachmentRef,              // pColorAttachments
+        nullptr,                          // pResolveAttachments
+        nullptr,                          // pDepthStencilAttachment
+        0,                                // preserveAttachmentCount
+        nullptr                           // pPreserveAttachments
+    );
 
-    vk::RenderPassCreateInfo RenderPassCreateInfo {};
-    RenderPassCreateInfo.sType = vk::StructureType::eRenderPassCreateInfo;
-    RenderPassCreateInfo.attachmentCount = 1;
-    RenderPassCreateInfo.pAttachments = &ColorAttachmentDescriptionInfo;
-    RenderPassCreateInfo.subpassCount = 1;
-    RenderPassCreateInfo.pSubpasses = &SubpassDescriptionInfo;
+    vk::RenderPassCreateInfo RenderPassCreateInfo ({},
+        1,                               // attachmentCount
+        &ColorAttachmentDescriptionInfo, // pAttachments
+        1,                               // subpassCount
+        &SubpassDescriptionInfo,         // pSubpasses
+        0,                               // dependencyCount
+        nullptr,                         // pDependencies
+        nullptr                          // pNext
+    );
 
     vk::Result Result = Device.createRenderPass(&RenderPassCreateInfo, nullptr, &RenderPass);
     {

@@ -2,13 +2,12 @@
 
 bool
 Patata::Graphics::RaccoonRenderer::VulkanBackend::CreateCommandPool (void) {
-    vk::CommandPoolCreateInfo CommandPoolInfo {};
-    CommandPoolInfo.sType = vk::StructureType::eCommandPoolCreateInfo;
-    CommandPoolInfo.pNext = nullptr;
-    CommandPoolInfo.flags
-        = vk::CommandPoolCreateFlagBits::eTransient
-          | vk::CommandPoolCreateFlagBits::eResetCommandBuffer;
-    CommandPoolInfo.queueFamilyIndex = GraphicsQueueFamilyIndex;
+    vk::CommandPoolCreateInfo CommandPoolInfo (
+        vk::CommandPoolCreateFlagBits::eTransient             // flags
+        | vk::CommandPoolCreateFlagBits::eResetCommandBuffer, // flags
+        GraphicsQueueFamilyIndex,                             // queueFamilyIndex
+        nullptr                                               // pNext
+    );
 
     vk::Result Result = Device.createCommandPool (&CommandPoolInfo,
                                                   nullptr, &CommandPool);
@@ -25,15 +24,14 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::CreateCommandPool (void) {
 bool
 Patata::Graphics::RaccoonRenderer::VulkanBackend::CreateCommandBuffer (void)
 {
-    vk::CommandBufferAllocateInfo cmdAllocateInfo {};
-    cmdAllocateInfo.sType       = vk::StructureType::eCommandBufferAllocateInfo;
-    cmdAllocateInfo.pNext       = nullptr;
-    cmdAllocateInfo.commandPool = CommandPool;
-    cmdAllocateInfo.level       = vk::CommandBufferLevel::ePrimary;
-    cmdAllocateInfo.commandBufferCount = 1;
+    vk::CommandBufferAllocateInfo cmdAllocateInfo (
+        CommandPool,                      // commandPool
+        vk::CommandBufferLevel::ePrimary, // level
+        1,                                // commandBufferCount
+        nullptr                           // pNext
+    );
 
     vk::Result Result = Device.allocateCommandBuffers (&cmdAllocateInfo, &cmd);
-
     {
         std::future<void> ReturnVulkanCheck = std::async (
             std::launch::async, Patata::Log::VulkanCheck, "Allocate Command Buffer", Result);
