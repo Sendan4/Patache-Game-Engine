@@ -14,6 +14,23 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::VulkanInfo (const std::tuple<v
 
   const uint32_t VulkanVersion = PhysicalDeviceProperties.properties.apiVersion;
 
+  #if defined (DEBUG)
+  pRaccoonInfo->pPatataEngineInfo->VkVersionInUse = std::to_string (VK_VERSION_MAJOR (VulkanVersion)) + '.'
+    + std::to_string (VK_VERSION_MINOR (VulkanVersion)) + '.'
+    + std::to_string (VK_VERSION_PATCH (VulkanVersion)) + '.'
+    + std::to_string (VK_API_VERSION_VARIANT (VulkanVersion));
+  pRaccoonInfo->pPatataEngineInfo->VkDeviceName = static_cast<std::string>(PhysicalDeviceProperties.properties.deviceName);
+  pRaccoonInfo->pPatataEngineInfo->VkDeviceVendorId = static_cast<uint32_t>(PhysicalDeviceProperties.properties.vendorID);
+  pRaccoonInfo->pPatataEngineInfo->VkDeviceType = vk::to_string (PhysicalDeviceProperties.properties.deviceType);
+  pRaccoonInfo->pPatataEngineInfo->VkDriverName = static_cast<std::string>(Driver.driverName);
+  pRaccoonInfo->pPatataEngineInfo->VkDriverId = vk::to_string(Driver.driverID);
+  pRaccoonInfo->pPatataEngineInfo->VkDriverInfo = static_cast<std::string>(Driver.driverInfo);
+  pRaccoonInfo->pPatataEngineInfo->VkDriverVersion = std::to_string (VK_VERSION_MAJOR (PhysicalDeviceProperties.properties.driverVersion)) + '.'
+    + std::to_string (VK_VERSION_MINOR (PhysicalDeviceProperties.properties.driverVersion)) + '.'
+    + std::to_string (VK_VERSION_PATCH (PhysicalDeviceProperties.properties.driverVersion)) + '.'
+    + std::to_string (VK_API_VERSION_VARIANT (PhysicalDeviceProperties.properties.driverVersion));
+  #endif
+
   fast_io::io::println(PATATA_TERM_BOLD, "  Version", PATATA_TERM_RESET);
 
 // Vulkan Loader Version
@@ -58,7 +75,6 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::VulkanInfo (const std::tuple<v
 
     fast_io::io::println (vk_version, "\n");
   }
-
 
   fast_io::io::println(
 		PATATA_TERM_DIM, PATATA_TERM_COLOR_GRAY0,
@@ -211,7 +227,6 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::VulkanInfo (const std::tuple<v
         break;
       }
     fast_io::io::println (PhysicalDeviceProperties.properties.vendorID, PATATA_TERM_RESET);
-
   }
 
   // Device Type
@@ -378,7 +393,7 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::VulkanInfo (const std::tuple<v
   // Vulkan Vsync
   if ((std::get<0> (SWAPCHAIN_INFO) == vk::PresentModeKHR::eFifo
         || std::get<0> (SWAPCHAIN_INFO) == vk::PresentModeKHR::eFifoRelaxed)
-        && pConfiguration->Vsync)
+        && pRaccoonInfo->pConfiguration->Vsync)
       fast_io::io::println (PATATA_TERM_COLOR_GREEN, "Vertical Sync", PATATA_TERM_RESET);
   else fast_io::io::println("");
 
@@ -425,18 +440,18 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::VulkanInfo (const std::tuple<v
 
 #if defined(DEBUG)
   fast_io::io::println (PATATA_TERM_BOLD,
-                        "    Validation Layer : ", PATATA_TERM_RESET,
+                        "    Validation Layers : ", PATATA_TERM_RESET,
                         PATATA_TERM_COLOR_GREEN, "Enabled", PATATA_TERM_RESET);
 
 // Vulkan Validation Layer Version
 #if defined(PATATA_VULKAN_VALIDATION_LAYERS_VERSION)
   fast_io::io::println (PATATA_TERM_BOLD,
-                        "    Validation Layer Version : ", PATATA_TERM_RESET,
+                        "    Validation Layers Version : ", PATATA_TERM_RESET,
                         PATATA_VULKAN_VALIDATION_LAYERS_VERSION);
 #endif
 #else
   fast_io::io::println (
-      PATATA_TERM_BOLD, "    Validation Layer : ", PATATA_TERM_RESET,
+      PATATA_TERM_BOLD, "    Validation Layers : ", PATATA_TERM_RESET,
       PATATA_TERM_COLOR_YELLOW, "Disabled", PATATA_TERM_RESET);
 #endif
 

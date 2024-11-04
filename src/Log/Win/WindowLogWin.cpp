@@ -1,7 +1,12 @@
 #include "WindowLog.hpp"
 
 void
+#if defined(DEBUG)
+Patata::Log::WindowLog (SDL_Window *         Window,
+                        Patata::EngineInfo & PatataEngineInfo)
+#else
 Patata::Log::WindowLog (SDL_Window * Window)
+#endif
 {
   HANDLE Terminal = GetStdHandle (STD_OUTPUT_HANDLE);
   DWORD  mode     = 0;
@@ -25,6 +30,10 @@ Patata::Log::WindowLog (SDL_Window * Window)
   SDL_SysWMinfo WindowInfo;
   SDL_VERSION (&WindowInfo.version);
   SDL_GetWindowWMInfo (Window, &WindowInfo);
+
+  #if defined(DEBUG)
+  PatataEngineInfo.WindowInfo = WindowInfo;
+  #endif
 
   switch (WindowInfo.subsystem)
     {
@@ -99,6 +108,9 @@ Patata::Log::WindowLog (SDL_Window * Window)
                         "  Window creation flags :", PATATA_TERM_COLOR_GRAY1);
 
   uint32_t WindowFlags = SDL_GetWindowFlags (Window);
+  #if defined(DEBUG)
+  PatataEngineInfo.WindowCreationFlags = WindowFlags;
+  #endif
 
   if (WindowFlags & SDL_WINDOW_FULLSCREEN)
     fast_io::io::println (fast_io::out (), "    fullscreen window");

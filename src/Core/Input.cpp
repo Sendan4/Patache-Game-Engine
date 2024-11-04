@@ -72,9 +72,9 @@ Patata::Engine::EngineImpl::HandleEvent (SDL_Event & Event)
       }
 
       if (Event.type == SDL_WINDOWEVENT && Event.window.event == SDL_WINDOWEVENT_RESIZED)
-        WindowResized = true;
+          WindowResized = true;
 
 #if defined(DEBUG)
-  // ImGui_ImplSDL2_ProcessEvent (&Event);
+  ImGui_ImplSDL2_ProcessEvent (&Event);
 #endif
 }

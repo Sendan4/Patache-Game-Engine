@@ -1,5 +1,6 @@
 #pragma once
 
+#include <csignal>
 #ifndef YAML_CPP_API
 #define YAML_CPP_API
 #endif
@@ -10,6 +11,9 @@
 #include "PatataEngine/PatataEngine.hpp"
 #include "RaccoonRenderer.hpp"
 #include "Config.hpp"
+#if defined(DEBUG)
+#include "EngineInfo.hpp"
+#endif
 
 namespace Patata
 {
@@ -20,16 +24,29 @@ public:
   ~EngineImpl (void);
 
   Patata::Config Configuration;
+  Patata::ClearColor ClearColor {};
 
   void HandleEvent (SDL_Event &);
-  void BeginRender (SDL_Event &);
+  bool BeginRender (SDL_Event &);
   void EndRender (SDL_Event &);
-  void ClearColor (const float & R, const float & G, const float & B, const float & A);
 
 private:
   SDL_Window *                        GameWindow      = nullptr;
   Patata::Graphics::RaccoonRenderer * RaccoonRenderer = nullptr;
   bool WindowResized = false;
+  #if defined(DEBUG)
+  Patata::EngineInfo PatataEngineInfo;
+  #endif
+
+  Patata::Graphics::RaccoonRendererCreateInfo RaccoonInfo {
+    .pConfiguration = &Configuration,
+    .ppWindow = &GameWindow,
+    .pWindowResized = &WindowResized,
+    .pClearColor = &ClearColor,
+    #if defined(DEBUG)
+    .pPatataEngineInfo = &PatataEngineInfo
+    #endif
+  };
 
   bool LoadConfig (Config &);
 
@@ -40,24 +57,7 @@ private:
   #endif
 
 #if defined(DEBUG)
-  void SetupImGUIBackend (void);
-  void ImGuiStartFrame (void);
-  void DrawDebugUI (void);
-  void ImGuiEndFrame (void);
+  void InitialImguiSetup (void);
 #endif
-};
-
-class RunTimeError : public std::exception
-{
-private:
-  std::string message;
-
-public:
-  RunTimeError (const std::string & msg) : message (msg) {}
-  std::string
-  what (void)
-  {
-    return message;
-  }
 };
 } // namespace Patata

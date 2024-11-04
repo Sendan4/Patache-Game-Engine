@@ -14,3 +14,6 @@
 // Patata Engine
 #include "Log.hpp"
 #include "TerminalColors.hpp"
+#if defined(DEBUG)
+#include "EngineInfo.hpp"
+#endif

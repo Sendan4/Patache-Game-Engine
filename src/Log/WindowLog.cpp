@@ -1,7 +1,11 @@
 #include "WindowLog.hpp"
 
 void
+#if defined(DEBUG)
+Patata::Log::WindowLog (SDL_Window * Window, Patata::EngineInfo & PatataEngineInfo)
+#else
 Patata::Log::WindowLog (SDL_Window * Window)
+#endif
 {
   fast_io::io::println (
       PATATA_TERM_DIM, PATATA_TERM_COLOR_GRAY0,
@@ -18,6 +22,10 @@ Patata::Log::WindowLog (SDL_Window * Window)
 
     // Desktop
     const char * XDG_CURRENT_DESKTOP = getenv ("XDG_CURRENT_DESKTOP");
+
+    #if defined (DEBUG)
+    PatataEngineInfo.Desktop = XDG_CURRENT_DESKTOP;
+    #endif
 
     if (XDG_CURRENT_DESKTOP != nullptr)
         fast_io::io::println (
@@ -37,6 +45,11 @@ Patata::Log::WindowLog (SDL_Window * Window)
   SDL_VERSION (&WindowInfo.version);
   SDL_GetWindowWMInfo (Window, &WindowInfo);
   const char * XDG_SESSION_TYPE = getenv ("XDG_SESSION_TYPE");
+
+  #if defined (DEBUG)
+  PatataEngineInfo.WindowInfo = WindowInfo;
+  PatataEngineInfo.SessionType = XDG_SESSION_TYPE;
+  #endif
 
   switch (WindowInfo.subsystem)
     {
@@ -162,7 +175,7 @@ Patata::Log::WindowLog (SDL_Window * Window)
                                 ") XDG_SESSION_TYPE] ", PATATA_TERM_RESET,
                                 std::string_view{ XDG_SESSION_TYPE });
 
-          if (WindowInfo.info.x11.window != nullptr)
+          if (!WindowInfo.info.x11.window)
             fast_io::io::println (
               PATATA_TERM_DIM, PATATA_TERM_COLOR_GRAY0,
 #if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
@@ -234,6 +247,9 @@ Patata::Log::WindowLog (SDL_Window * Window)
         "  Window creation flags :", PATATA_TERM_RESET);
 
     uint32_t WindowFlags = SDL_GetWindowFlags (Window);
+    #if defined (DEBUG)
+    PatataEngineInfo.WindowCreationFlags = WindowFlags;
+    #endif
 
     if (WindowFlags & SDL_WINDOW_FULLSCREEN)
       fast_io::io::println ("    fullscreen window");

@@ -78,7 +78,7 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::CreateLogicalDeviceAndCreateQu
           Patata::Log::FatalErrorMessage,
           "Patata Engine - Raccoon Renderer",
           "No Queue found for graphics",
-          *pConfiguration);
+          *pRaccoonInfo->pConfiguration);
 
 	  return std::numeric_limits<uint32_t>::max();
   }
@@ -93,6 +93,12 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::CreateLogicalDeviceAndCreateQu
   );
 
   const char * DeviceExtensions[1] { "VK_KHR_swapchain" };
+
+  #if defined (DEBUG)
+  pRaccoonInfo->pPatataEngineInfo->VkDeviceExtensions = new const char * [1];
+  pRaccoonInfo->pPatataEngineInfo->VkDeviceExtensions[0] = DeviceExtensions[0];
+  pRaccoonInfo->pPatataEngineInfo->VkDeviceExtensionsCount = 1;
+  #endif
 
   // Logical Device Info
   vk::DeviceCreateInfo DeviceCreateInfo ({},
@@ -115,8 +121,8 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::CreateLogicalDeviceAndCreateQu
         ""
     );
 
-    std::future<void> ReturnVulkanList = std::async(
-        std::launch::async, Patata::Log::VulkanList, DeviceExtensions, std::size (DeviceExtensions) - 1, "Device Extensions");
+    std::future<void> ReturnVulkanList = std::async(std::launch::async,
+        Patata::Log::VulkanList, DeviceExtensions, std::size (DeviceExtensions) - 1, "Device Extensions");
   }
 
   vk::Result Result = PhysicalDevice.createDevice (&DeviceCreateInfo, nullptr, &Device);
@@ -133,7 +139,7 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::CreateLogicalDeviceAndCreateQu
           Patata::Log::FatalErrorMessage,
           "Patata Engine - Raccoon Renderer",
           "Logical device creation failed",
-          *pConfiguration);
+          *pRaccoonInfo->pConfiguration);
 
       return std::numeric_limits<uint32_t>::max();
   }

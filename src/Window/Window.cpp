@@ -51,16 +51,20 @@ Patata::Engine::EngineImpl::CreateGameWindow (const std::string & Title)
 
   if (!GameWindow)
     {
-        std::future<void> Err = std::async(
-            std::launch::async, Patata::Log::FatalErrorMessage, "Window cannot be created", SDL_GetError (), Configuration);
+        std::future<void> Err = std::async(std::launch::async,
+            Patata::Log::FatalErrorMessage, "Window cannot be created", SDL_GetError (), Configuration);
 
         return;
     }
 
   SDL_SetWindowMinimumSize(GameWindow, 640, 360);
 
-  std::future<void> WindowLog = std::async(
-      std::launch::async, Patata::Log::WindowLog, GameWindow);
+  #if defined (DEBUG)
+  Patata::Log::WindowLog(GameWindow, PatataEngineInfo);
+  #else
+  std::future<void> Log = std::async(std::launch::async,
+      Patata::Log::WindowLog, GameWindow);
+  #endif
 }
 
 #if defined(USE_ICON)

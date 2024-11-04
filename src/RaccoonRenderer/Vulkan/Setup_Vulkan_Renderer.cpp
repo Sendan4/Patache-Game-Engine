@@ -1,11 +1,8 @@
 #include "Setup_Vulkan_Renderer.hpp"
 
-Patata::Graphics::RaccoonRenderer::VulkanBackend::VulkanBackend (
-    Patata::Config & Config, SDL_Window * Window, bool & WindowResized)
+Patata::Graphics::RaccoonRenderer::VulkanBackend::VulkanBackend (Patata::Graphics::RaccoonRendererCreateInfo * RaccoonInfo)
 {
-  pWindow = Window;
-  pWindowResized = &WindowResized;
-  pConfiguration = &Config;
+  pRaccoonInfo = RaccoonInfo;
 
   if (!CreateInstance ())
     return;
@@ -20,6 +17,11 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::VulkanBackend (
   */
   GraphicsQueueFamilyIndex = CreateLogicalDeviceAndCreateQueue ();
 
+  #if defined(DEBUG)
+  CreateImguiDescriptorPool();
+  CreateImguiPipelineCache();
+  #endif
+
   fast_io::io::print (
     #if defined(_WIN64)
     fast_io::out (),
@@ -29,8 +31,9 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::VulkanBackend (
     "SDL Create Window Surface : ", PATATA_TERM_RESET);
 
   // Create a surface for the window to draw on
-  if (SDL_Vulkan_CreateSurface (pWindow, Instance,
+  if (SDL_Vulkan_CreateSurface (*pRaccoonInfo->ppWindow, Instance,
                                 reinterpret_cast<VkSurfaceKHR *> (&Surface)))
+
     {
       fast_io::io::println (
 #if defined(_WIN64)
@@ -46,7 +49,7 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::VulkanBackend (
 #endif
           PATATA_TERM_COLOR_YELLOW, "Fail", PATATA_TERM_RESET);
 
-      Patata::Log::FatalErrorMessage ("SDL", SDL_GetError (), *pConfiguration);
+      Patata::Log::FatalErrorMessage ("SDL", SDL_GetError (), *pRaccoonInfo->pConfiguration);
       return;
     }
 
@@ -75,22 +78,46 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::VulkanBackend (
 
   if(!CreateSemaphores()) return;
 
+  if (!CreatePipeline()) return;
+
+  #if defined(DEBUG)
+  VulkanImguiSetup (*pRaccoonInfo->ppWindow);
+  #endif
+
   VulkanInfo (SwapChainInfo);
 }
 
 Patata::Graphics::RaccoonRenderer::VulkanBackend::~VulkanBackend (void)
 {
-  Device.waitIdle();
-  Queue.waitIdle();
+  vk::Result Result = Device.waitIdle();
+
+  {
+      std::future<void> ReturnVulkanCheck = std::async (std::launch::async,
+          Patata::Log::VulkanCheck, "Device Wait Idle", Result);
+  }
+
+  Result = Queue.waitIdle();
+
+  {
+      std::future<void> ReturnVulkanCheck = std::async (std::launch::async,
+          Patata::Log::VulkanCheck, "Queue Wait Idle", Result);
+  }
+
+  // Imgui
+  #if defined(DEBUG)
+  ImGui_ImplVulkan_Shutdown();
+  Device.destroyDescriptorPool(ImguiDescriptorPool);
+  Device.destroyPipelineCache(ImguiPipelineCache);
+  #endif
 
   // Primitivas de sincronizacion
   Device.destroySemaphore (AcquireSemaphore);
   Device.destroySemaphore (SubmitSemaphore);
 
-  vk::Result Result = Device.waitForFences (1, &Fence, true, std::numeric_limits<uint64_t>::max ());
+  Result = Device.waitForFences (1, &Fence, true, std::numeric_limits<uint64_t>::max ());
   {
-      std::future<void> ReturnVulkanCheck = std::async (
-          std::launch::async, Patata::Log::VulkanCheck, "Wait For Fences", Result);
+      std::future<void> ReturnVulkanCheck = std::async (std::launch::async,
+          Patata::Log::VulkanCheck, "Wait For Fences", Result);
   }
 
   Device.destroyFence (Fence);

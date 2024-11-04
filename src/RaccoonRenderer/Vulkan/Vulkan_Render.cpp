@@ -1,6 +1,6 @@
 #include "Vulkan_Render.hpp"
 
-void
+bool
 Patata::Graphics::RaccoonRenderer::VulkanBackend::BeginVulkanRender (SDL_Event & Event)
 {
     vk::Result Result = Device.waitForFences (1, &Fence, true, std::numeric_limits<uint64_t>::max ());
@@ -43,11 +43,11 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::BeginVulkanRender (SDL_Event &
     #endif
 
     // Resize
-    if (*pWindowResized || Result == vk::Result::eErrorOutOfDateKHR)
+    if (*pRaccoonInfo->pWindowResized || Result == vk::Result::eErrorOutOfDateKHR || Result == vk::Result::eSuboptimalKHR)
       {
         RecreateSwapChain(Event);
-        *pWindowResized = false;
-        return;
+        *pRaccoonInfo->pWindowResized = false;
+        return false;
       }
 
     vk::CommandBufferBeginInfo cmdBufferBeginInfo (
@@ -67,14 +67,75 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::BeginVulkanRender (SDL_Event &
     #endif
 
     CmdIsReady = true;
+
+    // Begin RenderPass
+    {
+        vk::ClearColorValue Color {};
+        Color.float32[0] = pRaccoonInfo->pClearColor->r;
+        Color.float32[1] = pRaccoonInfo->pClearColor->g;
+        Color.float32[2] = pRaccoonInfo->pClearColor->b;
+        Color.float32[3] = pRaccoonInfo->pClearColor->a;
+
+        vk::ClearValue ClearValue {};
+        ClearValue.color = Color;
+
+        vk::Rect2D renderArea {};
+        renderArea.offset = vk::Offset2D { 0, 0 };
+        renderArea.extent = vk::Extent2D { SwapChainExtent.width, SwapChainExtent.height };
+
+        vk::RenderPassBeginInfo Info (
+            RenderPass,                       // renderPass
+            SwapChainFrameBuffer[ImageIndex], // framebuffer
+            renderArea,                       // renderArea
+            1,                                // clearValueCount
+            &ClearValue,                      // pClearValues
+            nullptr                           // pNext
+        );
+
+        cmd.beginRenderPass(Info, vk::SubpassContents::eInline);
+    }
+
+    // Imgui New Frame
+    #if defined (DEBUG)
+    ImGui_ImplVulkan_NewFrame();
+    ImGui_ImplSDL2_NewFrame();
+    ImGui::NewFrame();
+    #endif
+
+    return true;
 }
+
+#if defined (DEBUG)
+#include "DrawDebugUI.hpp"
+#endif
 
 void
 Patata::Graphics::RaccoonRenderer::VulkanBackend::EndVulkanRender (SDL_Event & Event)
 {
     if(!CmdIsReady) return;
 
+    // Imgui New Frame
+    #if defined (DEBUG)
+    ImGui::ShowDemoWindow();
+    Patata::DrawDebugUI(
+        pRaccoonInfo->pPatataEngineInfo,
+        SwapChainImageCount,
+        SwapChainExtent);
+
+    ImGui::Render();
+    ImGui_ImplVulkan_RenderDrawData(
+		ImGui::GetDrawData(),
+		static_cast<VkCommandBuffer>(cmd),
+		static_cast<VkPipeline>(ImguiPipeLine)
+	);
+    #endif
+
+    // End RenderPass
+    cmd.endRenderPass();
+
+    // End Command Buffer
     vk::Result Result = cmd.end ();
+
     #if defined(DEBUG)
     if (Result != vk::Result::eSuccess)
       {
@@ -148,10 +209,10 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::EndVulkanRender (SDL_Event & E
     #endif
 
     // Resize
-    if (*pWindowResized || Result == vk::Result::eErrorOutOfDateKHR)
+    if (*pRaccoonInfo->pWindowResized || Result == vk::Result::eErrorOutOfDateKHR)
       {
         RecreateSwapChain (Event);
-        *pWindowResized = false;
+        *pRaccoonInfo->pWindowResized = false;
       }
     else if (Result == vk::Result::eSuboptimalKHR)
       {

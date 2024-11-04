@@ -9,7 +9,7 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::CreateDepthBuffer (void)
     #endif
     "");
 
-  vk::ImageTiling Tiling;
+  vk::ImageTiling Tiling = vk::ImageTiling::eOptimal;
 
   vk::Format DepthFormatsToCheck[4] = {
       vk::Format::eD32SfloatS8Uint, // Priority
@@ -18,7 +18,7 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::CreateDepthBuffer (void)
       vk::Format::eD16Unorm
   };
 
-  vk::Format SelectedDepthFormat;
+  vk::Format SelectedDepthFormat = vk::Format::eUndefined;
   bool Found = false;
 
   // Depth Image And Image Tiling
@@ -47,7 +47,7 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::CreateDepthBuffer (void)
   if (!Found) {
       Patata::Log::FatalErrorMessage ("Patata - Raccoon Renderer",
                                       "A ImageTiling or Depth Format was not found",
-                                      *pConfiguration);
+                                      *pRaccoonInfo->pConfiguration);
       return false;
   }
 

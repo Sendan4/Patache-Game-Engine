@@ -7,6 +7,9 @@
 #include <yaml-cpp/yaml.h>
 
 #include "Config.hpp"
+#if defined(DEBUG)
+#include "EngineInfo.hpp"
+#endif
 
 namespace Patata
 {
@@ -14,7 +17,11 @@ namespace Log
 {
 void StartMapache (void);
 void StartPatataLogInfo (void);
+#if defined(DEBUG)
+void WindowLog (SDL_Window *, Patata::EngineInfo &);
+#else
 void WindowLog (SDL_Window *);
+#endif
 
 // Vulkan Setup
 void VulkanCheck (const std::string &, const vk::Result &);

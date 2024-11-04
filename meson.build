@@ -1,7 +1,7 @@
 project('Patata_Engine',
   'cpp', 'c',
   version : '1',
-  #  meson_version : '>=1.3.0',
+  meson_version : '>=1.3.0',
   default_options : [
     'buildtype=release',
     'cpp_std=c++20',
@@ -39,7 +39,7 @@ if get_option('default_library') == 'static' or get_option('prefer_static') == t
   cpp.has_argument('-static-libgcc')
   cpp.has_argument('-static-libstdc++')
 
-  cpp_arguments += ['-static-libgcc', '-static-libstdc++']
+  cpp_arguments = ['-static-libgcc', '-static-libstdc++']
 endif
 
 bin_dir = meson.global_build_root()

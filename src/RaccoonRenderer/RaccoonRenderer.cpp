@@ -19,10 +19,10 @@ si se llega a tener varios, lo mejor seria iniciarlos
 mediante el valor de una configuracion.
 */
 
-Patata::Graphics::RaccoonRenderer::RaccoonRenderer (Patata::Config & Config, SDL_Window * Window, bool & WindowResized)
+Patata::Graphics::RaccoonRenderer::RaccoonRenderer (RaccoonRendererCreateInfo * RaccoonInfo)
 {
   // Backend Principal
-  pVulkanBackend = new Patata::Graphics::RaccoonRenderer::VulkanBackend (Config, Window, WindowResized);
+  pVulkanBackend = new Patata::Graphics::RaccoonRenderer::VulkanBackend (RaccoonInfo);
 }
 
 #include <fast_io.h>

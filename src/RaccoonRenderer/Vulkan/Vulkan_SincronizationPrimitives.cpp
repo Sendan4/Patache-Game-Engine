@@ -6,16 +6,16 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::CreateSemaphores (void) {
 
     vk::Result Result = Device.createSemaphore (&SemaphoreInfo, nullptr, &AcquireSemaphore);
     {
-        std::future<void> ReturnVulkanCheck = std::async (
-            std::launch::async, Patata::Log::VulkanCheck, "Acquire Semaphore", Result);
+        std::future<void> ReturnVulkanCheck = std::async (std::launch::async,
+            Patata::Log::VulkanCheck, "Acquire Semaphore", Result);
     }
 
     if (Result != vk::Result::eSuccess) return false;
 
     Result = Device.createSemaphore (&SemaphoreInfo, nullptr, &SubmitSemaphore);
     {
-        std::future<void> ReturnVulkanCheck = std::async (
-            std::launch::async, Patata::Log::VulkanCheck, "Submit Semaphore", Result);
+        std::future<void> ReturnVulkanCheck = std::async (std::launch::async,
+            Patata::Log::VulkanCheck, "Submit Semaphore", Result);
     }
 
     if (Result != vk::Result::eSuccess) return false;
@@ -31,8 +31,8 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::CreateFence (void) {
 
     vk::Result Result = Device.createFence (&FenceInfo, nullptr, &Fence);
       {
-        std::future<void> ReturnVulkanCheck = std::async (
-            std::launch::async, Patata::Log::VulkanCheck, "Fence", Result);
+        std::future<void> ReturnVulkanCheck = std::async (std::launch::async,
+            Patata::Log::VulkanCheck, "Fence", Result);
       }
 
     if (Result != vk::Result::eSuccess)

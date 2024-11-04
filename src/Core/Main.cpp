@@ -8,6 +8,11 @@
 #include <windows.h>
 #endif
 
+#if defined(DEBUG)
+#include <imgui.h>
+#include <imgui_impl_sdl2.h>
+#endif
+
 #include <vulkan/vulkan.hpp>
 
 // Patata Engine
@@ -25,7 +30,6 @@ Patata::Engine::EngineImpl::EngineImpl (const std::string & WindowTitle)
          std::launch::async, Patata::Log::StartPatataLogInfo);
   }
 
-  // TODO : async load config
   if (!LoadConfig(Configuration)) return;
 
 #if defined(__linux__)
@@ -64,7 +68,6 @@ Patata::Engine::EngineImpl::EngineImpl (const std::string & WindowTitle)
         "Cannot set enviroment varible VK_LAYER_PATH");
 #endif
 
-  // Wait LoadConfig here
   // SDL Subsystems
   if (SDL_Init (SDL_INIT_VIDEO) != 0)
     {
@@ -100,15 +103,16 @@ Patata::Engine::EngineImpl::EngineImpl (const std::string & WindowTitle)
     }
 
   CreateGameWindow (WindowTitle);
+
 #if defined(USE_ICON)
   SetWindowIcon ();
 #endif
 
-  RaccoonRenderer = new Patata::Graphics::RaccoonRenderer (Configuration, GameWindow, WindowResized);
-
 #if defined(DEBUG)
-  SetupImGUIBackend ();
+  InitialImguiSetup();
 #endif
+
+  RaccoonRenderer = new Patata::Graphics::RaccoonRenderer (&RaccoonInfo);
 }
 
 // ExitLog.hpp Dependencies
@@ -126,5 +130,12 @@ Patata::Engine::EngineImpl::~EngineImpl (void)
 {
   Patata::Log::DeleteAndLogPtr ("Deallocate Raccoon Renderer", RaccoonRenderer);
 
+  // Imgui
+  #if defined(DEBUG)
+  ImGui_ImplSDL2_Shutdown();
+  ImGui::DestroyContext();
+  #endif
+
   SDL_DestroyWindow (GameWindow);
+  SDL_Quit();
 }

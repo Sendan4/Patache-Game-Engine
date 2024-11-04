@@ -9,6 +9,9 @@
 #include <yaml-cpp/yaml.h>
 
 #include "Log.hpp"
+#if defined(DEBUG)
+#include "EngineInfo.hpp"
+#endif
 #include "PatataEngineImpl.hpp"
 #include "TerminalColors.hpp"
 

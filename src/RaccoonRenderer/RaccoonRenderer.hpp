@@ -5,38 +5,52 @@
 #endif
 #include <SDL.h>
 #include <yaml-cpp/yaml.h>
+#if defined(DEBUG)
+#include <imgui_impl_vulkan.h>
+#endif
 
 #include "Config.hpp"
+#if defined(DEBUG)
+#include "EngineInfo.hpp"
+#endif
+#include "PatataEngine/PatataEngine.hpp"
 
 namespace Patata
 {
 namespace Graphics
 {
+struct RaccoonRendererCreateInfo {
+    Patata::Config * pConfiguration;
+    SDL_Window ** ppWindow;
+    bool * pWindowResized;
+    Patata::ClearColor * pClearColor;
+    #if defined(DEBUG)
+    Patata::EngineInfo * pPatataEngineInfo;
+    #endif
+};
+
 class RaccoonRenderer // Raccoon
 {
 public: // Raccoon Frontend
-  RaccoonRenderer (Patata::Config &, SDL_Window *, bool &);
+  RaccoonRenderer (RaccoonRendererCreateInfo *);
   ~RaccoonRenderer (void);
 
-  void BeginRender (SDL_Event &);
+  bool BeginRender (SDL_Event &);
   void EndRender (SDL_Event &);
-  void ClearColor(const float & R, const float & G, const float & B, const float & A);
 
 private:
   class VulkanBackend // Backend
   {
   public:
-    VulkanBackend (Patata::Config &, SDL_Window *, bool &);
+    VulkanBackend (RaccoonRendererCreateInfo *);
     ~VulkanBackend (void);
 
-    void BeginVulkanRender (SDL_Event &);
+    // Backend Frontend
+    bool BeginVulkanRender (SDL_Event &);
     void EndVulkanRender (SDL_Event &);
-    void VulkanClearColor(const float & R, const float & G, const float & B, const float & A);
 
   private:
-    SDL_Window * pWindow = nullptr;
-    bool * pWindowResized = nullptr;
-    Patata::Config * pConfiguration = nullptr;
+    RaccoonRendererCreateInfo * pRaccoonInfo = nullptr;
     bool CmdIsReady = false;
 
     /*
@@ -56,10 +70,18 @@ private:
     bool CreateFrameBuffer (void);
     bool CreateDepthBuffer (void);
     bool CreateRenderPass (const std::tuple<vk::PresentModeKHR, vk::Format, vk::ColorSpaceKHR> &);
-    void CreatePipeline (void);
+    bool CreatePipeline (void);
     bool CreateSemaphores(void);
     bool CreateFence(void);
     void RecreateSwapChain (SDL_Event &);
+
+    #if defined(DEBUG)
+    // Imgui
+    bool VulkanImguiSetup (SDL_Window *);
+    bool CreateImguiDescriptorPool(void);
+    bool CreateImguiPipelineCache(void);
+    #endif
+
     void
     VulkanInfo (const std::tuple<vk::PresentModeKHR, vk::Format, vk::ColorSpaceKHR> &);
 
@@ -103,11 +125,21 @@ private:
 
     vk::RenderPass RenderPass = nullptr;
 
+    #if defined(DEBUG)
+    // Imgui
+    vk::PipelineLayout ImguiPipeLineLayout;
+    vk::Pipeline ImguiPipeLine;
+
+    vk::PipelineCache ImguiPipelineCache = nullptr;
+    vk::DescriptorPool ImguiDescriptorPool = nullptr;
+
+    ImGui_ImplVulkanH_Window ImGuiWindow;
+    #endif
+
     // Synchronization Primitives
     vk::Semaphore AcquireSemaphore = nullptr;
     vk::Semaphore SubmitSemaphore = nullptr;
     vk::Fence     Fence = nullptr;
-
   } * pVulkanBackend = nullptr; // End Vulkan Backend
 }; // End Raccoon Renderer
 }

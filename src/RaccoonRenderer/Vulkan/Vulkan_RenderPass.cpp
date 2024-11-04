@@ -43,8 +43,8 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::CreateRenderPass (const std::t
 
     vk::Result Result = Device.createRenderPass(&RenderPassCreateInfo, nullptr, &RenderPass);
     {
-      std::future<void> ReturnVulkanCheck = std::async (
-          std::launch::async, Patata::Log::VulkanCheck, "Render Pass", Result);
+      std::future<void> ReturnVulkanCheck = std::async (std::launch::async,
+          Patata::Log::VulkanCheck, "Render Pass", Result);
     }
 
     if (Result != vk::Result::eSuccess) return false;

@@ -39,17 +39,17 @@ if (MSVC OR LINUX)
 	message("")
 	message("  - Vulkan Headers -")
 	set (BUILD_TESTS OFF CACHE INTERNAL "..." FORCE)
+    set (UPDATE_DEPS ON CACHE INTERNAL "..." FORCE)
+
 	add_subdirectory(Vulkan-Headers)
 	message(STATUS "Header-Only")
-
-	set (UPDATE_DEPS ON CACHE INTERNAL "..." FORCE)
 
 	# Vulkan Validation Layer
 	if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo" AND USE_VVL)
 		message("")
 		message("  - Vulkan ValidationLayers -")
 
-	    set (VVL_CODEGEN OFF CACHE INTERNAL "..." FORCE)
+	    # set (VVL_CODEGEN OFF CACHE INTERNAL "..." FORCE)
 
 		add_subdirectory(Vulkan-ValidationLayers)
 	endif()

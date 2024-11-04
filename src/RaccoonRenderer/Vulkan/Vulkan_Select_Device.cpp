@@ -18,15 +18,15 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::SelectDevice (void)
   vk::Result Result = Instance.enumeratePhysicalDevices (&GpuCount, nullptr);
 
   {
-      std::future<void> ReturnVulkanCheck = std::async(
-          std::launch::async, Patata::Log::VulkanCheck, "Enumerate Physical Devices - Obtaining the count", Result);
+      std::future<void> ReturnVulkanCheck = std::async(std::launch::async,
+          Patata::Log::VulkanCheck, "Enumerate Physical Devices - Obtaining the count", Result);
   }
 
   if (GpuCount <= 0)
     {
       Patata::Log::FatalErrorMessage ("Patata - Raccoon Renderer",
                                       "No vulkan compatible device found",
-                                      *pConfiguration);
+                                      *pRaccoonInfo->pConfiguration);
       return false;
     }
 
@@ -50,14 +50,15 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::SelectDevice (void)
       TMPPhysicalDevice = new vk::PhysicalDevice[GpuCount];
       Result = Instance.enumeratePhysicalDevices (&GpuCount, TMPPhysicalDevice);
       {
-          std::future<void> ReturnVulkanCheck = std::async(
-              std::launch::async, Patata::Log::VulkanCheck, "Enumerate Physical Devices", Result);
+          std::future<void> ReturnVulkanCheck = std::async(std::launch::async,
+              Patata::Log::VulkanCheck, "Enumerate Physical Devices", Result);
       }
 
       if (Result != vk::Result::eSuccess) {
-          std::future<void> Err = std::async(
-              std::launch::async, Patata::Log::FatalErrorMessage,
-              "Patata Engine - RaccoonRenderer", "Failed to obtain a physical device", *pConfiguration);
+          std::future<void> Err = std::async(std::launch::async,
+              Patata::Log::FatalErrorMessage,
+              "Patata Engine - RaccoonRenderer", "Failed to obtain a physical device",
+              *pRaccoonInfo->pConfiguration);
 
           delete[] TMPPhysicalDevice;
           return false;
@@ -89,8 +90,8 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::SelectDevice (void)
       TMPPhysicalDevice = new vk::PhysicalDevice[GpuCount];
       Result = Instance.enumeratePhysicalDevices (&GpuCount, TMPPhysicalDevice);
 
-	  std::future<void> ReturnVulkanCheck = std::async(
-			std::launch::async, Patata::Log::VulkanCheck, "Enumerate Physical Devices", Result);
+	  std::future<void> ReturnVulkanCheck = std::async(std::launch::async,
+		Patata::Log::VulkanCheck, "Enumerate Physical Devices", Result);
     }
 
   fast_io::io::println (
@@ -178,7 +179,7 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::SelectDevice (void)
     {
       Patata::Log::FatalErrorMessage ("Patata - Raccoon Renderer",
                                       "Cannot select a device (GPU) which does not support geometry shader",
-                                      *pConfiguration);
+                                      *pRaccoonInfo->pConfiguration);
       return false;
     }
 

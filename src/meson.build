@@ -20,7 +20,6 @@ source = files([
   'RaccoonRenderer/Vulkan/Vulkan_Render.cpp',
   'RaccoonRenderer/Vulkan/Vulkan_PipeLine.cpp',
   'RaccoonRenderer/Vulkan/Vulkan_RenderPass.cpp',
-  'RaccoonRenderer/Vulkan/ClearColor.cpp',
   'Log/YamlErrors.cpp',
   'Log/Messages.cpp'])
 
@@ -39,10 +38,7 @@ else
 endif
 
 if get_option('buildtype') == 'debug' or get_option('buildtype') == 'debugoptimized'
-  source +=files([
-    'ImGUI/ImGUISetupBackend.cpp',
-    'ImGUI/ImGUIFrame.cpp',
-    'ImGUI/DrawDebugUI.cpp'])
+  source +=files(['ImGUI/SetupImgui.cpp'])
 endif
 
 lib = library(meson.project_name(),

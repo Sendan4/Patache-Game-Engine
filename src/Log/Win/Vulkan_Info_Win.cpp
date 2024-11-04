@@ -18,8 +18,30 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::VulkanInfo (
   PhysicalDeviceProperties.pNext = &Driver;
   PhysicalDevice.getProperties2 (&PhysicalDeviceProperties);
 
-  const uint32_t VulkanVersion
-      = PhysicalDeviceProperties.properties.apiVersion;
+  const uint32_t VulkanVersion = PhysicalDeviceProperties.properties.apiVersion;
+
+  #if defined(DEBUG)
+  pRaccoonInfo->pPatataEngineInfo->VkVersionInUse
+      = std::to_string (VK_VERSION_MAJOR (VulkanVersion)) + '.'
+        + std::to_string (VK_VERSION_MINOR (VulkanVersion)) + '.'
+        + std::to_string (VK_VERSION_PATCH (VulkanVersion)) + '.'
+        + std::to_string (VK_API_VERSION_VARIANT (VulkanVersion));
+  pRaccoonInfo->pPatataEngineInfo->VkDeviceName
+      = PhysicalDeviceProperties.properties.deviceName.data ();
+  pRaccoonInfo->pPatataEngineInfo->VkDeviceVendorId
+      = static_cast<uint32_t> (PhysicalDeviceProperties.properties.vendorID);
+  pRaccoonInfo->pPatataEngineInfo->VkDeviceType
+      = vk::to_string (PhysicalDeviceProperties.properties.deviceType);
+  pRaccoonInfo->pPatataEngineInfo->VkDriverName = Driver.driverName.data ();
+  pRaccoonInfo->pPatataEngineInfo->VkDriverId
+      = vk::to_string (Driver.driverID);
+  pRaccoonInfo->pPatataEngineInfo->VkDriverInfo = Driver.driverInfo.data ();
+  pRaccoonInfo->pPatataEngineInfo->VkDriverVersion
+      = std::to_string (VK_VERSION_MAJOR (PhysicalDeviceProperties.properties.driverVersion)) + '.'
+        + std::to_string (VK_VERSION_MINOR (PhysicalDeviceProperties.properties.driverVersion)) + '.'
+        + std::to_string (VK_VERSION_PATCH (PhysicalDeviceProperties.properties.driverVersion)) + '.'
+        + std::to_string (VK_API_VERSION_VARIANT (PhysicalDeviceProperties.properties.driverVersion));
+  #endif
 
   fast_io::io::println (fast_io::out (), PATATA_TERM_BOLD, "  Version", PATATA_TERM_RESET);
 
@@ -351,7 +373,7 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::VulkanInfo (
   // Vulkan Vsync
   if ((std::get<0> (SWAPCHAIN_INFO) == vk::PresentModeKHR::eFifo
        || std::get<0> (SWAPCHAIN_INFO) == vk::PresentModeKHR::eFifoRelaxed)
-      && pConfiguration->Vsync)
+      && pRaccoonInfo->pConfiguration->Vsync)
     fast_io::io::println (fast_io::out (), " ", PATATA_TERM_COLOR_GREEN,
                           "Vertical Sync", PATATA_TERM_RESET);
   else fast_io::io::println (fast_io::out ());

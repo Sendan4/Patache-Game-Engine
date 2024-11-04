@@ -27,17 +27,27 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::CreateInstance (void)
   //Get Extensions
   uint32_t SDLExtensionCount = 0;
 
-  SDL_Vulkan_GetInstanceExtensions (pWindow, &SDLExtensionCount, nullptr);
+  SDL_Vulkan_GetInstanceExtensions (*pRaccoonInfo->ppWindow, &SDLExtensionCount,
+                                    nullptr);
 
   const char ** pExtensionInstanceNames = new const char * [SDLExtensionCount];
 
   bool FoundExtensions = SDL_Vulkan_GetInstanceExtensions (
-      pWindow, &SDLExtensionCount, pExtensionInstanceNames);
+      *pRaccoonInfo->ppWindow, &SDLExtensionCount, pExtensionInstanceNames);
 
   if (FoundExtensions)
-    std::future<void> ReturnVulkanList = std::async (
+    std::future<void> VulkanList = std::async (
         std::launch::async, Patata::Log::VulkanList,
         pExtensionInstanceNames, SDLExtensionCount - 1, "Instance Extensions");
+
+  #if defined (DEBUG)
+  pRaccoonInfo->pPatataEngineInfo->VkInstanceExtensions = new const char * [SDLExtensionCount];
+
+  for (uint32_t i = 0; i < SDLExtensionCount; ++i)
+      pRaccoonInfo->pPatataEngineInfo->VkInstanceExtensions[i] = pExtensionInstanceNames[i];
+
+  pRaccoonInfo->pPatataEngineInfo->VkInstanceExtensionsCount = SDLExtensionCount;
+  #endif
 
   // Create Instance
   vk::InstanceCreateInfo InstanceInfo ({},
@@ -71,7 +81,7 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::CreateInstance (void)
              "Patata Engine - Raccoon Renderer",
              std::string("You do not have Vulkan API compatible drivers or your GPU does not support the Vulkan API. ")
              + vk::to_string (Result),
-             *pConfiguration);
+             *pRaccoonInfo->pConfiguration);
 
       return false;
   }

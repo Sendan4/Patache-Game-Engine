@@ -1,5 +1,5 @@
 project('imgui', 'cpp',
-  version : '1.90.8-docking',
+  version : '1.91.4-docking',
   meson_version : '>=1.2.0')
 
 dependencies = []
@@ -95,6 +95,8 @@ if get_option('use_external_libs') == true and get_option('libs_shared_build') =
     force_static = true
 endif
 
+compile_args = ''
+
 if get_option('libs_shared_build') == true and force_static == false
     lib = shared_library(meson.project_name(),
         Sources,
@@ -121,7 +123,8 @@ endif
 project_dep = declare_dependency(
   include_directories : [Include, backends],
   d_import_dirs : [Include, backends],
-  link_with : lib)
+  link_with : lib,
+)
 
 set_variable(meson.project_name() + '_dep', project_dep)
 

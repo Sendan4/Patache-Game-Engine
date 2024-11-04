@@ -45,8 +45,8 @@ bool Patata::Graphics::RaccoonRenderer::VulkanBackend::CreateImageView(const std
             #endif
             "  ");
 
-          std::future<void> ReturnVulkanCheck = std::async (
-              std::launch::async, Patata::Log::VulkanCheck, "Color Image View", Result);
+          std::future<void> ReturnVulkanCheck = std::async (std::launch::async,
+              Patata::Log::VulkanCheck, "Color Image View", Result);
         }
 
         if (Result != vk::Result::eSuccess) return false;

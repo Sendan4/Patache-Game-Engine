@@ -16,6 +16,7 @@ target_sources (${PROJECT_NAME} PRIVATE
 	"Core/LoadConfig.cpp"
 	"Core/Input.cpp"
 	"Core/RenderWrapper.cpp"
+	"Core/ClearColor.cpp"
 	"Window/Window.cpp"
 	"RaccoonRenderer/RaccoonRenderer.cpp"
 	"RaccoonRenderer/RaccoonRendererWrapper.cpp"
@@ -32,7 +33,6 @@ target_sources (${PROJECT_NAME} PRIVATE
 	"RaccoonRenderer/Vulkan/Vulkan_Render.cpp"
 	"RaccoonRenderer/Vulkan/Vulkan_PipeLine.cpp"
 	"RaccoonRenderer/Vulkan/Vulkan_RenderPass.cpp"
-	"RaccoonRenderer/Vulkan/ClearColor.cpp"
 	"Log/Messages.cpp"
 	"Log/YamlErrors.cpp")
 
@@ -60,9 +60,7 @@ endif()
 
 if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo")
 	target_sources(${PROJECT_NAME} PRIVATE
-		"ImGUI/ImGUISetupBackend.cpp"
-		"ImGUI/ImGUIFrame.cpp"
-		"ImGUI/DrawDebugUI.cpp")
+		"ImGUI/SetupImgui.cpp")
 endif()
 
 target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}../include/")
@@ -295,7 +293,15 @@ if (MSVC)
 		set_target_properties(asm_offset PROPERTIES FOLDER "Engine/Others/Vulkan")
 		set_target_properties(loader_specific_options PROPERTIES FOLDER "Engine/Others/Vulkan")
 		set_target_properties(loader-unknown-chain PROPERTIES FOLDER "Engine/Others/Vulkan")
-		set_target_properties(loader-opt PROPERTIES FOLDER "Engine/Others/Vulkan")
+		if (TARGET loader-opt)
+			set_target_properties(loader-opt PROPERTIES FOLDER "Engine/Others/Vulkan")
+		endif()
+		if (TARGET Vulkan-Module)
+			set_target_properties(Vulkan-Module PROPERTIES FOLDER "Engine/Others/Vulkan")
+		endif()
+		if (TARGET gpu_av_spirv)
+			set_target_properties(gpu_av_spirv PROPERTIES FOLDER "Engine/Others/Vulkan")
+		endif()
 		set_target_properties(loader_asm_gen_files PROPERTIES FOLDER "Engine/Others/Vulkan")
 		if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo" OR USE_VVL)
 			set_target_properties(vvl PROPERTIES FOLDER "Engine/Dependencies/Vulkan")
