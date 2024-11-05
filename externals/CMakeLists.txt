@@ -4,11 +4,11 @@ add_subdirectory(fast_io)
 
 # Yaml-cpp
 message("")
-message("  - Yaml-cpp -")
+message("  - RapidYaml -")
 
-set (YAML_CPP_BUILD_TOOLS OFF CACHE INTERNAL "..." FORCE)
-set (YAML_CPP_INSTALL OFF CACHE INTERNAL "..." FORCE)
-set (YAML_CPP_BUILD_TESTS OFF CACHE INTERNAL "..." FORCE)
+set (RYML_DEV OFF CACHE INTERNAL "..." FORCE)
+set (RYML_DEFAULT_CALLBACK_USES_EXCEPTIONS OFF CACHE INTERNAL "..." FORCE)
+set (RYML_INSTALL OFF CACHE INTERNAL "..." FORCE)
 
 if (LIBS_SHARED_BUILD)
 	set (YAML_BUILD_SHARED_LIBS ON CACHE INTERNAL "..." FORCE)
@@ -17,7 +17,7 @@ else ()
 	message(STATUS "Library Type : Static")
 endif()
 
-add_subdirectory(yaml-cpp)
+add_subdirectory(rapidyaml)
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
 	# Linux Wayland / Xorg
@@ -46,12 +46,41 @@ if (MSVC OR LINUX)
 
 	# Vulkan Validation Layer
 	if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo" AND USE_VVL)
-		message("")
-		message("  - Vulkan ValidationLayers -")
+        message("")
+	    message("  - Vulkan ValidationLayers -")
 
-	    # set (VVL_CODEGEN OFF CACHE INTERNAL "..." FORCE)
+	    if (CMAKE_SYSTEM_NAME STREQUAL "Linux" OR UNIX)
+	       message(STATUS "BUILD_WSI_XLIB_SUPPORT : ${BUILD_WSI_XLIB_SUPPORT}")
+	       message(STATUS "BUILD_WSI_XCB_SUPPORT : ${BUILD_WSI_XCB_SUPPORT}")
+	       message(STATUS "BUILD_WSI_WAYLAND_SUPPORT : ${BUILD_WSI_WAYLAND_SUPPORT}")
+		endif()
 
-		add_subdirectory(Vulkan-ValidationLayers)
+		set(PATATA_VULKAN_VALIDATION_LAYERS_VERSION "vulkan-sdk-1.3.296")
+
+        include(FetchContent)
+        FetchContent_Populate(
+            Vulkan-ValidationLayers
+            GIT_REPOSITORY https://github.com/KhronosGroup/Vulkan-ValidationLayers.git
+            GIT_TAG ${PATATA_VULKAN_VALIDATION_LAYERS_VERSION}
+            BUILD_IN_SOURCE FALSE
+            GIT_PROGRESS TRUE
+            LOG_DOWNLOAD TRUE
+            LOG_UPDATE TRUE
+            LOG_CONFIGURE TRUE
+            LOG_BUILD TRUE
+            LOG_INSTALL TRUE
+            GIT_SUBMODULES_RECURSE TRUE
+            CMAKE_ARGS
+                "-DUPDATE_DEPS=ON
+                -DBUILD_WSI_XLIB_SUPPORT=${BUILD_WSI_XLIB_SUPPORT}
+                -DBUILD_WSI_XCB_SUPPORT=${BUILD_WSI_XCB_SUPPORT}
+                -DBUILD_WSI_WAYLAND_SUPPORT=${BUILD_WSI_WAYLAND_SUPPORT}
+                -DCMAKE_LIBRARY_OUTPUT_DIRECTORY=${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
+                -DRUNTIME_OUTPUT_DIRECTORY=${CMAKE_LIBRARY_OUTPUT_DIRECTORY}"
+            INSTALL_COMMAND ""
+        )
+
+        add_subdirectory(${vulkan-validationlayers_SOURCE_DIR} ${vulkan-validationlayers_BINARY_DIR})
 	endif()
 
 	# Vulkan

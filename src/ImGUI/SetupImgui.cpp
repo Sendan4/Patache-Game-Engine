@@ -135,6 +135,7 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::VulkanImguiSetup (SDL_Window *
     ImGui_ImplSDL2_InitForVulkan(Window);
 
     vk::SurfaceCapabilitiesKHR SurfaceCapabilities;
+    vk::PhysicalDeviceProperties properties = PhysicalDevice.getProperties();
 
     vk::Result Result = PhysicalDevice.getSurfaceCapabilitiesKHR (Surface, &SurfaceCapabilities);
     if (Result != vk::Result::eSuccess) {
@@ -143,6 +144,12 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::VulkanImguiSetup (SDL_Window *
 
 		return false;
     }
+
+    vk::DeviceSize limits;
+    if (properties.limits.minUniformBufferOffsetAlignment > properties.limits.minStorageBufferOffsetAlignment)
+        limits = properties.limits.minUniformBufferOffsetAlignment;
+    else limits = properties.limits.minStorageBufferOffsetAlignment;
+
 
     ImGui_ImplVulkan_InitInfo init_info {
         .Instance = static_cast<VkInstance>(Instance),
@@ -158,8 +165,10 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::VulkanImguiSetup (SDL_Window *
         .PipelineCache = static_cast<VkPipelineCache>(ImguiPipelineCache),
         .Subpass = 0,
         .UseDynamicRendering = false,
+        .PipelineRenderingCreateInfo = {},
         .Allocator = nullptr,
-        .CheckVkResultFn = nullptr
+        .CheckVkResultFn = nullptr,
+        .MinAllocationSize = limits
     };
 
     fast_io::io::print(

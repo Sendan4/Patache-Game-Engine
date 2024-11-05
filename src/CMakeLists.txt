@@ -117,6 +117,17 @@ if (COMPILER_SUPPORTS_WEXTRA)
 	endif()
 endif ()
 
+if (COMPILER_SUPPORTS_NO_EXCEPTIONS)
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+		target_compile_options(${PROJECT_NAME} PRIVATE "-fno-exceptions")
+	endif()
+endif()
+if (COMPILER_SUPPORTS_EXCEPTION_HANDLING)
+    if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+		target_compile_options(${PROJECT_NAME} PRIVATE "/EH-")
+    endif()
+endif()
+
 # Macros
 if (XORG_SUPPORT)
 	target_compile_definitions(${PROJECT_NAME} PRIVATE PATATA_LINUX_XORG_SUPPORT=1)

@@ -59,19 +59,17 @@ endif()
 
 if (NOT MSVC)
 	check_cxx_compiler_flag("-std=c++20" COMPILER_SUPPORTS_CXX20)
-    check_cxx_compiler_flag("-std=c++2b" COMPILER_SUPPORTS_CXX20)
-    check_cxx_compiler_flag("-std=gnu++2b" COMPILER_SUPPORTS_CXX20)
-
 	check_cxx_compiler_flag("-Wextra" COMPILER_SUPPORTS_WEXTRA)
 	check_cxx_compiler_flag("-Wall" COMPILER_SUPPORTS_WALL)
+    check_cxx_compiler_flag("-fno-exceptions" COMPILER_SUPPORTS_NO_EXCEPTIONS)
 
 	if (NOT COMPILER_SUPPORTS_CXX20)
     	message(FATAL_ERROR "The compiler does not support the C++20 standard")
 	endif()
-
 else()
 	check_cxx_compiler_flag("/std:c++20" COMPILER_SUPPORTS_CXX20)
 	check_cxx_compiler_flag("/W4" COMPILER_SUPPORTS_W4)
+    check_cxx_compiler_flag("/EH-" COMPILER_SUPPORTS_EXCEPTION_HANDLING)
 
 	if (NOT COMPILER_SUPPORTS_CXX20)
     	message(FATAL_ERROR "The compiler does not support the C++20 standard")
@@ -175,14 +173,6 @@ if (USE_GIT AND GIT)
 			WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/externals/Vulkan-Headers/"
 			OUTPUT_VARIABLE PATATA_VULKAN_HEADERS_VERSION
 			OUTPUT_STRIP_TRAILING_WHITESPACE)
-
-		if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo")
-			execute_process(
-				COMMAND git describe --tags --abbrev=0
-				WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/externals/Vulkan-ValidationLayers/"
-				OUTPUT_VARIABLE PATATA_VULKAN_VALIDATION_LAYERS_VERSION
-				OUTPUT_STRIP_TRAILING_WHITESPACE)
-		endif()
 	endif()
 endif()
 
