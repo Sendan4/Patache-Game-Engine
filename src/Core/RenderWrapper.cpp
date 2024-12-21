@@ -24,11 +24,11 @@
 bool
 Patata::Engine::EngineImpl::BeginRender (SDL_Event & Event)
 {
-	return RaccoonRenderer->BeginRender(Event);
+  return RaccoonRenderer->BeginRender (Event);
 }
 
 void
 Patata::Engine::EngineImpl::EndRender (SDL_Event & Event)
 {
-	RaccoonRenderer->EndRender(Event);
+  RaccoonRenderer->EndRender (Event);
 }

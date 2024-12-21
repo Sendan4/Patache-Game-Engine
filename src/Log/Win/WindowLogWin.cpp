@@ -18,7 +18,7 @@ Patata::Log::WindowLog (SDL_Window * Window)
 #if defined(DEBUG)
       PATATA_TERM_COLOR_GRAY0,
 #if defined(__GNUC__) || defined(__MINGW64__)
-    "[",
+      "[",
       std::string_view{ abi::__cxa_demangle (typeid (Window).name (), nullptr,
                                              nullptr, nullptr) },
       "] ",
@@ -27,16 +27,15 @@ Patata::Log::WindowLog (SDL_Window * Window)
 #endif
       PATATA_TERM_RESET,
 #endif
-      PATATA_TERM_COLOR_PATATA, "Window ",
-                        PATATA_TERM_BOLD, "INFO :");
+      PATATA_TERM_COLOR_PATATA, "Window ", PATATA_TERM_BOLD, "INFO :");
 
   SDL_SysWMinfo WindowInfo;
   SDL_VERSION (&WindowInfo.version);
   SDL_GetWindowWMInfo (Window, &WindowInfo);
 
-  #if defined(DEBUG)
+#if defined(DEBUG)
   PatataEngineInfo->WindowInfo = WindowInfo;
-  #endif
+#endif
 
   switch (WindowInfo.subsystem)
     {
@@ -50,21 +49,22 @@ Patata::Log::WindowLog (SDL_Window * Window)
 #if defined(DEBUG)
                             PATATA_TERM_COLOR_GRAY0,
 #if defined(__GNUC__) || defined(__MINGW64__)
-      "  [",
-                          std::string_view{ abi::__cxa_demangle (
-                              typeid (WindowInfo.info.win.window).name (),
-                              nullptr, nullptr, nullptr) },
-                          "] ",
+                            "  [",
+                            std::string_view{ abi::__cxa_demangle (
+                                typeid (WindowInfo.info.win.window).name (),
+                                nullptr, nullptr, nullptr) },
+                            "] ",
 #else
-          "  [",
-          std::string_view{ typeid (WindowInfo.info.win.window).name () },
-          "] ",
+                            "  [",
+                            std::string_view{
+                                typeid (WindowInfo.info.win.window).name () },
+                            "] ",
 #endif
-          PATATA_TERM_RESET,
+                            PATATA_TERM_RESET,
 #else
-          "  ",
+                            "  ",
 #endif
-      PATATA_TERM_BOLD, "The window handle");
+                            PATATA_TERM_BOLD, "The window handle");
 
       // The window device context
       fast_io::io::println (fast_io::out (),
@@ -78,29 +78,31 @@ Patata::Log::WindowLog (SDL_Window * Window)
                             "] ",
 #else
                             PATATA_TERM_COLOR_GRAY0, "  [",
-                            std::string_view{ typeid (WindowInfo.info.win.hdc).name () },
+                            std::string_view{
+                                typeid (WindowInfo.info.win.hdc).name () },
                             "] ",
 #endif
                             PATATA_TERM_RESET,
 #else
                             "  ",
 #endif
-                            PATATA_TERM_BOLD,
-                            "The window device context");
+                            PATATA_TERM_BOLD, "The window device context");
 
       // The instance handle
       fast_io::io::println (fast_io::out (),
 #if defined(DEBUG)
                             PATATA_TERM_COLOR_GRAY0,
 #if defined(__GNUC__) || defined(__MINGW64__)
-                             "  [",
+                            "  [",
                             std::string_view{ abi::__cxa_demangle (
                                 typeid (WindowInfo.info.win.hinstance).name (),
                                 nullptr, nullptr, nullptr) },
                             "] ",
 #else
                             PATATA_TERM_COLOR_GRAY0, "  [",
-                            std::string_view{ typeid (WindowInfo.info.win.hinstance).name () },
+                            std::string_view{
+                                typeid (WindowInfo.info.win.hinstance)
+                                    .name () },
                             "] ", PATATA_TERM_RESET, PATATA_TERM_RESET,
 #endif
                             PATATA_TERM_RESET,
@@ -129,15 +131,16 @@ Patata::Log::WindowLog (SDL_Window * Window)
                         "  Window creation flags :", PATATA_TERM_COLOR_GRAY1);
 
   uint32_t WindowFlags = SDL_GetWindowFlags (Window);
-  #if defined(DEBUG)
+#if defined(DEBUG)
   PatataEngineInfo->WindowCreationFlags = WindowFlags;
-  #endif
+#endif
 
   if (WindowFlags & SDL_WINDOW_FULLSCREEN)
     fast_io::io::println (fast_io::out (), "    fullscreen window");
 
   if (WindowFlags & SDL_WINDOW_OPENGL)
-    fast_io::io::println (fast_io::out (), "    window usable with OpenGL context");
+    fast_io::io::println (fast_io::out (),
+                          "    window usable with OpenGL context");
 
   if (WindowFlags & SDL_WINDOW_SHOWN)
     fast_io::io::println (fast_io::out (), "    window is visible");
@@ -158,7 +161,8 @@ Patata::Log::WindowLog (SDL_Window * Window)
     fast_io::io::println (fast_io::out (), "    window is maximized");
 
   if (WindowFlags & SDL_WINDOW_MOUSE_GRABBED)
-    fast_io::io::println (fast_io::out (), "    window has grabbed mouse input");
+    fast_io::io::println (fast_io::out (),
+                          "    window has grabbed mouse input");
 
   if (WindowFlags & SDL_WINDOW_INPUT_FOCUS)
     fast_io::io::println (fast_io::out (), "    window has input focus");
@@ -170,7 +174,9 @@ Patata::Log::WindowLog (SDL_Window * Window)
     fast_io::io::println (fast_io::out (), "    window not created by SDL");
 
   if (WindowFlags & SDL_WINDOW_ALLOW_HIGHDPI)
-    fast_io::io::println (fast_io::out (), "    window should be created in high-DPI mode if supported");
+    fast_io::io::println (
+        fast_io::out (),
+        "    window should be created in high-DPI mode if supported");
 
   if (WindowFlags & SDL_WINDOW_MOUSE_CAPTURE)
     fast_io::io::println (

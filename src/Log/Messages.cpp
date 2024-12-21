@@ -3,17 +3,15 @@
 void
 Patata::Log::FatalErrorMessage (const std::string_view & Title,
                                 const std::string_view & Message,
-                                const Patata::Config & Config)
+                                const Patata::Config &   Config)
 {
-  std::string PatataErrorTitle { "Patata Engine - " };
-  PatataErrorTitle += Title; 
+  std::string PatataErrorTitle{ "Patata Engine - " };
+  PatataErrorTitle += Title;
 
   if (Config.ShowFatalErrorMessagebox)
     {
-      SDL_ShowSimpleMessageBox (SDL_MESSAGEBOX_ERROR,
-                                PatataErrorTitle.data (),
-                                Message.data (),
-                                nullptr);
+      SDL_ShowSimpleMessageBox (SDL_MESSAGEBOX_ERROR, PatataErrorTitle.data (),
+                                Message.data (), nullptr);
     }
   else
     {
@@ -30,10 +28,7 @@ Patata::Log::FatalErrorMessage (const std::string_view & Title,
 #else
           PATATA_TERM_BOLD,
 #endif
-          PATATA_TERM_COLOR_RED,
-          "ERROR FATAL : ",
-          PATATA_TERM_RESET,
-          Message);
+          PATATA_TERM_COLOR_RED, "ERROR FATAL : ", PATATA_TERM_RESET, Message);
 
 #if defined(_WIN64)
       SetConsoleMode (Terminal, mode);
@@ -58,10 +53,7 @@ Patata::Log::ErrorMessage (const std::string_view & Message)
 #if !defined(_WIN64)
       PATATA_TERM_BOLD,
 #endif
-      PATATA_TERM_COLOR_RED,
-      "ERROR : ",
-      PATATA_TERM_RESET,
-      Message);
+      PATATA_TERM_COLOR_RED, "ERROR : ", PATATA_TERM_RESET, Message);
 
 #if defined(_WIN64)
   SetConsoleMode (Terminal, mode);
@@ -85,10 +77,7 @@ Patata::Log::WarningMessage (const std::string_view & Message)
 #if !defined(_WIN64)
       PATATA_TERM_BOLD,
 #endif
-      PATATA_TERM_COLOR_YELLOW,
-      "WARNING : ",
-      PATATA_TERM_RESET,
-      Message);
+      PATATA_TERM_COLOR_YELLOW, "WARNING : ", PATATA_TERM_RESET, Message);
 
 #if defined(_WIN64)
   SetConsoleMode (Terminal, mode);

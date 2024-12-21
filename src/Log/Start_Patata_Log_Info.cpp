@@ -48,15 +48,15 @@ Patata::Log::StartPatataLogInfo (void)
   fast_io::io::println (PATATA_TERM_BOLD, "  Build Date : ", PATATA_TERM_RESET,
                         __DATE__, " ", __TIME__);
 
-  fast_io::io::println (PATATA_TERM_BOLD, "  Compiler : ", PATATA_TERM_RESET, PATATA_TERM_DIM,
-                        PATATA_COMPILER_PROGRAM, PATATA_TERM_RESET,
-                        " | ", PATATA_TERM_RESET, PATATA_COMPILER, " ",
-                        PATATA_COMPILER_VERSION);
+  fast_io::io::println (PATATA_TERM_BOLD, "  Compiler : ", PATATA_TERM_RESET,
+                        PATATA_TERM_DIM, PATATA_COMPILER_PROGRAM,
+                        PATATA_TERM_RESET, " | ", PATATA_TERM_RESET,
+                        PATATA_COMPILER, " ", PATATA_COMPILER_VERSION);
 
   fast_io::io::println (
-      PATATA_TERM_BOLD, "  Build System : ", PATATA_TERM_RESET, PATATA_TERM_DIM,
-      PATATA_BUILD_SYSTEM, " ", PATATA_BUILD_SYSTEM_VERSION, PATATA_TERM_RESET, " | ",
-      PATATA_BUILD_SYSTEM_GENERATOR, " ",
+      PATATA_TERM_BOLD, "  Build System : ", PATATA_TERM_RESET,
+      PATATA_TERM_DIM, PATATA_BUILD_SYSTEM, " ", PATATA_BUILD_SYSTEM_VERSION,
+      PATATA_TERM_RESET, " | ", PATATA_BUILD_SYSTEM_GENERATOR, " ",
       PATATA_BUILD_SYSTEM_GENERATOR_VERSION);
 
   fast_io::io::println (PATATA_TERM_BOLD, "  Build Type : ", PATATA_TERM_RESET,
@@ -90,9 +90,9 @@ Patata::Log::StartPatataLogInfo (void)
 #endif
 
 #if defined(PATATA_RAPIDYAML_VERSION)
-fast_io::io::println (PATATA_TERM_BOLD,
-                      "  RapidYaml Version : ", PATATA_TERM_RESET,
-                      PATATA_RAPIDYAML_VERSION);
+  fast_io::io::println (PATATA_TERM_BOLD,
+                        "  RapidYaml Version : ", PATATA_TERM_RESET,
+                        PATATA_RAPIDYAML_VERSION);
 #endif
 
 #if defined(PATATA_GAME_NAME)

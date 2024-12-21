@@ -28,9 +28,9 @@ Patata::Engine::EngineImpl::InitImgui (void)
   io.LogFilename   = nullptr;
 
   ImFontConfig FontConfig;
-  FontConfig.RasterizerDensity   = 6.0f;
+  FontConfig.RasterizerDensity = 6.0f;
   FontConfig.OversampleH       = 4;
-  FontConfig.OversampleV         = 4;
+  FontConfig.OversampleV       = 4;
   // FontConfig.GlyphExtraSpacing.x = 1.008f;
   io.Fonts->AddFontDefault ();
   io.FontGlobalScale = 1.0f;
@@ -51,21 +51,20 @@ Patata::Engine::EngineImpl::InitImgui (void)
   ImGui::GetStyle ().WindowPadding     = ImVec2 (20, 6);
   ImGui::GetStyle ().Colors[ImGuiCol_TitleBg]
       = ImGui::GetStyle ().Colors[ImGuiCol_WindowBg];
-  ImGui::GetStyle().Colors[ImGuiCol_DockingEmptyBg] = ImVec4(0.0f, 0.0f, 0.0f, 0.0f);
+  ImGui::GetStyle ().Colors[ImGuiCol_DockingEmptyBg]
+      = ImVec4 (0.0f, 0.0f, 0.0f, 0.0f);
 }
 
 // Vulkan Backend
 #include "RaccoonRenderer.hpp"
 
 bool
-Patata::RaccoonRenderer::CreateImguiDescriptorPool (
-    void)
+Patata::RaccoonRenderer::CreateImguiDescriptorPool (void)
 {
   if (ImGui::GetCurrentContext () == nullptr)
     {
       std::future<void> Err
-          = std::async (std::launch::async,
-              Patata::Log::ErrorMessage,
+          = std::async (std::launch::async, Patata::Log::ErrorMessage,
                         "You cannot initialize the descriptor pool for imgui "
                         "without having initialized the ImGui context first");
 
@@ -82,8 +81,8 @@ Patata::RaccoonRenderer::CreateImguiDescriptorPool (
       nullptr                                               // pNext
   );
 
-  vk::Result Result
-      = Vulkan.Device.createDescriptorPool (&Info, nullptr, &Vulkan.ImguiDescriptorPool);
+  vk::Result Result = Vulkan.Device.createDescriptorPool (
+      &Info, nullptr, &Vulkan.ImguiDescriptorPool);
 
   if (Result != vk::Result::eSuccess)
     {
@@ -98,8 +97,7 @@ Patata::RaccoonRenderer::CreateImguiDescriptorPool (
 }
 
 bool
-Patata::RaccoonRenderer::CreateImguiPipelineCache (
-    void)
+Patata::RaccoonRenderer::CreateImguiPipelineCache (void)
 {
   if (ImGui::GetCurrentContext () == nullptr)
     {
@@ -112,8 +110,8 @@ Patata::RaccoonRenderer::CreateImguiPipelineCache (
     }
 
   vk::PipelineCacheCreateInfo Info{};
-  vk::Result                  Result
-      = Vulkan.Device.createPipelineCache (&Info, nullptr, &Vulkan.ImguiPipelineCache);
+  vk::Result                  Result = Vulkan.Device.createPipelineCache (
+      &Info, nullptr, &Vulkan.ImguiPipelineCache);
 
   if (Result != vk::Result::eSuccess)
     {
@@ -127,15 +125,14 @@ Patata::RaccoonRenderer::CreateImguiPipelineCache (
 }
 
 bool
-Patata::RaccoonRenderer::InitImguiVulkan (
-    SDL_Window * Window)
+Patata::RaccoonRenderer::InitImguiVulkan (SDL_Window * Window)
 {
   if (ImGui::GetCurrentContext () == nullptr)
     {
-      std::future<void> Err = std::async (std::launch::async,
-          Patata::Log::ErrorMessage,
-          "You cannot initialize the implementation without "
-          "having initialized the ImGui context first");
+      std::future<void> Err
+          = std::async (std::launch::async, Patata::Log::ErrorMessage,
+                        "You cannot initialize the implementation without "
+                        "having initialized the ImGui context first");
 
       return false;
     }
@@ -143,7 +140,8 @@ Patata::RaccoonRenderer::InitImguiVulkan (
   ImGui_ImplSDL2_InitForVulkan (Window);
 
   vk::SurfaceCapabilitiesKHR   SurfaceCapabilities;
-  vk::PhysicalDeviceProperties properties = Vulkan.PhysicalDevice.getProperties ();
+  vk::PhysicalDeviceProperties properties
+      = Vulkan.PhysicalDevice.getProperties ();
 
   vk::Result Result = Vulkan.PhysicalDevice.getSurfaceCapabilitiesKHR (
       Vulkan.Surface, &SurfaceCapabilities);
@@ -163,20 +161,21 @@ Patata::RaccoonRenderer::InitImguiVulkan (
   else
     limits = properties.limits.minStorageBufferOffsetAlignment;
 
-  ImGui_ImplVulkan_InitInfo init_info {
-    .Instance            = static_cast<VkInstance> (Vulkan.Instance),
-    .PhysicalDevice      = static_cast<VkPhysicalDevice> (Vulkan.PhysicalDevice),
-    .Device              = static_cast<VkDevice> (Vulkan.Device),
-    .QueueFamily         = Vulkan.GraphicsQueueFamilyIndex,
-    .Queue               = static_cast<VkQueue> (Vulkan.Queue),
-    .DescriptorPool      = static_cast<VkDescriptorPool> (Vulkan.ImguiDescriptorPool),
-    .RenderPass          = static_cast<VkRenderPass> (Vulkan.RenderPass),
-    .MinImageCount       = SurfaceCapabilities.minImageCount,
-    .ImageCount          = Vulkan.SwapChainImageCount,
-    .MSAASamples         = VK_SAMPLE_COUNT_1_BIT,
-    .PipelineCache       = static_cast<VkPipelineCache> (Vulkan.ImguiPipelineCache),
-    .Subpass             = 0,
-    .UseDynamicRendering = false,
+  ImGui_ImplVulkan_InitInfo init_info{
+    .Instance       = static_cast<VkInstance> (Vulkan.Instance),
+    .PhysicalDevice = static_cast<VkPhysicalDevice> (Vulkan.PhysicalDevice),
+    .Device         = static_cast<VkDevice> (Vulkan.Device),
+    .QueueFamily    = Vulkan.GraphicsQueueFamilyIndex,
+    .Queue          = static_cast<VkQueue> (Vulkan.Queue),
+    .DescriptorPool
+    = static_cast<VkDescriptorPool> (Vulkan.ImguiDescriptorPool),
+    .RenderPass    = static_cast<VkRenderPass> (Vulkan.RenderPass),
+    .MinImageCount = SurfaceCapabilities.minImageCount,
+    .ImageCount    = Vulkan.SwapChainImageCount,
+    .MSAASamples   = VK_SAMPLE_COUNT_1_BIT,
+    .PipelineCache = static_cast<VkPipelineCache> (Vulkan.ImguiPipelineCache),
+    .Subpass       = 0,
+    .UseDynamicRendering         = false,
     .PipelineRenderingCreateInfo = {},
     .Allocator                   = nullptr,
     .CheckVkResultFn             = nullptr,

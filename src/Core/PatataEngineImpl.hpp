@@ -8,8 +8,8 @@ public:
   EngineImpl (const char *);
   ~EngineImpl (void);
 
-  Patata::Config Configuration;
-  Patata::ClearColor ClearColor {};
+  Patata::Config     Configuration;
+  Patata::ClearColor ClearColor{};
 
   void HandleEvent (SDL_Event &);
   bool BeginRender (SDL_Event &);
@@ -19,26 +19,26 @@ private:
 #if defined(DEBUG)
   Patata::EngineInfo PatataEngineInfo;
 #endif
-  SDL_Window *              GameWindow      = nullptr;
-  Patata::RaccoonRendererCreateInfo RaccoonInfo {
+  SDL_Window *                      GameWindow = nullptr;
+  Patata::RaccoonRendererCreateInfo RaccoonInfo{
     .pConfiguration = &Configuration,
-    .ppWindow = &GameWindow,
+    .ppWindow       = &GameWindow,
     .pWindowResized = &WindowResized,
-    .pClearColor = &ClearColor,
-    #if defined(DEBUG)
+    .pClearColor    = &ClearColor,
+#if defined(DEBUG)
     .pPatataEngineInfo = &PatataEngineInfo
-    #endif
+#endif
   };
   Patata::RaccoonRenderer * RaccoonRenderer = nullptr;
-  bool WindowResized = false;
+  bool                      WindowResized   = false;
 
   bool LoadConfig (Config &);
 
   void CreateGameWindow (const char *);
 
-  #if defined(USE_ICON)
+#if defined(USE_ICON)
   void SetWindowIcon (void);
-  #endif
+#endif
 
 #if defined(DEBUG)
   void InitImgui (void);

@@ -26,13 +26,12 @@
 Patata::Engine::Engine (const char * WindowTitle)
     : pPatataEngine (new EngineImpl (WindowTitle))
 {
-    pClearColor = &pPatataEngine->ClearColor;
+  pClearColor = &pPatataEngine->ClearColor;
 }
 
-Patata::Engine::Engine (void)
-    : pPatataEngine (new EngineImpl (nullptr))
+Patata::Engine::Engine (void) : pPatataEngine (new EngineImpl (nullptr))
 {
-    pClearColor = &pPatataEngine->ClearColor;
+  pClearColor = &pPatataEngine->ClearColor;
 }
 
 Patata::Engine::~Engine ()

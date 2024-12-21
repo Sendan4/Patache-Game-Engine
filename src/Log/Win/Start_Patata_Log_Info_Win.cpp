@@ -11,8 +11,7 @@ Patata::Log::StartPatataLogInfo (void)
   SetConsoleOutputCP (CP_UTF8);
 
   fast_io::io::println (fast_io::out (), PATATA_TERM_COLOR_PATATA,
-                        PATATA_ENGINE_NAME, PATATA_TERM_BOLD,
-                        " INFO : ");
+                        PATATA_ENGINE_NAME, PATATA_TERM_BOLD, " INFO : ");
 
 #if defined(PATATA_GIT_BRANCH)
   fast_io::io::println (fast_io::out (), PATATA_TERM_BOLD,
@@ -21,8 +20,7 @@ Patata::Log::StartPatataLogInfo (void)
 #endif
 
 #if defined(PATATA_GIT_HASH_LONG) && defined(PATATA_GIT_HASH_SHORT)
-  fast_io::io::println (fast_io::out (), PATATA_TERM_BOLD,
-                        "  Commit Hash: ");
+  fast_io::io::println (fast_io::out (), PATATA_TERM_BOLD, "  Commit Hash: ");
 
   fast_io::io::println (fast_io::out (), "    ", PATATA_TERM_COLOR_GRAY1,
                         PATATA_GIT_HASH_LONG);
@@ -63,8 +61,8 @@ Patata::Log::StartPatataLogInfo (void)
 
   fast_io::io::println (fast_io::out (), PATATA_TERM_BOLD,
                         "  Compiler : ", PATATA_TERM_COLOR_GRAY1,
-                        PATATA_COMPILER_PROGRAM, " | ",
-                        PATATA_COMPILER, " ", PATATA_COMPILER_VERSION);
+                        PATATA_COMPILER_PROGRAM, " | ", PATATA_COMPILER, " ",
+                        PATATA_COMPILER_VERSION);
 
   fast_io::io::println (fast_io::out (), PATATA_TERM_BOLD,
                         "  Build System : ", PATATA_TERM_COLOR_GRAY1,
@@ -72,11 +70,12 @@ Patata::Log::StartPatataLogInfo (void)
 #if defined(PATATA_BUILD_SYSTEM_VERSION)
                         " ", PATATA_BUILD_SYSTEM_VERSION,
 #endif
-                      " | ", PATATA_BUILD_SYSTEM_GENERATOR
+                        " | ", PATATA_BUILD_SYSTEM_GENERATOR
 #if defined(PATATA_BUILD_SYSTEM_GENERATOR_VERSION)
-                      ," ", PATATA_BUILD_SYSTEM_GENERATOR_VERSION);
+                        ,
+                        " ", PATATA_BUILD_SYSTEM_GENERATOR_VERSION);
 #else
-                      );
+  );
 #endif
 
   fast_io::io::println (fast_io::out (), PATATA_TERM_BOLD,

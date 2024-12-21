@@ -6,7 +6,7 @@
 #include <SDL.h>
 
 // Begin Dependencies of RaccoonRenderer.hpp
-#if defined (DEBUG)
+#if defined(DEBUG)
 #include "StructEngineInfo.hpp"
 #endif
 #include "PatataEngine/StructClearColor.hpp"
@@ -23,14 +23,13 @@ si se llega a tener varios, lo mejor seria iniciarlos
 mediante el valor de una configuracion.
 */
 
-Patata::RaccoonRenderer::RaccoonRenderer (Patata::RaccoonRendererCreateInfo * RaccoonInfo)
+Patata::RaccoonRenderer::RaccoonRenderer (
+    Patata::RaccoonRendererCreateInfo * RaccoonInfo)
     : pRaccoonInfo (RaccoonInfo)
 {
   // Backend Principal
-  if (!InitVulkanBackend()) return;
+  if (!InitVulkanBackend ())
+    return;
 }
 
-Patata::RaccoonRenderer::~RaccoonRenderer (void)
-{
-    CloseVulkanBackend();
-}
+Patata::RaccoonRenderer::~RaccoonRenderer (void) { CloseVulkanBackend (); }

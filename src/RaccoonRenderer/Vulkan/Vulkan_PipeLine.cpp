@@ -3,5 +3,5 @@
 bool
 Patata::RaccoonRenderer::CreatePipeline (void)
 {
-    return true;
+  return true;
 }

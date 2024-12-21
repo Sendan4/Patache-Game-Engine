@@ -21,8 +21,9 @@ public:
 
   // Clear Color
   Patata::ClearColor * pClearColor = nullptr;
-  PATATA_API void ClearColor (const eColor &);
-  PATATA_API void ClearColorRGBA (const float &, const float &, const float &, const float &);
+  PATATA_API void      ClearColor (const eColor &);
+  PATATA_API void ClearColorRGBA (const float &, const float &, const float &,
+                                  const float &);
   PATATA_API void ClearColorRGBA (const float &, const float &, const float &);
 
 private:

@@ -24,7 +24,7 @@ Patata::Engine::EngineImpl::CreateGameWindow (const char * Title)
 #endif
     }
 
-  uint32_t w = 0, h = 0;
+  uint32_t        w = 0, h = 0;
   SDL_DisplayMode CurrentMode;
 
   if (SDL_GetCurrentDisplayMode (0, &CurrentMode) == 0)
@@ -34,41 +34,39 @@ Patata::Engine::EngineImpl::CreateGameWindow (const char * Title)
     }
   else
     {
-      std::future<void> Err = std::async(std::launch::async,
-          Patata::Log::ErrorMessage,
+      std::future<void> Err = std::async (
+          std::launch::async, Patata::Log::ErrorMessage,
           "can't get the current resolution. starting with 480p (1.78)");
 
       w = 854;
       h = 480;
     }
 
-  GameWindow = SDL_CreateWindow (PatataWindowTitle.c_str(), SDL_WINDOWPOS_CENTERED,
+  GameWindow
+      = SDL_CreateWindow (PatataWindowTitle.c_str (), SDL_WINDOWPOS_CENTERED,
                           SDL_WINDOWPOS_CENTERED, w, h,
                           SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE
                               | SDL_WINDOW_VULKAN | SDL_WINDOW_ALLOW_HIGHDPI);
 
   if (!GameWindow)
     {
-        std::future<void> Err = std::async(std::launch::async,
-            Patata::Log::FatalErrorMessage,
-            "Window cannot be created",
-            SDL_GetError (),
-            Configuration);
+      std::future<void> Err = std::async (
+          std::launch::async, Patata::Log::FatalErrorMessage,
+          "Window cannot be created", SDL_GetError (), Configuration);
 
-        return;
+      return;
     }
 
-  SDL_SetWindowMinimumSize(GameWindow, 640, 360);
+  SDL_SetWindowMinimumSize (GameWindow, 640, 360);
 
-  #if defined (DEBUG)
-  std::future<void> Log = std::async(std::launch::async,
-      Patata::Log::WindowLog,
-      GameWindow, &PatataEngineInfo);
-  #else
-  std::future<void> Log = std::async(std::launch::async,
-      Patata::Log::WindowLog,
-      GameWindow);
-  #endif
+#if defined(DEBUG)
+  std::future<void> Log
+      = std::async (std::launch::async, Patata::Log::WindowLog, GameWindow,
+                    &PatataEngineInfo);
+#else
+  std::future<void> Log
+      = std::async (std::launch::async, Patata::Log::WindowLog, GameWindow);
+#endif
 }
 
 #if defined(USE_ICON)
@@ -81,8 +79,9 @@ Patata::Engine::EngineImpl::SetWindowIcon (void)
   SDL_Surface * Icon = SDL_LoadBMP (PATATA_GAME_ICON_FILE);
 
   if (Icon == nullptr)
-    std::future<void> Err = std::async(std::launch::async,
-        Patata::Log::ErrorMessage, "Icon cannot be loaded");
+    std::future<void> Err
+        = std::async (std::launch::async, Patata::Log::ErrorMessage,
+                      "Icon cannot be loaded");
   else
     SDL_SetWindowIcon (GameWindow, Icon);
 
@@ -94,16 +93,17 @@ Patata::Engine::EngineImpl::SetWindowIcon (void)
 
   if (WindowInfo.subsystem != SDL_SYSWM_WAYLAND)
     {
-        SDL_Surface * Icon = SDL_LoadBMP (PATATA_GAME_ICON_FILE);
+      SDL_Surface * Icon = SDL_LoadBMP (PATATA_GAME_ICON_FILE);
 
-        if (Icon == nullptr)
-          std::future<void> Err = std::async(
-              std::launch::async, Patata::Log::ErrorMessage, "Icon cannot be loaded");
-        else
-          SDL_SetWindowIcon (GameWindow, Icon);
+      if (Icon == nullptr)
+        std::future<void> Err
+            = std::async (std::launch::async, Patata::Log::ErrorMessage,
+                          "Icon cannot be loaded");
+      else
+        SDL_SetWindowIcon (GameWindow, Icon);
 
-        fast_io::io::perrln (std::string_view{ SDL_GetError () });
-        SDL_FreeSurface (Icon);
+      fast_io::io::perrln (std::string_view{ SDL_GetError () });
+      SDL_FreeSurface (Icon);
     }
 #endif
 }

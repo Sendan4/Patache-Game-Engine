@@ -14,7 +14,7 @@ Patata::Engine::ClearColorRGBA (const float & R, const float & G,
 
 void
 Patata::Engine::ClearColorRGBA (const float & R, const float & G,
-                               const float & B)
+                                const float & B)
 {
   pClearColor->r = R;
   pClearColor->g = G;
@@ -257,10 +257,10 @@ Patata::Engine::ClearColor (const eColor & Color)
       break;
 
     case eColor::Darkgreen:
-        pClearColor->r = 0.0f;
-        pClearColor->g = 0.39215686274509803f;
-        pClearColor->b = 0.0f;
-        break;
+      pClearColor->r = 0.0f;
+      pClearColor->g = 0.39215686274509803f;
+      pClearColor->b = 0.0f;
+      break;
 
     case eColor::Darkkhaki:
       pClearColor->r = 0.7411764705882353f;
@@ -815,57 +815,57 @@ Patata::Engine::ClearColor (const eColor & Color)
       break;
 
     case eColor::Steelblue:
-        pClearColor->r = 0.27450980392156865f;
-        pClearColor->g = 0.5098039215686274f;
-        pClearColor->b = 0.7058823529411765f;
-        break;
+      pClearColor->r = 0.27450980392156865f;
+      pClearColor->g = 0.5098039215686274f;
+      pClearColor->b = 0.7058823529411765f;
+      break;
 
     case eColor::Tan:
-        pClearColor->r = 0.8235294117647058f;
-        pClearColor->g = 0.7058823529411765f;
-        pClearColor->b = 0.5490196078431373f;
-        break;
+      pClearColor->r = 0.8235294117647058f;
+      pClearColor->g = 0.7058823529411765f;
+      pClearColor->b = 0.5490196078431373f;
+      break;
 
     case eColor::Thistle:
-        pClearColor->r = 0.8470588235294118f;
-        pClearColor->g = 0.7490196078431373f;
-        pClearColor->b = 0.8470588235294118f;
-        break;
+      pClearColor->r = 0.8470588235294118f;
+      pClearColor->g = 0.7490196078431373f;
+      pClearColor->b = 0.8470588235294118f;
+      break;
 
     case eColor::Tomato:
-        pClearColor->r = 1.0f;
-        pClearColor->g = 0.38823529411764707f;
-        pClearColor->b = 0.2784313725490196f;
-        break;
+      pClearColor->r = 1.0f;
+      pClearColor->g = 0.38823529411764707f;
+      pClearColor->b = 0.2784313725490196f;
+      break;
 
     case eColor::Turquoise:
-        pClearColor->r = 0.25098039215686274f;
-        pClearColor->g = 0.8784313725490196f;
-        pClearColor->b = 0.8156862745098039f;
-        break;
+      pClearColor->r = 0.25098039215686274f;
+      pClearColor->g = 0.8784313725490196f;
+      pClearColor->b = 0.8156862745098039f;
+      break;
 
     case eColor::Violet:
-        pClearColor->r = 0.9333333333333333f;
-        pClearColor->g = 0.5098039215686274f;
-        pClearColor->b = 0.9333333333333333f;
-        break;
+      pClearColor->r = 0.9333333333333333f;
+      pClearColor->g = 0.5098039215686274f;
+      pClearColor->b = 0.9333333333333333f;
+      break;
 
     case eColor::Wheat:
-        pClearColor->r = 0.9607843137254902f;
-        pClearColor->g = 0.8705882352941177f;
-        pClearColor->b = 0.7019607843137254f;
-        break;
+      pClearColor->r = 0.9607843137254902f;
+      pClearColor->g = 0.8705882352941177f;
+      pClearColor->b = 0.7019607843137254f;
+      break;
 
     case eColor::Whitesmoke:
-        pClearColor->r = 0.9607843137254902f;
-        pClearColor->g = 0.9607843137254902f;
-        pClearColor->b = 0.9607843137254902f;
-        break;
+      pClearColor->r = 0.9607843137254902f;
+      pClearColor->g = 0.9607843137254902f;
+      pClearColor->b = 0.9607843137254902f;
+      break;
 
     case eColor::Yellowgreen:
-        pClearColor->r = 0.6039215686274509f;
-        pClearColor->g = 0.803921568627451f;
-        pClearColor->b = 0.19607843137254902f;
-        break;
+      pClearColor->r = 0.6039215686274509f;
+      pClearColor->g = 0.803921568627451f;
+      pClearColor->b = 0.19607843137254902f;
+      break;
     }
 }
