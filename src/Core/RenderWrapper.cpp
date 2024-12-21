@@ -1,6 +1,25 @@
 // Raccoon Renderer Functions (Wrapping) -> Engine Implementation (Wrapping)
+
+#if defined(DEBUG)
+#include <SDL_syswm.h>
+#include <imgui_impl_vulkan.h>
+#endif
+#include <SDL.h>
+#include <vulkan/vulkan.hpp>
+
 // Patata Engine
-#include "RenderWrapper.hpp"
+#include "PatataEngine/PatataEngine.hpp"
+// Begin Dependencies of PatataEngineImpl.hpp
+#if defined(DEBUG)
+#include "StructEngineInfo.hpp"
+#endif
+#include "StructConfig.hpp"
+#include "Log.hpp"
+#include "PatataEngine/StructClearColor.hpp"
+#include "VulkanBackend.hpp"
+#include "RaccoonRenderer.hpp"
+// End Dependencies of PatataEngineImpl.hpp
+#include "PatataEngineImpl.hpp"
 
 bool
 Patata::Engine::EngineImpl::BeginRender (SDL_Event & Event)

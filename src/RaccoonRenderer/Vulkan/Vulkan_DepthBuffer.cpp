@@ -1,13 +1,15 @@
 #include "Vulkan_DepthBuffer.hpp"
 
 bool
-Patata::Graphics::RaccoonRenderer::VulkanBackend::CreateDepthBuffer (void)
+Patata::RaccoonRenderer::CreateDepthBuffer (void)
 {
   fast_io::io::println (
     #if defined(_WIN64)
-    fast_io::out (),
+    fast_io::out ()
+    #else
+    ""
     #endif
-    "");
+    );
 
   vk::ImageTiling Tiling = vk::ImageTiling::eOptimal;
 
@@ -24,7 +26,7 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::CreateDepthBuffer (void)
   // Depth Image And Image Tiling
   for (uint8_t i = 0; i < 4; ++i) {
       vk::FormatProperties2 FormatProperties
-          = PhysicalDevice.getFormatProperties2 (DepthFormatsToCheck[i]);
+          = Vulkan.PhysicalDevice.getFormatProperties2 (DepthFormatsToCheck[i]);
 
       if (FormatProperties.formatProperties.optimalTilingFeatures
           & vk::FormatFeatureFlagBits::eDepthStencilAttachment) // Priority
@@ -45,16 +47,19 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::CreateDepthBuffer (void)
   }
 
   if (!Found) {
-      Patata::Log::FatalErrorMessage ("Patata - Raccoon Renderer",
-                                      "A ImageTiling or Depth Format was not found",
-                                      *pRaccoonInfo->pConfiguration);
+      std::future<void> Err = std::async (std::launch::async,
+          Patata::Log::FatalErrorMessage,
+          "Patata - Raccoon Renderer",
+          "A ImageTiling or Depth Format was not found",
+          *pRaccoonInfo->pConfiguration);
+
       return false;
   }
 
   vk::ImageCreateInfo ImageInfo ({},
       vk::ImageType::e2D,                              // imageType
       SelectedDepthFormat,                             // format
-      vk::Extent3D (SwapChainExtent, 1),               // extent
+      vk::Extent3D(Vulkan.SwapChainExtent, 1), // extent
       1,                                               // mipLevels
       1,                                               // arrayLayers
       vk::SampleCountFlagBits::e1,                     // samples
@@ -67,16 +72,17 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::CreateDepthBuffer (void)
       nullptr                                          // pNext
   );
 
-  vk::Result Result = Device.createImage (&ImageInfo, nullptr, &DepthImage);
-  {
+  vk::Result Result = Vulkan.Device.createImage (&ImageInfo, nullptr, &Vulkan.DepthImage);
+  if (Result != vk::Result::eSuccess) {
     std::future<void> ReturnVulkanCheck = std::async (std::launch::async,
         Patata::Log::VulkanCheck, "Depth Image", Result);
+
+    return false;
   }
-  if (Result != vk::Result::eSuccess) return false;
 
   // Depth View
-  vk::PhysicalDeviceMemoryProperties2 MemoryProperties = PhysicalDevice.getMemoryProperties2();
-  vk::MemoryRequirements2 MemoryRequirements = Device.getImageMemoryRequirements2(DepthImage);
+  vk::PhysicalDeviceMemoryProperties2 MemoryProperties = Vulkan.PhysicalDevice.getMemoryProperties2();
+  vk::MemoryRequirements2 MemoryRequirements = Vulkan.Device.getImageMemoryRequirements2(Vulkan.DepthImage);
   uint32_t TypeIndex = 0;
 
   for (uint32_t i = 0; i < MemoryProperties.memoryProperties.memoryTypeCount; ++i) {
@@ -93,23 +99,26 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::CreateDepthBuffer (void)
       nullptr                                     // pNext
   );
 
-  Result = Device.allocateMemory(&DepthMemoryAllocateInfo, nullptr, &DepthMemory);
-  {
+  Result = Vulkan.Device.allocateMemory(&DepthMemoryAllocateInfo, nullptr, &Vulkan.DepthMemory);
+   if (Result != vk::Result::eSuccess) {
     std::future<void> ReturnVulkanCheck = std::async (std::launch::async,
         Patata::Log::VulkanCheck, "Allocate Depth Memory", Result);
-  }
-  if (Result != vk::Result::eSuccess) return false;
 
-  Result = Device.bindImageMemory(DepthImage, DepthMemory, 0);
-  {
+    return false;
+  }
+
+  Result = Vulkan.Device.bindImageMemory(Vulkan.DepthImage, Vulkan.DepthMemory, 0);
+  if (Result != vk::Result::eSuccess) {
     std::future<void> ReturnVulkanCheck = std::async (std::launch::async,
         Patata::Log::VulkanCheck, "Bind Image Depth Memory", Result);
+
+    return false;
   }
 
   vk::ComponentMapping Components;
 
   vk::ImageViewCreateInfo ImageDepthViewInfo({},
-      DepthImage,             // image
+      Vulkan.DepthImage,      // image
       vk::ImageViewType::e2D, // viewType
       SelectedDepthFormat,    // format
       Components,             // components
@@ -123,11 +132,12 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::CreateDepthBuffer (void)
       }
   );
 
-  Result = Device.createImageView(&ImageDepthViewInfo, nullptr, &DepthView);
-  {
+  Result = Vulkan.Device.createImageView(&ImageDepthViewInfo, nullptr, &Vulkan.DepthView);
+  if (Result != vk::Result::eSuccess) {
     std::future<void> ReturnVulkanCheck = std::async (std::launch::async,
         Patata::Log::VulkanCheck, "Depth Image View", Result);
+
+    return false;
   }
-  if (Result != vk::Result::eSuccess) return false;
   else return true;
 }

@@ -1,48 +1,14 @@
 project('imgui', 'cpp',
-  version : '1.91.4-docking',
+  version : 'v1.91.5-docking',
   meson_version : '>=1.2.0')
 
 dependencies = []
 
-if get_option('use_external_libs') == true and build_machine.system() != 'windows'
-  cmake = import('cmake')
-
-  buildtypeforcmake = ''
-  if get_option('buildtype') == 'debug'
-    buildtypeforcmake = 'Debug'
-  elif get_option('buildtype') == 'debugoptimized'
-    buildtypeforcmake = 'RelWithDebInfo'
-  elif get_option('buildtype') == 'release'
-    buildtypeforcmake = 'Release'
-  elif get_option('buildtype') == 'minsize'
-    buildtypeforcmake = 'MinSizeRel'
-  endif
-
-  sdl2_opt = cmake.subproject_options()
-  sdl2_opt.add_cmake_defines(
-    { 'CMAKE_INSTALL_PREFIX' : join_paths(meson.global_build_root(), '../bin/') },
-    { 'CMAKE_INSTALL_LIBDIR' : '.' },
-    { 'CMAKE_BUILD_TYPE' : buildtypeforcmake },
-    { 'SDL_TEST' : false },
-    { 'SDL_OPENGLES' : false },
-    { 'SDL_SHARED' : true },
-    { 'SDL_STATIC' : false })
-
-  if get_option('xorg_support') == false
-    sdl2_opt.add_cmake_defines(
-      { 'SDL_X11' : false },
-      { 'SDL_X11_SHARED' : false })
-  endif
-
-  sdl2 = cmake.subproject('SDL', options : sdl2_opt)
-  sdl2_dep = sdl2.dependency('SDL2')
-else
-    sdl2_dep = dependency('sdl2',
-        required : true,
-        static : false,
-        version : '>=2.24.1',
-        modules : ['SDL2::SDL2'])
-endif
+sdl2_dep = dependency('sdl2',
+  required : true,
+  static : false,
+  version : '>=2.24.1',
+  modules : ['SDL2::SDL2'])
 
 Vulkan = dependency('Vulkan',
     static : false,
@@ -75,27 +41,23 @@ Include = include_directories('.')
 
 backends = include_directories('backends/')
 
-if Vulkan.found() or get_option('use_external_libs') == true
+if Vulkan.found()
     meson.get_compiler('cpp').check_header('vulkan/vulkan.h', required : true)
     Sources += ['backends/imgui_impl_vulkan.cpp']
 endif
 
-if sdl2_dep.found() or get_option('use_external_libs') == true
+if sdl2_dep.found()
     Sources += ['backends/imgui_impl_sdl2.cpp']
 endif
 
 librarytype = ''
 
 force_static = false
-if get_option('use_external_libs') == true and get_option('libs_shared_build') == true and build_machine.system() != 'windows'
-    if get_option('use_external_libs') == true
-        warning('Prefer the library type as static for ImGui')
-    endif
+if get_option('libs_shared_build') == true and build_machine.system() == 'windows'
+    warning('Prefer the library type as static for ImGui')
 
     force_static = true
 endif
-
-compile_args = ''
 
 if get_option('libs_shared_build') == true and force_static == false
     lib = shared_library(meson.project_name(),
@@ -123,7 +85,7 @@ endif
 project_dep = declare_dependency(
   include_directories : [Include, backends],
   d_import_dirs : [Include, backends],
-  link_with : lib,
+  link_with : lib
 )
 
 set_variable(meson.project_name() + '_dep', project_dep)

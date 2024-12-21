@@ -1,26 +1,11 @@
 #pragma once
 
-#include <csignal>
-#ifndef YAML_CPP_API
-#define YAML_CPP_API
-#endif
-#include <SDL.h>
-#include <yaml-cpp/yaml.h>
-#include <fast_io.h>
-
-#include "PatataEngine/PatataEngine.hpp"
-#include "RaccoonRenderer.hpp"
-#include "Config.hpp"
-#if defined(DEBUG)
-#include "EngineInfo.hpp"
-#endif
-
 namespace Patata
 {
 class Engine::EngineImpl
 {
 public:
-  EngineImpl (const std::string &);
+  EngineImpl (const char *);
   ~EngineImpl (void);
 
   Patata::Config Configuration;
@@ -31,14 +16,11 @@ public:
   void EndRender (SDL_Event &);
 
 private:
-  SDL_Window *                        GameWindow      = nullptr;
-  Patata::Graphics::RaccoonRenderer * RaccoonRenderer = nullptr;
-  bool WindowResized = false;
-  #if defined(DEBUG)
+#if defined(DEBUG)
   Patata::EngineInfo PatataEngineInfo;
-  #endif
-
-  Patata::Graphics::RaccoonRendererCreateInfo RaccoonInfo {
+#endif
+  SDL_Window *              GameWindow      = nullptr;
+  Patata::RaccoonRendererCreateInfo RaccoonInfo {
     .pConfiguration = &Configuration,
     .ppWindow = &GameWindow,
     .pWindowResized = &WindowResized,
@@ -47,17 +29,19 @@ private:
     .pPatataEngineInfo = &PatataEngineInfo
     #endif
   };
+  Patata::RaccoonRenderer * RaccoonRenderer = nullptr;
+  bool WindowResized = false;
 
   bool LoadConfig (Config &);
 
-  void CreateGameWindow (const std::string &);
+  void CreateGameWindow (const char *);
 
   #if defined(USE_ICON)
   void SetWindowIcon (void);
   #endif
 
 #if defined(DEBUG)
-  void InitialImguiSetup (void);
+  void InitImgui (void);
 #endif
 };
 } // namespace Patata

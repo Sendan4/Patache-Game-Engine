@@ -7,7 +7,7 @@
 
 _Dumb and simple game engine made in C++._
 
-<p>Potato is a 2D engine, simple and lightweight, focused on game development using C++ directly. This engine abstracts tasks such as window creation, rendering, sound, input, and its configuration into an easy-to-use API.</p>
+<p>Patata is a 2D engine, simple and lightweight with a focus on game development using directly C++. This engine abstracts tasks such as window creation and input management thanks to SDL. It does rendering, sound and its own configuration in a simple to use API.</p>
 
 ⚠️ Not ready for use yet
 
@@ -27,8 +27,9 @@ _Dumb and simple game engine made in C++._
 		(<a href = "https://github.com/KhronosGroup/Vulkan-Loader.git">Vulkan-Loader</a>)
 	</ul>
 	<li><a href = "https://github.com/cppfastio/fast_io.git">fast_io</a></li>
-	<li><a href = "https://github.com/jbeder/yaml-cpp.git">yaml-cpp</a></li>
-    <li><a href = "https://github.com/ocornut/imgui.git">Imgui</a></li>
+	<li><a href = "https://github.com/biojppm/rapidyaml.git">RapidYaml</a></li>
+	<li><a href = "https://gitlab.freedesktop.org/freetype/freetype.git">FreeType</a></li>
+  <li><a href = "https://github.com/ocornut/imgui.git">Imgui</a></li>
 </ul>
 
 <hr>

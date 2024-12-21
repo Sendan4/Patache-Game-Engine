@@ -10,7 +10,7 @@
 #if __clang__
 #define PATATA_COMPILER "Clang"
 #elif __MINGW64__
-#define PATATA_COMPILER "Minimalist GNU for Windows (MinGW-w64 / GCC)"
+#define PATATA_COMPILER "Minimalist GNU for Windows (MinGW-w64)"
 #else
 #define PATATA_COMPILER "GNU Compiler Collection (GCC)"
 #endif
@@ -21,17 +21,21 @@
 #endif
 
 #include <fast_io.h>
-
-// Patata Engine
-#ifndef YAML_CPP_API
-#define YAML_CPP_API
+#if defined(DEBUG)
+#include <imgui_impl_sdl2.h>
+#include <imgui_impl_vulkan.h>
+#include <SDL_syswm.h>
 #endif
-#include <vulkan/vulkan.hpp>
-#include "Log.hpp"
-#include "TerminalColors.hpp"
 #include <SDL.h>
-#include <yaml-cpp/yaml.h>
-
+#include <vulkan/vulkan.hpp>
 #if defined(_WIN64)
 #include <windows.h>
 #endif
+
+// Patata Engine
+#include "ColorTerminal.hpp"
+#if defined(DEBUG)
+#include "StructEngineInfo.hpp"
+#endif
+#include "StructConfig.hpp"
+#include "Log.hpp"

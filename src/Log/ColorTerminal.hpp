@@ -11,7 +11,7 @@
 // Bold And Dim not supported in Windows
 #if !defined(_WIN64)
 #define PATATA_TERM_BOLD "\033[1m"
-#define PATATA_TERM_DIM  "\e[2m"
+#define PATATA_TERM_DIM  "\033[2m"
 #else
 #define PATATA_TERM_BOLD "\033[38;5;15m"
 #endif

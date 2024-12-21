@@ -1,12 +1,25 @@
 #include <future>
 
+#include <fast_io.h>
 #if defined(DEBUG)
 #include <imgui_impl_sdl2.h>
+#include <imgui_impl_vulkan.h>
+#include <SDL_syswm.h>
 #endif
-#define VULKAN_HPP_NO_EXCEPTIONS
+#include <SDL.h>
 #include <vulkan/vulkan.hpp>
 
 // Patata Engine
-#include "PatataEngineImpl.hpp"
-#include "TerminalColors.hpp"
+#include "PatataEngine/PatataEngine.hpp"
+#include "ColorTerminal.hpp"
+// Begin Dependencies of PatataEngineImpl.hpp
+#if defined(DEBUG)
+#include "StructEngineInfo.hpp"
+#endif
+#include "StructConfig.hpp"
 #include "Log.hpp"
+#include "PatataEngine/StructClearColor.hpp"
+#include "VulkanBackend.hpp"
+#include "RaccoonRenderer.hpp"
+// End Dependencies of PatataEngineImpl.hpp
+#include "PatataEngineImpl.hpp"

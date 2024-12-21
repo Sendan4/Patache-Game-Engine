@@ -3,27 +3,31 @@
 #endif
 #include <future>
 
-#include <fast_io.h>
+#if defined(DEBUG)
+#include <imgui_impl_vulkan.h>
+#include <SDL_syswm.h>
+#endif
+#include <SDL.h>
 #if defined(_WIN64)
 #include <windows.h>
 #endif
-
-#if defined(DEBUG)
-#include <imgui.h>
-#include <imgui_impl_sdl2.h>
-#endif
-
 #include <vulkan/vulkan.hpp>
 
 // Patata Engine
+#include "PatataEngine/PatataEngine.hpp"
+// PatataEngineImpl.hpp
+#if defined(DEBUG)
+#include "StructEngineInfo.hpp"
+#endif
+#include "StructConfig.hpp"
+#include "PatataEngine/StructClearColor.hpp"
+#include "VulkanBackend.hpp"
+#include "RaccoonRenderer.hpp"
+#include "PatataEngineImpl.hpp"
 #include "Log.hpp"
 
-#include "Config.hpp"
-#include "PatataEngine/PatataEngine.hpp"
-#include "PatataEngineImpl.hpp"
-
 // Private API
-Patata::Engine::EngineImpl::EngineImpl (const std::string & WindowTitle)
+Patata::Engine::EngineImpl::EngineImpl (const char * WindowTitle)
 {
   {
      std::future<void> PatataStarLogInfo = std::async(
@@ -32,74 +36,82 @@ Patata::Engine::EngineImpl::EngineImpl (const std::string & WindowTitle)
 
   if (!LoadConfig(Configuration)) return;
 
+  /*
+  Async change enviroment variables
+  Linux specific variables
+  */
 #if defined(__linux__)
+  std::future<int> setenv_PreferWayland_Async;
+
   if (Configuration.PreferWayland)
-    if (setenv ("SDL_VIDEODRIVER", "wayland", 1) != 0)
-        std::future<void> Err = std::async(std::launch::async,
-           Patata::Log::ErrorMessage,
-           "Cannot set enviroment varible SDL_VIDEODRIVER");
+    setenv_PreferWayland_Async = std::async(std::launch::async,
+        setenv, "SDL_VIDEODRIVER", "wayland", 1);
 
-  if (Configuration.EnableMangoHud) {
-      if (setenv ("MANGOHUD", "1", 1) != 0)
-        std::future<void> Err = std::async(std::launch::async,
-            Patata::Log::ErrorMessage,
-            "Cannot set enviroment varible MANGOHUD");
-  }
+  std::future<int> setenv_EnableMangoHud_Async;
+
+  if (Configuration.EnableMangoHud)
+    setenv_EnableMangoHud_Async = std::async(std::launch::async,
+        setenv, "MANGOHUD", "1", 1);
 #endif
 
+  // Vulkan VVL VK_LAYER_PATH
 #if defined(PATATA_FIND_VVL_IN_THE_CURRENT_PATH)
-#if defined(_WIN64)
-  if (SetEnvironmentVariable ("VK_LAYER_PATH", SDL_GetBasePath ()) == 0)
-    std::future<void> Err = std::async(std::launch::async,
-      Patata::Log::ErrorMessage,
-      "Cannot set enviroment varible VK_LAYER_PATH");
-#else
-  if (setenv ("VK_LAYER_PATH", SDL_GetBasePath (), 1) != 0)
-    std::future<void> Err = std::async(std::launch::async,
-        Patata::Log::ErrorMessage,
-        "Cannot set enviroment varible VK_LAYER_PATH");
-#endif
+    std::future<int> setenv_VK_LAYER_PATH_Async = std::async(std::launch::async,
+        #if defined(_WIN64)
+        SetEnvironmentVariable, "VK_LAYER_PATH", SDL_GetBasePath ()
+        #else
+        setenv, "VK_LAYER_PATH", SDL_GetBasePath (), 1
+        #endif
+    );
 #endif
 
 #if defined(PATATA_FIND_VVL_FROM_SDK) && defined(_WIN64)
-  if (SetEnvironmentVariable ("VK_LAYER_PATH", PATATA_VVL_SDK_PATH) == 0)
-    std::future<void> Err = std::async(std::launch::async,
-        Patata::Log::ErrorMessage,
-        "Cannot set enviroment varible VK_LAYER_PATH");
+    std::future<int> setenv_VK_LAYER_PATH_Async = std::async(std::launch::async,
+        SetEnvironmentVariable, "VK_LAYER_PATH", PATATA_VVL_SDK_PATH);
 #endif
 
-  // SDL Subsystems
-  if (SDL_Init (SDL_INIT_VIDEO) != 0)
+    // Linux especific variables
+#if defined(__linux__)
+    if (Configuration.PreferWayland) {
+        setenv_PreferWayland_Async.wait();
+        if (setenv_PreferWayland_Async.get() != 0)
+            std::future<void> Err = std::async(std::launch::async,
+                Patata::Log::ErrorMessage,
+                "Cannot set enviroment varible SDL_VIDEODRIVER");
+    }
+
+    if (Configuration.EnableMangoHud) {
+        setenv_EnableMangoHud_Async.wait();
+        if (setenv_EnableMangoHud_Async.get() != 0)
+            std::future<void> Err = std::async(std::launch::async,
+                Patata::Log::ErrorMessage,
+                "Cannot set enviroment varible MANGOHUD");
+    }
+#endif
+
+    // Vulkan VVL VK_LAYER_PATH
+#if defined(PATATA_FIND_VVL_IN_THE_CURRENT_PATH) || defined(PATATA_FIND_VVL_FROM_SDK)
+    setenv_VK_LAYER_PATH_Async.wait();
+#if defined(_WIN64) && (defined(PATATA_FIND_VVL_IN_THE_CURRENT_PATH) || defined(PATATA_FIND_VVL_FROM_SDK))
+    if (setenv_VK_LAYER_PATH_Async.get() == 0)
+#elif !defined(_WIN64) && defined(PATATA_FIND_VVL_IN_THE_CURRENT_PATH)
+    if (setenv_VK_LAYER_PATH_Async.get() != 0)
+#endif
+        std::future<void> Err = std::async(std::launch::async,
+            Patata::Log::ErrorMessage,
+            "Cannot set enviroment varible VK_LAYER_PATH");
+#endif
+
+// SDL Subsystems
+  if (SDL_Init (SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_GAMECONTROLLER) != 0)
     {
       std::future<void> Err = std::async(std::launch::async,
             Patata::Log::FatalErrorMessage,
             "Patata Engine - SDL2",
-            "Cannot init the video subsystem",
+            SDL_GetError(),
             Configuration);
 
       return;
-    }
-
-  if (SDL_Init (SDL_INIT_EVENTS) != 0)
-    {
-        std::future<void> Err = std::async(std::launch::async,
-              Patata::Log::FatalErrorMessage,
-              "Patata Engine - SDL2",
-              "Cannot init the events subsystem",
-              Configuration);
-
-        return;
-    }
-
-  if (SDL_Init (SDL_INIT_GAMECONTROLLER) != 0)
-    {
-        std::future<void> Err = std::async(std::launch::async,
-              Patata::Log::FatalErrorMessage,
-              "Patata Engine - SDL2",
-              "Cannot init the gamecontroller subsystem",
-              Configuration);
-
-        return;
     }
 
   CreateGameWindow (WindowTitle);
@@ -109,26 +121,20 @@ Patata::Engine::EngineImpl::EngineImpl (const std::string & WindowTitle)
 #endif
 
 #if defined(DEBUG)
-  InitialImguiSetup();
+  InitImgui ();
 #endif
 
-  RaccoonRenderer = new Patata::Graphics::RaccoonRenderer (&RaccoonInfo);
+  RaccoonRenderer = new Patata::RaccoonRenderer(&RaccoonInfo);
 }
 
-// ExitLog.hpp Dependencies
-#if defined(__GNUC__) || defined(__MINGW64__)
-#include <cxxabi.h>
+#if defined(DEBUG)
+#include <imgui.h>
+#include <imgui_impl_sdl2.h>
 #endif
-#if defined(_WIN64)
-#include <Windows.h>
-#endif
-
-#include "TerminalColors.hpp"
-#include "ExitLog.hpp"
 
 Patata::Engine::EngineImpl::~EngineImpl (void)
 {
-  Patata::Log::DeleteAndLogPtr ("Deallocate Raccoon Renderer", RaccoonRenderer);
+  delete RaccoonRenderer;
 
   // Imgui
   #if defined(DEBUG)
@@ -136,6 +142,8 @@ Patata::Engine::EngineImpl::~EngineImpl (void)
   ImGui::DestroyContext();
   #endif
 
+  // SDL
   SDL_DestroyWindow (GameWindow);
+  SDL_QuitSubSystem(SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_GAMECONTROLLER);
   SDL_Quit();
 }

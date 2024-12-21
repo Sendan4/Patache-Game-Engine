@@ -16,16 +16,16 @@ if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
 	option(XORG_SUPPORT "Disable or enable Xorg suport | Xorg is almost obsolete" OFF)
 endif ()
 
+if (NOT CMAKE_BUILD_TYPE)
+	set(CMAKE_BUILD_TYPE Release)
+endif()
+
 if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo")
 	option(USE_VVL "VVL is used to develop and test functions in the raccoon renderer" OFF)
 endif ()
 
 if (MSVC)
 	set(CMAKE_SKIP_INSTALL_RULES YES)
-endif()
-
-if (NOT CMAKE_BUILD_TYPE)
-	set(CMAKE_BUILD_TYPE Release)
 endif()
 
 set (CMAKE_FIND_PACKAGE_TARGETS_GLOBAL TRUE)
@@ -47,10 +47,8 @@ set (PATATA_ENGINE_VERSION_MINOR 0)
 set (PATATA_ENGINE_VERSION_PATCH 0)
 set (PATATA_ENGINE_VERSION "1.0.0")
 
-include(CheckIncludeFiles)
 include(CheckCXXCompilerFlag)
 include(CheckIncludeFileCXX)
-include(CheckTypeSize)
 
 if (WIN32 OR CMAKE_SYSTEM_NAME STREQUAL "Windows")
 	enable_language(C)
@@ -58,30 +56,36 @@ if (WIN32 OR CMAKE_SYSTEM_NAME STREQUAL "Windows")
 endif()
 
 if (NOT MSVC)
-	check_cxx_compiler_flag("-std=c++20" COMPILER_SUPPORTS_CXX20)
+	check_cxx_compiler_flag("-std=c++20" COMPILER_SUPPORTS_C++20) # Obligatory
 	check_cxx_compiler_flag("-Wextra" COMPILER_SUPPORTS_WEXTRA)
 	check_cxx_compiler_flag("-Wall" COMPILER_SUPPORTS_WALL)
     check_cxx_compiler_flag("-fno-exceptions" COMPILER_SUPPORTS_NO_EXCEPTIONS)
+    check_cxx_compiler_flag("-fno-strict-aliasing" COMPILER_SUPPORTS_NO_STRICT_ALIASING)
+    if (CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "MinSizeRel")
+        check_cxx_compiler_flag("-fno-rtti" COMPILER_SUPPORTS_NO_RTTI)
+    endif()
 
-	if (NOT COMPILER_SUPPORTS_CXX20)
+	if (NOT COMPILER_SUPPORTS_C++20) # Obligatory
     	message(FATAL_ERROR "The compiler does not support the C++20 standard")
 	endif()
 else()
-	check_cxx_compiler_flag("/std:c++20" COMPILER_SUPPORTS_CXX20)
+	check_cxx_compiler_flag("/std:c++20" COMPILER_SUPPORTS_C++20) # Obligatory
 	check_cxx_compiler_flag("/W4" COMPILER_SUPPORTS_W4)
-    check_cxx_compiler_flag("/EH-" COMPILER_SUPPORTS_EXCEPTION_HANDLING)
+    if (CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "MinSizeRel")
+        check_cxx_compiler_flag("/GR-" COMPILER_SUPPORTS_NO_RTTI)
+    endif()
 
-	if (NOT COMPILER_SUPPORTS_CXX20)
+	if (NOT COMPILER_SUPPORTS_C++20) # Obligatory
     	message(FATAL_ERROR "The compiler does not support the C++20 standard")
 	endif()
 endif()
 
 if (WIN32 OR CMAKE_SYSTEM_NAME STREQUAL "Windows")
 	CHECK_INCLUDE_FILE("windows.h" HAVE_WINDOWS_H)
-endif()
 
-if (NOT HAVE_WINDOWS_H AND (WIN32 OR CMAKE_SYSTEM_NAME STREQUAL "Windows"))
-	message(FATAL_ERROR "missing windows.h")
+    if (NOT HAVE_WINDOWS_H AND (WIN32 OR CMAKE_SYSTEM_NAME STREQUAL "Windows"))
+	   message(FATAL_ERROR "missing windows.h")
+    endif()
 endif()
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
@@ -92,14 +96,152 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 	endif()
 endif()
 
-CHECK_INCLUDE_FILE_CXX("tuple" HAVE_TUPLE LANGUAGE CXX)
-CHECK_INCLUDE_FILE_CXX("cstdlib" HAVE_CSTDLIB LANGUAGE CXX)
+# Check Headers
 CHECK_INCLUDE_FILE_CXX("string" HAVE_STRING LANGUAGE CXX)
-CHECK_INCLUDE_FILE_CXX("cstdint" HAVE_CSTDINT LANGUAGE CXX)
-CHECK_INCLUDE_FILE_CXX("future" HAVE_FUTURE LANGUAGE CXX)
+if (NOT HAVE_STRING)
+	message(FATAL_ERROR "missing string header")
+endif()
 
-if (NOT HAVE_TUPLE OR NOT HAVE_CSTDLIB OR NOT HAVE_STRING OR NOT HAVE_CSTDINT OR NOT HAVE_FUTURE)
-	message(FATAL_ERROR "include files missing")
+check_cxx_source_compiles("
+#include <string>
+int main() {
+    std::string Test;
+    return 0;
+}
+" HAVE_STD::STRING)
+if (NOT HAVE_STD::STRING)
+	message(FATAL_ERROR "missing std::string type")
+endif()
+
+check_cxx_source_compiles("
+#include <string>
+int main() {
+    std::string_view Test;
+    return 0;
+}
+" HAVE_STD::STRING_VIEW)
+if (NOT HAVE_STD::STRING_VIEW)
+	message(FATAL_ERROR "missing std::string_view type")
+endif()
+
+CHECK_INCLUDE_FILE_CXX("cstdlib" HAVE_CSTDLIB LANGUAGE CXX)
+if (NOT HAVE_CSTDLIB)
+	message(FATAL_ERROR "missing cstdlib header")
+endif()
+
+# Check setenv y getenv
+if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    check_cxx_source_compiles(
+        "#include <cstdlib>\nint main(void) { setenv(\"MY_VAR\", \"VALUE\", 1); return 0; }"
+        HAVE_SETENV)
+
+    if (NOT HAVE_SETENV)
+        message(FATAL_ERROR "missing setenv function")
+    endif()
+
+    check_cxx_source_compiles(
+        "#include <cstdlib>\nint main(void) { getenv(\"HOME\"); return 0; }"
+        HAVE_GETENV)
+
+    if (NOT HAVE_GETENV)
+        message(FATAL_ERROR "missing getenv function")
+    endif()
+endif()
+
+CHECK_INCLUDE_FILE_CXX("limits" HAVE_CSTDINT LANGUAGE CXX)
+if (NOT HAVE_CSTDINT)
+	message(FATAL_ERROR "missing limits header")
+endif()
+
+CHECK_INCLUDE_FILE_CXX("cstdint" HAVE_CSTDINT LANGUAGE CXX)
+if (NOT HAVE_CSTDINT)
+	message(FATAL_ERROR "missing cstdint header")
+endif()
+
+# Check Types
+include(CheckCXXSourceCompiles)
+check_cxx_source_compiles("
+#include <cstdint>
+int main() {
+    uint8_t test = 0;
+    return 0;
+}
+" HAVE_UINT8_T)
+if (NOT HAVE_UINT8_T)
+	message(FATAL_ERROR "missing uint8_t type")
+endif()
+
+check_cxx_source_compiles("
+#include <cstdint>
+int main() {
+    uint16_t test = 0;
+    return 0;
+}
+" HAVE_UINT16_T)
+if (NOT HAVE_UINT16_T)
+	message(FATAL_ERROR "missing uint16_t type")
+endif()
+
+check_cxx_source_compiles("
+#include <cstdint>
+int main() {
+    uint32_t test = 0;
+    return 0;
+}
+" HAVE_UINT32_T)
+if (NOT HAVE_UINT32_T)
+	message(FATAL_ERROR "missing uint32_t type")
+endif()
+
+check_cxx_source_compiles("
+#include <cstdint>
+int main() {
+    uint64_t test = 0;
+    return 0;
+}
+" HAVE_UINT64_T)
+if (NOT HAVE_UINT64_T)
+	message(FATAL_ERROR "missing uint64_t type")
+endif()
+
+check_cxx_source_compiles("
+#include <cstdint>
+int main() {
+    #if !defined(UINT64_MAX)
+    #error \"Missing UINT64_MAX\"
+    #endif
+    return 0;
+}
+" HAVE_MACRO_UINT64_MAX)
+if (NOT HAVE_MACRO_UINT64_MAX)
+	message(FATAL_ERROR "missing UINT64_T macro")
+endif()
+
+# Check Headers
+CHECK_INCLUDE_FILE_CXX("future" HAVE_FUTURE LANGUAGE CXX)
+if (NOT HAVE_FUTURE)
+	message(FATAL_ERROR "missing future header")
+endif()
+
+
+# Check std::async
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    string(APPEND CMAKE_REQUIRED_FLAGS "-std=c++20")
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+    string(APPEND CMAKE_REQUIRED_FLAGS "/std:c++20")
+endif()
+check_cxx_source_compiles("
+#include <future>
+#include <cstdint>
+void test(void);
+int main(void) {
+    auto Test = std::async(std::launch::async, test);
+    return 0;
+}
+void test(void) { uint8_t c = 0; c++;};
+" HAVE_STD_ASYNC)
+if (NOT HAVE_STD_ASYNC)
+	message(FATAL_ERROR "missing std::async function")
 endif()
 
 find_program(GIT NAMES git)
@@ -158,8 +300,8 @@ if (USE_GIT AND GIT)
 	if (USE_EXTERNAL_LIBS)
 		execute_process(
 			COMMAND git describe --tags --abbrev=0
-			WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/externals/yaml-cpp/"
-			OUTPUT_VARIABLE PATATA_YAML-CPP_VERSION
+			WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/externals/rapidyaml/"
+			OUTPUT_VARIABLE PATATA_RAPIDYAML_VERSION
 			OUTPUT_STRIP_TRAILING_WHITESPACE)
 
 		execute_process(
@@ -221,64 +363,45 @@ endif()
 if (NOT USE_EXTERNAL_LIBS)
 	# Package Mananger
 	add_subdirectory(externals/fast_io)
-	find_package(yaml-cpp REQUIRED)
-	find_package(Vulkan REQUIRED)
-	find_package(SDL2 REQUIRED)
-
-	if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo")
-		add_subdirectory(externals/imgui)
-
-		find_file(HAVE_IMGUI_VULKAN_H "imgui_impl_vulkan.h" PATHS "${CMAKE_CURRENT_SOURCE_DIR}/externals/imgui/backends")
-		find_file(HAVE_IMGUI_SDL2_H "imgui_impl_sdl2.h" PATHS "${CMAKE_CURRENT_SOURCE_DIR}/externals/imgui/backends")
-
-		if (NOT HAVE_IMGUI_VULKAN_H OR NOT HAVE_IMGUI_SDL2_H)
-			message(FATAL_ERROR "Missing Headers")
-		endif()
-	endif()
-
-	find_file(HAVE_VULKAN_HPP "vulkan/vulkan.hpp" PATHS ${Vulkan_INCLUDE_DIRS})
-	find_file(HAVE_SDL_H "SDL.h" PATHS ${SDL2_INCLUDE_DIRS})
-	find_file(HAVE_SDL_VULKAN_H "SDL_vulkan.h" PATHS ${SDL2_INCLUDE_DIRS})
-	find_file(HAVE_SDL_OPENGL_H "SDL_opengl.h" PATHS ${SDL2_INCLUDE_DIRS})
-	find_file(HAVE_YAML_CPP_H "yaml-cpp/yaml.h" PATHS ${Yaml-cpp_INCLUDE_DIRS})
 
 	message("")
-	message("  - Patata Engine -")
+	message("  - RapidYaml -")
+	find_package(ryml)
+	if (NOT ${ryml_FOUND})
+		include(FetchContent)
 
-	if (NOT HAVE_SDL_H OR NOT HAVE_SDL_VULKAN_H OR NOT HAVE_SDL_OPENGL_H OR NOT HAVE_VULKAN_HPP OR NOT HAVE_YAML_CPP_H)
-		message(FATAL_ERROR "Missing Headers")
-	else()
-		if (HAVE_VULKAN_HPP)
-			message(STATUS "Looking for vulkan/vulkan.hpp - found")
-		endif()
+		message("")
+		message("  - RapidYaml -")
+        FetchContent_Declare(
+           RapidYaml
+           GIT_REPOSITORY https://github.com/biojppm/rapidyaml.git
+           GIT_TAG "v0.7.2"
+           BUILD_IN_SOURCE FALSE
+           GIT_PROGRESS TRUE
+           LOG_DOWNLOAD TRUE
+           LOG_UPDATE TRUE
+           LOG_CONFIGURE TRUE
+           LOG_BUILD TRUE
+           LOG_INSTALL TRUE
+           GIT_SUBMODULES_RECURSE TRUE
+           CMAKE_ARGS
+               "-DRYML_DEV=OFF
+               -DRYML_DEFAULT_CALLBACK_USES_EXCEPTIONS=OFF
+               -DRYML_INSTALL=OFF"
+        )
 
-		if (HAVE_SDL_H)
-			message(STATUS "Looking for SDL.h - found")
-		endif()
+		FetchContent_MakeAvailable(RapidYaml)
+		message("")
+	endif()
 
-		if (HAVE_SDL_VULKAN_H)
-			message(STATUS "Looking for SDL_vulkan.h - found")
-		endif()
+	find_package(Vulkan REQUIRED)
+	if (NOT ${Vulkan_VERSION} VERSION_GREATER_EQUAL 1.3.296)
+		message(FATAL_ERROR "Vulkan >= 1.3.296")
+	endif()
 
-		if (HAVE_SDL_OPENGL_H)
-			message(STATUS "Looking for SDL_opengl.h - found")
-		endif()
-
-		if (HAVE_YAML_CPP_H)
-			message(STATUS "Looking for yaml-cpp/yaml.h - found")
-		endif()
-
-		if (HAVE_IMGUI_VULKAN_H)
-			message(STATUS "Looking for imgui_impl_vulkan.h - found")
-		endif()
-
-		if (HAVE_IMGUI_SDL2_H)
-			message(STATUS "Looking for imgui_impl_sdl2.h - found")
-		endif()
-
-		if (HAVE_IMGUI_OPENGL3_H)
-			message(STATUS "Looking for imgui_impl_opengl3.h - found")
-		endif()
+	find_package(SDL2 REQUIRED)
+	if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo")
+	   add_subdirectory(externals/imgui)
 	endif()
 else()
 	# using submodules
@@ -292,18 +415,10 @@ add_subdirectory(data/assets)
 include_directories(include/)
 add_subdirectory(src)
 
-install(TARGETS ${PROJECT_NAME}
-	LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
-	RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
-
-set(CPACK_PACKAGE_FILE_NAME "${PROJECT_NAME}-${CMAKE_PROJECT_VERSION}-${CMAKE_BUILD_TYPE}-${CMAKE_SYSTEM_PROCESSOR}-${CMAKE_CXX_COMPILER_ID}")
-if (SHARED_BUILD)
-	set(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_FILE_NAME}-Shared")
-else()
-	set(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_FILE_NAME}-Static")
+target_compile_definitions(${PROJECT_NAME} PUBLIC SDL_MAIN_HANDLED)
+if (CMAKE_SYSTEM_NAME STREQUAL "Windows" AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+	target_compile_definitions(${PROJECT_NAME} PUBLIC main=SDL_main)
 endif()
-
-include(CPack)
 
 message("")
 message(" - Patata Engine Configuration -")

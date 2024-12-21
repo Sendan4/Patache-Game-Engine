@@ -1,46 +1,38 @@
 #include "Setup_Vulkan_Log.hpp"
 
 void
-Patata::Log::VulkanList (const char * List[], const std::size_t & ListSize,
-                         const std::string & MESSAGE)
+Patata::Log::VulkanList (const char * List[], const uint32_t & Size,
+                         const std::string_view & Message)
 {
   HANDLE Terminal = GetStdHandle (STD_OUTPUT_HANDLE);
   DWORD  mode     = 0;
   GetConsoleMode (Terminal, &mode);
   SetConsoleMode (Terminal, ENABLE_VIRTUAL_TERMINAL_PROCESSING | mode);
 
-#if defined(__GNUC__) || defined(__MINGW64__)
-  fast_io::io::print (
-#if defined(_WIN64)
-      fast_io::out (),
-#endif
-      PATATA_TERM_COLOR_GRAY0, "[",
-                      std::string_view{ abi::__cxa_demangle (
-                          typeid (*List).name (), nullptr, nullptr, nullptr) },
-                      "] ");
-#else
-  fast_io::io::print (
-#if defined(_WIN64)
-      fast_io::out (),
-#endif
-      PATATA_TERM_COLOR_GRAY0, "[",
-                      std::string_view{ typeid (*List).name () }, "] ");
-#endif
-
   fast_io::io::println (
-#if defined(_WIN64)
       fast_io::out (),
+#if defined(DEBUG)
+       PATATA_TERM_COLOR_GRAY0,
+#if defined(__GNUC__) || defined(__MINGW64__)
+       "[",
+       std::string_view{ abi::__cxa_demangle (
+          typeid (*List).name (), nullptr, nullptr, nullptr) },
+       "] ",
+#else
+      "[",
+       std::string_view{ typeid (*List).name () }, "] ",
 #endif
-      PATATA_TERM_BOLD, MESSAGE,
-                        " : ", PATATA_TERM_COLOR_GRAY1, ListSize + 1);
+#endif
+      PATATA_TERM_BOLD,
+      Message,
+      " : ", PATATA_TERM_COLOR_GRAY1,
+      Size);
 
-  for (std::size_t i = 0; i <= ListSize; i++)
+  for (uint32_t i = 0; i < Size; ++i)
     {
       if (List[i] != nullptr)
         fast_io::io::println (
-#if defined(_WIN64)
             fast_io::out (),
-#endif
             "  ",
             std::string_view{ List[i] });
       else
@@ -48,15 +40,13 @@ Patata::Log::VulkanList (const char * List[], const std::size_t & ListSize,
     }
 
   fast_io::io::println (
-#if defined(_WIN64)
       fast_io::out (),
-#endif
       PATATA_TERM_RESET);
   SetConsoleMode (Terminal, mode);
 }
 
 void
-Patata::Log::VulkanCheck (const std::string & Message,
+Patata::Log::VulkanCheck (const std::string_view & Message,
                           const vk::Result & Result)
 {
   HANDLE Terminal = GetStdHandle (STD_OUTPUT_HANDLE);
@@ -64,40 +54,44 @@ Patata::Log::VulkanCheck (const std::string & Message,
   GetConsoleMode (Terminal, &mode);
   SetConsoleMode (Terminal, ENABLE_VIRTUAL_TERMINAL_PROCESSING | mode);
 
-  fast_io::io::print (
-#if defined(_WIN64)
-      fast_io::out (),
-#endif
-#if defined(__GNUC__) || defined(__MINGW64__)
-      PATATA_TERM_COLOR_GRAY0, "[",
-      std::string_view{ abi::__cxa_demangle (typeid (Result).name (), nullptr,
-                                             nullptr, nullptr) },
-      "] ",
-#else
-      PATATA_TERM_COLOR_GRAY0, "[",
-      std::string_view{ typeid (Result).name () }, "] ",
-#endif
-      PATATA_TERM_BOLD, Message, " : ");
-
-  if (Result == vk::Result::eSuccess || Result == vk::Result::eSuboptimalKHR)
-      fast_io::io::print (
-#if defined(_WIN64)
+  if (Result != vk::Result::eSuccess && Result != vk::Result::eSuboptimalKHR)
+    {
+      fast_io::io::println (
           fast_io::out (),
+#if defined(DEBUG)
+          PATATA_TERM_COLOR_GRAY0,
+#if defined(__GNUC__) || defined(__MINGW64__)
+          "[",
+          std::string_view{ abi::__cxa_demangle (typeid (Result).name (),
+                                                 nullptr, nullptr, nullptr) },
+          "] ",
+#else
+          "[", std::string_view{ typeid (Result).name () }, "] ",
 #endif
-          PATATA_TERM_COLOR_GREEN);
+#endif
+          PATATA_TERM_BOLD, Message, " : ",
+          PATATA_TERM_RESET, PATATA_TERM_COLOR_YELLOW, vk::to_string (Result),
+          PATATA_TERM_RESET);
+    }
   else
-    fast_io::io::print (
-#if defined(_WIN64)
-        fast_io::out (),
+    {
+      fast_io::io::println (
+          fast_io::out (),
+#if defined(DEBUG)
+          PATATA_TERM_COLOR_GRAY0,
+#if defined(__GNUC__) || defined(__MINGW64__)
+          "[",
+          std::string_view{ abi::__cxa_demangle (typeid (Result).name (),
+                                                 nullptr, nullptr, nullptr) },
+          "] ",
+#else
+          "[", std::string_view{ typeid (Result).name () }, "] ",
 #endif
-        PATATA_TERM_COLOR_YELLOW);
-
-  fast_io::io::println (
-#if defined(_WIN64)
-      fast_io::out (),
 #endif
-      vk::to_string (Result),
-      PATATA_TERM_RESET);
+          PATATA_TERM_BOLD, Message, " : ",
+          PATATA_TERM_RESET, PATATA_TERM_COLOR_GREEN, vk::to_string (Result),
+          PATATA_TERM_RESET);
+    }
 
   SetConsoleMode (Terminal, mode);
 }

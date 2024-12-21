@@ -1,41 +1,40 @@
 #include "Vulkan_SincronizationPrimitives.hpp"
 
 bool
-Patata::Graphics::RaccoonRenderer::VulkanBackend::CreateSemaphores (void) {
+Patata::RaccoonRenderer::CreateSemaphores (void) {
     vk::SemaphoreCreateInfo SemaphoreInfo;
 
-    vk::Result Result = Device.createSemaphore (&SemaphoreInfo, nullptr, &AcquireSemaphore);
-    {
+    vk::Result Result = Vulkan.Device.createSemaphore (&SemaphoreInfo, nullptr, &Vulkan.AcquireSemaphore);
+    if (Result != vk::Result::eSuccess) {
         std::future<void> ReturnVulkanCheck = std::async (std::launch::async,
             Patata::Log::VulkanCheck, "Acquire Semaphore", Result);
+
+        return false;
     }
 
-    if (Result != vk::Result::eSuccess) return false;
-
-    Result = Device.createSemaphore (&SemaphoreInfo, nullptr, &SubmitSemaphore);
-    {
+    Result = Vulkan.Device.createSemaphore (&SemaphoreInfo, nullptr, &Vulkan.SubmitSemaphore);
+    if (Result != vk::Result::eSuccess) {
         std::future<void> ReturnVulkanCheck = std::async (std::launch::async,
             Patata::Log::VulkanCheck, "Submit Semaphore", Result);
-    }
 
-    if (Result != vk::Result::eSuccess) return false;
+        return false;
+    }
     else return true;
 }
 
 bool
-Patata::Graphics::RaccoonRenderer::VulkanBackend::CreateFence (void) {
+Patata::RaccoonRenderer::CreateFence (void) {
     vk::FenceCreateInfo FenceInfo(
         vk::FenceCreateFlagBits::eSignaled, // flags
         nullptr                             // pNext
     );
 
-    vk::Result Result = Device.createFence (&FenceInfo, nullptr, &Fence);
-      {
+    vk::Result Result = Vulkan.Device.createFence (&FenceInfo, nullptr, &Vulkan.Fence);
+    if (Result != vk::Result::eSuccess) {
         std::future<void> ReturnVulkanCheck = std::async (std::launch::async,
             Patata::Log::VulkanCheck, "Fence", Result);
-      }
 
-    if (Result != vk::Result::eSuccess)
         return false;
+    }
     else return true;
 }

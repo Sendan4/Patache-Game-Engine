@@ -1,9 +1,9 @@
 #include "Vulkan_Render.hpp"
 
 bool
-Patata::Graphics::RaccoonRenderer::VulkanBackend::BeginVulkanRender (SDL_Event & Event)
+Patata::RaccoonRenderer::BeginRender (SDL_Event & Event)
 {
-    vk::Result Result = Device.waitForFences (1, &Fence, true, std::numeric_limits<uint64_t>::max ());
+  vk::Result Result = Vulkan.Device.waitForFences (1, &Vulkan.Fence, true, UINT64_MAX);
 
     #if defined(DEBUG)
     if (Result != vk::Result::eSuccess)
@@ -13,7 +13,7 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::BeginVulkanRender (SDL_Event &
       }
     #endif
 
-    Result = Device.resetFences (1, &Fence);
+    Result = Vulkan.Device.resetFences (1, &Vulkan.Fence);
 
     #if defined(DEBUG)
 	if (Result != vk::Result::eSuccess)
@@ -24,15 +24,15 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::BeginVulkanRender (SDL_Event &
     #endif
 
 	vk::AcquireNextImageInfoKHR NextImageInfo (
-	    SwapChain,                             // swapchain
-		std::numeric_limits<uint64_t>::max (), // timeout
-		AcquireSemaphore,                      // semaphore
-		Fence,                                 // fence
+	    Vulkan.SwapChain,                      // swapchain
+        UINT64_MAX,                            // timeout
+		Vulkan.AcquireSemaphore,               // semaphore
+		Vulkan.Fence,                          // fence
 		1,                                     // deviceMask
 		nullptr                                // pNext
 	);
 
-    Result = Device.acquireNextImage2KHR(&NextImageInfo, &ImageIndex);
+    Result = Vulkan.Device.acquireNextImage2KHR(&NextImageInfo, &Vulkan.ImageIndex);
 
     #if defined(DEBUG)
     if (Result != vk::Result::eSuccess)
@@ -56,7 +56,7 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::BeginVulkanRender (SDL_Event &
         nullptr                                           // pNext
     );
 
-    Result = cmd.begin(&cmdBufferBeginInfo);
+    Result = Vulkan.cmd.begin(&cmdBufferBeginInfo);
 
     #if defined(DEBUG)
 	if (Result != vk::Result::eSuccess)
@@ -65,8 +65,6 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::BeginVulkanRender (SDL_Event &
 			Patata::Log::VulkanCheck, "Command Buffer Begin", Result);
       }
     #endif
-
-    CmdIsReady = true;
 
     // Begin RenderPass
     {
@@ -81,18 +79,21 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::BeginVulkanRender (SDL_Event &
 
         vk::Rect2D renderArea {};
         renderArea.offset = vk::Offset2D { 0, 0 };
-        renderArea.extent = vk::Extent2D { SwapChainExtent.width, SwapChainExtent.height };
+        renderArea.extent = vk::Extent2D {
+            Vulkan.SwapChainExtent.width,
+            Vulkan.SwapChainExtent.height
+        };
 
         vk::RenderPassBeginInfo Info (
-            RenderPass,                       // renderPass
-            SwapChainFrameBuffer[ImageIndex], // framebuffer
-            renderArea,                       // renderArea
-            1,                                // clearValueCount
-            &ClearValue,                      // pClearValues
-            nullptr                           // pNext
+            Vulkan.RenderPass,                              // renderPass
+            Vulkan.SwapChainFrameBuffer[Vulkan.ImageIndex], // framebuffer
+            renderArea,                                     // renderArea
+            1,                                              // clearValueCount
+            &ClearValue,                                    // pClearValues
+            nullptr                                         // pNext
         );
 
-        cmd.beginRenderPass(Info, vk::SubpassContents::eInline);
+        Vulkan.cmd.beginRenderPass(Info, vk::SubpassContents::eInline);
     }
 
     // Imgui New Frame
@@ -100,6 +101,8 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::BeginVulkanRender (SDL_Event &
     ImGui_ImplVulkan_NewFrame();
     ImGui_ImplSDL2_NewFrame();
     ImGui::NewFrame();
+    ImGui::SetNextWindowBgAlpha(0.0f);
+    ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport());
     #endif
 
     return true;
@@ -110,31 +113,30 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::BeginVulkanRender (SDL_Event &
 #endif
 
 void
-Patata::Graphics::RaccoonRenderer::VulkanBackend::EndVulkanRender (SDL_Event & Event)
+Patata::RaccoonRenderer::EndRender (SDL_Event & Event)
 {
-    if(!CmdIsReady) return;
-
-    // Imgui New Frame
     #if defined (DEBUG)
+    // Imgui New Frame
     ImGui::ShowDemoWindow();
     Patata::DrawDebugUI(
         pRaccoonInfo->pPatataEngineInfo,
-        SwapChainImageCount,
-        SwapChainExtent);
+        pRaccoonInfo->pConfiguration,
+        Vulkan.SwapChainImageCount,
+        Vulkan.SwapChainExtent);
 
     ImGui::Render();
     ImGui_ImplVulkan_RenderDrawData(
 		ImGui::GetDrawData(),
-		static_cast<VkCommandBuffer>(cmd),
-		static_cast<VkPipeline>(ImguiPipeLine)
+		static_cast<VkCommandBuffer>(Vulkan.cmd),
+		static_cast<VkPipeline>(Vulkan.ImguiPipeLine)
 	);
     #endif
 
     // End RenderPass
-    cmd.endRenderPass();
+    Vulkan.cmd.endRenderPass();
 
     // End Command Buffer
-    vk::Result Result = cmd.end ();
+    vk::Result Result = Vulkan.cmd.end ();
 
     #if defined(DEBUG)
     if (Result != vk::Result::eSuccess)
@@ -144,9 +146,7 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::EndVulkanRender (SDL_Event & E
       }
     #endif
 
-    CmdIsReady = false;
-
-    Result = Device.waitForFences (1, &Fence, true, std::numeric_limits<uint64_t>::max ());
+    Result = Vulkan.Device.waitForFences (1, &Vulkan.Fence, true, UINT64_MAX);
 
     #if defined(DEBUG)
     if (Result != vk::Result::eSuccess)
@@ -156,7 +156,7 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::EndVulkanRender (SDL_Event & E
       }
     #endif
 
-    Result = Device.resetFences (1, &Fence);
+    Result = Vulkan.Device.resetFences (1, &Vulkan.Fence);
 
     #if defined(DEBUG)
     if (Result != vk::Result::eSuccess)
@@ -166,40 +166,42 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::EndVulkanRender (SDL_Event & E
       }
     #endif
 
-    vk::PipelineStageFlags PipeLineStageFlags = vk::PipelineStageFlagBits::eColorAttachmentOutput;
+    {
+        vk::PipelineStageFlags PipeLineStageFlags = vk::PipelineStageFlagBits::eColorAttachmentOutput;
 
-    vk::SubmitInfo SubmitInfo (
-        1,                   // waitSemaphoreCount
-        &AcquireSemaphore,   // pWaitSemaphores
-        &PipeLineStageFlags, // pWaitDstStageMask
-        1,                   // commandBufferCount
-        &cmd,                // pCommandBuffers
-        1,                   // signalSemaphoreCount
-        &SubmitSemaphore,    // pSignalSemaphores
-        nullptr              // pNext
-    );
+        vk::SubmitInfo SubmitInfo (
+            1,                          // waitSemaphoreCount
+            &Vulkan.AcquireSemaphore,   // pWaitSemaphores
+            &PipeLineStageFlags,        // pWaitDstStageMask
+            1,                          // commandBufferCount
+            &Vulkan.cmd,                // pCommandBuffers
+            1,                          // signalSemaphoreCount
+            &Vulkan.SubmitSemaphore,    // pSignalSemaphores
+            nullptr                     // pNext
+        );
 
-    Result = Queue.submit (1, &SubmitInfo, Fence);
+        Result = Vulkan.Queue.submit (1, &SubmitInfo, Vulkan.Fence);
+    }
 
     #if defined(DEBUG)
-	if (Result != vk::Result::eSuccess)
-	  {
-	    std::future<void> ReturnVulkanCheck = std::async (std::launch::async,
-			Patata::Log::VulkanCheck, "Queue Submit 2", Result);
-      }
+    if (Result != vk::Result::eSuccess)
+    {
+        std::future<void> ReturnVulkanCheck = std::async (std::launch::async,
+            Patata::Log::VulkanCheck, "Queue Submit 2", Result);
+    }
     #endif
 
     vk::PresentInfoKHR PresentInfo (
-        1,                // waitSemaphoreCount
-        &SubmitSemaphore, // waitSemaphores
-        1,                // swapchainCount
-        &SwapChain,       // swapchains
-        &ImageIndex,      // imageIndices
-        nullptr,          // results
-        nullptr           // pNext
+        1,                       // waitSemaphoreCount
+        &Vulkan.SubmitSemaphore, // waitSemaphores
+        1,                       // swapchainCount
+        &Vulkan.SwapChain,       // swapchains
+        &Vulkan.ImageIndex,      // imageIndices
+        nullptr,                 // results
+        nullptr                  // pNext
     );
 
-    Result = Queue.presentKHR(&PresentInfo);
+    Result = Vulkan.Queue.presentKHR(&PresentInfo);
 
     #if defined(DEBUG)
 	if (Result != vk::Result::eSuccess) {
@@ -217,7 +219,7 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::EndVulkanRender (SDL_Event & E
     else if (Result == vk::Result::eSuboptimalKHR)
       {
           vk::SurfaceCapabilitiesKHR Sc;
-          Result = PhysicalDevice.getSurfaceCapabilitiesKHR(Surface, &Sc);
+          Result = Vulkan.PhysicalDevice.getSurfaceCapabilitiesKHR(Vulkan.Surface, &Sc);
 
           if (Result != vk::Result::eSuccess)
             {
@@ -225,7 +227,8 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::EndVulkanRender (SDL_Event & E
                   Patata::Log::VulkanCheck, "Get Surface Capabilities KHR", Result);
             }
 
-          if (Sc.currentExtent.width != SwapChainExtent.width || Sc.currentExtent.height != SwapChainExtent.height)
+          if (Sc.currentExtent.width != Vulkan.SwapChainExtent.width ||
+              Sc.currentExtent.height != Vulkan.SwapChainExtent.height)
               RecreateSwapChain(Event);
       }
 }

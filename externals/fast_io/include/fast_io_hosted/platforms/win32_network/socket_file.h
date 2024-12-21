@@ -781,4 +781,3 @@ struct is_zero_default_constructible<basic_win32_family_socket_file<fm,char_type
 }
 
 }
-

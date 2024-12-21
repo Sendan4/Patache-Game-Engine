@@ -1,13 +1,36 @@
 // All internal functions that will be used publicly must be wrapped
 // Engine Implementation (Wrapping) -> Public API (Wrapping)
 
+#if defined(DEBUG)
+#include <SDL_syswm.h>
+#include <imgui_impl_vulkan.h>
+#endif
+#include <SDL.h>
 #include <vulkan/vulkan.hpp>
-#include "PatataEngineImpl.hpp"
+
+// Patata Engine
 #include "PatataEngine/PatataEngine.hpp"
+#if defined(DEBUG)
+#include "StructEngineInfo.hpp"
+#endif
+// Begin Dependencies of PatataEngineImpl.hpp
+#include "StructConfig.hpp"
+#include "Log.hpp"
+#include "PatataEngine/StructClearColor.hpp"
+#include "VulkanBackend.hpp"
+#include "RaccoonRenderer.hpp"
+// End Dependencies of PatataEngineImpl.hpp
+#include "PatataEngineImpl.hpp"
 
 // Public API
-Patata::Engine::Engine (const std::string & WindowTitle)
+Patata::Engine::Engine (const char * WindowTitle)
     : pPatataEngine (new EngineImpl (WindowTitle))
+{
+    pClearColor = &pPatataEngine->ClearColor;
+}
+
+Patata::Engine::Engine (void)
+    : pPatataEngine (new EngineImpl (nullptr))
 {
     pClearColor = &pPatataEngine->ClearColor;
 }

@@ -68,8 +68,18 @@ Patata::Engine::EngineImpl::HandleEvent (SDL_Event & Event)
                       }
                   }
             }
+
+            #if defined(DEBUG)
+            if (State[SDL_SCANCODE_LCTRL] || State[SDL_SCANCODE_RCTRL]) {
+                if (Event.key.keysym.scancode == SDL_SCANCODE_P) {
+                    if (PatataEngineInfo.ShowMainMenuBar) PatataEngineInfo.ShowMainMenuBar = false;
+                    else PatataEngineInfo.ShowMainMenuBar = true;
+                }
+            }
+            #endif
           break;
       }
+
 
       if (Event.type == SDL_WINDOWEVENT && Event.window.event == SDL_WINDOWEVENT_RESIZED)
           WindowResized = true;

@@ -10,27 +10,32 @@ The larger the maximum image size the GPU can handle, the better.
 #include "Vulkan_Select_Device.hpp"
 
 bool
-Patata::Graphics::RaccoonRenderer::VulkanBackend::SelectDevice (void)
+Patata::RaccoonRenderer::SelectDevice (void)
 {
   uint32_t GpuCount = 0;
 
   // This function returns an extra number (Human Count from 1).
-  vk::Result Result = Instance.enumeratePhysicalDevices (&GpuCount, nullptr);
+  vk::Result Result = Vulkan.Instance.enumeratePhysicalDevices (&GpuCount, nullptr);
 
-  {
+  if (Result != vk::Result::eSuccess) {
       std::future<void> ReturnVulkanCheck = std::async(std::launch::async,
           Patata::Log::VulkanCheck, "Enumerate Physical Devices - Obtaining the count", Result);
+
+      return false;
   }
 
   if (GpuCount <= 0)
     {
-      Patata::Log::FatalErrorMessage ("Patata - Raccoon Renderer",
-                                      "No vulkan compatible device found",
-                                      *pRaccoonInfo->pConfiguration);
-      return false;
+        std::future<void> Err = std::async(std::launch::async,
+            Patata::Log::FatalErrorMessage,
+            "Patata - Raccoon Renderer",
+            "No vulkan compatible device found",
+            *pRaccoonInfo->pConfiguration);
+
+        return false;
     }
 
-  vk::PhysicalDevice * TMPPhysicalDevice;
+  vk::PhysicalDevice * TmpPhysicalDevices;
 
   // If you only have one compatible GPU, I will take it directly.
   if (GpuCount == 1)
@@ -41,39 +46,39 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::SelectDevice (void)
           #endif
           PATATA_TERM_BOLD,
           PATATA_TERM_COLOR_PATATA,
-          "\nRaccoon Renderer",
+          "Raccoon Renderer",
           PATATA_TERM_RESET,
           PATATA_TERM_BOLD,
           " : Only one vulkan compatible device found",
           PATATA_TERM_RESET);
 
-      TMPPhysicalDevice = new vk::PhysicalDevice[GpuCount];
-      Result = Instance.enumeratePhysicalDevices (&GpuCount, TMPPhysicalDevice);
-      {
+      TmpPhysicalDevices = new vk::PhysicalDevice[GpuCount];
+      Result = Vulkan.Instance.enumeratePhysicalDevices (&GpuCount, TmpPhysicalDevices);
+      if (Result != vk::Result::eSuccess) {
           std::future<void> ReturnVulkanCheck = std::async(std::launch::async,
               Patata::Log::VulkanCheck, "Enumerate Physical Devices", Result);
-      }
 
-      if (Result != vk::Result::eSuccess) {
           std::future<void> Err = std::async(std::launch::async,
               Patata::Log::FatalErrorMessage,
               "Patata Engine - RaccoonRenderer", "Failed to obtain a physical device",
               *pRaccoonInfo->pConfiguration);
 
-          delete[] TMPPhysicalDevice;
+          delete[] TmpPhysicalDevices;
+          TmpPhysicalDevices = nullptr;
           return false;
       }
 
-      PhysicalDevice = TMPPhysicalDevice[0];
-      delete[] TMPPhysicalDevice;
+      Vulkan.PhysicalDevice = TmpPhysicalDevices[0];
+      delete[] TmpPhysicalDevices;
+      TmpPhysicalDevices = nullptr;
 
-      vk::PhysicalDeviceFeatures DeviceFeatures = PhysicalDevice.getFeatures ();
+      vk::PhysicalDeviceFeatures DeviceFeatures = Vulkan.PhysicalDevice.getFeatures ();
 
       // I need the GPU to have geometryShader
       if (!DeviceFeatures.geometryShader)
         {
           Patata::Log::ErrorMessage ("Your GPU Dont Support Geometry Shader");
-          PhysicalDevice = nullptr;
+          Vulkan.PhysicalDevice = nullptr;
           return false;
         }
 
@@ -87,11 +92,15 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::SelectDevice (void)
     }
   else
     {
-      TMPPhysicalDevice = new vk::PhysicalDevice[GpuCount];
-      Result = Instance.enumeratePhysicalDevices (&GpuCount, TMPPhysicalDevice);
+      TmpPhysicalDevices = new vk::PhysicalDevice[GpuCount];
+      Result = Vulkan.Instance.enumeratePhysicalDevices (&GpuCount, TmpPhysicalDevices);
 
-	  std::future<void> ReturnVulkanCheck = std::async(std::launch::async,
-		Patata::Log::VulkanCheck, "Enumerate Physical Devices", Result);
+      if (Result != vk::Result::eSuccess) {
+          std::future<void> ReturnVulkanCheck = std::async(std::launch::async,
+              Patata::Log::VulkanCheck, "Enumerate Physical Devices", Result);
+
+          return false;
+      }
     }
 
   fast_io::io::println (
@@ -100,7 +109,7 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::SelectDevice (void)
       #endif
       PATATA_TERM_BOLD,
       PATATA_TERM_COLOR_PATATA,
-      "\nRaccoon Renderer",
+      "Raccoon Renderer",
       PATATA_TERM_RESET,
       PATATA_TERM_BOLD,
       " : Found ",
@@ -110,10 +119,13 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::SelectDevice (void)
 
   uint64_t * GpuScore = new uint64_t[GpuCount];
 
+  vk::PhysicalDeviceProperties2 DeviceProperties;
+  vk::PhysicalDeviceFeatures2 DeviceFeatures;
+
   for (uint32_t i = 0; i < GpuCount; ++i)
     {
-      vk::PhysicalDeviceProperties2 DeviceProperties = TMPPhysicalDevice[i].getProperties2 ();
-      vk::PhysicalDeviceFeatures2 DeviceFeatures = TMPPhysicalDevice[i].getFeatures2 ();
+      DeviceProperties = TmpPhysicalDevices[i].getProperties2 ();
+      DeviceFeatures = TmpPhysicalDevices[i].getFeatures2 ();
 
       switch (DeviceProperties.properties.deviceType)
         {
@@ -138,7 +150,8 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::SelectDevice (void)
         {
           GpuScore[i] = 0;
 
-          Patata::Log::ErrorMessage ("This GPU Dont Support Geometry Shader, your points will be 0");
+          std::future<void> Err = std::async(std::launch::async,
+              Patata::Log::ErrorMessage, "This GPU Dont Support Geometry Shader, your points will be 0");
         }
 
       fast_io::io::println (
@@ -158,9 +171,11 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::SelectDevice (void)
 
   fast_io::io::println (
     #if defined(_WIN64)
-    fast_io::out (),
+    fast_io::out ()
+    #else
+    ""
     #endif
-    "");
+    );
 
   uint64_t HighestScore   = 0;
   uint32_t GpuIndexWinner = 0;
@@ -177,16 +192,20 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::SelectDevice (void)
   // I am very heavy on geometryShader support.
   if (GpuScore[GpuIndexWinner] == 0)
     {
-      Patata::Log::FatalErrorMessage ("Patata - Raccoon Renderer",
-                                      "Cannot select a device (GPU) which does not support geometry shader",
-                                      *pRaccoonInfo->pConfiguration);
+      std::future<void> Err = std::async(std::launch::async,
+            Patata::Log::FatalErrorMessage,
+            "Patata - Raccoon Renderer",
+            "Cannot select a device (GPU) which does not support geometry shader",
+            *pRaccoonInfo->pConfiguration);
+
       return false;
     }
 
   // Select device
-  PhysicalDevice = TMPPhysicalDevice[GpuIndexWinner];
+ Vulkan.PhysicalDevice = TmpPhysicalDevices[GpuIndexWinner];
 
-  delete[] TMPPhysicalDevice;
+  delete[] TmpPhysicalDevices;
+  TmpPhysicalDevices = nullptr;
   delete[] GpuScore;
 
   return true;

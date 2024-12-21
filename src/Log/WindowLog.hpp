@@ -1,19 +1,19 @@
-#include <cstring>
 #if defined(__GNUC__) || defined(__MINGW64__)
 #include <cxxabi.h>
 #endif
 
-#include <SDL.h>
-#include <SDL_syswm.h>
 #include <fast_io.h>
-#if defined(_WIN64)
-#include <windows.h>
+#if defined(DEBUG)
+#include <imgui_impl_vulkan.h>
 #endif
+#include <SDL_syswm.h>
+#include <SDL.h>
 #include <vulkan/vulkan.hpp>
 
 // Patata Engine
-#include "Log.hpp"
-#include "TerminalColors.hpp"
+#include "ColorTerminal.hpp"
 #if defined(DEBUG)
-#include "EngineInfo.hpp"
+#include "StructEngineInfo.hpp"
 #endif
+#include "StructConfig.hpp"
+#include "Log.hpp"

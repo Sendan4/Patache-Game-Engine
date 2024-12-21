@@ -1,9 +1,21 @@
+#include <string>
+
 #include <fast_io.h>
-#if defined(_WIN64)
+#if defined(DEBUG)
+#include <imgui_impl_sdl2.h>
+#include <imgui_impl_vulkan.h>
+#include <SDL_syswm.h>
+#endif
+#include <SDL.h>
+#include <vulkan/vulkan.hpp>
+#if defined (_WIN64)
 #include <windows.h>
 #endif
-#include <vulkan/vulkan.hpp>
 
-#include "Config.hpp"
+// Patata Engine
+#include "ColorTerminal.hpp"
+#if defined(DEBUG)
+#include "StructEngineInfo.hpp"
+#endif
+#include "StructConfig.hpp"
 #include "Log.hpp"
-#include "TerminalColors.hpp"

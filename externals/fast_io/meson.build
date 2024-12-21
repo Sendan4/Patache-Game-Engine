@@ -1,6 +1,6 @@
 project('fast_io', 'cpp',
-	version : '804d943',
-	default_options : ['cpp_std=c++20'])
+	version : '788cb98',
+	default_options : ['cpp_std=c++23'])
 
 meson.get_compiler('c').check_header('stdio.h', required : false)
 meson.get_compiler('cpp').check_header('version', required : true)
@@ -15,6 +15,7 @@ meson.get_compiler('cpp').check_header('source_location', required : false)
 Fast_io_Headers = include_directories('include')
 
 project_dep = declare_dependency(
+  compile_args : '-std=gnu++2b',
 	include_directories : Fast_io_Headers)
 
 set_variable(meson.project_name() + '_dep', project_dep)

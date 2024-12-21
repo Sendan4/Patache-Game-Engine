@@ -1,10 +1,11 @@
 #include "Vulkan_RenderPass.hpp"
 
 bool
-Patata::Graphics::RaccoonRenderer::VulkanBackend::CreateRenderPass (const std::tuple<vk::PresentModeKHR, vk::Format, vk::ColorSpaceKHR> & SwapChainInfo)
+Patata::RaccoonRenderer::CreateRenderPass (
+    const Patata::SwapChainInfo & SwapChainInfo)
 {
     vk::AttachmentDescription ColorAttachmentDescriptionInfo ({},
-        std::get<1>(SwapChainInfo),       // format
+        SwapChainInfo.ImageColorFormat,   // format
         vk::SampleCountFlagBits::e1,      // samples
         vk::AttachmentLoadOp::eClear,     // loadOp
         vk::AttachmentStoreOp::eStore,    // storeOp
@@ -41,12 +42,12 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::CreateRenderPass (const std::t
         nullptr                          // pNext
     );
 
-    vk::Result Result = Device.createRenderPass(&RenderPassCreateInfo, nullptr, &RenderPass);
-    {
+    vk::Result Result = Vulkan.Device.createRenderPass(&RenderPassCreateInfo, nullptr, &Vulkan.RenderPass);
+    if (Result != vk::Result::eSuccess) {
       std::future<void> ReturnVulkanCheck = std::async (std::launch::async,
           Patata::Log::VulkanCheck, "Render Pass", Result);
-    }
 
-    if (Result != vk::Result::eSuccess) return false;
+      return false;
+    }
     else return true;
 }

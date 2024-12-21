@@ -1,21 +1,77 @@
 # Externals / Thrid Party Libraries
 
+message("")
+message("  - Fast_io -")
+
+include(CheckIncludeFileCXX)
+string(APPEND CMAKE_REQUIRED_INCLUDES "${CMAKE_CURRENT_SOURCE_DIR}/fast_io/include")
+CHECK_INCLUDE_FILE_CXX("fast_io.h" HAVE_FAST_IO)
+if(NOT HAVE_FAST_IO)
+    message(FATAL_ERROR "fast_io.h not usable")
+endif()
+
+check_cxx_source_compiles(
+    "#include <fast_io.h>\n\
+    int main() { fast_io::io::print(\"Hello, World!\"); return 0; }"
+    HAVE_FAST_IO_PRINT)
+if(NOT HAVE_FAST_IO_PRINT)
+    message(FATAL_ERROR "fast_io::io::print not usable")
+endif()
+
+check_cxx_source_compiles(
+    "#include <fast_io.h>\n\
+    int main() { fast_io::io::println(\"Hello, World!\"); return 0; }"
+    HAVE_FAST_IO_PRINTLN)
+if(NOT HAVE_FAST_IO_PRINTLN)
+    message(FATAL_ERROR "fast_io::io::println not usable")
+endif()
+
+check_cxx_source_compiles(
+    "#include <fast_io.h>\n\
+    int main() { fast_io::io::perr(\"Hello, World!\"); return 0; }"
+    HAVE_FAST_IO_PERR)
+if(NOT HAVE_FAST_IO_PERR)
+    message(FATAL_ERROR "fast_io::io::perr not usable")
+endif()
+
+check_cxx_source_compiles(
+    "#include <fast_io.h>\n\
+    int main() { fast_io::io::perrln(\"Hello, World!\"); return 0; }"
+    HAVE_FAST_IO_PERRLN)
+if(NOT HAVE_FAST_IO_PERRLN)
+    message(FATAL_ERROR "fast_io::io::perrln not usable")
+endif()
+
+CHECK_INCLUDE_FILE_CXX("fast_io_device.h" HAVE_FAST_IO_DEVICE)
+if(NOT HAVE_FAST_IO_DEVICE)
+    message(FATAL_ERROR "fast_io_device.h not usable")
+endif()
+
+check_cxx_source_compiles(
+    "#include <fast_io_device.h>\n\
+    int main() { fast_io::dir_file Directory(\"Test/\"); return 0; }"
+    HAVE_FAST_IO_DIR_FILE)
+if(NOT HAVE_FAST_IO_DIR_FILE)
+    message(FATAL_ERROR "fast_io::dir_file not usable")
+endif()
+
+check_cxx_source_compiles(
+    "#include <fast_io_device.h>\n\
+    int main(void) { fast_io::native_file_loader loader(\"test.yaml\"); return 0; }"
+    HAVE_FAST_IO_NATIVE_FILE_LOADER)
+if(NOT HAVE_FAST_IO_NATIVE_FILE_LOADER)
+    message(FATAL_ERROR "fast_io::native_file_loader not usable")
+endif()
+
 add_subdirectory(fast_io)
 
-# Yaml-cpp
+# RapidYaml
 message("")
 message("  - RapidYaml -")
 
 set (RYML_DEV OFF CACHE INTERNAL "..." FORCE)
 set (RYML_DEFAULT_CALLBACK_USES_EXCEPTIONS OFF CACHE INTERNAL "..." FORCE)
 set (RYML_INSTALL OFF CACHE INTERNAL "..." FORCE)
-
-if (LIBS_SHARED_BUILD)
-	set (YAML_BUILD_SHARED_LIBS ON CACHE INTERNAL "..." FORCE)
-	message(STATUS "Library Type : Shared")
-else ()
-	message(STATUS "Library Type : Static")
-endif()
 
 add_subdirectory(rapidyaml)
 
@@ -35,18 +91,25 @@ if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
 endif()
 
 if (MSVC OR LINUX)
-	# Vulkan Headers
+    # Vulkan Headers
 	message("")
 	message("  - Vulkan Headers -")
+
 	set (BUILD_TESTS OFF CACHE INTERNAL "..." FORCE)
     set (UPDATE_DEPS ON CACHE INTERNAL "..." FORCE)
+    set (VULKAN_HEADERS_ENABLE_MODULE OFF CACHE INTERNAL "..." FORCE)
 
 	add_subdirectory(Vulkan-Headers)
 	message(STATUS "Header-Only")
 
-	# Vulkan Validation Layer
+	# Vulkan
+	message("")
+	message("  - Vulkan Loader -")
+	add_subdirectory(Vulkan-Loader)
+
+    # Vulkan Validation Layer
 	if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo" AND USE_VVL)
-        message("")
+       message("")
 	    message("  - Vulkan ValidationLayers -")
 
 	    if (CMAKE_SYSTEM_NAME STREQUAL "Linux" OR UNIX)
@@ -59,34 +122,29 @@ if (MSVC OR LINUX)
 
         include(FetchContent)
         FetchContent_Populate(
-            Vulkan-ValidationLayers
-            GIT_REPOSITORY https://github.com/KhronosGroup/Vulkan-ValidationLayers.git
-            GIT_TAG ${PATATA_VULKAN_VALIDATION_LAYERS_VERSION}
-            BUILD_IN_SOURCE FALSE
-            GIT_PROGRESS TRUE
-            LOG_DOWNLOAD TRUE
-            LOG_UPDATE TRUE
-            LOG_CONFIGURE TRUE
-            LOG_BUILD TRUE
-            LOG_INSTALL TRUE
-            GIT_SUBMODULES_RECURSE TRUE
-            CMAKE_ARGS
-                "-DUPDATE_DEPS=ON
-                -DBUILD_WSI_XLIB_SUPPORT=${BUILD_WSI_XLIB_SUPPORT}
-                -DBUILD_WSI_XCB_SUPPORT=${BUILD_WSI_XCB_SUPPORT}
-                -DBUILD_WSI_WAYLAND_SUPPORT=${BUILD_WSI_WAYLAND_SUPPORT}
-                -DCMAKE_LIBRARY_OUTPUT_DIRECTORY=${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
-                -DRUNTIME_OUTPUT_DIRECTORY=${CMAKE_LIBRARY_OUTPUT_DIRECTORY}"
-            INSTALL_COMMAND ""
+           Vulkan-ValidationLayers
+           GIT_REPOSITORY https://github.com/KhronosGroup/Vulkan-ValidationLayers.git
+           GIT_TAG ${PATATA_VULKAN_VALIDATION_LAYERS_VERSION}
+           BUILD_IN_SOURCE FALSE
+           GIT_PROGRESS TRUE
+           LOG_DOWNLOAD TRUE
+           LOG_UPDATE TRUE
+           LOG_CONFIGURE TRUE
+           LOG_BUILD TRUE
+           LOG_INSTALL TRUE
+           GIT_SUBMODULES_RECURSE TRUE
+           CMAKE_ARGS
+               "-DUPDATE_DEPS=ON
+               -DBUILD_WSI_XLIB_SUPPORT=${BUILD_WSI_XLIB_SUPPORT}
+               -DBUILD_WSI_XCB_SUPPORT=${BUILD_WSI_XCB_SUPPORT}
+               -DBUILD_WSI_WAYLAND_SUPPORT=${BUILD_WSI_WAYLAND_SUPPORT}
+               -DCMAKE_LIBRARY_OUTPUT_DIRECTORY=${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
+               -DRUNTIME_OUTPUT_DIRECTORY=${CMAKE_LIBRARY_OUTPUT_DIRECTORY}"
+           INSTALL_COMMAND ""
         )
 
         add_subdirectory(${vulkan-validationlayers_SOURCE_DIR} ${vulkan-validationlayers_BINARY_DIR})
 	endif()
-
-	# Vulkan
-	message("")
-	message("  - Vulkan Loader -")
-	add_subdirectory(Vulkan-Loader)
 endif()
 
 # SDL2
@@ -132,54 +190,11 @@ endif ()
 
 add_subdirectory(SDL)
 
+# FreeType
+message("")
+message("  - FreeType -")
+add_subdirectory(freetype)
+
 if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo")
 	add_subdirectory(imgui)
-endif()
-
-# checks
-message("")
-message("  - Patata Engine -")
-
-include(CheckCXXSymbolExists)
-
-find_file(HAVE_VULKAN_HPP "vulkan/vulkan.hpp" PATHS "${CMAKE_CURRENT_SOURCE_DIR}/Vulkan-Headers/include/")
-find_file(HAVE_SDL_H "SDL.h" PATHS "${CMAKE_CURRENT_SOURCE_DIR}/SDL/include/")
-find_file(HAVE_SDL_VULKAN_H "SDL_vulkan.h" PATHS "${CMAKE_CURRENT_SOURCE_DIR}/SDL/include/")
-find_file(HAVE_YAML_CPP_H "yaml-cpp/yaml.h" PATHS "${CMAKE_CURRENT_SOURCE_DIR}/yaml-cpp/include/")
-
-if (NOT HAVE_SDL_H OR NOT HAVE_SDL_VULKAN_H OR NOT HAVE_VULKAN_HPP OR NOT HAVE_YAML_CPP_H)
-	message(FATAL_ERROR "Missing Headers")
-else()
-	if (HAVE_VULKAN_HPP)
-		message(STATUS "Looking for vulkan/vulkan.hpp - found")
-	endif()
-
-	if (HAVE_SDL_H)
-		message(STATUS "Looking for SDL.h - found")
-	endif()
-
-	if (HAVE_SDL_VULKAN_H)
-		message(STATUS "Looking for SDL_vulkan.h - found")
-	endif()
-
-	if (HAVE_YAML_CPP_H)
-		message(STATUS "Looking for yaml-cpp/yaml.h - found")
-	endif()
-endif()
-
-if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo")
-	find_file(HAVE_IMGUI_VULKAN_H "imgui_impl_vulkan.h" PATHS "${CMAKE_CURRENT_SOURCE_DIR}/imgui/backends")
-	find_file(HAVE_IMGUI_SDL2_H "imgui_impl_sdl2.h" PATHS "${CMAKE_CURRENT_SOURCE_DIR}/imgui/backends")
-
-	if (NOT HAVE_IMGUI_VULKAN_H OR NOT HAVE_IMGUI_SDL2_H)
-		message(FATAL_ERROR "Missing Headers")
-	else()
-		if (HAVE_IMGUI_VULKAN_H)
-			message(STATUS "Looking for imgui_impl_vulkan.h - found")
-		endif()
-
-		if (HAVE_IMGUI_SDL2_H)
-			message(STATUS "Looking for imgui_impl_sdl2.h - found")
-		endif()
-	endif()
 endif()

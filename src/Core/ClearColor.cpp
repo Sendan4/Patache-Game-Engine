@@ -1,4 +1,5 @@
 #include <SDL.h>
+
 #include "PatataEngine/PatataEngine.hpp"
 
 void

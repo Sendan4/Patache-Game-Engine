@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.18)
 
 project("Imgui" LANGUAGES CXX C VERSION 1.90.8)
 
-set(Imgui_VERSION "1.91.4-docking" CACHE INTERNAL "Imgui version")
+set(Imgui_VERSION "v1.91.5-docking" CACHE INTERNAL "Imgui version")
 
 message("")
 message("  - Imgui -")
@@ -19,20 +19,6 @@ CHECK_INCLUDE_FILE("assert.h" HAVE_ASSERT_H)
 CHECK_INCLUDE_FILE("stdlib.h" HAVE_STDLIB_H)
 CHECK_INCLUDE_FILE("limits.h" HAVE_LIMITS_H)
 CHECK_INCLUDE_FILE("math.h" HAVE_MATH_H)
-
-if (NOT USE_EXTERNAL_LIBS)
-	find_file(HAVE_VULKAN_H "vulkan/vulkan.h" PATHS ${Vulkan_INCLUDE_DIRS})
-else()
-	find_file(HAVE_VULKAN_H "vulkan/vulkan.h" PATHS "${CMAKE_CURRENT_SOURCE_DIR}/../Vulkan-Headers/include/")
-endif()
-
-if (NOT HAVE_STDIO_H OR NOT HAVE_STDINT_H OR NOT HAVE_FLOAT_H OR NOT HAVE_STDARG_H OR NOT HAVE_STDDEF_H OR NOT HAVE_STRING_H OR NOT HAVE_ASSERT_H OR NOT HAVE_STDLIB_H OR NOT HAVE_LIMITS_H OR NOT HAVE_MATH_H)
-	message(FATAL_ERROR "include files missing")
-else()
-	if (HAVE_VULKAN_H)
-		message(STATUS "Looking for vulkan/vulkan.h - found")
-	endif()
-endif()
 
 if (LIBS_SHARED_BUILD AND NOT MSVC)
 	message(STATUS "Library Type : Shared")
@@ -54,6 +40,7 @@ endif()
 
 target_include_directories(${PROJECT_NAME} PUBLIC ".")
 target_include_directories(${PROJECT_NAME} PUBLIC "backends/")
+target_include_directories(${PROJECT_NAME} PUBLIC "misc/freetype")
 
 if(USE_EXTERNAL_LIBS AND HAVE_VULKAN_H)
 	target_include_directories(${PROJECT_NAME} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../Vulkan-Headers/include/")
@@ -65,14 +52,9 @@ target_sources(${PROJECT_NAME} PRIVATE
 	"imgui_draw.cpp"
 	"imgui_tables.cpp"
 	"imgui_widgets.cpp"
-	"backends/imgui_impl_sdl2.cpp")
-
-if ((${Vulkan_FOUND} AND HAVE_VULKAN_H) OR (USE_EXTERNAL_LIBS AND HAVE_VULKAN_H))
-	target_sources(${PROJECT_NAME} PRIVATE
-		"backends/imgui_impl_vulkan.cpp")
-endif()
-
-target_include_directories(${PROJECT_NAME} PRIVATE "../SDL/include")
+	"backends/imgui_impl_sdl2.cpp"
+	"backends/imgui_impl_vulkan.cpp"
+	"misc/freetype/imgui_freetype.cpp")
 
 if (USE_EXTERNAL_LIBS)
 	# Linux or MSVC
@@ -110,12 +92,15 @@ if (USE_EXTERNAL_LIBS)
 	else()
 		target_link_libraries(${PROJECT_NAME} PUBLIC SDL2-static)
 	endif()
+
+	target_link_libraries(${PROJECT_NAME} PUBLIC freetype)
 else()
 	# Package Mananger
 	target_link_libraries(${PROJECT_NAME} PRIVATE
 		${Vulkan_LIBRARIES}
+		Vulkan::Headers
 		${SDL2_LIBRARIES}
-        Vulkan::Headers)
+		freetype)
 endif()
 
 set_target_properties(${PROJECT_NAME}

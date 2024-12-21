@@ -1,5 +1,3 @@
-file(GLOB_RECURSE Include "${CMAKE_CURRENT_SOURCE_DIR}/../include/PatataEngine/*.hpp")
-
 if (DEFINED SHARED_BUILD AND SHARED_BUILD)
 	add_library(${PROJECT_NAME} SHARED)
 	add_library(Patata::Engine-Shared ALIAS ${PROJECT_NAME})
@@ -12,15 +10,14 @@ endif()
 
 target_sources (${PROJECT_NAME} PRIVATE
 	"Core/Main.cpp"
-	"Core/PrivateToPublicWrapper.cpp"
-	"Core/LoadConfig.cpp"
-	"Core/Input.cpp"
 	"Core/RenderWrapper.cpp"
+	"Core/PrivateToPublicWrapper.cpp"
+	"Core/Configuration.cpp"
+	"Core/Input.cpp"
 	"Core/ClearColor.cpp"
-	"Window/Window.cpp"
+	"Core/Window.cpp"
 	"RaccoonRenderer/RaccoonRenderer.cpp"
-	"RaccoonRenderer/RaccoonRendererWrapper.cpp"
-	"RaccoonRenderer/Vulkan/Setup_Vulkan_Renderer.cpp"
+	"RaccoonRenderer/Vulkan/Vulkan_SetupRenderer.cpp"
 	"RaccoonRenderer/Vulkan/Vulkan_Instance.cpp"
 	"RaccoonRenderer/Vulkan/Vulkan_Select_Device.cpp"
 	"RaccoonRenderer/Vulkan/Vulkan_LogicalDevice_And_GrahicsQueue.cpp"
@@ -33,12 +30,14 @@ target_sources (${PROJECT_NAME} PRIVATE
 	"RaccoonRenderer/Vulkan/Vulkan_Render.cpp"
 	"RaccoonRenderer/Vulkan/Vulkan_PipeLine.cpp"
 	"RaccoonRenderer/Vulkan/Vulkan_RenderPass.cpp"
-	"Log/Messages.cpp"
-	"Log/YamlErrors.cpp")
+	"Log/Messages.cpp")
 
 if (MSVC)
 	# List Headers Files in Visual Studio
-	target_sources(${PROJECT_NAME} PRIVATE ${Include})
+	file(GLOB_RECURSE Include "${CMAKE_CURRENT_SOURCE_DIR}/../include/PatataEngine/*.hpp")
+    file(GLOB_RECURSE IncludeInternal "${CMAKE_CURRENT_SOURCE_DIR}/*.hpp")
+
+	target_sources(${PROJECT_NAME} PRIVATE ${Include} ${IncludeInternal})
 endif()
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Windows" OR WIN32)
@@ -71,60 +70,35 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 	"${CMAKE_CURRENT_SOURCE_DIR}/RaccoonRenderer/"
 	"${CMAKE_CURRENT_SOURCE_DIR}/Window/")
 
-# Install With CPack
-install(FILES ${Include} DESTINATION "include/PatataEngine/")
-install(FILES ${Include_graphics} DESTINATION "include/PatataEngine/Graphics")
-
-if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo")
-	install(TARGETS Imgui
-		LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
-		RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
-endif()
-
-if (USE_EXTERNAL_LIBS)
-	install(TARGETS yaml-cpp
-		LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
-		RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
-endif()
-
-if (LIBS_SHARED_BUILD AND USE_EXTERNAL_LIBS)
-	install(TARGETS SDL2main SDL2
-		LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
-		RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
-endif()
-
-if (COMPILER_SUPPORTS_CXX20)
-	if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-		target_compile_options(${PROJECT_NAME} PRIVATE "-std=c++20")
-	    target_compile_options(${PROJECT_NAME} PRIVATE "-std=c++2b")
-	    target_compile_options(${PROJECT_NAME} PRIVATE "-std=gnu++2b")
-	elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+# Compiler Flags
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    if (COMPILER_SUPPORTS_C++20)
+        target_compile_options(${PROJECT_NAME} PRIVATE "-std=c++20")
+    endif ()
+    if (COMPILER_SUPPORTS_WALL)
+        target_compile_options(${PROJECT_NAME} PRIVATE "-Wall")
+    endif ()
+    if (COMPILER_SUPPORTS_WEXTRA)
+        target_compile_options(${PROJECT_NAME} PRIVATE "-Wextra")
+    endif ()
+    if (COMPILER_SUPPORTS_NO_EXCEPTIONS)
+        target_compile_options(${PROJECT_NAME} PRIVATE "-fno-exceptions")
+    endif ()
+    if (COMPILER_SUPPORTS_NO_STRICT_ALIASING)
+        target_compile_options(${PROJECT_NAME} PRIVATE "-fno-strict-aliasing")
+    endif ()
+    if (COMPILER_SUPPORTS_NO_RTTI)
+        target_compile_options(${PROJECT_NAME} PRIVATE "-fno-rtti")
+    endif()
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+    if (COMPILER_SUPPORTS_C++20)
 		target_compile_options(${PROJECT_NAME} PRIVATE "/std:c++20")
 	endif()
-endif ()
-
-if (COMPILER_SUPPORTS_W4)
-	if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-		target_compile_options(${PROJECT_NAME} PRIVATE "/W4")
-	elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-		target_compile_options(${PROJECT_NAME} PRIVATE "-Wall")
-	endif()
-endif ()
-
-if (COMPILER_SUPPORTS_WEXTRA)
-	if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-		target_compile_options(${PROJECT_NAME} PRIVATE "-Wextra")
-	endif()
-endif ()
-
-if (COMPILER_SUPPORTS_NO_EXCEPTIONS)
-    if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-		target_compile_options(${PROJECT_NAME} PRIVATE "-fno-exceptions")
-	endif()
-endif()
-if (COMPILER_SUPPORTS_EXCEPTION_HANDLING)
-    if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-		target_compile_options(${PROJECT_NAME} PRIVATE "/EH-")
+    if (COMPILER_SUPPORTS_W4)
+        target_compile_options(${PROJECT_NAME} PRIVATE "/W4")
+    endif ()
+    if (COMPILER_SUPPORTS_NO_RTTI)
+        target_compile_options(${PROJECT_NAME} PRIVATE "/GR-")
     endif()
 endif()
 
@@ -161,23 +135,33 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
 	PATATA_COMPILER_PROGRAM="${compiler_program}"
 	PATATA_COMPILER_VERSION="${CMAKE_CXX_COMPILER_VERSION}"
 	PATATA_ARCH="${CMAKE_SYSTEM_PROCESSOR}"
-	PATATA_GIT_BRANCH="${PATATA_GIT_BRANCH}"
-	PATATA_GIT_HASH_LONG="${PATATA_GIT_HASH_LONG}"
-	PATATA_GIT_HASH_SHORT="${PATATA_GIT_HASH_SHORT}"
-	PATATA_GIT_WORK_DIR_IS_CLEAN="${PATATA_GIT_WORK_DIR_IS_CLEAN}"
-	PATATA_GIT_WORK_DIR_IS_CLEAN_BOOL=${PATATA_GIT_WORK_DIR_IS_CLEAN_BOOL}
-	PATATA_GIT_WORK_DIR_IS_STAGED="${PATATA_GIT_WORK_DIR_IS_STAGED}"
-	PATATA_GIT_WORK_DIR_IS_STAGED_BOOL=${PATATA_GIT_WORK_DIR_IS_STAGED_BOOL}
-	PATATA_FAST_IO_GIT_COMMIT_HASH_SHORT="${Fast_io_COMMIT_SHORT_HASH}")
+	PATATA_FAST_IO_GIT_COMMIT_HASH_SHORT="${Fast_io_COMMIT_SHORT_HASH}"
+	VULKAN_HPP_NO_EXCEPTIONS
+	VULKAN_HPP_NO_SMART_HANDLE)
+
+if (MSVC OR CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+    target_compile_definitions(${PROJECT_NAME} PRIVATE _HAS_EXCEPTIONS=0)
+endif()
+
+# Git
+if (USE_GIT AND GIT)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE
+        PATATA_GIT_BRANCH="${PATATA_GIT_BRANCH}"
+        PATATA_GIT_HASH_LONG="${PATATA_GIT_HASH_LONG}"
+        PATATA_GIT_HASH_SHORT="${PATATA_GIT_HASH_SHORT}"
+        PATATA_GIT_WORK_DIR_IS_CLEAN="${PATATA_GIT_WORK_DIR_IS_CLEAN}"
+        PATATA_GIT_WORK_DIR_IS_CLEAN_BOOL=${PATATA_GIT_WORK_DIR_IS_CLEAN_BOOL}
+        PATATA_GIT_WORK_DIR_IS_STAGED="${PATATA_GIT_WORK_DIR_IS_STAGED}"
+        PATATA_GIT_WORK_DIR_IS_STAGED_BOOL=${PATATA_GIT_WORK_DIR_IS_STAGED_BOOL})
+endif()
 
 if (USE_EXTERNAL_LIBS)
-	target_compile_definitions(${PROJECT_NAME} PRIVATE PATATA_YAML_CPP_VERSION="${PATATA_YAML-CPP_VERSION}")
+	target_compile_definitions(${PROJECT_NAME} PRIVATE PATATA_RAPIDYAML_VERSION="${PATATA_RAPIDYAML_VERSION}")
 
 	if (CMAKE_SYSTEM_NAME STREQUAL "Linux" OR MSVC)
 		# Cannot compile Vulkan in Mingw
 		target_compile_definitions(${PROJECT_NAME} PRIVATE
 			PATATA_VULKAN_LOADER_VERSION="${PATATA_VULKAN_LOADER_VERSION}"
-			PATATA_VULKAN_VALIDATION_LAYERS_VERSION="${PATATA_VULKAN_VALIDATION_LAYERS_VERSION}"
 			PATATA_VULKAN_HEADERS_VERSION="${PATATA_VULKAN_HEADERS_VERSION}")
 	endif()
 endif()
@@ -201,6 +185,7 @@ if (USE_VVL)
 	target_compile_definitions(${PROJECT_NAME} PRIVATE PATATA_USE_VVL)
 endif()
 
+# Link Libraries
 if (USE_EXTERNAL_LIBS)
 	# Linux or MSVC
 	if (MSVC OR LINUX OR CMAKE_SYSTEM_NAME STREQUAL "Linux")
@@ -255,20 +240,22 @@ if (USE_EXTERNAL_LIBS)
 
 	if (LIBS_SHARED_BUILD)
 		# Shared
-		target_link_libraries(${PROJECT_NAME} PUBLIC SDL2::SDL2)
+		target_link_libraries(${PROJECT_NAME} PUBLIC SDL2::SDL2 SDL2::SDL2main)
 	else()
 		# Static
-		target_link_libraries(${PROJECT_NAME} PUBLIC SDL2-static)
+		target_link_libraries(${PROJECT_NAME} PUBLIC SDL2-static SDL2::SDL2main)
 	endif()
 else()
 	# Package Mananger
 	target_link_libraries(${PROJECT_NAME} PUBLIC
 		${Vulkan_LIBRARIES}
-		${SDL2_LIBRARIES})
+		Vulkan::Headers
+		${SDL2_LIBRARIES}
+		SDL2::SDL2main)
 endif()
 
-target_link_libraries(${PROJECT_NAME} PUBLIC Fast_io)
-target_link_libraries(${PROJECT_NAME} PRIVATE yaml-cpp)
+target_link_libraries(${PROJECT_NAME} PUBLIC Fast_io freetype)
+target_link_libraries(${PROJECT_NAME} PRIVATE ryml::ryml)
 
 if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo")
 	target_link_libraries(${PROJECT_NAME} PUBLIC Imgui)
@@ -278,14 +265,19 @@ if (MSVC)
 	set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER "Engine")
 
 	if (USE_EXTERNAL_LIBS)
-		#Yaml-cpp
-		set_target_properties(yaml-cpp PROPERTIES FOLDER "Engine/Dependencies")
-		set_target_properties(uninstall PROPERTIES FOLDER "Engine/Others/yamlcpp")
-		# move CTest of yaml-cpp
-		set_target_properties(Continuous PROPERTIES FOLDER "Engine/Others/yamlcpp")
-		set_target_properties(Nightly PROPERTIES FOLDER "Engine/Others/yamlcpp")
-		set_target_properties(Experimental PROPERTIES FOLDER "Engine/Others/yamlcpp")
-		set_target_properties(NightlyMemoryCheck PROPERTIES FOLDER "Engine/Others/yamlcpp")
+		# RapidYaml
+		if (TARGET ryml)
+			set_target_properties(ryml PROPERTIES FOLDER "Engine/Dependencies/RapidYaml")
+		endif()
+		if (TARGET ryml-uninstall)
+			set_target_properties(ryml-uninstall PROPERTIES FOLDER "Engine/Dependencies/RapidYaml")
+		endif()
+		if (TARGET c4core-amalgamate)
+			set_target_properties(c4core-amalgamate PROPERTIES FOLDER "Engine/Dependencies/RapidYaml")
+		endif()
+		if (TARGET c4core)
+			set_target_properties(c4core PROPERTIES FOLDER "Engine/Dependencies/RapidYaml")
+		endif()
 
 		#SDL2
 		if (TARGET SDL2)
@@ -296,30 +288,38 @@ if (MSVC)
 		endif()
 		set_target_properties(SDL2main PROPERTIES FOLDER "Engine/Dependencies/SDL2")
 		if (TARGET SDL2_test)
-			set_target_properties(SDL2_test PROPERTIES FOLDER "Engine/Others/SDL2")
+			set_target_properties(SDL2_test PROPERTIES FOLDER "Engine/Dependencies/SDL2")
 		endif()
-		set_target_properties(sdl_headers_copy PROPERTIES FOLDER "Engine/Others/SDL2")
+		set_target_properties(sdl_headers_copy PROPERTIES FOLDER "Engine/Dependencies/SDL2")
+		if (TARGET uninstall)
+			set_target_properties(uninstall PROPERTIES FOLDER "Engine/Dependencies/SDL2")
+		endif()
 
 		#Vulkan
-		set_target_properties(asm_offset PROPERTIES FOLDER "Engine/Others/Vulkan")
-		set_target_properties(loader_specific_options PROPERTIES FOLDER "Engine/Others/Vulkan")
-		set_target_properties(loader-unknown-chain PROPERTIES FOLDER "Engine/Others/Vulkan")
+		set_target_properties(asm_offset PROPERTIES FOLDER "Engine/Dependencies/Vulkan")
+		set_target_properties(loader_specific_options PROPERTIES FOLDER "Engine/Dependencies/Vulkan")
+		set_target_properties(loader-unknown-chain PROPERTIES FOLDER "Engine/Dependencies/Vulkan")
 		if (TARGET loader-opt)
-			set_target_properties(loader-opt PROPERTIES FOLDER "Engine/Others/Vulkan")
+			set_target_properties(loader-opt PROPERTIES FOLDER "Engine/Dependencies/Vulkan")
 		endif()
 		if (TARGET Vulkan-Module)
-			set_target_properties(Vulkan-Module PROPERTIES FOLDER "Engine/Others/Vulkan")
+			set_target_properties(Vulkan-Module PROPERTIES FOLDER "Engine/Dependencies/Vulkan")
 		endif()
 		if (TARGET gpu_av_spirv)
-			set_target_properties(gpu_av_spirv PROPERTIES FOLDER "Engine/Others/Vulkan")
+			set_target_properties(gpu_av_spirv PROPERTIES FOLDER "Engine/Dependencies/Vulkan")
 		endif()
-		set_target_properties(loader_asm_gen_files PROPERTIES FOLDER "Engine/Others/Vulkan")
+		set_target_properties(loader_asm_gen_files PROPERTIES FOLDER "Engine/Dependencies/Vulkan")
 		if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo" OR USE_VVL)
 			set_target_properties(vvl PROPERTIES FOLDER "Engine/Dependencies/Vulkan")
 			set_target_properties(VkLayer_utils PROPERTIES FOLDER "Engine/Dependencies/Vulkan")
 			set_target_properties(vulkan PROPERTIES FOLDER "Engine/Dependencies/Vulkan")
 		else()
-			set_target_properties(vulkan PROPERTIES FOLDER "Engine/Dependencies")
+			set_target_properties(vulkan PROPERTIES FOLDER "Engine/Dependencies/Vulkan")
+		endif()
+
+		# Freetype
+		if (TARGET freetype)
+			set_target_properties(freetype PROPERTIES FOLDER "Engine/Dependencies")
 		endif()
 	endif()
 

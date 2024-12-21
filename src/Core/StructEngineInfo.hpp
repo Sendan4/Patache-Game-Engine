@@ -1,15 +1,11 @@
 #if defined(DEBUG)
 #pragma once
-#include <cstdint>
-#include <string>
 
-#include <vulkan/vulkan.hpp>
-#include <SDL_syswm.h>
+#define PATATA_VK_LAYER_COUNT 1
 
 namespace Patata {
     struct EngineInfo {
         ~EngineInfo(void) {
-            // Vulkan Instance Extensions
             if (VkInstanceExtensions != nullptr)
                 delete[]  VkInstanceExtensions;
 
@@ -19,35 +15,41 @@ namespace Patata {
         }
         // Window
         #if defined(__linux__)
-        std::string Desktop = "";
-        std::string SessionType = "";
+        const char * Desktop = nullptr;
+        const char * SessionType = nullptr;
         #endif
         SDL_SysWMinfo WindowInfo;
         uint32_t WindowCreationFlags = 0;
 
         // RaccoonRenderer
         // Vulkan
-        std::string VkVersionInUse = "";
+        std::string VkVersionInUse;
         // Device
-        std::string VkDeviceName = "";
+        std::string VkDeviceName;
         uint32_t VkDeviceVendorId = 0;
-        std::string VkDeviceType = "";
+        std::string VkDeviceType;
         // Driver
-        std::string VkDriverName = "";
-        std::string VkDriverId = "";
-        std::string VkDriverInfo = "";
-        std::string VkDriverVersion = "";
+        std::string VkDriverName;
+        std::string VkDriverId;
+        std::string VkDriverInfo;
+        std::string VkDriverVersion;
         // Swapchain
         vk::PresentModeKHR VkSwapchainPresentMode;
         vk::Format VkSwapchainImageColorFormat;
         vk::ColorSpaceKHR VkSwapchainImageColorSpace;
         // Extensions
+        const char * VkLayers[PATATA_VK_LAYER_COUNT];
         const char ** VkInstanceExtensions = nullptr;
         uint32_t VkInstanceExtensionsCount = 0;
         const char ** VkDeviceExtensions = nullptr;
         uint32_t VkDeviceExtensionsCount = 0;
 
         // RaccoonSound
+
+        // ImGui
+        bool ShowMainMenuBar = true;
+        bool PatataInfoWindow = false;
+        bool PatataConfigWindow = false;
     };
 }
 #endif

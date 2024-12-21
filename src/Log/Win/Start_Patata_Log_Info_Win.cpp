@@ -105,10 +105,10 @@ Patata::Log::StartPatataLogInfo (void)
                           sdlversion.patch);
   }
 
-#if defined(PATATA_YAML_CPP_VERSION)
+#if defined(PATATA_RAPIDYAML_VERSION)
   fast_io::io::println (fast_io::out (), PATATA_TERM_BOLD,
-                        "  Yaml-Cpp Version : ", PATATA_TERM_COLOR_GRAY1,
-                        PATATA_YAML_CPP_VERSION);
+                        "  RapidYaml Version : ", PATATA_TERM_COLOR_GRAY1,
+                        PATATA_RAPIDYAML_VERSION);
 #endif
 
 #if defined(PATATA_GAME_NAME)

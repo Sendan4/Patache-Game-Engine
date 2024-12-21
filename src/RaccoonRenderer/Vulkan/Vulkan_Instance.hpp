@@ -1,23 +1,22 @@
-#if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
-#include <cxxabi.h>
-#endif
 #include <future>
 
 #include <fast_io.h>
-#define VULKAN_HPP_NO_EXCEPTIONS
 #include <vulkan/vulkan.hpp>
-
-#include "Log.hpp"
-#include "RaccoonRenderer.hpp"
-
+#include <SDL.h>
 #include <SDL_vulkan.h>
-
-#if defined(_WIN64)
-#include <windows.h>
+#if defined(DEBUG)
+#include <SDL_syswm.h>
+#include <imgui_impl_vulkan.h>
 #endif
 
-#include "TerminalColors.hpp"
-#include "ExitLog.hpp"
+#if defined(DEBUG)
+#include "StructEngineInfo.hpp"
+#endif
+#include "PatataEngine/StructClearColor.hpp"
+#include "StructConfig.hpp"
+#include "VulkanBackend.hpp"
+#include "RaccoonRenderer.hpp"
+#include "Log.hpp"
 
 #ifndef PATATA_GAME_NAME
 #define PATATA_GAME_NAME "Unknown"

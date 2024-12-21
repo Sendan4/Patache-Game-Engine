@@ -1,24 +1,16 @@
 #include "Vulkan_ImageView.hpp"
 
-bool Patata::Graphics::RaccoonRenderer::VulkanBackend::CreateImageView(const std::tuple<vk::PresentModeKHR, vk::Format, vk::ColorSpaceKHR> & SwapChainInfo) {
-    fast_io::io::println(
-        #if defined(_WIN64)
-        fast_io::out (),
-        #endif
-        PATATA_TERM_BOLD,
-        "\nSwapChain Color Image View : ",
-        PATATA_TERM_RESET,
-        SwapChainImageCount);
-
-    SwapChainColorImageView = new vk::ImageView[SwapChainImageCount];
+bool Patata::RaccoonRenderer::CreateImageView(
+    const Patata::SwapChainInfo & SwapChainInfo) {
+    Vulkan.SwapChainColorImageView = new vk::ImageView[Vulkan.SwapChainImageCount];
 
     vk::Result Result;
 
-    for (uint8_t i = 0; i < SwapChainImageCount; ++i) {
+    for (uint8_t i = 0; i < Vulkan.SwapChainImageCount; ++i) {
         vk::ImageViewCreateInfo ColorImageViewInfo ({},
-            SwapChainImages[i],         // image
-            vk::ImageViewType::e2D,     // viewType
-            std::get<1>(SwapChainInfo), // format
+            Vulkan.SwapChainImages[i],      // image
+            vk::ImageViewType::e2D,         // viewType
+            SwapChainInfo.ImageColorFormat, // format
             // Component Mapping
             {
                 vk::ComponentSwizzle::eIdentity, // R
@@ -37,20 +29,18 @@ bool Patata::Graphics::RaccoonRenderer::VulkanBackend::CreateImageView(const std
             nullptr // pNext
         );
 
-        Result = Device.createImageView(&ColorImageViewInfo, nullptr, &SwapChainColorImageView[i]);
-        {
-          fast_io::io::print (
-            #if defined(_WIN64)
-            fast_io::out (),
-            #endif
-            "  ");
+        Result = Vulkan.Device.createImageView(&ColorImageViewInfo, nullptr, &Vulkan.SwapChainColorImageView[i]);
+        if (Result != vk::Result::eSuccess)
+          {
+          uint8_t           tmp               = i;
 
-          std::future<void> ReturnVulkanCheck = std::async (std::launch::async,
-              Patata::Log::VulkanCheck, "Color Image View", Result);
+            std::future<void> ReturnVulkanCheck = std::async (std::launch::async,
+                Patata::Log::VulkanCheck,
+                std::string ("Color Image View " + std::to_string (++tmp) + '/' + std::to_string (Vulkan.SwapChainImageCount)),
+                Result);
+
+            return false;
         }
-
-        if (Result != vk::Result::eSuccess) return false;
     }
-
     return true;
 }

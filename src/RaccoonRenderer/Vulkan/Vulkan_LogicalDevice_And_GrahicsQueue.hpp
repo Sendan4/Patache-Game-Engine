@@ -5,10 +5,21 @@
 #include <limits>
 
 #include <fast_io.h>
-#include <yaml-cpp/yaml.h>
-#define VULKAN_HPP_NO_EXCEPTIONS
 #include <vulkan/vulkan.hpp>
+#include <SDL.h>
+#if defined(DEBUG)
+#include <SDL_syswm.h>
+#include <imgui_impl_vulkan.h>
+#endif
 
-#include "Log.hpp"
-#include "TerminalColors.hpp"
+// Patata Engine
+#include "ColorTerminal.hpp"
+// PatataEngineImpl.hpp
+#if defined(DEBUG)
+#include "StructEngineInfo.hpp"
+#endif
+#include "StructConfig.hpp"
+#include "PatataEngine/StructClearColor.hpp"
+#include "VulkanBackend.hpp"
 #include "RaccoonRenderer.hpp"
+#include "Log.hpp"

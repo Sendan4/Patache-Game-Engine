@@ -1,14 +1,15 @@
 #include "Vulkan_LogicalDevice_And_GrahicsQueue.hpp"
 
 uint32_t
-Patata::Graphics::RaccoonRenderer::VulkanBackend::CreateLogicalDeviceAndCreateQueue (void)
+Patata::RaccoonRenderer::CreateLogicalDeviceAndCreateQueue (void)
 {
   uint32_t QueueCount         = 0;
   float    QueuePriority      = 1.0f;
   bool     FoundGraphicsQueue = false;
+  uint32_t TMPGraphicsQueueFamilyIndex = 0;
 
   // find a queue of graphs
-  PhysicalDevice.getQueueFamilyProperties (&QueueCount, nullptr);
+  Vulkan.PhysicalDevice.getQueueFamilyProperties (&QueueCount, nullptr);
 
   fast_io::io::println (
     #if defined(_WIN64)
@@ -24,14 +25,15 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::CreateLogicalDeviceAndCreateQu
 
   vk::QueueFamilyProperties * QueueFamilyProperties = new vk::QueueFamilyProperties[QueueCount];
 
-  PhysicalDevice.getQueueFamilyProperties (&QueueCount, QueueFamilyProperties);
+  Vulkan.PhysicalDevice.getQueueFamilyProperties (&QueueCount, QueueFamilyProperties);
 
   for (uint32_t i = 0; i < QueueCount; ++i)
     fast_io::io::println (
       #if defined(_WIN64)
       fast_io::out (),
       #endif
-      #if !defined(_WIN64)
+	  #if defined (DEBUG)
+	  #if !defined(_WIN64)
 	  PATATA_TERM_DIM,
 	  #endif
 	  PATATA_TERM_COLOR_GRAY0,
@@ -46,7 +48,10 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::CreateLogicalDeviceAndCreateQu
         typeid (QueueFamilyProperties[i].queueFlags).name () },
       "] ",
       #endif
-	  PATATA_TERM_RESET,
+      PATATA_TERM_RESET,
+      #else
+      "  ",
+      #endif
 	  PATATA_TERM_BOLD,
 	  "Index [", PATATA_TERM_RESET, i, PATATA_TERM_BOLD, "] : ",
 	  PATATA_TERM_RESET,
@@ -55,7 +60,7 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::CreateLogicalDeviceAndCreateQu
   for (uint32_t index = 0; index < QueueCount; ++index) {
     if (QueueFamilyProperties[index].queueFlags & vk::QueueFlagBits::eGraphics)
       {
-        GraphicsQueueFamilyIndex = index;
+        TMPGraphicsQueueFamilyIndex = index;
 		FoundGraphicsQueue = true;
 
 	  	fast_io::io::println (
@@ -67,7 +72,10 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::CreateLogicalDeviceAndCreateQu
             "Raccoon Renderer",
             PATATA_TERM_RESET,
             PATATA_TERM_BOLD,
-            " : Found index ", GraphicsQueueFamilyIndex, " that contains a graphics queue", PATATA_TERM_RESET);
+            " : Found index ",
+            TMPGraphicsQueueFamilyIndex,
+            " that contains a graphics queue",
+            PATATA_TERM_RESET);
 
         break;
       }
@@ -84,9 +92,10 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::CreateLogicalDeviceAndCreateQu
   }
 
   delete[] QueueFamilyProperties;
+  QueueFamilyProperties = nullptr;
 
   vk::DeviceQueueCreateInfo DeviceQueueCreateInfo({},
-      GraphicsQueueFamilyIndex,         // Queue Family Index
+      TMPGraphicsQueueFamilyIndex,      // Queue Family Index
       1,                                // Queue Count
       &QueuePriority,                   // Queue Priority
       nullptr                           // pNext
@@ -116,36 +125,34 @@ Patata::Graphics::RaccoonRenderer::VulkanBackend::CreateLogicalDeviceAndCreateQu
   {
     fast_io::io::println(
         #if defined(_WIN64)
-        fast_io::out(),
-        #endif
+        fast_io::out()
+        #else
         ""
+        #endif
     );
 
     std::future<void> ReturnVulkanList = std::async(std::launch::async,
-        Patata::Log::VulkanList, DeviceExtensions, std::size (DeviceExtensions) - 1, "Device Extensions");
+        Patata::Log::VulkanList, DeviceExtensions, std::size (DeviceExtensions), "Device Extensions");
   }
 
-  vk::Result Result = PhysicalDevice.createDevice (&DeviceCreateInfo, nullptr, &Device);
+  vk::Result Result = Vulkan.PhysicalDevice.createDevice (&DeviceCreateInfo, nullptr, &Vulkan.Device);
 
-  // Show Vulkan Result
-  {
+  if (Result != vk::Result::eSuccess) {
     std::future<void> ReturnVulkanCheck = std::async(
         std::launch::async, Patata::Log::VulkanCheck, "Logical Device", Result);
-  }
 
-  // returning the maximum of uint32_t is the equivalent of failing to find the graph queue.
-  if (Result != vk::Result::eSuccess) {
-      std::future<void> ReturnVulkanErr = std::async(std::launch::async,
-          Patata::Log::FatalErrorMessage,
-          "Patata Engine - Raccoon Renderer",
-          "Logical device creation failed",
-          *pRaccoonInfo->pConfiguration);
+    std::future<void> ReturnVulkanErr = std::async(std::launch::async,
+        Patata::Log::FatalErrorMessage,
+        "Patata Engine - Raccoon Renderer",
+        "Logical device creation failed",
+        *pRaccoonInfo->pConfiguration);
 
-      return std::numeric_limits<uint32_t>::max();
+    // returning the maximum of uint32_t is the equivalent of failing to find the graph queue.
+    return std::numeric_limits<uint32_t>::max();
   }
 
   // Graphic queue associated with the logic device
-  Queue = Device.getQueue (GraphicsQueueFamilyIndex, 0);
+  Vulkan.Queue = Vulkan.Device.getQueue (TMPGraphicsQueueFamilyIndex, 0);
 
-  return GraphicsQueueFamilyIndex;
+  return TMPGraphicsQueueFamilyIndex;
 }

@@ -1,51 +1,34 @@
 #include "Vulkan_FrameBuffer.hpp"
 
-bool Patata::Graphics::RaccoonRenderer::VulkanBackend::CreateFrameBuffer(void)
+bool Patata::RaccoonRenderer::CreateFrameBuffer(void)
 {
-    fast_io::io::println (
-        #if defined(_WIN64)
-        fast_io::out (),
-        #endif
-        PATATA_TERM_BOLD,
-        "\nSwapChain Frame Buffer : ",
-        PATATA_TERM_RESET,
-        SwapChainImageCount);
-
-    SwapChainFrameBuffer = new vk::Framebuffer[SwapChainImageCount];
+    Vulkan.SwapChainFrameBuffer = new vk::Framebuffer[Vulkan.SwapChainImageCount];
 
     vk::Result Result;
 
-    for (uint8_t i = 0; i < SwapChainImageCount; ++i) {
+    for (uint8_t i = 0; i < Vulkan.SwapChainImageCount; ++i) {
         vk::FramebufferCreateInfo FrameBufferInfo ({},
-            RenderPass,                  // renderPass
-            1,                           // attachmentCount
-            &SwapChainColorImageView[i], // pAttachments
-            SwapChainExtent.width,       // width
-            SwapChainExtent.height,      // height
-            1,                           // layers
-            nullptr                      // pNext
+            Vulkan.RenderPass,                  // renderPass
+            1,                                  // attachmentCount
+            &Vulkan.SwapChainColorImageView[i], // pAttachments
+            Vulkan.SwapChainExtent.width,       // width
+            Vulkan.SwapChainExtent.height,      // height
+            1,                                  // layers
+            nullptr                             // pNext
         );
 
-        Result = Device.createFramebuffer(&FrameBufferInfo, nullptr, &SwapChainFrameBuffer[i]);
-        {
-            fast_io::io::print (
-                #if defined(_WIN64)
-                fast_io::out (),
-                #endif
-                "  ");
+        Result = Vulkan.Device.createFramebuffer(&FrameBufferInfo, nullptr, &Vulkan.SwapChainFrameBuffer[i]);
+        if (Result != vk::Result::eSuccess) {
+            uint8_t tmp = i;
 
-            std::future<void> ReturnVulkanCheck
-                = std::async (std::launch::async, Patata::Log::VulkanCheck, "Frame Buffer", Result);
+            std::future<void> ReturnVulkanCheck = std::async (
+                std::launch::async, Patata::Log::VulkanCheck,
+                std::string ("Frame Buffer " + std::to_string (++tmp) + '/'
+                             + std::to_string (Vulkan.SwapChainImageCount)),
+                Result);
+
+            return false;
         }
-
-        if (Result != vk::Result::eSuccess) return false;
     }
-
-    fast_io::io::println (
-        #if defined(_WIN64)
-        fast_io::out (),
-        #endif
-        "");
-
     return true;
 }

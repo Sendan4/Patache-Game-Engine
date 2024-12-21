@@ -1,7 +1,7 @@
 #include "Vulkan_PipeLine.hpp"
 
 bool
-Patata::Graphics::RaccoonRenderer::VulkanBackend::CreatePipeline (void)
+Patata::RaccoonRenderer::CreatePipeline (void)
 {
     return true;
 }

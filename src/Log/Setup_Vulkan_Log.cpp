@@ -1,27 +1,36 @@
 #include "Setup_Vulkan_Log.hpp"
 
 void
-Patata::Log::VulkanList (const char * List[], const std::size_t & ListSize,
-                         const std::string & MESSAGE)
+Patata::Log::VulkanList (const char * List[], const uint32_t & Size,
+                         const std::string_view & Message)
 {
   fast_io::io::println (
-      PATATA_TERM_BOLD, PATATA_TERM_DIM, PATATA_TERM_COLOR_GRAY0,
+#if defined (DEBUG)
+      PATATA_TERM_DIM, PATATA_TERM_COLOR_GRAY0,
 #if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
       "[",
-      std::string_view{ abi::__cxa_demangle (typeid (*List).name (), nullptr,
+      std::string_view{abi::__cxa_demangle (typeid (*List).name (), nullptr,
                                              nullptr, nullptr) },
       "] ",
 #else
       "[", std::string_view{ typeid (*List).name () }, "] ",
 #endif
-      PATATA_TERM_RESET, PATATA_TERM_BOLD, MESSAGE, " : ", PATATA_TERM_RESET,
-      ListSize + 1);
+#endif
+      PATATA_TERM_RESET,
+      PATATA_TERM_BOLD,
+      std::string_view{ Message },
+      " : ",
+      PATATA_TERM_RESET,
+      Size);
 
-  for (std::size_t i = 0; i <= ListSize; ++i)
+  for (uint32_t i = 0; i < Size; ++i)
     {
       if (List[i] != nullptr)
-        fast_io::io::println ("  ", PATATA_TERM_DIM,
-                              std::string_view{ List[i] }, PATATA_TERM_RESET);
+        fast_io::io::println (
+            "  ",
+            PATATA_TERM_DIM,
+            std::string_view{ List[i] },
+            PATATA_TERM_RESET);
       else
         break;
     }
@@ -30,25 +39,49 @@ Patata::Log::VulkanList (const char * List[], const std::size_t & ListSize,
 }
 
 void
-Patata::Log::VulkanCheck (const std::string & Message,
-                          const vk::Result &  Result)
+Patata::Log::VulkanCheck (const std::string_view & Message,
+                          const vk::Result & Result)
 {
-  fast_io::io::print (
+  if (Result != vk::Result::eSuccess && Result != vk::Result::eSuboptimalKHR) {
+      fast_io::io::println (
+    #if defined (DEBUG)
+          PATATA_TERM_DIM, PATATA_TERM_COLOR_GRAY0,
+    #if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__) && defined (DEBUG)
+          "[",
+          std::string_view{ abi::__cxa_demangle (typeid (Result).name (), nullptr,
+                                                 nullptr, nullptr) },
+          "] ",
+    #elif defined (DEBUG)
+          "[", std::string_view{ typeid (Result).name () }, "] ",
+    #endif
+    #endif
+          PATATA_TERM_RESET,
+          PATATA_TERM_BOLD,
+          std::string_view{ Message },
+          " : ",
+          PATATA_TERM_RESET,
+          PATATA_TERM_COLOR_YELLOW,
+          vk::to_string (Result),
+          PATATA_TERM_RESET);
+  }
+  else fast_io::io::println (
+#if defined (DEBUG)
       PATATA_TERM_DIM, PATATA_TERM_COLOR_GRAY0,
-#if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
+#if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__) && defined (DEBUG)
       "[",
       std::string_view{ abi::__cxa_demangle (typeid (Result).name (), nullptr,
                                              nullptr, nullptr) },
       "] ",
-#else
+#elif defined (DEBUG)
       "[", std::string_view{ typeid (Result).name () }, "] ",
 #endif
-      PATATA_TERM_RESET, PATATA_TERM_BOLD, Message, " : ", PATATA_TERM_RESET);
-
-  if (Result != vk::Result::eSuccess && Result != vk::Result::eSuboptimalKHR)
-    fast_io::io::print (PATATA_TERM_COLOR_YELLOW);
-  else
-    fast_io::io::print (PATATA_TERM_COLOR_GREEN);
-
-  fast_io::io::println (vk::to_string (Result), PATATA_TERM_RESET);
+#endif
+      PATATA_TERM_RESET,
+      PATATA_TERM_BOLD,
+      std::string_view{ Message },
+      " : ",
+      PATATA_TERM_RESET,
+      PATATA_TERM_COLOR_GREEN,
+      vk::to_string (Result),
+      PATATA_TERM_RESET);
 }

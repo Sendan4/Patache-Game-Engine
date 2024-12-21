@@ -3,7 +3,7 @@
 void
 #if defined(DEBUG)
 Patata::Log::WindowLog (SDL_Window *         Window,
-                        Patata::EngineInfo & PatataEngineInfo)
+                        Patata::EngineInfo * PatataEngineInfo)
 #else
 Patata::Log::WindowLog (SDL_Window * Window)
 #endif
@@ -13,18 +13,21 @@ Patata::Log::WindowLog (SDL_Window * Window)
   GetConsoleMode (Terminal, &mode);
   SetConsoleMode (Terminal, ENABLE_VIRTUAL_TERMINAL_PROCESSING | mode);
 
+  fast_io::io::println (
+      fast_io::out (),
+#if defined(DEBUG)
+      PATATA_TERM_COLOR_GRAY0,
 #if defined(__GNUC__) || defined(__MINGW64__)
-  fast_io::io::print (
-      fast_io::out (), PATATA_TERM_COLOR_GRAY0, "[",
+    "[",
       std::string_view{ abi::__cxa_demangle (typeid (Window).name (), nullptr,
                                              nullptr, nullptr) },
-      "] ");
+      "] ",
 #else
-  fast_io::io::print (fast_io::out (), PATATA_TERM_COLOR_GRAY0, "[",
-                      std::string_view{ typeid (Window).name () }, "] ");
+      "[", std::string_view{ typeid (Window).name () }, "] ",
 #endif
-
-  fast_io::io::println (fast_io::out (), PATATA_TERM_COLOR_PATATA, "Window ",
+      PATATA_TERM_RESET,
+#endif
+      PATATA_TERM_COLOR_PATATA, "Window ",
                         PATATA_TERM_BOLD, "INFO :");
 
   SDL_SysWMinfo WindowInfo;
@@ -32,7 +35,7 @@ Patata::Log::WindowLog (SDL_Window * Window)
   SDL_GetWindowWMInfo (Window, &WindowInfo);
 
   #if defined(DEBUG)
-  PatataEngineInfo.WindowInfo = WindowInfo;
+  PatataEngineInfo->WindowInfo = WindowInfo;
   #endif
 
   switch (WindowInfo.subsystem)
@@ -44,49 +47,67 @@ Patata::Log::WindowLog (SDL_Window * Window)
 
       // The window handle
       fast_io::io::println (fast_io::out (),
+#if defined(DEBUG)
+                            PATATA_TERM_COLOR_GRAY0,
 #if defined(__GNUC__) || defined(__MINGW64__)
-      PATATA_TERM_COLOR_GRAY0, "  [",
+      "  [",
                           std::string_view{ abi::__cxa_demangle (
                               typeid (WindowInfo.info.win.window).name (),
                               nullptr, nullptr, nullptr) },
-                          "]",
+                          "] ",
 #else
-          PATATA_TERM_COLOR_GRAY0, "  [",
+          "  [",
           std::string_view{ typeid (WindowInfo.info.win.window).name () },
-          "]",
+          "] ",
 #endif
-      PATATA_TERM_BOLD, " The window handle");
+          PATATA_TERM_RESET,
+#else
+          "  ",
+#endif
+      PATATA_TERM_BOLD, "The window handle");
 
       // The window device context
       fast_io::io::println (fast_io::out (),
+#if defined(DEBUG)
+                            PATATA_TERM_COLOR_GRAY0,
 #if defined(__GNUC__) || defined(__MINGW64__)
-                            PATATA_TERM_COLOR_GRAY0, "  [",
+                            "  [",
                             std::string_view{ abi::__cxa_demangle (
                                 typeid (WindowInfo.info.win.hdc).name (),
                                 nullptr, nullptr, nullptr) },
-                            "]",
+                            "] ",
 #else
                             PATATA_TERM_COLOR_GRAY0, "  [",
                             std::string_view{ typeid (WindowInfo.info.win.hdc).name () },
-                            "]",
+                            "] ",
+#endif
+                            PATATA_TERM_RESET,
+#else
+                            "  ",
 #endif
                             PATATA_TERM_BOLD,
-                            " The window device context");
+                            "The window device context");
 
       // The instance handle
       fast_io::io::println (fast_io::out (),
+#if defined(DEBUG)
+                            PATATA_TERM_COLOR_GRAY0,
 #if defined(__GNUC__) || defined(__MINGW64__)
-                            PATATA_TERM_COLOR_GRAY0, "  [",
+                             "  [",
                             std::string_view{ abi::__cxa_demangle (
                                 typeid (WindowInfo.info.win.hinstance).name (),
                                 nullptr, nullptr, nullptr) },
-                            "]",
+                            "] ",
 #else
                             PATATA_TERM_COLOR_GRAY0, "  [",
                             std::string_view{ typeid (WindowInfo.info.win.hinstance).name () },
-                            "]",
+                            "] ", PATATA_TERM_RESET, PATATA_TERM_RESET,
 #endif
-                            PATATA_TERM_BOLD, " The instance handle");
+                            PATATA_TERM_RESET,
+#else
+                            "  ",
+#endif
+                            PATATA_TERM_BOLD, "The instance handle");
 
       break;
 
@@ -109,7 +130,7 @@ Patata::Log::WindowLog (SDL_Window * Window)
 
   uint32_t WindowFlags = SDL_GetWindowFlags (Window);
   #if defined(DEBUG)
-  PatataEngineInfo.WindowCreationFlags = WindowFlags;
+  PatataEngineInfo->WindowCreationFlags = WindowFlags;
   #endif
 
   if (WindowFlags & SDL_WINDOW_FULLSCREEN)

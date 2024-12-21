@@ -1,14 +1,18 @@
-#if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
-#include <cxxabi.h>
-#endif
-
-#if defined(_WIN64)
-#include <windows.h>
-#endif
-
 #include <vulkan/vulkan.hpp>
+#if defined(DEBUG)
+#include <imgui_impl_vulkan.h>
+#include <SDL_syswm.h>
+#endif
 #include <SDL.h>
 
+// Begin Dependencies of RaccoonRenderer.hpp
+#if defined (DEBUG)
+#include "StructEngineInfo.hpp"
+#endif
+#include "PatataEngine/StructClearColor.hpp"
+#include "StructConfig.hpp"
+#include "VulkanBackend.hpp"
+// End Dependencies of RaccoonRenderer.hpp
 #include "RaccoonRenderer.hpp"
 
 /*
@@ -19,19 +23,14 @@ si se llega a tener varios, lo mejor seria iniciarlos
 mediante el valor de una configuracion.
 */
 
-Patata::Graphics::RaccoonRenderer::RaccoonRenderer (RaccoonRendererCreateInfo * RaccoonInfo)
+Patata::RaccoonRenderer::RaccoonRenderer (Patata::RaccoonRendererCreateInfo * RaccoonInfo)
+    : pRaccoonInfo (RaccoonInfo)
 {
   // Backend Principal
-  pVulkanBackend = new Patata::Graphics::RaccoonRenderer::VulkanBackend (RaccoonInfo);
+  if (!InitVulkanBackend()) return;
 }
 
-#include <fast_io.h>
-
-#include "TerminalColors.hpp"
-// Provee una funcion para eliminar un puntero y su vez lo muestra en el stdout
-#include "ExitLog.hpp"
-
-Patata::Graphics::RaccoonRenderer::~RaccoonRenderer (void)
+Patata::RaccoonRenderer::~RaccoonRenderer (void)
 {
-  Patata::Log::DeleteAndLogPtr ("Deallocate Vulkan Backend", pVulkanBackend);
+    CloseVulkanBackend();
 }

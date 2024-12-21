@@ -2,12 +2,6 @@ option('use_custom_icon',
   type : 'boolean',
   value : false)
 
-option('use_external_libs',
-  type : 'boolean',
-  value : false,
-  yield : true,
-  description : 'true to compile and link the libraries in the externals folder, false to use the libraries installed on the system or from a package manager in linux')
-
 option('libs_shared_build',
   type : 'boolean',
   value : false,
@@ -25,12 +19,6 @@ option('game_name', type : 'string')
 option('use_git',
   type : 'boolean',
   value : true)
-
-option('xorg_support',
-  type : 'boolean',
-  value : false,
-  yield : true,
-  description : 'Disable or enable Xorg suport | Xorg is almost obsolete')
 
 option('use_bin_dir',
   type : 'boolean',

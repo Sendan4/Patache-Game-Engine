@@ -7,7 +7,7 @@
 
 _Motor tonto y simple de videojuegos hecho en C++._
 
-<p>Patata es un motor 2D, sencillo y ligero con el enfoque en el desarrollo de videojuegos utilizando directamente C++. Este motor abstrae tareas como la creacion de la ventana, renderizado, sonido, entradas y su misma configuracion en una API sencilla de utilizar.</p>
+<p>Patata es un motor 2D, sencillo y ligero con el enfoque en el desarrollo de videojuegos utilizando directamente C++. Este motor abstrae tareas como la creacion de la ventana y la gestion de las entradas gracias a SDL. hace renderizado, sonido y su misma configuracion en una API sencilla de utilizar.</p>
 
 ⚠️ Aun no esta listo para su uso.
 
@@ -27,8 +27,9 @@ _Motor tonto y simple de videojuegos hecho en C++._
 		(<a href = "https://github.com/KhronosGroup/Vulkan-Loader.git">Vulkan-Loader</a>)
 	</ul>
 	<li><a href = "https://github.com/cppfastio/fast_io.git">fast_io</a></li>
-	<li><a href = "https://github.com/jbeder/yaml-cpp.git">yaml-cpp</a></li>
-    <li><a href = "https://github.com/ocornut/imgui.git">Imgui</a></li>
+	<li><a href = "https://github.com/biojppm/rapidyaml.git">RapidYaml</a></li>
+	<li><a href = "https://gitlab.freedesktop.org/freetype/freetype.git">FreeType</a></li>
+  <li><a href = "https://github.com/ocornut/imgui.git">Imgui</a></li>
 </ul>
 
 ## [Wiki](https://448envio.gitbook.io/motor-patata-wiki/)

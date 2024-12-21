@@ -14,3 +14,6 @@
 	path = externals/SDL
 	url = https://github.com/libsdl-org/SDL.git
 	branch = release-2.30.x
+[submodule "externals/freetype"]
+	path = externals/freetype
+	url = https://gitlab.freedesktop.org/freetype/freetype.git
