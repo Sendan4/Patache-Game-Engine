@@ -1,12 +1,12 @@
 if (DEFINED SHARED_BUILD AND SHARED_BUILD)
 	add_library(${PROJECT_NAME} SHARED)
-	add_library(Patata::Engine-Shared ALIAS ${PROJECT_NAME})
 endif()
 
 if (DEFINED SHARED_BUILD AND NOT SHARED_BUILD)
 	add_library(${PROJECT_NAME} STATIC)
-	add_library(Patata::Engine-Static ALIAS ${PROJECT_NAME})
 endif()
+
+add_dependencies(${PROJECT_NAME} Patata-Data Patata-Assets)
 
 target_sources (${PROJECT_NAME} PRIVATE
 	"Core/Main.cpp"
@@ -35,7 +35,7 @@ target_sources (${PROJECT_NAME} PRIVATE
 if (MSVC)
 	# List Headers Files in Visual Studio
 	file(GLOB_RECURSE Include "${CMAKE_CURRENT_SOURCE_DIR}/../include/PatataEngine/*.hpp")
-    file(GLOB_RECURSE IncludeInternal "${CMAKE_CURRENT_SOURCE_DIR}/*.hpp")
+  file(GLOB_RECURSE IncludeInternal "${CMAKE_CURRENT_SOURCE_DIR}/*.hpp")
 
 	target_sources(${PROJECT_NAME} PRIVATE ${Include} ${IncludeInternal})
 endif()
@@ -62,7 +62,7 @@ if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWit
 		"ImGUI/SetupImgui.cpp")
 endif()
 
-target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}../include/")
+target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../include/")
 target_include_directories(${PROJECT_NAME} PRIVATE
 	"${CMAKE_CURRENT_SOURCE_DIR}/Core/"
 	"${CMAKE_CURRENT_SOURCE_DIR}/ImGUI/"
@@ -170,7 +170,7 @@ if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWit
 	target_compile_definitions(${PROJECT_NAME} PRIVATE PATATA_IMGUI_VERSION="${Imgui_VERSION}")
 endif()
 
-if (NOT ${GAME_NAME} STREQUAL "OFF")
+if (GAME_NAME)
 	target_compile_definitions(${PROJECT_NAME} PUBLIC PATATA_GAME_NAME="${GAME_NAME}")
 endif()
 
@@ -186,81 +186,75 @@ if (USE_VVL)
 endif()
 
 # Link Libraries
-if (USE_EXTERNAL_LIBS)
-	# Linux or MSVC
-	if (MSVC OR LINUX OR CMAKE_SYSTEM_NAME STREQUAL "Linux")
-		target_link_libraries(${PROJECT_NAME} PUBLIC vulkan Vulkan::Headers)
-
-		set_target_properties(asm_offset
-			PROPERTIES
-			ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}
-			LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}
-			RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
-
-		if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo" AND USE_VVL)
-			target_compile_definitions(${PROJECT_NAME} PRIVATE PATATA_FIND_VVL_IN_THE_CURRENT_PATH)
-		endif()
-	else()
-		# mingw
-		message("")
-		message("  - Vulkan SDK -")
-		find_package(Vulkan REQUIRED)
-
-		set (VULKANSDK_LIBS_PATH "${Vulkan_LIBRARIES}")
-		string(REPLACE "/vulkan-1.lib" "" VULKANSDK_LIBS_PATH ${VULKANSDK_LIBS_PATH})
-		string(STRIP VULKANSDK_LIBS_PATH ${VULKANSDK_LIBS_PATH})
-
-		message(STATUS "Vulkan Libs Path : ${VULKANSDK_LIBS_PATH}")
-
-		target_link_libraries(${PROJECT_NAME} PUBLIC
-			-lvulkan-1
-			-L${VULKANSDK_LIBS_PATH})
-
-		target_include_directories(${PROJECT_NAME} PUBLIC "${Vulkan_INCLUDE_DIRS}")
-
-		if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo" AND USE_VVL)
-			set (VULKANSDK_VVL_PATH "${Vulkan_LIBRARIES}")
-			string(REPLACE "/Lib/vulkan-1.lib" "" VULKANSDK_VVL_PATH ${VULKANSDK_VVL_PATH})
-			string(STRIP VULKANSDK_VVL_PATH ${VULKANSDK_VVL_PATH})
-			set (VULKANSDK_VVL_PATH "${VULKANSDK_VVL_PATH}/Bin")
-			message(STATUS "Validation Layer Path : ${VULKANSDK_VVL_PATH}")
-
-			target_compile_definitions(${PROJECT_NAME} PRIVATE PATATA_FIND_VVL_FROM_SDK PATATA_VVL_SDK_PATH="${VULKANSDK_VVL_PATH}")
-		endif()
+if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" OR (CMAKE_SYSTEM_NAME STREQUAL "Linux" AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU"))
+	# Using VVL
+	if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo" AND USE_VVL)
+		target_compile_definitions(${PROJECT_NAME} PRIVATE PATATA_FIND_VVL_IN_THE_CURRENT_PATH)
 	endif()
 
-	target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../externals/SDL/include")
-
-	if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
-		target_compile_definitions(${PROJECT_NAME} PRIVATE SDL_VIDEO_DRIVER_WAYLAND)
-		if (XORG_SUPPORT)
-			target_compile_definitions(${PROJECT_NAME} PRIVATE SDL_VIDEO_DRIVER_X11)
-		endif()
-	endif()
-
-	if (LIBS_SHARED_BUILD)
-		# Shared
-		target_link_libraries(${PROJECT_NAME} PUBLIC SDL2::SDL2 SDL2::SDL2main)
-	else()
-		# Static
-		target_link_libraries(${PROJECT_NAME} PUBLIC SDL2-static SDL2::SDL2main)
-	endif()
+	# build Vulkan
+	target_link_libraries(${PROJECT_NAME} PRIVATE vulkan Vulkan::Headers)
 else()
-	# Package Mananger
+	# Link Vulkan from SDK
+	message("")
+	message("  - Vulkan SDK -")
+	find_package(Vulkan REQUIRED)
+
+	set (VULKANSDK_LIBS_PATH "${Vulkan_LIBRARIES}")
+	string(REPLACE "/vulkan-1.lib" "" VULKANSDK_LIBS_PATH ${VULKANSDK_LIBS_PATH})
+	string(STRIP VULKANSDK_LIBS_PATH ${VULKANSDK_LIBS_PATH})
+
+	message(STATUS "Vulkan Libs Path : ${VULKANSDK_LIBS_PATH}")
+
 	target_link_libraries(${PROJECT_NAME} PUBLIC
-		${Vulkan_LIBRARIES}
-		Vulkan::Headers
-		${SDL2_LIBRARIES}
-		SDL2::SDL2main)
+		-lvulkan-1
+		-L${VULKANSDK_LIBS_PATH})
+
+	target_include_directories(${PROJECT_NAME} PUBLIC "${Vulkan_INCLUDE_DIRS}")
+
+	if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo" AND USE_VVL)
+		set (VULKANSDK_VVL_PATH "${Vulkan_LIBRARIES}")
+		string(REPLACE "/Lib/vulkan-1.lib" "" VULKANSDK_VVL_PATH ${VULKANSDK_VVL_PATH})
+		string(STRIP VULKANSDK_VVL_PATH ${VULKANSDK_VVL_PATH})
+		set (VULKANSDK_VVL_PATH "${VULKANSDK_VVL_PATH}/Bin")
+		message(STATUS "Validation Layer Path : ${VULKANSDK_VVL_PATH}")
+
+		target_compile_definitions(${PROJECT_NAME} PRIVATE PATATA_FIND_VVL_FROM_SDK PATATA_VVL_SDK_PATH="${VULKANSDK_VVL_PATH}")
+	endif()
 endif()
 
-target_link_libraries(${PROJECT_NAME} PUBLIC Fast_io freetype)
-target_link_libraries(${PROJECT_NAME} PRIVATE ryml::ryml)
+if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+	target_compile_definitions(${PROJECT_NAME} PRIVATE SDL_VIDEO_DRIVER_WAYLAND)
+	if (XORG_SUPPORT)
+		target_compile_definitions(${PROJECT_NAME} PRIVATE SDL_VIDEO_DRIVER_X11)
+	endif()
+endif()
+
+if (TARGET asm_offset)
+	set_target_properties(asm_offset
+		PROPERTIES
+		ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}
+		LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}
+		RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+endif()
+
+if (LIBS_SHARED_BUILD)
+	# Shared
+	target_link_libraries(${PROJECT_NAME} PUBLIC SDL2::SDL2main SDL2::SDL2)
+else()
+	# Static
+	target_link_libraries(${PROJECT_NAME} PUBLIC SDL2::SDL2main SDL2-static)
+endif()
+
+target_link_libraries(${PROJECT_NAME} PUBLIC Fast_io)
+target_link_libraries(${PROJECT_NAME} PRIVATE ryml::ryml freetype)
+target_include_directories(${PROJECT_NAME} PRIVATE ${FREETYPE_INCLUDE_DIRS} ${SDL2_INCLUDE_DIRS})
 
 if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo")
 	target_link_libraries(${PROJECT_NAME} PUBLIC Imgui)
 endif()
 
+# MSVC Folders
 if (MSVC)
 	set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER "Engine")
 

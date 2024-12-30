@@ -89,7 +89,7 @@ Patata::RaccoonRenderer::VulkanInfo (
         "] ",
 #else
         "    [",
-        std::string_view{
+        std::string_view {
             typeid (PhysicalDeviceProperties.properties.apiVersion).name () },
         "] ",
 #endif
@@ -99,21 +99,20 @@ Patata::RaccoonRenderer::VulkanInfo (
 #endif
         PATATA_TERM_BOLD, "Vulkan : ", PATATA_TERM_RESET);
 
-    std::string_view vk_version{
-      std::to_string (
-          VK_VERSION_MAJOR (PhysicalDeviceProperties.properties.apiVersion))
-      + '.'
-      + std::to_string (
-          VK_VERSION_MINOR (PhysicalDeviceProperties.properties.apiVersion))
-      + '.'
-      + std::to_string (
-          VK_VERSION_PATCH (PhysicalDeviceProperties.properties.apiVersion))
-      + '.'
-      + std::to_string (VK_API_VERSION_VARIANT (
-          PhysicalDeviceProperties.properties.apiVersion))
-    };
-
-    fast_io::io::println (fast_io::out (), vk_version, "\n");
+    fast_io::io::println (
+        fast_io::out (), std::string_view {
+            std::to_string (VK_VERSION_MAJOR (
+                PhysicalDeviceProperties.properties.apiVersion))
+            + '.'
+            + std::to_string (VK_VERSION_MINOR (
+                PhysicalDeviceProperties.properties.apiVersion))
+            + '.'
+            + std::to_string (VK_VERSION_PATCH (
+                PhysicalDeviceProperties.properties.apiVersion))
+            + '.'
+            + std::to_string (VK_API_VERSION_VARIANT (
+                PhysicalDeviceProperties.properties.apiVersion))
+        }, "\n");
   }
 
   fast_io::io::println (fast_io::out (),

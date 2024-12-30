@@ -16,4 +16,5 @@
 	branch = release-2.30.x
 [submodule "externals/freetype"]
 	path = externals/freetype
-	url = https://gitlab.freedesktop.org/freetype/freetype.git
+  url = https://gitlab.freedesktop.org/freetype/freetype.git
+  branch = VER-2-13-3

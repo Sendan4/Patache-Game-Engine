@@ -23,14 +23,14 @@ CHECK_INCLUDE_FILE("math.h" HAVE_MATH_H)
 if (LIBS_SHARED_BUILD AND NOT MSVC)
 	message(STATUS "Library Type : Shared")
 	add_library(${PROJECT_NAME} SHARED)
-else ()
-	message(STATUS "Library Type : Static")
-	add_library(${PROJECT_NAME} STATIC)
 
     if (SHARED_BUILD AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 		target_compile_options(${PROJECT_NAME} PRIVATE "-fPIC")
 		message(STATUS "Build With Position Independent Code")
 	endif()
+else ()
+	message(STATUS "Library Type : Static")
+	add_library(${PROJECT_NAME} STATIC)
 endif()
 
 if (NOT MSVC OR MSYS AND CMAKE_SYSTEM_NAME STREQUAL "Windows")
@@ -42,9 +42,50 @@ target_include_directories(${PROJECT_NAME} PUBLIC ".")
 target_include_directories(${PROJECT_NAME} PUBLIC "backends/")
 target_include_directories(${PROJECT_NAME} PUBLIC "misc/freetype")
 
-if(USE_EXTERNAL_LIBS AND HAVE_VULKAN_H)
-	target_include_directories(${PROJECT_NAME} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../Vulkan-Headers/include/")
+# Link Vulkan from SDK
+# Link Libraries
+if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" OR (CMAKE_SYSTEM_NAME STREQUAL "Linux" AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU"))
+	# Using VVL
+	if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo" AND USE_VVL)
+		target_compile_definitions(${PROJECT_NAME} PRIVATE PATATA_FIND_VVL_IN_THE_CURRENT_PATH)
+	endif()
+
+	# build Vulkan
+	target_link_libraries(${PROJECT_NAME} PRIVATE vulkan Vulkan::Headers)
+else()
+	find_package(Vulkan REQUIRED)
+
+	set (VULKANSDK_LIBS_PATH "${Vulkan_LIBRARIES}")
+	string(REPLACE "vulkan-1.lib" "" VULKANSDK_LIBS_PATH ${VULKANSDK_LIBS_PATH})
+	string(STRIP VULKANSDK_LIBS_PATH ${VULKANSDK_LIBS_PATH})
+
+    target_link_libraries(${PROJECT_NAME} PRIVATE
+		-lvulkan-1
+		-L${VULKANSDK_LIBS_PATH})
+
+    target_include_directories(${PROJECT_NAME} PRIVATE "${Vulkan_INCLUDE_DIRS}")
 endif()
+
+if (TARGET asm_offset)
+	set_target_properties(asm_offset
+		PROPERTIES
+		ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}
+		LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}
+		RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+endif()
+
+if (LIBS_SHARED_BUILD)
+    target_link_libraries(${PROJECT_NAME} PRIVATE SDL2::SDL2)
+else()
+    target_link_libraries(${PROJECT_NAME} PRIVATE SDL2-static)
+endif()
+
+target_link_libraries(${PROJECT_NAME} PRIVATE freetype)
+target_include_directories(${PROJECT_NAME} PRIVATE ${FREETYPE_INCLUDE_DIRS} ${SDL2_INCLUDE_DIRS})
+
+set_target_properties(${PROJECT_NAME}
+	PROPERTIES
+	VERSION "${Imgui_VERSION}")
 
 target_sources(${PROJECT_NAME} PRIVATE
 	"imgui.cpp"
@@ -55,54 +96,3 @@ target_sources(${PROJECT_NAME} PRIVATE
 	"backends/imgui_impl_sdl2.cpp"
 	"backends/imgui_impl_vulkan.cpp"
 	"misc/freetype/imgui_freetype.cpp")
-
-if (USE_EXTERNAL_LIBS)
-	# Linux or MSVC
-	if (MSVC OR LINUX OR CMAKE_SYSTEM_NAME STREQUAL "Linux")
-		target_link_libraries(${PROJECT_NAME} PUBLIC vulkan Vulkan::Headers)
-
-		set_target_properties(asm_offset
-			PROPERTIES
-			ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}
-			LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}
-			RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
-	else()
-		# mingw
-		message("")
-		message("  - Vulkan SDK -")
-		find_package(Vulkan REQUIRED)
-
-		set (VULKANSDK_LIBS_PATH "${Vulkan_LIBRARIES}")
-		string(REPLACE "vulkan-1.lib" "" VULKANSDK_LIBS_PATH ${VULKANSDK_LIBS_PATH})
-		string(STRIP VULKANSDK_LIBS_PATH ${VULKANSDK_LIBS_PATH})
-		message(STATUS "Vulkan Libs Path : ${VULKANSDK_LIBS_PATH}")
-
-		target_link_libraries(${PROJECT_NAME} PUBLIC
-			-lvulkan-1
-			-L${VULKANSDK_LIBS_PATH})
-
-		if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo")
-			target_compile_definitions(${PROJECT_NAME} PUBLIC VVL_FROM_SDK=1)
-		endif()
-		target_include_directories(${PROJECT_NAME} PUBLIC "${Vulkan_INCLUDE_DIRS}")
-	endif()
-
-	if (LIBS_SHARED_BUILD)
-		target_link_libraries(${PROJECT_NAME} PUBLIC SDL2::SDL2)
-	else()
-		target_link_libraries(${PROJECT_NAME} PUBLIC SDL2-static)
-	endif()
-
-	target_link_libraries(${PROJECT_NAME} PUBLIC freetype)
-else()
-	# Package Mananger
-	target_link_libraries(${PROJECT_NAME} PRIVATE
-		${Vulkan_LIBRARIES}
-		Vulkan::Headers
-		${SDL2_LIBRARIES}
-		freetype)
-endif()
-
-set_target_properties(${PROJECT_NAME}
-	PROPERTIES
-	VERSION "${Imgui_VERSION}")

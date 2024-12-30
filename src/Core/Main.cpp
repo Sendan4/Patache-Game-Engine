@@ -37,10 +37,8 @@ Patata::Engine::EngineImpl::EngineImpl (const char * WindowTitle)
   if (!LoadConfig (Configuration))
     return;
 
-  /*
-  Async change enviroment variables
-  Linux specific variables
-  */
+  // Async change enviroment variables
+  // Linux specific variables
 #if defined(__linux__)
   std::future<int> setenv_PreferWayland_Async;
 
@@ -98,11 +96,9 @@ Patata::Engine::EngineImpl::EngineImpl (const char * WindowTitle)
 #if defined(PATATA_FIND_VVL_IN_THE_CURRENT_PATH)                              \
     || defined(PATATA_FIND_VVL_FROM_SDK)
   setenv_VK_LAYER_PATH_Async.wait ();
-#if defined(_WIN64)                                                           \
-    && (defined(PATATA_FIND_VVL_IN_THE_CURRENT_PATH)                          \
-        || defined(PATATA_FIND_VVL_FROM_SDK))
+#if defined(_WIN64)
   if (setenv_VK_LAYER_PATH_Async.get () == 0)
-#elif !defined(_WIN64) && defined(PATATA_FIND_VVL_IN_THE_CURRENT_PATH)
+#else
   if (setenv_VK_LAYER_PATH_Async.get () != 0)
 #endif
     std::future<void> Err

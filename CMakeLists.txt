@@ -1,7 +1,7 @@
-cmake_minimum_required(VERSION 3.18)
-
 message("")
 message("  - Patata Engine -")
+
+cmake_minimum_required(VERSION 3.18)
 
 option(SHARED_BUILD "Build static or shared library" OFF)
 option(LIBS_SHARED_BUILD "Build and link Shared dependencies" OFF)
@@ -9,7 +9,8 @@ option(USE_EXTERNAL_LIBS "Use libraries from external folder instead of system l
 option(USE_GIT "Grab git information" ON)
 option(USE_CUSTOM_ICON "..." OFF)
 option(ENABLE_ICON "use icon in runtime" ON)
-option(GAME_NAME "specify the name of the game" "")
+# GAME_NAME is a string
+option(GAME_NAME "specify the name of the game" OFF)
 option(USE_BIN_DIR "use the bin directory as output" ON)
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
@@ -38,7 +39,7 @@ if (NOT SHARED_BUILD)
 	set (PATATA_STATIC_BUILD ON CACHE INTERNAL "...")
 endif()
 
-set (CMAKE_EXPORT_COMPILE_COMMANDS 1)
+set (CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 project("PatataEngine" LANGUAGES CXX VERSION 1 HOMEPAGE_URL "https://gitlab.com/Sendan/patata-engine.git")
 
@@ -49,6 +50,7 @@ set (PATATA_ENGINE_VERSION "1.0.0")
 
 include(CheckCXXCompilerFlag)
 include(CheckIncludeFileCXX)
+include(CheckTypeSize)
 
 if (WIN32 OR CMAKE_SYSTEM_NAME STREQUAL "Windows")
 	enable_language(C)
@@ -108,20 +110,29 @@ int main() {
     std::string Test;
     return 0;
 }
-" HAVE_STD::STRING)
-if (NOT HAVE_STD::STRING)
+" std_string)
+if (NOT std_string)
 	message(FATAL_ERROR "missing std::string type")
 endif()
 
+
+# std::string_view
+if (MSVC)
+	string(APPEND CMAKE_REQUIRED_FLAGS "/std:c++20")
+endif()
 check_cxx_source_compiles("
 #include <string>
+
 int main() {
     std::string_view Test;
     return 0;
 }
-" HAVE_STD::STRING_VIEW)
-if (NOT HAVE_STD::STRING_VIEW)
+" std_string_view)
+if (NOT std_string_view)
 	message(FATAL_ERROR "missing std::string_view type")
+endif()
+if (MSVC)
+	set (CMAKE_REQUIRED_FLAGS "")
 endif()
 
 CHECK_INCLUDE_FILE_CXX("cstdlib" HAVE_CSTDLIB LANGUAGE CXX)
@@ -133,17 +144,17 @@ endif()
 if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
     check_cxx_source_compiles(
         "#include <cstdlib>\nint main(void) { setenv(\"MY_VAR\", \"VALUE\", 1); return 0; }"
-        HAVE_SETENV)
+        setenv)
 
-    if (NOT HAVE_SETENV)
+    if (NOT setenv)
         message(FATAL_ERROR "missing setenv function")
     endif()
 
     check_cxx_source_compiles(
         "#include <cstdlib>\nint main(void) { getenv(\"HOME\"); return 0; }"
-        HAVE_GETENV)
+        getenv)
 
-    if (NOT HAVE_GETENV)
+    if (NOT getenv)
         message(FATAL_ERROR "missing getenv function")
     endif()
 endif()
@@ -159,50 +170,27 @@ if (NOT HAVE_CSTDINT)
 endif()
 
 # Check Types
-include(CheckCXXSourceCompiles)
-check_cxx_source_compiles("
-#include <cstdint>
-int main() {
-    uint8_t test = 0;
-    return 0;
-}
-" HAVE_UINT8_T)
-if (NOT HAVE_UINT8_T)
+check_type_size(uint8_t UINT8_T LANGUAGE CXX)
+if (NOT ${HAVE_UINT8_T})
 	message(FATAL_ERROR "missing uint8_t type")
 endif()
 
-check_cxx_source_compiles("
-#include <cstdint>
-int main() {
-    uint16_t test = 0;
-    return 0;
-}
-" HAVE_UINT16_T)
-if (NOT HAVE_UINT16_T)
+check_type_size(uint16_t UINT16_T LANGUAGE CXX)
+if (NOT ${HAVE_UINT16_T})
 	message(FATAL_ERROR "missing uint16_t type")
 endif()
 
-check_cxx_source_compiles("
-#include <cstdint>
-int main() {
-    uint32_t test = 0;
-    return 0;
-}
-" HAVE_UINT32_T)
-if (NOT HAVE_UINT32_T)
+check_type_size(uint32_t UINT32_T LANGUAGE CXX)
+if (NOT ${HAVE_UINT32_T})
 	message(FATAL_ERROR "missing uint32_t type")
 endif()
 
-check_cxx_source_compiles("
-#include <cstdint>
-int main() {
-    uint64_t test = 0;
-    return 0;
-}
-" HAVE_UINT64_T)
-if (NOT HAVE_UINT64_T)
+check_type_size(uint64_t UINT64_T LANGUAGE CXX)
+if (NOT ${HAVE_UINT64_T})
 	message(FATAL_ERROR "missing uint64_t type")
 endif()
+
+include(CheckCXXSourceCompiles)
 
 check_cxx_source_compiles("
 #include <cstdint>
@@ -212,9 +200,9 @@ int main() {
     #endif
     return 0;
 }
-" HAVE_MACRO_UINT64_MAX)
-if (NOT HAVE_MACRO_UINT64_MAX)
-	message(FATAL_ERROR "missing UINT64_T macro")
+" UINT64_MAX)
+if (NOT UINT64_MAX)
+	message(FATAL_ERROR "missing UINT64_MAX macro")
 endif()
 
 # Check Headers
@@ -222,7 +210,6 @@ CHECK_INCLUDE_FILE_CXX("future" HAVE_FUTURE LANGUAGE CXX)
 if (NOT HAVE_FUTURE)
 	message(FATAL_ERROR "missing future header")
 endif()
-
 
 # Check std::async
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
@@ -239,8 +226,8 @@ int main(void) {
     return 0;
 }
 void test(void) { uint8_t c = 0; c++;};
-" HAVE_STD_ASYNC)
-if (NOT HAVE_STD_ASYNC)
+" std_async)
+if (NOT std_async)
 	message(FATAL_ERROR "missing std::async function")
 endif()
 
@@ -361,62 +348,226 @@ else()
 endif()
 
 if (NOT USE_EXTERNAL_LIBS)
-	# Package Mananger
+  # === Package Mananger ===
+	message("")
+	message("  - fast_io -")
 	add_subdirectory(externals/fast_io)
 
 	message("")
 	message("  - RapidYaml -")
 	find_package(ryml)
-	if (NOT ${ryml_FOUND})
+
+  if (NOT ${ryml_FOUND})
 		include(FetchContent)
 
-		message("")
-		message("  - RapidYaml -")
-        FetchContent_Declare(
-           RapidYaml
-           GIT_REPOSITORY https://github.com/biojppm/rapidyaml.git
-           GIT_TAG "v0.7.2"
-           BUILD_IN_SOURCE FALSE
-           GIT_PROGRESS TRUE
-           LOG_DOWNLOAD TRUE
-           LOG_UPDATE TRUE
-           LOG_CONFIGURE TRUE
-           LOG_BUILD TRUE
-           LOG_INSTALL TRUE
-           GIT_SUBMODULES_RECURSE TRUE
-           CMAKE_ARGS
-               "-DRYML_DEV=OFF
-               -DRYML_DEFAULT_CALLBACK_USES_EXCEPTIONS=OFF
-               -DRYML_INSTALL=OFF"
-        )
+    FetchContent_Declare(
+      RapidYaml
+      GIT_REPOSITORY https://github.com/biojppm/rapidyaml.git
+      GIT_TAG "v0.7.2"
+      BUILD_IN_SOURCE FALSE
+      GIT_PROGRESS TRUE
+      LOG_DOWNLOAD TRUE
+      LOG_UPDATE TRUE
+      LOG_CONFIGURE TRUE
+      LOG_BUILD TRUE
+      LOG_INSTALL TRUE
+      GIT_SUBMODULES_RECURSE TRUE
+    )
+    
+    set (RYML_DEV OFF CACHE INTERNAL "..." FORCE)
+    set (RYML_DEFAULT_CALLBACK_USES_EXCEPTIONS OFF CACHE INTERNAL "..." FORCE)
+    set (RYML_INSTALL OFF CACHE INTERNAL "..." FORCE)
+	  FetchContent_MakeAvailable(RapidYaml)
+  endif()
 
-		FetchContent_MakeAvailable(RapidYaml)
-		message("")
-	endif()
+	message("")
+	message("  - Vulkan -")
+	find_package(Vulkan)
 
-	find_package(Vulkan REQUIRED)
 	if (NOT ${Vulkan_VERSION} VERSION_GREATER_EQUAL 1.3.296)
 		message(FATAL_ERROR "Vulkan >= 1.3.296")
 	endif()
 
-	find_package(SDL2 REQUIRED)
+  if (NOT ${Vulkan_FOUND})
+  	set (BUILD_TESTS OFF CACHE INTERNAL "..." FORCE)
+    set (UPDATE_DEPS ON CACHE INTERNAL "..." FORCE)
+    set (VULKAN_HEADERS_ENABLE_MODULE OFF CACHE INTERNAL "..." FORCE)
+    if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+	    # Linux Wayland / Xorg
+    	# Wayland Enable by default
+    	set (BUILD_WSI_WAYLAND_SUPPORT ON CACHE INTERNAL "..." FORCE)
+
+    	# Xorg Disable by default
+    	if (NOT XORG_SUPPORT)
+		    set (BUILD_WSI_XCB_SUPPORT OFF CACHE BOOL "..." FORCE)
+    		set (BUILD_WSI_XLIB_SUPPORT OFF CACHE BOOL "..." FORCE)
+    	else()
+		    set (BUILD_WSI_XLIB_SUPPORT ON CACHE BOOL "..." FORCE)
+    		set (BUILD_WSI_XCB_SUPPORT ON CACHE BOOL "..." FORCE)
+    	endif()
+    endif()
+
+
+		include(FetchContent)
+
+    FetchContent_Declare(
+      Vulkan-Headers
+      GIT_REPOSITORY https://github.com/KhronosGroup/Vulkan-Headers.git
+      GIT_TAG "vulkan-sdk-1.3.296"
+      BUILD_IN_SOURCE FALSE
+      GIT_PROGRESS TRUE
+      LOG_DOWNLOAD TRUE
+      LOG_UPDATE TRUE
+      LOG_CONFIGURE TRUE
+      LOG_BUILD TRUE
+      LOG_INSTALL TRUE
+      GIT_SUBMODULES_RECURSE TRUE
+    )
+
+    FetchContent_Declare(
+      Vulkan-Loader
+      GIT_REPOSITORY https://github.com/KhronosGroup/Vulkan-Loader.git
+      GIT_TAG "vulkan-sdk-1.3.296"
+      BUILD_IN_SOURCE FALSE
+      GIT_PROGRESS TRUE
+      LOG_DOWNLOAD TRUE
+      LOG_UPDATE TRUE
+      LOG_CONFIGURE TRUE
+      LOG_BUILD TRUE
+      LOG_INSTALL TRUE
+      GIT_SUBMODULES_RECURSE TRUE
+    )
+
+	  message("")
+    message("  - Vulkan-Headers -")
+    FetchContent_MakeAvailable(Vulkan-Headers)
+	  message("")
+    message("  - Vulkan-Loader -")
+    FetchContent_MakeAvailable(Vulkan-Loader)
+  endif()
+
+	message("")
+  message("  - SDL -")
+  find_package(SDL2)
+
+  if (NOT ${SDL2_FOUND} AND NOT CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    include(FetchContent)
+
+    FetchContent_Declare(
+      SDL2
+      GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
+      GIT_TAG "release-2.30.8"
+      BUILD_IN_SOURCE FALSE
+      GIT_PROGRESS TRUE
+      LOG_DOWNLOAD TRUE
+      LOG_UPDATE TRUE
+      LOG_CONFIGURE TRUE
+      LOG_BUILD TRUE
+      LOG_INSTALL TRUE
+      GIT_SUBMODULES_RECURSE TRUE
+    )
+
+    if (NOT LIBS_SHARED_BUILD)
+	    set(SDL_SHARED OFF CACHE INTERNAL "..." FORCE)
+	    set(SDL_STATIC ON CACHE INTERNAL "..." FORCE)
+	    if (SHARED_BUILD)
+		    set(SDL_STATIC_PIC ON CACHE INTERNAL "..." FORCE)
+	    endif()
+    else ()
+	    set(SDL_SHARED ON CACHE INTERNAL "..." FORCE)
+	    set(SDL_STATIC OFF CACHE INTERNAL "..." FORCE)
+    endif ()
+
+    set(SDL_UNUSED_SUBSYSTEMS
+      File
+      Locale
+	    Power
+	    Render
+	    Sensor
+	    Timers
+	    Atomic
+	    Audio)
+    foreach(_SUB ${SDL_UNUSED_SUBSYSTEMS})
+	    string(TOUPPER ${_SUB} _OPT)
+	    set(SDL_${_OPT} OFF CACHE INTERNAL "..." FORCE)
+    endforeach()
+
+    set (SDL_TEST OFF CACHE INTERNAL "..." FORCE)
+    set (SDL_DIRECTX OFF CACHE INTERNAL "..." FORCE)
+    set (SDL_RENDER_D3D OFF CACHE INTERNAL "..." FORCE)
+    set (SDL_OPENGL OFF CACHE INTERNAL "..." FORCE)
+    set (SDL_OPENGLES OFF CACHE INTERNAL "..." FORCE)
+    set (SDL_RENDER OFF CACHE INTERNAL "..." FORCE)
+    set (SDL_SNDIO OFF CACHE INTERNAL "..." FORCE)
+    set (SDL_SNDIO_SHARED OFF CACHE INTERNAL "..." FORCE)
+    set (SDL_PULSEAUDIO OFF CACHE INTERNAL "..." FORCE)
+    set (SDL_PULSEAUDIO_SHARED OFF CACHE INTERNAL "..." FORCE)
+    set (SDL_PULSEAUDIO_SHARED OFF CACHE INTERNAL "..." FORCE)
+    set (SDL_PIPEWIRE OFF CACHE INTERNAL "..." FORCE)
+    set (SDL_PIPEWIRE_SHARED OFF CACHE INTERNAL "..." FORCE)
+    set (SDL_WASAPI OFF CACHE INTERNAL "..." FORCE)
+    set (SDL_LIBSAMPLERATE OFF CACHE INTERNAL "..." FORCE)
+    set (SDL_LIBSAMPLERATE_SHARED OFF CACHE INTERNAL "..." FORCE)
+
+    if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+	    if (NOT XORG_SUPPORT)
+		    set (SDL_X11 OFF CACHE INTERNAL "..." FORCE)
+		    set (SDL_X11_SHARED OFF CACHE INTERNAL "..." FORCE)
+	    endif ()
+    endif ()
+
+    FetchContent_MakeAvailable(SDL2)
+  endif()
+
+  message("")
+  message(" - FreeType -")
+  find_package(Freetype)
+
+  if (NOT ${Freetype_FOUND} AND NOT CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    include(FetchContent)
+
+    FetchContent_Declare(
+      Freetype
+      GIT_REPOSITORY https://gitlab.freedesktop.org/freetype/freetype.git
+      GIT_TAG "VER-2-13-3"
+      BUILD_IN_SOURCE FALSE
+      GIT_PROGRESS TRUE
+      LOG_DOWNLOAD TRUE
+      LOG_UPDATE TRUE
+      LOG_CONFIGURE TRUE
+      LOG_BUILD TRUE
+      LOG_INSTALL TRUE
+      GIT_SUBMODULES_RECURSE TRUE
+      CMAKE_ARGS
+        "-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
+        -DRUNTIME_OUTPUT_DIRECTORY=${CMAKE_LIBRARY_OUTPUT_DIRECTORY}"
+    )
+
+    set (FT_DISABLE_ZLIB ON CACHE INTERNAL "..." FORCE)
+    set (FT_DISABLE_BZIP2 ON CACHE INTERNAL "..." FORCE)
+    set (FT_DISABLE_PNG ON CACHE INTERNAL "..." FORCE)
+    set (FT_DISABLE_HARFBUZZ ON CACHE INTERNAL "..." FORCE)
+    set (FT_DISABLE_BROTLI ON CACHE INTERNAL "..." FORCE)
+
+    FetchContent_MakeAvailable(Freetype)
+  endif()
+
 	if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo")
 	   add_subdirectory(externals/imgui)
 	endif()
 else()
-	# using submodules
+	# === using submodules ===
 	add_subdirectory(externals)
 endif()
+
+# === Sources ===
+add_subdirectory(src)
 
 add_subdirectory(data)
 add_subdirectory(data/assets)
 
-# Library
-include_directories(include/)
-add_subdirectory(src)
-
 target_compile_definitions(${PROJECT_NAME} PUBLIC SDL_MAIN_HANDLED)
-if (CMAKE_SYSTEM_NAME STREQUAL "Windows" AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+if (CMAKE_SYSTEM_NAME STREQUAL "Windows" AND (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang"))
 	target_compile_definitions(${PROJECT_NAME} PUBLIC main=SDL_main)
 endif()
 
@@ -444,7 +595,8 @@ if (SHARED_BUILD)
 else()
 	message(STATUS "Library Type : Static")
 endif()
-if (NOT ${GAME_NAME} STREQUAL "OFF")
+# if GAME_NAME is not empty
+if (GAME_NAME)
 	message(STATUS "Game Name : ${GAME_NAME}")
 endif()
 if (USE_GIT AND GIT)
