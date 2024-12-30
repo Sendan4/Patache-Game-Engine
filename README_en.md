@@ -1,4 +1,4 @@
-| [Español](../README.md) | English |
+| [Español](README.md) | English |
 | :--: | :--: |
 
 <p align = "center"><img draggable = false src = "data/assets/icon/patata_icon.svg?ref_type=heads&inline=false" width=64></p>
