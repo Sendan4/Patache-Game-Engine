@@ -144,17 +144,17 @@ endif()
 if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
     check_cxx_source_compiles(
         "#include <cstdlib>\nint main(void) { setenv(\"MY_VAR\", \"VALUE\", 1); return 0; }"
-        setenv)
+        HAVE_SETENV)
 
-    if (NOT setenv)
+    if (NOT HAVE_SETENV)
         message(FATAL_ERROR "missing setenv function")
     endif()
 
     check_cxx_source_compiles(
         "#include <cstdlib>\nint main(void) { getenv(\"HOME\"); return 0; }"
-        getenv)
+        HAVE_GETENV)
 
-    if (NOT getenv)
+      if (NOT HAVE_GETENV)
         message(FATAL_ERROR "missing getenv function")
     endif()
 endif()

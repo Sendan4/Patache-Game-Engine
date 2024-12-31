@@ -35,3 +35,7 @@
 #endif
 #endif
 #endif
+
+#if !defined(PATATA_GAME_NAME)
+#define PATATA_GAME_NAME false
+#endif

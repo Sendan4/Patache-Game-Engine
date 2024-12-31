@@ -7,21 +7,20 @@ Patata::Engine::EngineImpl::CreateGameWindow (const char * Title)
 
   if (Title == nullptr)
     {
-#if defined(PATATA_GAME_NAME)
-      PatataWindowTitle = PATATA_GAME_NAME;
-#else
-      PatataWindowTitle = "Patata Engine";
-#endif
-#if defined(DEBUG)
-      PatataWindowTitle += " (Debug / Development)";
-#endif
+      if constexpr (PATATA_GAME_NAME)
+        PatataWindowTitle = PATATA_GAME_NAME;
+      else
+        PatataWindowTitle = "Patata Engine";
+
+      if constexpr (DEBUG)
+        PatataWindowTitle += " (Debug / Development)";
     }
   else
     {
       PatataWindowTitle = Title;
-#if defined(DEBUG)
-      PatataWindowTitle += " (Debug / Development)";
-#endif
+
+      if constexpr (DEBUG)
+        PatataWindowTitle += " (Debug / Development)";
     }
 
   uint32_t        w = 0, h = 0;
@@ -59,14 +58,12 @@ Patata::Engine::EngineImpl::CreateGameWindow (const char * Title)
 
   SDL_SetWindowMinimumSize (GameWindow, 640, 360);
 
-#if defined(DEBUG)
   std::future<void> Log
       = std::async (std::launch::async, Patata::Log::WindowLog, GameWindow,
-                    &PatataEngineInfo);
-#else
-  std::future<void> Log
-      = std::async (std::launch::async, Patata::Log::WindowLog, GameWindow);
+#if defined(DEBUG)
+                    &PatataEngineInfo
 #endif
+      );
 }
 
 #if defined(USE_ICON)
@@ -75,36 +72,20 @@ Patata::Engine::EngineImpl::CreateGameWindow (const char * Title)
 void
 Patata::Engine::EngineImpl::SetWindowIcon (void)
 {
-#if defined(_WIN64) // Only Windows
   SDL_Surface * Icon = SDL_LoadBMP (PATATA_GAME_ICON_FILE);
 
   if (Icon == nullptr)
-    std::future<void> Err
-        = std::async (std::launch::async, Patata::Log::ErrorMessage,
-                      "Icon cannot be loaded");
+    {
+      std::future<void> Err
+          = std::async (std::launch::async, Patata::Log::ErrorMessage,
+                        "Icon cannot be loaded");
+
+      return;
+    }
   else
     SDL_SetWindowIcon (GameWindow, Icon);
 
   SDL_FreeSurface (Icon);
-#else // Linux
-  SDL_SysWMinfo WindowInfo;
-  SDL_VERSION (&WindowInfo.version);
-  SDL_GetWindowWMInfo (GameWindow, &WindowInfo);
-
-  if (WindowInfo.subsystem != SDL_SYSWM_WAYLAND)
-    {
-      SDL_Surface * Icon = SDL_LoadBMP (PATATA_GAME_ICON_FILE);
-
-      if (Icon == nullptr)
-        std::future<void> Err
-            = std::async (std::launch::async, Patata::Log::ErrorMessage,
-                          "Icon cannot be loaded");
-      else
-        SDL_SetWindowIcon (GameWindow, Icon);
-
-      fast_io::io::perrln (std::string_view{ SDL_GetError () });
-      SDL_FreeSurface (Icon);
-    }
-#endif
+  Icon = nullptr;
 }
 #endif
