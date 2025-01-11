@@ -6,7 +6,7 @@ Patata::RaccoonRenderer::BeginRender (SDL_Event & Event)
   vk::Result Result
       = Vulkan.Device.waitForFences (1, &Vulkan.Fence, true, UINT64_MAX);
 
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
   if (Result != vk::Result::eSuccess)
     {
       std::future<void> ReturnVulkanCheck
@@ -17,7 +17,7 @@ Patata::RaccoonRenderer::BeginRender (SDL_Event & Event)
 
   Result = Vulkan.Device.resetFences (1, &Vulkan.Fence);
 
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
   if (Result != vk::Result::eSuccess)
     {
       std::future<void> ReturnVulkanCheck
@@ -38,7 +38,7 @@ Patata::RaccoonRenderer::BeginRender (SDL_Event & Event)
   Result = Vulkan.Device.acquireNextImage2KHR (&NextImageInfo,
                                                &Vulkan.ImageIndex);
 
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
   if (Result != vk::Result::eSuccess)
     {
       std::future<void> ReturnVulkanCheck
@@ -64,7 +64,7 @@ Patata::RaccoonRenderer::BeginRender (SDL_Event & Event)
 
   Result = Vulkan.cmd.begin (&cmdBufferBeginInfo);
 
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
   if (Result != vk::Result::eSuccess)
     {
       std::future<void> ReturnVulkanCheck
@@ -102,7 +102,7 @@ Patata::RaccoonRenderer::BeginRender (SDL_Event & Event)
   }
 
 // Imgui New Frame
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
   ImGui_ImplVulkan_NewFrame ();
   ImGui_ImplSDL2_NewFrame ();
   ImGui::NewFrame ();
@@ -113,16 +113,16 @@ Patata::RaccoonRenderer::BeginRender (SDL_Event & Event)
   return true;
 }
 
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
 #include "DrawDebugUI.hpp"
 #endif
 
 void
 Patata::RaccoonRenderer::EndRender (SDL_Event & Event)
 {
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
   // Imgui New Frame
-  ImGui::ShowDemoWindow ();
+  // ImGui::ShowDemoWindow ();
   Patata::DrawDebugUI (pRaccoonInfo->pPatataEngineInfo,
                        pRaccoonInfo->pConfiguration,
                        Vulkan.SwapChainImageCount, Vulkan.SwapChainExtent);
@@ -139,7 +139,7 @@ Patata::RaccoonRenderer::EndRender (SDL_Event & Event)
   // End Command Buffer
   vk::Result Result = Vulkan.cmd.end ();
 
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
   if (Result != vk::Result::eSuccess)
     {
       std::future<void> ReturnVulkanCheck
@@ -150,7 +150,7 @@ Patata::RaccoonRenderer::EndRender (SDL_Event & Event)
 
   Result = Vulkan.Device.waitForFences (1, &Vulkan.Fence, true, UINT64_MAX);
 
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
   if (Result != vk::Result::eSuccess)
     {
       std::future<void> ReturnVulkanCheck
@@ -161,7 +161,7 @@ Patata::RaccoonRenderer::EndRender (SDL_Event & Event)
 
   Result = Vulkan.Device.resetFences (1, &Vulkan.Fence);
 
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
   if (Result != vk::Result::eSuccess)
     {
       std::future<void> ReturnVulkanCheck
@@ -187,7 +187,7 @@ Patata::RaccoonRenderer::EndRender (SDL_Event & Event)
     Result = Vulkan.Queue.submit (1, &SubmitInfo, Vulkan.Fence);
   }
 
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
   if (Result != vk::Result::eSuccess)
     {
       std::future<void> ReturnVulkanCheck
@@ -207,7 +207,7 @@ Patata::RaccoonRenderer::EndRender (SDL_Event & Event)
 
   Result = Vulkan.Queue.presentKHR (&PresentInfo);
 
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
   if (Result != vk::Result::eSuccess)
     {
       std::future<void> ReturnVulkanCheck = std::async (

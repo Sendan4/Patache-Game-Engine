@@ -11,7 +11,7 @@ Patata::Log::VulkanList (const char * List[], const uint32_t & Size,
 
   fast_io::io::println (
       fast_io::out (),
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
       PATATA_TERM_COLOR_GRAY0,
 #if defined(__GNUC__) || defined(__MINGW64__)
       "[",
@@ -50,7 +50,7 @@ Patata::Log::VulkanCheck (const std::string_view & Message,
     {
       fast_io::io::println (
           fast_io::out (),
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
           PATATA_TERM_COLOR_GRAY0,
 #if defined(__GNUC__) || defined(__MINGW64__)
           "[",
@@ -68,7 +68,7 @@ Patata::Log::VulkanCheck (const std::string_view & Message,
     {
       fast_io::io::println (
           fast_io::out (),
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
           PATATA_TERM_COLOR_GRAY0,
 #if defined(__GNUC__) || defined(__MINGW64__)
           "[",

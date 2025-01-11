@@ -9,7 +9,7 @@ endif()
 add_dependencies(${PROJECT_NAME} Patata-Data Patata-Assets)
 
 target_sources (${PROJECT_NAME} PRIVATE
-	"Core/Main.cpp"
+  "Core/PatataEngine.cpp"
 	"Core/RenderWrapper.cpp"
 	"Core/PrivateToPublicWrapper.cpp"
 	"Core/Configuration.cpp"
@@ -108,15 +108,17 @@ if (XORG_SUPPORT)
 endif()
 
 if (${CMAKE_BUILD_TYPE} STREQUAL "Release")
-	target_compile_definitions(${PROJECT_NAME} PRIVATE PATATA_BUILD_TYPE="Release")
+  target_compile_definitions(${PROJECT_NAME} PRIVATE PATATA_BUILD_TYPE="Release")
+  target_compile_definitions(${PROJECT_NAME} PUBLIC PATATA_DEBUG=0)
 elseif(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
 	target_compile_definitions(${PROJECT_NAME} PRIVATE PATATA_BUILD_TYPE="Debug")
-	target_compile_definitions(${PROJECT_NAME} PUBLIC DEBUG=1)
+  target_compile_definitions(${PROJECT_NAME} PUBLIC PATATA_DEBUG=1)
 elseif(${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo")
 	target_compile_definitions(${PROJECT_NAME} PRIVATE PATATA_BUILD_TYPE="Debug Optimized")
-	target_compile_definitions(${PROJECT_NAME} PUBLIC DEBUG=1)
+  target_compile_definitions(${PROJECT_NAME} PUBLIC PATATA_DEBUG=1)
 elseif(${CMAKE_BUILD_TYPE} STREQUAL "MinSizeRel")
 	target_compile_definitions(${PROJECT_NAME} PRIVATE PATATA_BUILD_TYPE="Minimal Size Release")
+  target_compile_definitions(${PROJECT_NAME} PUBLIC PATATA_DEBUG=0)
 endif()
 
 if (NOT "${CMAKE_GENERATOR_VERSION}" STREQUAL "")
@@ -172,6 +174,8 @@ endif()
 
 if (GAME_NAME)
 	target_compile_definitions(${PROJECT_NAME} PUBLIC PATATA_GAME_NAME="${GAME_NAME}")
+else()
+	target_compile_definitions(${PROJECT_NAME} PUBLIC PATATA_GAME_NAME=0)
 endif()
 
 if (DEFINED GAME_VERSION_MAYOR AND DEFINED GAME_VERSION_MINOR AND GAME_VERSION_PATCH)

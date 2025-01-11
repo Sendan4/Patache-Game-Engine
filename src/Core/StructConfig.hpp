@@ -9,8 +9,7 @@ struct Config
 
 // Specific Linux
 #if defined(__linux__)
-  bool PreferWayland  = true;
-  bool EnableMangoHud = false;
+  bool PreferWayland = true;
 #endif
 
   // Raccoon Renderer

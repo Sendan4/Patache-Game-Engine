@@ -218,13 +218,13 @@ endif
 
 # Build Type macro
 if (get_option('buildtype') == 'release')
-  add_project_arguments('-DPATATA_BUILD_TYPE="Release"', language : 'cpp')
+  add_project_arguments('-DPATATA_BUILD_TYPE="Release"', '-DPATATA_DEBUG=0', language : 'cpp')
 elif (get_option('buildtype') == 'debug')
-  add_project_arguments('-DPATATA_BUILD_TYPE="Debug"', '-DDEBUG=1', language : 'cpp')
+  add_project_arguments('-DPATATA_BUILD_TYPE="Debug"', '-DPATATA_DEBUG=1', language : 'cpp')
 elif (get_option('buildtype') == 'debugoptimized')
-  add_project_arguments('-DPATATA_BUILD_TYPE="Debug Optimized"', '-DDEBUG=1', language : 'cpp')
+  add_project_arguments('-DPATATA_BUILD_TYPE="Debug Optimized"', '-DPATATA_DEBUG=1', language : 'cpp')
 elif (get_option('buildtype') == 'minsize')
-  add_project_arguments('-DPATATA_BUILD_TYPE="Minimal Size Release"', language : 'cpp')
+  add_project_arguments('-DPATATA_BUILD_TYPE="Minimal Size Release"', '-DPATATA_DEBUG=0', language : 'cpp')
 endif
 
 sdl2_dep = dependency('sdl2',
@@ -340,6 +340,8 @@ add_project_arguments(
 #Game name
 if get_option('game_name') != ''
   add_project_arguments('-DPATATA_GAME_NAME="'+get_option('game_name')+'"', language : 'cpp')
+else
+  add_project_arguments('-DPATATA_GAME_NAME=0', language : 'cpp')
 endif
 
 subdir('data/assets')

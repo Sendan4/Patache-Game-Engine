@@ -16,7 +16,7 @@ Patata::RaccoonRenderer::InitVulkanBackend (void)
   */
   Vulkan.GraphicsQueueFamilyIndex = CreateLogicalDeviceAndCreateQueue ();
 
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
   std::future<bool> CreateImguiDescriptorPool_Async
       = std::async (std::launch::async,
                     &Patata::RaccoonRenderer::CreateImguiDescriptorPool, this);
@@ -86,7 +86,7 @@ Patata::RaccoonRenderer::InitVulkanBackend (void)
       = std::async (std::launch::async, &Patata::RaccoonRenderer::VulkanInfo,
                     this, SwapChainInfo);
 
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
   CreateImguiPipelineCache_Async.wait ();
   if (!CreateImguiPipelineCache_Async.get ())
     return false;
@@ -153,7 +153,7 @@ Patata::RaccoonRenderer::CloseVulkanBackend (void)
   Vulkan.SwapChainImages = nullptr;
 
 // Imgui
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
   ImGui_ImplVulkan_Shutdown ();
   Vulkan.Device.destroyDescriptorPool (Vulkan.ImguiDescriptorPool);
   Vulkan.Device.destroyPipelineCache (Vulkan.ImguiPipelineCache);

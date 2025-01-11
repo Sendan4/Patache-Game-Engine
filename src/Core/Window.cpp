@@ -7,19 +7,20 @@ Patata::Engine::EngineImpl::CreateGameWindow (const char * Title)
 
   if (Title == nullptr)
     {
-      if constexpr (PATATA_GAME_NAME)
-        PatataWindowTitle = PATATA_GAME_NAME;
-      else
-        PatataWindowTitle = "Patata Engine";
+#if PATATA_GAME_NAME == 1
+      PatataWindowTitle = PATATA_GAME_NAME;
+#else
+      PatataWindowTitle = "Patata Engine";
+#endif
 
-      if constexpr (DEBUG)
+      if constexpr (PATATA_DEBUG)
         PatataWindowTitle += " (Debug / Development)";
     }
   else
     {
       PatataWindowTitle = Title;
 
-      if constexpr (DEBUG)
+      if constexpr (PATATA_DEBUG)
         PatataWindowTitle += " (Debug / Development)";
     }
 
@@ -59,8 +60,9 @@ Patata::Engine::EngineImpl::CreateGameWindow (const char * Title)
   SDL_SetWindowMinimumSize (GameWindow, 640, 360);
 
   std::future<void> Log
-      = std::async (std::launch::async, Patata::Log::WindowLog, GameWindow,
-#if defined(DEBUG)
+      = std::async (std::launch::async, Patata::Log::WindowLog, GameWindow
+#if PATATA_DEBUG == 1
+                    ,
                     &PatataEngineInfo
 #endif
       );

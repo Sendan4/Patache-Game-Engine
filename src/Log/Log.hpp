@@ -6,7 +6,7 @@ namespace Log
 {
 void StartMapache (void);
 void StartPatataLogInfo (void);
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
 void WindowLog (SDL_Window *, Patata::EngineInfo *);
 #else
 void WindowLog (SDL_Window *);

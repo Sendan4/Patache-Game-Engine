@@ -30,7 +30,7 @@ Patata::RaccoonRenderer::CreateLogicalDeviceAndCreateQueue (void)
 #if defined(_WIN64)
         fast_io::out (),
 #endif
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
 #if !defined(_WIN64)
         PATATA_TERM_DIM,
 #endif
@@ -48,9 +48,9 @@ Patata::RaccoonRenderer::CreateLogicalDeviceAndCreateQueue (void)
         "] ",
 #endif
         PATATA_TERM_RESET,
-#else
+#else  // PATATA_DEBUG
         "  ",
-#endif
+#endif // PATATA_DEBUG
         PATATA_TERM_BOLD, "Index [", PATATA_TERM_RESET, i, PATATA_TERM_BOLD,
         "] : ", PATATA_TERM_RESET,
         vk::to_string (QueueFamilyProperties[i].queueFlags));
@@ -99,7 +99,7 @@ Patata::RaccoonRenderer::CreateLogicalDeviceAndCreateQueue (void)
 
   const char * DeviceExtensions[1]{ "VK_KHR_swapchain" };
 
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
   pRaccoonInfo->pPatataEngineInfo->VkDeviceExtensions    = new const char *[1];
   pRaccoonInfo->pPatataEngineInfo->VkDeviceExtensions[0] = DeviceExtensions[0];
   pRaccoonInfo->pPatataEngineInfo->VkDeviceExtensionsCount = 1;

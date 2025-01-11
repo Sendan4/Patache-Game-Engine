@@ -1,5 +1,5 @@
 source = files([
-  'Core/Main.cpp',
+  'Core/PatataEngine.cpp',
   'Core/PrivateToPublicWrapper.cpp',
   'Core/Configuration.cpp',
   'Core/Input.cpp',

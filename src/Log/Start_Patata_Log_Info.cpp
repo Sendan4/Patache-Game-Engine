@@ -95,10 +95,10 @@ Patata::Log::StartPatataLogInfo (void)
                         PATATA_RAPIDYAML_VERSION);
 #endif
 
-#if defined(PATATA_GAME_NAME)
+#if PATATA_GAME_NAME == 1
   fast_io::io::println (PATATA_TERM_BOLD, "  Game Name : ", PATATA_TERM_RESET,
                         PATATA_GAME_NAME);
 #endif
 
-  fast_io::io::println ("");
+  fast_io::io::println (fast_io::c_stdout ());
 }

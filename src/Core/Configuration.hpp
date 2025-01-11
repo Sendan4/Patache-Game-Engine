@@ -1,7 +1,7 @@
 #include <string>
 #include <future>
 
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
 #include <imgui_impl_vulkan.h>
 #include <SDL_syswm.h>
 #endif
@@ -13,7 +13,7 @@
 
 // Patata Engine
 #include "PatataEngine/PatataEngine.hpp"
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
 #include "StructEngineInfo.hpp"
 #endif
 // Begin Dependencies of PatataEngineImpl.hpp
@@ -25,7 +25,7 @@
 // End Dependencies of PatataEngineImpl.hpp
 #include "PatataEngineImpl.hpp"
 
-#if defined(PATATA_GAME_NAME)
+#if PATATA_GAME_NAME != 0
 #define GAME_CONFIG_FILE_NAME PATATA_GAME_NAME ".yaml"
 #else
 #define GAME_CONFIG_FILE_NAME "patata.yaml"

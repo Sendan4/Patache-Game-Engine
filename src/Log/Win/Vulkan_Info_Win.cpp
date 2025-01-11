@@ -18,7 +18,7 @@ Patata::RaccoonRenderer::VulkanInfo (
   PhysicalDeviceProperties.pNext = &Driver;
   Vulkan.PhysicalDevice.getProperties2 (&PhysicalDeviceProperties);
 
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
   pRaccoonInfo->pPatataEngineInfo->VkVersionInUse
       = std::to_string (
             VK_VERSION_MAJOR (PhysicalDeviceProperties.properties.apiVersion))
@@ -77,9 +77,9 @@ Patata::RaccoonRenderer::VulkanInfo (
 
   // Vulkan Version
   {
-    fast_io::io::print (
+    fast_io::io::println (
         fast_io::out (),
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
         PATATA_TERM_COLOR_GRAY0,
 #if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
         "    [",
@@ -89,18 +89,16 @@ Patata::RaccoonRenderer::VulkanInfo (
         "] ",
 #else
         "    [",
-        std::string_view {
+        std::string_view{
             typeid (PhysicalDeviceProperties.properties.apiVersion).name () },
         "] ",
 #endif
         PATATA_TERM_RESET,
-#else
+#else  // PATATA_DEBUG
         "    ",
-#endif
-        PATATA_TERM_BOLD, "Vulkan : ", PATATA_TERM_RESET);
-
-    fast_io::io::println (
-        fast_io::out (), std::string_view {
+#endif // PATATA_DEBUG
+        PATATA_TERM_BOLD, "Vulkan : ", PATATA_TERM_RESET,
+        std::string_view{
             std::to_string (VK_VERSION_MAJOR (
                 PhysicalDeviceProperties.properties.apiVersion))
             + '.'
@@ -111,12 +109,12 @@ Patata::RaccoonRenderer::VulkanInfo (
                 PhysicalDeviceProperties.properties.apiVersion))
             + '.'
             + std::to_string (VK_API_VERSION_VARIANT (
-                PhysicalDeviceProperties.properties.apiVersion))
-        }, "\n");
+                PhysicalDeviceProperties.properties.apiVersion)) },
+        "\n");
   }
 
   fast_io::io::println (fast_io::out (),
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
                         PATATA_TERM_COLOR_GRAY0,
 #if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
                         "  [",
@@ -131,16 +129,16 @@ Patata::RaccoonRenderer::VulkanInfo (
                         "] ",
 #endif
                         PATATA_TERM_RESET,
-#else
+#else  // PATATA_DEBUG
                         "  ",
-#endif
+#endif // PATATA_DEBUG
                         PATATA_TERM_BOLD, "Device", PATATA_TERM_RESET);
 
   // Device Name
   {
     fast_io::io::print (
         fast_io::out (),
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
         PATATA_TERM_COLOR_GRAY0,
 #if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
         "    [",
@@ -155,9 +153,9 @@ Patata::RaccoonRenderer::VulkanInfo (
         "] ",
 #endif
         PATATA_TERM_RESET,
-#else
+#else  // PATATA_DEBUG
         "    ",
-#endif
+#endif // PATATA_DEBUG
         PATATA_TERM_BOLD, "Name : ", PATATA_TERM_RESET);
 
     switch (PhysicalDeviceProperties.properties.vendorID)
@@ -202,7 +200,7 @@ Patata::RaccoonRenderer::VulkanInfo (
 
     fast_io::io::print (
         fast_io::out (),
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
         PATATA_TERM_COLOR_GRAY0,
 #if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
         "    [",
@@ -217,9 +215,9 @@ Patata::RaccoonRenderer::VulkanInfo (
         "] ",
 #endif
         PATATA_TERM_RESET,
-#else
+#else  // PATATA_DEBUG
         "    ",
-#endif
+#endif // PATATA_DEBUG
         PATATA_TERM_BOLD, "Vendor : ", PATATA_TERM_RESET);
 
     switch (PhysicalDeviceProperties.properties.vendorID)
@@ -289,7 +287,7 @@ Patata::RaccoonRenderer::VulkanInfo (
   {
     fast_io::io::println (
         fast_io::out (),
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
         PATATA_TERM_COLOR_GRAY0,
 #if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
         "    [",
@@ -304,9 +302,9 @@ Patata::RaccoonRenderer::VulkanInfo (
         "] ",
 #endif
         PATATA_TERM_RESET,
-#else
+#else  // PATATA_DEBUG
         "    ",
-#endif
+#endif // PATATA_DEBUG
         PATATA_TERM_BOLD, "Type : ", PATATA_TERM_RESET,
         vk::to_string (PhysicalDeviceProperties.properties.deviceType), "\n");
   }
@@ -314,7 +312,7 @@ Patata::RaccoonRenderer::VulkanInfo (
   // Vulkan Driver
   fast_io::io::println (
       fast_io::out (),
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
       PATATA_TERM_COLOR_GRAY0,
 #if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
       "  [",
@@ -325,15 +323,15 @@ Patata::RaccoonRenderer::VulkanInfo (
       "  [", std::string_view{ typeid (Driver).name () }, "] ",
 #endif
       PATATA_TERM_RESET,
-#else
+#else  // PATATA_DEBUG
       "  ",
-#endif
+#endif // PATATA_DEBUG
       PATATA_TERM_BOLD, "Driver", PATATA_TERM_RESET);
 
   {
     fast_io::io::println (
         fast_io::out (),
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
         PATATA_TERM_COLOR_GRAY0,
 #if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
         "    [",
@@ -344,15 +342,15 @@ Patata::RaccoonRenderer::VulkanInfo (
         "    [", std::string_view{ typeid (Driver.driverName).name () }, "] ",
 #endif
         PATATA_TERM_RESET,
-#else
+#else  // PATATA_DEBUG
         "    ",
-#endif
+#endif // PATATA_DEBUG
         PATATA_TERM_BOLD, "Name : ", PATATA_TERM_RESET,
         std::string_view{ Driver.driverName });
 
     fast_io::io::println (
         fast_io::out (),
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
         PATATA_TERM_COLOR_GRAY0,
 #if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
         "    [",
@@ -363,15 +361,15 @@ Patata::RaccoonRenderer::VulkanInfo (
         "    [", std::string_view{ typeid (Driver.driverID).name () }, "] ",
 #endif
         PATATA_TERM_RESET,
-#else
+#else  // PATATA_DEBUG
         "    ",
-#endif
+#endif // PATATA_DEBUG
         PATATA_TERM_BOLD, "ID : ", PATATA_TERM_RESET,
         vk::to_string (Driver.driverID));
 
     fast_io::io::println (
         fast_io::out (),
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
         PATATA_TERM_COLOR_GRAY0,
 #if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
         "    [",
@@ -382,51 +380,48 @@ Patata::RaccoonRenderer::VulkanInfo (
         "    [", std::string_view{ typeid (Driver.driverInfo).name () }, "] ",
 #endif
         PATATA_TERM_RESET,
-#else
+#else  // PATATA_DEBUG
         "    ",
-#endif
+#endif // PATATA_DEBUG
         PATATA_TERM_BOLD, "Info : ", PATATA_TERM_RESET,
         std::string_view{ Driver.driverInfo });
   }
 
   // Driver Version
-  {
-    fast_io::io::println (
-        fast_io::out (),
-#if defined(DEBUG)
-        PATATA_TERM_COLOR_GRAY0,
+  fast_io::io::println (
+      fast_io::out (),
+#if PATATA_DEBUG == 1
+      PATATA_TERM_COLOR_GRAY0,
 #if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
-        "    [",
-        std::string_view{ abi::__cxa_demangle (
-            typeid (PhysicalDeviceProperties.properties.driverVersion).name (),
-            nullptr, nullptr, nullptr) },
-        "] ",
+      "    [",
+      std::string_view{ abi::__cxa_demangle (
+          typeid (PhysicalDeviceProperties.properties.driverVersion).name (),
+          nullptr, nullptr, nullptr) },
+      "] ",
 #else
-        "    [",
-        std::string_view{
-            typeid (PhysicalDeviceProperties.properties.driverVersion)
-                .name () },
-        "] ",
+      "    [",
+      std::string_view{
+          typeid (PhysicalDeviceProperties.properties.driverVersion).name () },
+      "] ",
 #endif
-        PATATA_TERM_RESET,
-#else
-        "    ",
-#endif
-        PATATA_TERM_BOLD, "Version : ", PATATA_TERM_RESET,
-        VK_VERSION_MAJOR (PhysicalDeviceProperties.properties.driverVersion),
-        ".",
-        VK_VERSION_MINOR (PhysicalDeviceProperties.properties.driverVersion),
-        ".",
-        VK_VERSION_PATCH (PhysicalDeviceProperties.properties.driverVersion),
-        ".",
-        VK_API_VERSION_VARIANT (
-            PhysicalDeviceProperties.properties.driverVersion),
-        "\n");
-  }
+      PATATA_TERM_RESET,
+#else  // PATATA_DEBUG
+      "    ",
+#endif // PATATA_DEBUG
+      PATATA_TERM_BOLD, "Version : ", PATATA_TERM_RESET,
+      VK_VERSION_MAJOR (PhysicalDeviceProperties.properties.driverVersion),
+      ".",
+      VK_VERSION_MINOR (PhysicalDeviceProperties.properties.driverVersion),
+      ".",
+      VK_VERSION_PATCH (PhysicalDeviceProperties.properties.driverVersion),
+      ".",
+      VK_API_VERSION_VARIANT (
+          PhysicalDeviceProperties.properties.driverVersion),
+      "\n");
 
   fast_io::io::println (
       fast_io::out (),
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
       PATATA_TERM_COLOR_GRAY0,
 #if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
       "  [",
@@ -437,14 +432,14 @@ Patata::RaccoonRenderer::VulkanInfo (
       "  [", std::string_view{ typeid (Vulkan.SwapChain).name () }, "] ",
 #endif
       PATATA_TERM_RESET,
-#else
+#else  // PATATA_DEBUG
       "  ",
-#endif
+#endif // PATATA_DEBUG
       PATATA_TERM_BOLD, "SwapChain" PATATA_TERM_RESET);
 
   // SwapChain Present Mode
   fast_io::io::print (fast_io::out (),
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
                       PATATA_TERM_COLOR_GRAY0,
 #if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
                       "    [",
@@ -459,9 +454,9 @@ Patata::RaccoonRenderer::VulkanInfo (
                       "] ",
 #endif
                       PATATA_TERM_RESET,
-#else
+#else  // PATATA_DEBUG
                       "    ",
-#endif
+#endif // PATATA_DEBUG
                       PATATA_TERM_BOLD, "Present Mode : ", PATATA_TERM_RESET,
                       vk::to_string (SwapChainInfo.PresentMode));
 
@@ -481,7 +476,7 @@ Patata::RaccoonRenderer::VulkanInfo (
 
   // SwapChain Image Color Format
   fast_io::io::println (fast_io::out (),
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
                         PATATA_TERM_COLOR_GRAY0,
 #if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
                         "    [",
@@ -496,16 +491,16 @@ Patata::RaccoonRenderer::VulkanInfo (
                         "] ",
 #endif
                         PATATA_TERM_RESET,
-#else
+#else  // PATATA_DEBUG
                         "    ",
-#endif
+#endif // PATATA_DEBUG
                         PATATA_TERM_BOLD,
                         "Image Color Format : ", PATATA_TERM_RESET,
                         vk::to_string (SwapChainInfo.ImageColorFormat));
 
   // SwapChain Image Color Space
   fast_io::io::println (fast_io::out (),
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
                         PATATA_TERM_COLOR_GRAY0,
 #if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
                         "    [",
@@ -520,14 +515,14 @@ Patata::RaccoonRenderer::VulkanInfo (
                         "] ",
 #endif
                         PATATA_TERM_RESET,
-#else
+#else  // PATATA_DEBUG
                         "    ",
-#endif
+#endif // PATATA_DEBUG
                         PATATA_TERM_BOLD,
                         "Image Color Space : ", PATATA_TERM_RESET,
                         vk::to_string (SwapChainInfo.ImageColorSpace), "\n");
 
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
   fast_io::io::println (fast_io::out (), PATATA_TERM_BOLD, "  Debug",
                         PATATA_TERM_RESET);
 
@@ -541,7 +536,7 @@ Patata::RaccoonRenderer::VulkanInfo (
                         "    Validation Layer Version : ", PATATA_TERM_RESET,
                         PATATA_VULKAN_VALIDATION_LAYERS_VERSION);
 #endif
-#endif
+#endif // PATATA_DEBUG
 
 #if defined(PATATA_IMGUI_VERSION)
   fast_io::io::println (fast_io::out (), PATATA_TERM_BOLD,

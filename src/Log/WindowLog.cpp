@@ -1,7 +1,7 @@
 #include "WindowLog.hpp"
 
 void
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
 Patata::Log::WindowLog (SDL_Window *         Window,
                         Patata::EngineInfo * PatataEngineInfo)
 #else
@@ -9,7 +9,7 @@ Patata::Log::WindowLog (SDL_Window * Window)
 #endif
 {
   fast_io::io::println (
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
       PATATA_TERM_DIM, PATATA_TERM_COLOR_GRAY0,
 #if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
       "[",
@@ -20,19 +20,19 @@ Patata::Log::WindowLog (SDL_Window * Window)
       "[", std::string_view{ typeid (Window).name () }, "] ",
 #endif
       PATATA_TERM_BOLD,
-#endif
+#endif // PATATA_DEBUG
       PATATA_TERM_COLOR_PATATA, "Window ", PATATA_TERM_RESET, "INFO");
 
   // Desktop
   const char * XDG_CURRENT_DESKTOP = getenv ("XDG_CURRENT_DESKTOP");
 
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
   PatataEngineInfo->Desktop = XDG_CURRENT_DESKTOP;
 #endif
 
   if (XDG_CURRENT_DESKTOP != nullptr)
     fast_io::io::println (
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
         PATATA_TERM_DIM, PATATA_TERM_COLOR_GRAY0,
 #if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
         "  [",
@@ -43,9 +43,9 @@ Patata::Log::WindowLog (SDL_Window * Window)
         "  [", std::string_view{ typeid (XDG_CURRENT_DESKTOP).name () }, "] ",
 #endif
         PATATA_TERM_RESET,
-#else
+#else  // PATATA_DEBUG
         "  ",
-#endif
+#endif // PATATA_DEBUG
         PATATA_TERM_BOLD, "Desktop : ", PATATA_TERM_RESET,
         std::string_view{ XDG_CURRENT_DESKTOP });
 
@@ -54,7 +54,7 @@ Patata::Log::WindowLog (SDL_Window * Window)
   SDL_GetWindowWMInfo (Window, &WindowInfo);
   const char * XDG_SESSION_TYPE = getenv ("XDG_SESSION_TYPE");
 
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
   PatataEngineInfo->WindowInfo  = WindowInfo;
   PatataEngineInfo->SessionType = XDG_SESSION_TYPE;
 #endif
@@ -63,7 +63,7 @@ Patata::Log::WindowLog (SDL_Window * Window)
     {
     case SDL_SYSWM_WAYLAND:
       fast_io::io::println (
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
           PATATA_TERM_DIM, PATATA_TERM_COLOR_GRAY0,
 #if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
           "  [",
@@ -77,15 +77,15 @@ Patata::Log::WindowLog (SDL_Window * Window)
           "] ",
 #endif
           PATATA_TERM_RESET,
-#else
+#else  // PATATA_DEBUG
           "  ",
-#endif
+#endif // PATATA_DEBUG
           PATATA_TERM_BOLD, "Window System : ", PATATA_TERM_RESET, "Wayland ");
 
       // Wayland Display
       if (WindowInfo.info.wl.display != nullptr)
         fast_io::io::println (
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
             PATATA_TERM_DIM, PATATA_TERM_COLOR_GRAY0,
 #if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
             "  [",
@@ -99,15 +99,15 @@ Patata::Log::WindowLog (SDL_Window * Window)
             "] ",
 #endif
             PATATA_TERM_RESET,
-#else
+#else  // PATATA_DEBUG
             "  ",
-#endif
+#endif // PATATA_DEBUG
             PATATA_TERM_BOLD, "Wayland display", PATATA_TERM_RESET);
 
       // Wayland surface
       if (WindowInfo.info.wl.surface != nullptr)
         fast_io::io::println (
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
             PATATA_TERM_DIM, PATATA_TERM_COLOR_GRAY0,
 #if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
             "  [",
@@ -121,15 +121,15 @@ Patata::Log::WindowLog (SDL_Window * Window)
             "] ",
 #endif
             PATATA_TERM_RESET,
-#else
+#else  // PATATA_DEBUG
             "  ",
-#endif
+#endif // PATATA_DEBUG
             PATATA_TERM_BOLD, "Wayland surface", PATATA_TERM_RESET);
 
       // Wayland xdg surface (window manager handle)
       if (WindowInfo.info.wl.xdg_surface != nullptr)
         fast_io::io::println (
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
             PATATA_TERM_DIM, PATATA_TERM_COLOR_GRAY0,
 #if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
             "  [",
@@ -144,16 +144,16 @@ Patata::Log::WindowLog (SDL_Window * Window)
             "] ",
 #endif
             PATATA_TERM_RESET,
-#else
+#else  // PATATA_DEBUG
             "  ",
-#endif
+#endif // PATATA_DEBUG
             PATATA_TERM_BOLD, "Wayland xdg surface (window manager handle)",
             PATATA_TERM_RESET);
 
       // Wayland EGL window (native window)
       if (WindowInfo.info.wl.egl_window != nullptr)
         fast_io::io::println (
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
             PATATA_TERM_DIM, PATATA_TERM_COLOR_GRAY0,
 #if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
             "  [",
@@ -167,9 +167,9 @@ Patata::Log::WindowLog (SDL_Window * Window)
             "] ",
 #endif
             PATATA_TERM_RESET,
-#else
+#else  // PATATA_DEBUG
             "  ",
-#endif
+#endif // PATATA_DEBUG
             PATATA_TERM_BOLD, "Wayland EGL window (native window)",
             PATATA_TERM_RESET);
       break;
@@ -180,88 +180,88 @@ Patata::Log::WindowLog (SDL_Window * Window)
         fast_io::io::println (PATATA_TERM_BOLD,
                               "  Window System : ", PATATA_TERM_RESET,
                               "XWayland",
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
                               PATATA_TERM_DIM, PATATA_TERM_COLOR_GRAY0,
 #if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
                               " [(",
                               std::string_view{ abi::__cxa_demangle (
                                   typeid (XDG_SESSION_TYPE).name (), nullptr,
                                   nullptr, nullptr) },
-                              ") XDG_SESSION_TYPE] ",
+                              ") XDG_SESSION_TYPE]",
 #else
                               " [(",
                               std::string_view{
                                   typeid (XDG_SESSION_TYPE).name () },
-                              ") XDG_SESSION_TYPE] ",
+                              ") XDG_SESSION_TYPE]",
 #endif
                               PATATA_TERM_RESET,
-#endif
-                              std::string_view{ XDG_SESSION_TYPE });
+#endif // PATATA_DEBUG
+                              " | ", std::string_view{ XDG_SESSION_TYPE });
       else
         {
           fast_io::io::println (PATATA_TERM_BOLD,
                                 "  Window System : ", PATATA_TERM_RESET, "X",
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
                                 PATATA_TERM_DIM, PATATA_TERM_COLOR_GRAY0,
 #if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
                                 " [(",
                                 std::string_view{ abi::__cxa_demangle (
                                     typeid (XDG_SESSION_TYPE).name (), nullptr,
                                     nullptr, nullptr) },
-                                ") XDG_SESSION_TYPE] ",
+                                ") XDG_SESSION_TYPE]",
 #else
                                 " [(",
                                 std::string_view{
                                     typeid (XDG_SESSION_TYPE).name () },
-                                ") XDG_SESSION_TYPE] ",
+                                ") XDG_SESSION_TYPE]",
 #endif
                                 PATATA_TERM_RESET,
-#endif
-                                std::string_view{ XDG_SESSION_TYPE });
+#endif // PATATA_DEBUG
+                                " | ", std::string_view{ XDG_SESSION_TYPE });
 
           if (!WindowInfo.info.x11.window)
             fast_io::io::println (
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
                 PATATA_TERM_DIM, PATATA_TERM_COLOR_GRAY0,
 #if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
                 "  [",
                 std::string_view{ abi::__cxa_demangle (
                     typeid (WindowInfo.info.x11.window).name (), nullptr,
                     nullptr, nullptr) },
-                "] ",
+                "]",
 #else
                 "  [",
                 std::string_view{
                     typeid (WindowInfo.info.x11.window).name () },
-                "] ",
+                "]",
 #endif
                 PATATA_TERM_RESET,
-#else
+#else  // PATATA_DEBUG
                 "  ",
-#endif
+#endif // PATATA_DEBUG
                 PATATA_TERM_BOLD, "The X11 window", PATATA_TERM_RESET);
 
           if (WindowInfo.info.x11.display != nullptr)
             fast_io::io::println (
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
                 PATATA_TERM_DIM, PATATA_TERM_COLOR_GRAY0,
 #if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
                 "  [",
                 std::string_view{ abi::__cxa_demangle (
                     typeid (WindowInfo.info.x11.display).name (), nullptr,
                     nullptr, nullptr) },
-                "] ",
+                "]",
 #else
                 "  [",
                 std::string_view{
                     typeid (WindowInfo.info.x11.display).name () },
-                "] ",
+                "]",
 #endif
                 PATATA_TERM_RESET,
-#else
+#else  // PATATA_DEBUG
                 "  ",
-#endif
-                PATATA_TERM_BOLD, " The X11 display", PATATA_TERM_RESET);
+#endif // PATATA_DEBUG
+                PATATA_TERM_BOLD, "The X11 display", PATATA_TERM_RESET);
         }
       break;
 #endif
@@ -269,39 +269,39 @@ Patata::Log::WindowLog (SDL_Window * Window)
     case SDL_SYSWM_MIR:
       fast_io::io::println (
           PATATA_TERM_BOLD, "  Window System : ", PATATA_TERM_RESET, "Mir",
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
           PATATA_TERM_DIM, PATATA_TERM_COLOR_GRAY0,
 #if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
           " [(",
           std::string_view{ abi::__cxa_demangle (
               typeid (XDG_SESSION_TYPE).name (), nullptr, nullptr, nullptr) },
-          ") XDG_SESSION_TYPE] ",
+          ") XDG_SESSION_TYPE]",
 #else
           " [(", std::string_view{ typeid (XDG_SESSION_TYPE).name () },
-          ") XDG_SESSION_TYPE] ",
+          ") XDG_SESSION_TYPE]",
 #endif
           PATATA_TERM_RESET,
-#endif
-          std::string_view{ XDG_SESSION_TYPE });
+#endif // PATATA_DEBUG
+          " | ", std::string_view{ XDG_SESSION_TYPE });
       break;
 
     default:
       fast_io::io::println (
           PATATA_TERM_BOLD, "  Window System : ", PATATA_TERM_RESET, "Unknown",
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
           PATATA_TERM_DIM, PATATA_TERM_COLOR_GRAY0,
 #if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
           " [(",
           std::string_view{ abi::__cxa_demangle (
               typeid (XDG_SESSION_TYPE).name (), nullptr, nullptr, nullptr) },
-          ") XDG_SESSION_TYPE] ",
+          ") XDG_SESSION_TYPE]",
 #else
           " [(", std::string_view{ typeid (XDG_SESSION_TYPE).name () },
-          ") XDG_SESSION_TYPE] ",
+          ") XDG_SESSION_TYPE]",
 #endif
           PATATA_TERM_RESET,
-#endif
-          std::string_view{ XDG_SESSION_TYPE });
+#endif // PATATA_DEBUG
+          " | ", std::string_view{ XDG_SESSION_TYPE });
       break;
     }
 
@@ -309,7 +309,7 @@ Patata::Log::WindowLog (SDL_Window * Window)
                         "  Window creation flags :", PATATA_TERM_RESET);
 
   uint32_t WindowFlags = SDL_GetWindowFlags (Window);
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
   PatataEngineInfo->WindowCreationFlags = WindowFlags;
 #endif
 

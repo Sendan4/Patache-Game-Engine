@@ -159,8 +159,7 @@ Patata::RaccoonRenderer::SelectDevice (void)
       fast_io::io::println (
 #if defined(_WIN64)
           fast_io::out (),
-#endif
-#if !defined(_WIN64)
+#else
           PATATA_TERM_DIM,
 #endif
           PATATA_TERM_COLOR_GRAY0, "  [",

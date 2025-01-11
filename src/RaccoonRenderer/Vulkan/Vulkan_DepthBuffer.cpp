@@ -3,14 +3,6 @@
 bool
 Patata::RaccoonRenderer::CreateDepthBuffer (void)
 {
-  fast_io::io::println (
-#if defined(_WIN64)
-      fast_io::out ()
-#else
-      ""
-#endif
-  );
-
   vk::ImageTiling Tiling = vk::ImageTiling::eOptimal;
 
   vk::Format DepthFormatsToCheck[4]

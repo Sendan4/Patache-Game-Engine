@@ -1,7 +1,7 @@
 #include <future>
 
 #include <fast_io.h>
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
 #include <imgui_impl_sdl2.h>
 #include <imgui_impl_vulkan.h>
 #include <SDL_syswm.h>
@@ -13,7 +13,7 @@
 #include "PatataEngine/PatataEngine.hpp"
 #include "ColorTerminal.hpp"
 // Begin Dependencies of PatataEngineImpl.hpp
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
 #include "StructEngineInfo.hpp"
 #endif
 #include "StructConfig.hpp"

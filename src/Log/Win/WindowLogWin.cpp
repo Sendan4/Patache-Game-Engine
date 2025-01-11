@@ -1,7 +1,7 @@
 #include "WindowLog.hpp"
 
 void
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
 Patata::Log::WindowLog (SDL_Window *         Window,
                         Patata::EngineInfo * PatataEngineInfo)
 #else
@@ -15,7 +15,7 @@ Patata::Log::WindowLog (SDL_Window * Window)
 
   fast_io::io::println (
       fast_io::out (),
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
       PATATA_TERM_COLOR_GRAY0,
 #if defined(__GNUC__) || defined(__MINGW64__)
       "[",
@@ -24,16 +24,16 @@ Patata::Log::WindowLog (SDL_Window * Window)
       "] ",
 #else
       "[", std::string_view{ typeid (Window).name () }, "] ",
-#endif
+#endif // PATATA_DEBUG
       PATATA_TERM_RESET,
-#endif
+#endif // PATATA_DEBUG
       PATATA_TERM_COLOR_PATATA, "Window ", PATATA_TERM_BOLD, "INFO :");
 
   SDL_SysWMinfo WindowInfo;
   SDL_VERSION (&WindowInfo.version);
   SDL_GetWindowWMInfo (Window, &WindowInfo);
 
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
   PatataEngineInfo->WindowInfo = WindowInfo;
 #endif
 
@@ -46,7 +46,7 @@ Patata::Log::WindowLog (SDL_Window * Window)
 
       // The window handle
       fast_io::io::println (fast_io::out (),
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
                             PATATA_TERM_COLOR_GRAY0,
 #if defined(__GNUC__) || defined(__MINGW64__)
                             "  [",
@@ -61,14 +61,14 @@ Patata::Log::WindowLog (SDL_Window * Window)
                             "] ",
 #endif
                             PATATA_TERM_RESET,
-#else
+#else  // PATATA_DEBUG
                             "  ",
-#endif
+#endif // PATATA_DEBUG
                             PATATA_TERM_BOLD, "The window handle");
 
       // The window device context
       fast_io::io::println (fast_io::out (),
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
                             PATATA_TERM_COLOR_GRAY0,
 #if defined(__GNUC__) || defined(__MINGW64__)
                             "  [",
@@ -83,14 +83,14 @@ Patata::Log::WindowLog (SDL_Window * Window)
                             "] ",
 #endif
                             PATATA_TERM_RESET,
-#else
+#else  // PATATA_DEBUG
                             "  ",
-#endif
+#endif // PATATA_DEBUG
                             PATATA_TERM_BOLD, "The window device context");
 
       // The instance handle
       fast_io::io::println (fast_io::out (),
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
                             PATATA_TERM_COLOR_GRAY0,
 #if defined(__GNUC__) || defined(__MINGW64__)
                             "  [",
@@ -106,11 +106,10 @@ Patata::Log::WindowLog (SDL_Window * Window)
                             "] ", PATATA_TERM_RESET, PATATA_TERM_RESET,
 #endif
                             PATATA_TERM_RESET,
-#else
+#else  // PATATA_DEBUG
                             "  ",
-#endif
+#endif // PATATA_DEBUG
                             PATATA_TERM_BOLD, "The instance handle");
-
       break;
 
     case SDL_SYSWM_WINRT:
@@ -131,7 +130,7 @@ Patata::Log::WindowLog (SDL_Window * Window)
                         "  Window creation flags :", PATATA_TERM_COLOR_GRAY1);
 
   uint32_t WindowFlags = SDL_GetWindowFlags (Window);
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
   PatataEngineInfo->WindowCreationFlags = WindowFlags;
 #endif
 

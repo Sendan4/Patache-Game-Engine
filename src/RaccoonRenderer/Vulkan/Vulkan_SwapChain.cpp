@@ -180,7 +180,7 @@ Patata::RaccoonRenderer::CreateSwapChain (
       return false;
     }
 
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
   // saving the data for display in imgui
   pRaccoonInfo->pPatataEngineInfo->VkSwapchainPresentMode
       = SelectedPresentMode;
@@ -341,7 +341,7 @@ Patata::RaccoonRenderer::RecreateSwapChain (SDL_Event & Event)
       Vulkan.Device.destroyImageView (Vulkan.SwapChainColorImageView[i]);
     }
 
-  Vulkan.Device.freeCommandBuffers (Vulkan.CommandPool, 1, &Vulkan.cmd);
+  Vulkan.cmd.reset (vk::CommandBufferResetFlagBits::eReleaseResources);
 
   Vulkan.OldSwapChain = Vulkan.SwapChain;
 
@@ -404,8 +404,8 @@ Patata::RaccoonRenderer::RecreateSwapChain (SDL_Event & Event)
       return;
     }
 
-// Imgui
-#if defined(DEBUG)
+    // Imgui
+#if PATATA_DEBUG == 1
   ImGui_ImplVulkan_SetMinImageCount (Sc.minImageCount);
 #endif
 }

@@ -16,7 +16,7 @@ public:
   void EndRender (SDL_Event &);
 
 private:
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
   Patata::EngineInfo PatataEngineInfo;
 #endif
   SDL_Window *                      GameWindow = nullptr;
@@ -25,7 +25,7 @@ private:
     .ppWindow       = &GameWindow,
     .pWindowResized = &WindowResized,
     .pClearColor    = &ClearColor,
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
     .pPatataEngineInfo = &PatataEngineInfo
 #endif
   };
@@ -40,7 +40,7 @@ private:
   void SetWindowIcon (void);
 #endif
 
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
   void InitImgui (void);
 #endif
 };

@@ -49,8 +49,7 @@ Patata::Log::ErrorMessage (const std::string_view & Message)
   fast_io::io::perrln (
 #if defined(_WIN64)
       fast_io::out (),
-#endif
-#if !defined(_WIN64)
+#else
       PATATA_TERM_BOLD,
 #endif
       PATATA_TERM_COLOR_RED, "ERROR : ", PATATA_TERM_RESET, Message);
@@ -73,8 +72,7 @@ Patata::Log::WarningMessage (const std::string_view & Message)
   fast_io::io::perrln (
 #if defined(_WIN64)
       fast_io::out (),
-#endif
-#if !defined(_WIN64)
+#else
       PATATA_TERM_BOLD,
 #endif
       PATATA_TERM_COLOR_YELLOW, "WARNING : ", PATATA_TERM_RESET, Message);

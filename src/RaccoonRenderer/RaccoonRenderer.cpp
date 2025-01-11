@@ -1,12 +1,12 @@
 #include <vulkan/vulkan.hpp>
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
 #include <imgui_impl_vulkan.h>
 #include <SDL_syswm.h>
 #endif
 #include <SDL.h>
 
 // Begin Dependencies of RaccoonRenderer.hpp
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
 #include "StructEngineInfo.hpp"
 #endif
 #include "PatataEngine/StructClearColor.hpp"

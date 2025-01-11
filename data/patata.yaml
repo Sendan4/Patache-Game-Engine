@@ -4,7 +4,6 @@
 patata-engine :
   show-fatal-error-messagebox : false
   prefer-wayland : true
-  enable-mangohud : false
 
   raccoon-renderer :
     vsync : true

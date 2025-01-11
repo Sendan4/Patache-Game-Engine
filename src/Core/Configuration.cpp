@@ -5,13 +5,14 @@ Patata::Engine::EngineImpl::LoadConfig (Patata::Config & Config)
 {
   fast_io::dir_file ExecutableDirectory (
       static_cast<std::string> (SDL_GetBasePath ()));
-  fast_io::native_file_loader ConfigFile (at (ExecutableDirectory),
-                                          GAME_CONFIG_FILE_NAME);
+  fast_io::native_file_loader YamlConfigFile (at (ExecutableDirectory),
+                                              GAME_CONFIG_FILE_NAME);
 
   // .data() to get char *
-  ryml::Tree         TreeConfig = ryml::parse_in_place (ConfigFile.data ());
+  ryml::Tree TreeConfig = ryml::parse_in_place (YamlConfigFile.data ());
   ryml::ConstNodeRef YamlConfig = TreeConfig.crootref ();
 
+  // Invalid or unreadable Yaml file
   if (YamlConfig.invalid () || !YamlConfig.readable ())
     {
       std::future<void> Err
@@ -29,11 +30,11 @@ Patata::Engine::EngineImpl::LoadConfig (Patata::Config & Config)
           || YamlConfig["patata-engine"]["show-fatal-error-messagebox"]
                      .val ()
                      .is_number ()
-                 == true
+                 == 1
           || YamlConfig["patata-engine"]["show-fatal-error-messagebox"]
                      .val ()
                      .is_number ()
-                 == false)
+                 == 0)
         YamlConfig["patata-engine"]["show-fatal-error-messagebox"]
             >> Config.ShowFatalErrorMessagebox;
       else
@@ -54,9 +55,9 @@ Patata::Engine::EngineImpl::LoadConfig (Patata::Config & Config)
       if (YamlConfig["patata-engine"]["prefer-wayland"].val () == "true"
           || YamlConfig["patata-engine"]["prefer-wayland"].val () == "false"
           || YamlConfig["patata-engine"]["prefer-wayland"].val ().is_number ()
-                 == true
+                 == 1
           || YamlConfig["patata-engine"]["prefer-wayland"].val ().is_number ()
-                 == false)
+                 == 0)
         YamlConfig["patata-engine"]["prefer-wayland"] >> Config.PreferWayland;
       else
         {
@@ -66,26 +67,6 @@ Patata::Engine::EngineImpl::LoadConfig (Patata::Config & Config)
                            + static_cast<std::string> (SDL_GetBasePath ())
                            + GAME_CONFIG_FILE_NAME
                            + ")\n'patata-engine : prefer-wayland' must "
-                             "be a boolean value (True or False)"));
-        }
-
-      // Bool Type
-      if (YamlConfig["patata-engine"]["enable-mangohud"].val () == "true"
-          || YamlConfig["patata-engine"]["enable-mangohud"].val () == "false"
-          || YamlConfig["patata-engine"]["enable-mangohud"].val ().is_number ()
-                 == true
-          || YamlConfig["patata-engine"]["enable-mangohud"].val ().is_number ()
-                 == false)
-        YamlConfig["patata-engine"]["enable-mangohud"]
-            >> Config.EnableMangoHud;
-      else
-        {
-          std::future<void> Err = std::async (
-              std::launch::async, Patata::Log::ErrorMessage,
-              std::string ("in YAML configure file ("
-                           + static_cast<std::string> (SDL_GetBasePath ())
-                           + GAME_CONFIG_FILE_NAME
-                           + ")\n'patata-engine : enable-mangohud' must "
                              "be a boolean value (True or False)"));
         }
 #endif
@@ -99,11 +80,11 @@ Patata::Engine::EngineImpl::LoadConfig (Patata::Config & Config)
           || YamlConfig["patata-engine"]["raccoon-renderer"]["vsync"]
                      .val ()
                      .is_number ()
-                 == true
+                 == 1
           || YamlConfig["patata-engine"]["raccoon-renderer"]["vsync"]
                      .val ()
                      .is_number ()
-                 == false)
+                 == 0)
         YamlConfig["patata-engine"]["raccoon-renderer"]["vsync"]
             >> Config.Vsync;
       else
@@ -127,11 +108,11 @@ Patata::Engine::EngineImpl::LoadConfig (Patata::Config & Config)
           || YamlConfig["patata-engine"]["raccoon-renderer"]["10bit-depth"]
                      .val ()
                      .is_number ()
-                 == true
+                 == 1
           || YamlConfig["patata-engine"]["raccoon-renderer"]["10bit-depth"]
                      .val ()
                      .is_number ()
-                 == false)
+                 == 0)
         YamlConfig["patata-engine"]["raccoon-renderer"]["10bit-depth"]
             >> Config.BitDepth10;
       else

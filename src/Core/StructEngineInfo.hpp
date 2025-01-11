@@ -1,4 +1,4 @@
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
 #pragma once
 
 #define PATATA_VK_LAYER_COUNT 1

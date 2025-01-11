@@ -1,7 +1,7 @@
 #include <future>
 #include <string>
 
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
 #include <imgui_impl_vulkan.h>
 #include <SDL_syswm.h>
 #endif
@@ -13,7 +13,7 @@
 #include "PatataEngine/PatataEngine.hpp"
 #include "ColorTerminal.hpp"
 // Begin Dependencies of PatataEngineImpl.hpp
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
 #include "StructEngineInfo.hpp"
 #endif
 #include "StructConfig.hpp"
@@ -25,17 +25,13 @@
 #include "Log.hpp"
 
 #if defined(USE_ICON)
-#if defined(PATATA_GAME_NAME)
+#if PATATA_GAME_NAME != 0
 #define PATATA_GAME_ICON_FILE PATATA_GAME_NAME ".bmp"
 #else
-#if defined(DEBUG)
+#if DEBUG == 1
 #define PATATA_GAME_ICON_FILE "icon-debug.bmp"
 #else
 #define PATATA_GAME_ICON_FILE "icon-release.bmp"
 #endif
 #endif
-#endif
-
-#if !defined(PATATA_GAME_NAME)
-#define PATATA_GAME_NAME false
 #endif

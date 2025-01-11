@@ -328,6 +328,8 @@ get_filename_component(compiler_program ${CMAKE_CXX_COMPILER} NAME)
 
 if (ENABLE_ICON)
 	add_compile_definitions(USE_ICON=1)
+else()
+	add_compile_definitions(USE_ICON=0)
 endif()
 
 # shared library

@@ -326,7 +326,7 @@ DrawDebugUI (Patata::EngineInfo * pPatataEngineInfo,
 #endif
 
                   // Game Name
-#if defined(PATATA_GAME_NAME)
+#if PATATA_GAME_NAME != 0
                   ImGui::TableNextRow ();
 
                   ImGui::TableSetColumnIndex (0);
@@ -399,7 +399,7 @@ DrawDebugUI (Patata::EngineInfo * pPatataEngineInfo,
                     }
 
                     // ImGui Version
-#if defined(DEBUG) && defined(IMGUI_VERSION) && defined(IMGUI_VERSION_NUM)
+#if defined(IMGUI_VERSION) && defined(IMGUI_VERSION_NUM)
                   ImGui::TableNextRow ();
 
                   ImGui::TableSetColumnIndex (0);
@@ -1185,20 +1185,22 @@ DrawDebugUI (Patata::EngineInfo * pPatataEngineInfo,
                       vk::to_string (pPatataEngineInfo->VkSwapchainPresentMode)
                           .c_str ());
 
-                  if (pPatataEngineInfo->VkSwapchainPresentMode
-                          == vk::PresentModeKHR::eFifo
-                      || pPatataEngineInfo->VkSwapchainPresentMode
-                             == vk::PresentModeKHR::eFifoRelaxed
-                      || pPatataEngineInfo->VkSwapchainPresentMode
-                             == vk::PresentModeKHR::eSharedContinuousRefresh)
+                  if ((pPatataEngineInfo->VkSwapchainPresentMode
+                           == vk::PresentModeKHR::eFifo
+                       || pPatataEngineInfo->VkSwapchainPresentMode
+                              == vk::PresentModeKHR::eFifoRelaxed
+                       || pPatataEngineInfo->VkSwapchainPresentMode
+                              == vk::PresentModeKHR::eSharedContinuousRefresh)
+                      && (pConfiguration->Vsync))
                     ImGui::TextColored (ImVec4 (PATATA_IMGUI_POSITIVE_VALUE),
                                         "Vertical Sync");
-                  else if (pPatataEngineInfo->VkSwapchainPresentMode
-                               == vk::PresentModeKHR::eMailbox
-                           || pPatataEngineInfo->VkSwapchainPresentMode
-                                  == vk::PresentModeKHR::eImmediate
-                           || pPatataEngineInfo->VkSwapchainPresentMode
-                                  == vk::PresentModeKHR::eSharedDemandRefresh)
+                  else if ((pPatataEngineInfo->VkSwapchainPresentMode
+                                == vk::PresentModeKHR::eMailbox
+                            || pPatataEngineInfo->VkSwapchainPresentMode
+                                   == vk::PresentModeKHR::eImmediate
+                            || pPatataEngineInfo->VkSwapchainPresentMode
+                                   == vk::PresentModeKHR::eSharedDemandRefresh)
+                           && (!pConfiguration->Vsync))
                     ImGui::TextColored (
                         ImVec4 (PATATA_IMGUI_WARNING_VALUE),
                         "Not synchronized with the refresh rate");
@@ -1281,11 +1283,6 @@ DrawDebugUI (Patata::EngineInfo * pPatataEngineInfo,
       if (ImGui::Checkbox ("Prefer Wayland", &pConfiguration->PreferWayland))
         {
           pConfiguration->TriggeredChange = &pConfiguration->PreferWayland;
-        }
-
-      if (ImGui::Checkbox ("MangoHud", &pConfiguration->EnableMangoHud))
-        {
-          pConfiguration->TriggeredChange = &pConfiguration->EnableMangoHud;
         }
 #endif
 

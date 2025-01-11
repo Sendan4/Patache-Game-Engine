@@ -44,15 +44,13 @@ struct VulkanBackend
 
   vk::RenderPass RenderPass = nullptr;
 
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
   // Imgui
   vk::PipelineLayout ImguiPipeLineLayout;
   vk::Pipeline       ImguiPipeLine;
 
   vk::PipelineCache  ImguiPipelineCache  = nullptr;
   vk::DescriptorPool ImguiDescriptorPool = nullptr;
-
-  ImGui_ImplVulkanH_Window ImGuiWindow;
 #endif
 
   // Synchronization Primitives

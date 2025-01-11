@@ -11,6 +11,7 @@ Patata::Engine::EngineImpl::HandleEvent (SDL_Event & Event)
   switch (Event.type)
     {
     case SDL_KEYDOWN:
+      // (begin) ALT + RETURN Hotkey for toggle full screen
       if (State[SDL_SCANCODE_LALT] || State[SDL_SCANCODE_RALT])
         {
           if (Event.key.keysym.scancode == SDL_SCANCODE_RETURN)
@@ -28,17 +29,6 @@ Patata::Engine::EngineImpl::HandleEvent (SDL_Event & Event)
                           std::future<void> Err = std::async (
                               std::launch::async, Patata::Log::ErrorMessage,
                               "Unable to apply full screen resolution");
-                        }
-                      else
-                        {
-                          fast_io::io::println (
-#if defined(_WIN64)
-                              fast_io::out (),
-#endif
-                              PATATA_TERM_BOLD,
-                              "FullScreen Resolution : ", PATATA_TERM_RESET,
-                              DesktopMode.w, " x ", DesktopMode.h, " | ",
-                              DesktopMode.refresh_rate, " Hz");
                         }
                     }
                   else
@@ -69,8 +59,10 @@ Patata::Engine::EngineImpl::HandleEvent (SDL_Event & Event)
                 }
             }
         }
+        // (end) ALT + RETURN Hotkey for toggle full screen
 
-#if defined(DEBUG)
+        // (begin) ctrl + p hotkey for toggle the menubar of debug ui
+#if PATATA_DEBUG == 1
       if (State[SDL_SCANCODE_LCTRL] || State[SDL_SCANCODE_RCTRL])
         {
           if (Event.key.keysym.scancode == SDL_SCANCODE_P)
@@ -82,14 +74,19 @@ Patata::Engine::EngineImpl::HandleEvent (SDL_Event & Event)
             }
         }
 #endif
+
+      // (end) ALT + RETURN Hotkey for toggle full screen
+      break;
+
+    case SDL_WINDOWEVENT:
+      // resize event
+      if (Event.window.event == SDL_WINDOWEVENT_RESIZED
+          || Event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED)
+        WindowResized = true;
       break;
     }
 
-  if (Event.type == SDL_WINDOWEVENT
-      && Event.window.event == SDL_WINDOWEVENT_RESIZED)
-    WindowResized = true;
-
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
   ImGui_ImplSDL2_ProcessEvent (&Event);
 #endif
 }

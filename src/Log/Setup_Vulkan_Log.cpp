@@ -5,7 +5,7 @@ Patata::Log::VulkanList (const char * List[], const uint32_t & Size,
                          const std::string_view & Message)
 {
   fast_io::io::println (
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
       PATATA_TERM_DIM, PATATA_TERM_COLOR_GRAY0,
 #if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
       "[",
@@ -15,9 +15,9 @@ Patata::Log::VulkanList (const char * List[], const uint32_t & Size,
 #else
       "[", std::string_view{ typeid (*List).name () }, "] ",
 #endif
-#endif
-      PATATA_TERM_RESET, PATATA_TERM_BOLD, std::string_view{ Message }, " : ",
-      PATATA_TERM_RESET, Size);
+#endif // PATATA_DEBUG
+      PATATA_TERM_RESET, PATATA_TERM_BOLD, Message, " : ", PATATA_TERM_RESET,
+      Size);
 
   for (uint32_t i = 0; i < Size; ++i)
     {
@@ -38,7 +38,7 @@ Patata::Log::VulkanCheck (const std::string_view & Message,
   if (Result != vk::Result::eSuccess && Result != vk::Result::eSuboptimalKHR)
     {
       fast_io::io::println (
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
           PATATA_TERM_DIM, PATATA_TERM_COLOR_GRAY0,
 #if defined(__GNUC__)                                                         \
     || defined(__MINGW64__) && !defined(__clang__) && defined(DEBUG)
@@ -46,17 +46,17 @@ Patata::Log::VulkanCheck (const std::string_view & Message,
           std::string_view{ abi::__cxa_demangle (typeid (Result).name (),
                                                  nullptr, nullptr, nullptr) },
           "] ",
-#elif defined(DEBUG)
+#else
           "[", std::string_view{ typeid (Result).name () }, "] ",
 #endif
-#endif
-          PATATA_TERM_RESET, PATATA_TERM_BOLD, std::string_view{ Message },
-          " : ", PATATA_TERM_RESET, PATATA_TERM_COLOR_YELLOW,
-          vk::to_string (Result), PATATA_TERM_RESET);
+#endif // PATATA_DEBUG
+          PATATA_TERM_RESET, PATATA_TERM_BOLD, Message, " : ",
+          PATATA_TERM_RESET, PATATA_TERM_COLOR_YELLOW, vk::to_string (Result),
+          PATATA_TERM_RESET);
     }
   else
     fast_io::io::println (
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
         PATATA_TERM_DIM, PATATA_TERM_COLOR_GRAY0,
 #if defined(__GNUC__)                                                         \
     || defined(__MINGW64__) && !defined(__clang__) && defined(DEBUG)
@@ -64,11 +64,10 @@ Patata::Log::VulkanCheck (const std::string_view & Message,
         std::string_view{ abi::__cxa_demangle (typeid (Result).name (),
                                                nullptr, nullptr, nullptr) },
         "] ",
-#elif defined(DEBUG)
+#else
         "[", std::string_view{ typeid (Result).name () }, "] ",
 #endif
-#endif
-        PATATA_TERM_RESET, PATATA_TERM_BOLD, std::string_view{ Message },
-        " : ", PATATA_TERM_RESET, PATATA_TERM_COLOR_GREEN,
-        vk::to_string (Result), PATATA_TERM_RESET);
+#endif // PATATA_DEBUG
+        PATATA_TERM_RESET, PATATA_TERM_BOLD, Message, " : ", PATATA_TERM_RESET,
+        PATATA_TERM_COLOR_GREEN, vk::to_string (Result), PATATA_TERM_RESET);
 }

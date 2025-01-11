@@ -7,7 +7,7 @@ struct RaccoonRendererCreateInfo
   SDL_Window **        ppWindow;
   bool *               pWindowResized;
   Patata::ClearColor * pClearColor;
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
   Patata::EngineInfo * pPatataEngineInfo;
 #endif
 };
@@ -44,7 +44,7 @@ private:
   bool     CreateFence (void);
   void     RecreateSwapChain (SDL_Event &);
 
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
   // Imgui
   bool InitImguiVulkan (SDL_Window *);
   bool CreateImguiDescriptorPool (void);

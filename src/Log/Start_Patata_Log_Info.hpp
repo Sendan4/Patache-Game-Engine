@@ -21,7 +21,7 @@
 #endif
 
 #include <fast_io.h>
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
 #include <imgui_impl_sdl2.h>
 #include <imgui_impl_vulkan.h>
 #include <SDL_syswm.h>
@@ -34,7 +34,7 @@
 
 // Patata Engine
 #include "ColorTerminal.hpp"
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
 #include "StructEngineInfo.hpp"
 #endif
 #include "StructConfig.hpp"

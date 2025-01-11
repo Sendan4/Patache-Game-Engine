@@ -15,6 +15,7 @@ Patata::Engine::EngineImpl::InitImgui (void)
           PATATA_TERM_BOLD,
           "Initialize Global ImGui Context : ", PATATA_TERM_RESET,
           PATATA_TERM_COLOR_YELLOW, "Fail\n", PATATA_TERM_RESET);
+
       return;
     }
 
@@ -55,9 +56,6 @@ Patata::Engine::EngineImpl::InitImgui (void)
       = ImVec4 (0.0f, 0.0f, 0.0f, 0.0f);
 }
 
-// Vulkan Backend
-#include "RaccoonRenderer.hpp"
-
 bool
 Patata::RaccoonRenderer::CreateImguiDescriptorPool (void)
 {
@@ -71,13 +69,14 @@ Patata::RaccoonRenderer::CreateImguiDescriptorPool (void)
       return false;
     }
 
-  vk::DescriptorPoolSize PoolSize[]
-      = { { vk::DescriptorType::eCombinedImageSampler, 1 } };
+  vk::DescriptorPoolSize PoolSize
+      = { vk::DescriptorType::eCombinedImageSampler, 1 };
+
   vk::DescriptorPoolCreateInfo Info (
       vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet, // flags
       1,                                                    // maxSets
-      static_cast<uint32_t> (IM_ARRAYSIZE (PoolSize)),      // poolSizeCount
-      PoolSize,                                             // pPoolSizes
+      1,                                                    // poolSizeCount
+      &PoolSize,                                            // pPoolSizes
       nullptr                                               // pNext
   );
 
@@ -110,9 +109,9 @@ Patata::RaccoonRenderer::CreateImguiPipelineCache (void)
     }
 
   vk::PipelineCacheCreateInfo Info{};
-  vk::Result                  Result = Vulkan.Device.createPipelineCache (
-      &Info, nullptr, &Vulkan.ImguiPipelineCache);
 
+  vk::Result Result = Vulkan.Device.createPipelineCache (
+      &Info, nullptr, &Vulkan.ImguiPipelineCache);
   if (Result != vk::Result::eSuccess)
     {
       std::future<void> ReturnVulkanCheck
@@ -191,6 +190,7 @@ Patata::RaccoonRenderer::InitImguiVulkan (SDL_Window * Window)
           PATATA_TERM_BOLD,
           "ImGui Vulkan Implementation Initialization : ", PATATA_TERM_RESET,
           PATATA_TERM_COLOR_YELLOW, "Fail", PATATA_TERM_RESET);
+
       return false;
     }
   else

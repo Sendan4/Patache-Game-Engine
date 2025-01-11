@@ -16,7 +16,7 @@ The validation layers are activated with USE_VVL=ON.
 They are for the development and testing of this backend.
 */
 // Layers
-#if defined(DEBUG) && defined(PATATA_USE_VVL)
+#if PATATA_DEBUG == 1 && defined(PATATA_USE_VVL)
   const char * pLayer[PATATA_VK_LAYER_COUNT]{
     "VK_LAYER_KHRONOS_validation",
   };
@@ -35,7 +35,7 @@ They are for the development and testing of this backend.
   SDL_Vulkan_GetInstanceExtensions (*pRaccoonInfo->ppWindow,
                                     &SDLExtensionCount, nullptr);
 
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
   uint32_t      MyExtensionCount        = SDLExtensionCount + 1;
   const char ** pExtensionInstanceNames = new const char *[MyExtensionCount];
 #else
@@ -45,21 +45,21 @@ They are for the development and testing of this backend.
   bool FoundExtensions = SDL_Vulkan_GetInstanceExtensions (
       *pRaccoonInfo->ppWindow, &SDLExtensionCount, pExtensionInstanceNames);
 
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
   pExtensionInstanceNames[SDLExtensionCount] = "VK_EXT_debug_utils";
 #endif
 
   if (FoundExtensions)
     std::future<void> VulkanList = std::async (
         std::launch::async, Patata::Log::VulkanList, pExtensionInstanceNames,
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
         MyExtensionCount,
 #else
         SDLExtensionCount,
 #endif
         "Instance Extensions");
 
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
   pRaccoonInfo->pPatataEngineInfo->VkInstanceExtensions
       = new const char *[MyExtensionCount];
 
@@ -75,7 +75,7 @@ They are for the development and testing of this backend.
   vk::InstanceCreateInfo InstanceInfo (
       {},
       &PatataEngineInfo, // pApplicationInfo
-#if defined(DEBUG) && defined(PATATA_USE_VVL)
+#if PATATA_DEBUG == 1 && defined(PATATA_USE_VVL)
       // Using Layers
       PATATA_VK_LAYER_COUNT, // enabledLayerCount
       pLayer,                // ppEnabledLayerNames
@@ -84,7 +84,7 @@ They are for the development and testing of this backend.
       0,       // enabledLayerCount
       nullptr, // ppEnabledLayerNames
 #endif
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
       MyExtensionCount, // enabledExtensionCount
 #else
       SDLExtensionCount, // enabledExtensionCount
@@ -98,11 +98,8 @@ They are for the development and testing of this backend.
 
   delete[] pExtensionInstanceNames;
 
-  if (Result != vk::Result::eSuccess)
+  if (Result == vk::Result::eErrorIncompatibleDriver)
     {
-      std::future<void> ReturnVulkanCheck = std::async (
-          std::launch::async, Patata::Log::VulkanCheck, "Instance", Result);
-
       std::future<void> ReturnVulkanErr = std::async (
           std::launch::async, Patata::Log::FatalErrorMessage,
           "Patata Engine - Raccoon Renderer",
@@ -110,6 +107,14 @@ They are for the development and testing of this backend.
                        "GPU does not support the Vulkan API. "
                        + vk::to_string (Result)),
           *pRaccoonInfo->pConfiguration);
+
+      return false;
+    }
+
+  if (Result != vk::Result::eSuccess)
+    {
+      std::future<void> ReturnVulkanCheck = std::async (
+          std::launch::async, Patata::Log::VulkanCheck, "Instance", Result);
 
       return false;
     }

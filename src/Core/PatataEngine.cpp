@@ -1,9 +1,7 @@
-#if defined(__linux__)
-#include <cstdlib>
-#endif
 #include <future>
+#if PATATA_DEBUG == 1
+#include <cassert>
 
-#if defined(DEBUG)
 #include <imgui_impl_vulkan.h>
 #include <SDL_syswm.h>
 #endif
@@ -16,7 +14,7 @@
 // Patata Engine
 #include "PatataEngine/PatataEngine.hpp"
 // PatataEngineImpl.hpp
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
 #include "StructEngineInfo.hpp"
 #endif
 #include "StructConfig.hpp"
@@ -29,6 +27,8 @@
 // Private API
 Patata::Engine::EngineImpl::EngineImpl (const char * WindowTitle)
 {
+  // assert (WindowTitle == nullptr && "This constructor must have text");
+
   {
     std::future<void> PatataStarLogInfo
         = std::async (std::launch::async, Patata::Log::StartPatataLogInfo);
@@ -40,17 +40,12 @@ Patata::Engine::EngineImpl::EngineImpl (const char * WindowTitle)
   // Async change enviroment variables
   // Linux specific variables
 #if defined(__linux__)
-  std::future<int> setenv_PreferWayland_Async;
+  std::future<SDL_bool> SetHintWithPriority_PreferWayland_Async;
 
   if (Configuration.PreferWayland)
-    setenv_PreferWayland_Async = std::async (std::launch::async, setenv,
-                                             "SDL_VIDEODRIVER", "wayland", 1);
-
-  std::future<int> setenv_EnableMangoHud_Async;
-
-  if (Configuration.EnableMangoHud)
-    setenv_EnableMangoHud_Async
-        = std::async (std::launch::async, setenv, "MANGOHUD", "1", 1);
+    SetHintWithPriority_PreferWayland_Async
+        = std::async (std::launch::async, SDL_SetHintWithPriority,
+                      SDL_HINT_VIDEODRIVER, "Wayland", SDL_HINT_OVERRIDE);
 #endif
 
   // Vulkan VVL VK_LAYER_PATH
@@ -71,24 +66,16 @@ Patata::Engine::EngineImpl::EngineImpl (const char * WindowTitle)
                     "VK_LAYER_PATH", PATATA_VVL_SDK_PATH);
 #endif
 
+  // TODO: remover setenv para otra cosa que no sea Vulkan VVL
   // Linux especific variables
 #if defined(__linux__)
   if (Configuration.PreferWayland)
     {
-      setenv_PreferWayland_Async.wait ();
-      if (setenv_PreferWayland_Async.get () != 0)
+      SetHintWithPriority_PreferWayland_Async.wait ();
+      if (!SetHintWithPriority_PreferWayland_Async.get ())
         std::future<void> Err
             = std::async (std::launch::async, Patata::Log::ErrorMessage,
-                          "Cannot set enviroment varible SDL_VIDEODRIVER");
-    }
-
-  if (Configuration.EnableMangoHud)
-    {
-      setenv_EnableMangoHud_Async.wait ();
-      if (setenv_EnableMangoHud_Async.get () != 0)
-        std::future<void> Err
-            = std::async (std::launch::async, Patata::Log::ErrorMessage,
-                          "Cannot set enviroment varible MANGOHUD");
+                          "Cannot set hint SDL_HINT_VIDEODRIVER");
     }
 #endif
 
@@ -123,14 +110,14 @@ Patata::Engine::EngineImpl::EngineImpl (const char * WindowTitle)
   SetWindowIcon ();
 #endif
 
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
   InitImgui ();
 #endif
 
   RaccoonRenderer = new Patata::RaccoonRenderer (&RaccoonInfo);
 }
 
-#if defined(DEBUG)
+#if PATATA_DEBUG == 1
 #include <imgui.h>
 #include <imgui_impl_sdl2.h>
 #endif
@@ -139,8 +126,8 @@ Patata::Engine::EngineImpl::~EngineImpl (void)
 {
   delete RaccoonRenderer;
 
-// Imgui
-#if defined(DEBUG)
+  // Imgui
+#if PATATA_DEBUG == 1
   ImGui_ImplSDL2_Shutdown ();
   ImGui::DestroyContext ();
 #endif
