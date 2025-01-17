@@ -29,9 +29,9 @@
 namespace Patata
 {
 inline void
-DrawDebugUI (Patata::EngineInfo * pPatataEngineInfo,
-             Patata::Config * pConfiguration, uint32_t & SwapChainImageCount,
-             vk::Extent2D & SwapChainExtent)
+DrawDebugUI (Patata::EngineInfo * engineInfo, Patata::Config & configuration,
+             const uint32_t &     SwapChainImageCount,
+             const vk::Extent2D & SwapChainExtent)
 {
 
   // Guardando los estilos predeterminados para revertir los cambios
@@ -94,7 +94,7 @@ DrawDebugUI (Patata::EngineInfo * pPatataEngineInfo,
   // End Patata Style
 
   // Menu Bar
-  if (pPatataEngineInfo->ShowMainMenuBar)
+  if (engineInfo->ShowMainMenuBar)
     {
       ImGui::GetStyle ().Colors[ImGuiCol_Button]
           = ImVec4 (0.0f, 0.0f, 0.0f, 0.0f);
@@ -106,23 +106,23 @@ DrawDebugUI (Patata::EngineInfo * pPatataEngineInfo,
       ImGui::BeginMainMenuBar ();
       if (ImGui::Button ("(Patata Icon)"))
         {
-          pPatataEngineInfo->ShowMainMenuBar = false;
+          engineInfo->ShowMainMenuBar = false;
         }
 
-      if (ImGui::Button ("Info"))
+      if (ImGui::Button ("About"))
         {
-          if (pPatataEngineInfo->PatataInfoWindow)
-            pPatataEngineInfo->PatataInfoWindow = false;
+          if (engineInfo->PatataInfoWindow)
+            engineInfo->PatataInfoWindow = false;
           else
-            pPatataEngineInfo->PatataInfoWindow = true;
+            engineInfo->PatataInfoWindow = true;
         }
 
       if (ImGui::Button ("Config"))
         {
-          if (pPatataEngineInfo->PatataConfigWindow)
-            pPatataEngineInfo->PatataConfigWindow = false;
+          if (engineInfo->PatataConfigWindow)
+            engineInfo->PatataConfigWindow = false;
           else
-            pPatataEngineInfo->PatataConfigWindow = true;
+            engineInfo->PatataConfigWindow = true;
         }
       ImGui::EndMainMenuBar ();
 
@@ -134,10 +134,9 @@ DrawDebugUI (Patata::EngineInfo * pPatataEngineInfo,
   // Patata Window Info
   ImGui::SetNextWindowSize (ImVec2 (570, 550), ImGuiCond_FirstUseEver);
 
-  if (pPatataEngineInfo->PatataInfoWindow)
+  if (engineInfo->PatataInfoWindow)
     {
-      ImGui::Begin ("Patata Engine | (Debug) Development",
-                    &pPatataEngineInfo->PatataInfoWindow);
+      ImGui::Begin ("About the patata engine", &engineInfo->PatataInfoWindow);
 
       ImGui::PushStyleVar (ImGuiStyleVar_CellPadding,
                            ImVec2 (PATATA_IMGUI_TABLE_PADDING));
@@ -324,31 +323,24 @@ DrawDebugUI (Patata::EngineInfo * pPatataEngineInfo,
                   ImGui::TableSetColumnIndex (1);
                   ImGui::Text (PATATA_ARCH);
 #endif
-
-                  // Game Name
-#if PATATA_GAME_NAME != 0
-                  ImGui::TableNextRow ();
-
-                  ImGui::TableSetColumnIndex (0);
-                  ImGui::Text ("Game Name");
-
-                  ImGui::TableSetColumnIndex (1);
-                  ImGui::Text (PATATA_GAME_NAME);
-#endif
-
                   ImGui::EndTable ();
                 }
+              ImGui::Spacing ();
+              ImGui::Text ("Patata Engine is under the MIT License.");
+              ImGui::Spacing ();
               ImGui::TreePop ();
             }
 
           // Tabla para ver las versiones de las librerias
-          if (ImGui::TreeNode ("Libraries in use"))
+          if (ImGui::TreeNode ("Libraries used"))
             {
-              if (ImGui::BeginTable ("Libraries", 2, PATATA_IMGUI_TABLE_FLAGS))
+              if (ImGui::BeginTable ("Libraries", 3, PATATA_IMGUI_TABLE_FLAGS))
                 {
                   ImGui::TableSetupColumn ("Name",
                                            ImGuiTableColumnFlags_WidthFixed);
                   ImGui::TableSetupColumn ("Version",
+                                           ImGuiTableColumnFlags_WidthFixed);
+                  ImGui::TableSetupColumn ("Licence",
                                            ImGuiTableColumnFlags_WidthFixed);
 
                   // Fast IO Commit Hash Short
@@ -360,6 +352,9 @@ DrawDebugUI (Patata::EngineInfo * pPatataEngineInfo,
 
                   ImGui::TableSetColumnIndex (1);
                   ImGui::Text (PATATA_FAST_IO_GIT_COMMIT_HASH_SHORT);
+
+                  ImGui::TableSetColumnIndex (2);
+                  ImGui::Text ("MIT");
 #endif
 #if defined(PATATA_RAPIDYAML_VERSION)
                   // RapidYaml Version
@@ -369,8 +364,10 @@ DrawDebugUI (Patata::EngineInfo * pPatataEngineInfo,
                   ImGui::Text ("RapidYaml");
 
                   ImGui::TableSetColumnIndex (1);
-
                   ImGui::Text (PATATA_RAPIDYAML_VERSION);
+
+                  ImGui::TableSetColumnIndex (2);
+                  ImGui::Text ("MIT");
 #endif
 
                   ImGui::TableNextRow ();
@@ -380,13 +377,14 @@ DrawDebugUI (Patata::EngineInfo * pPatataEngineInfo,
                   ImGui::Text ("SDL");
 
                   ImGui::TableSetColumnIndex (1);
-                  ImGui::Text ("%u.%u.%u",
-                               pPatataEngineInfo->WindowInfo.version.major,
-                               pPatataEngineInfo->WindowInfo.version.minor,
-                               pPatataEngineInfo->WindowInfo.version.patch);
+                  ImGui::Text ("%u.%u.%u", SDL_MAJOR_VERSION,
+                               SDL_MINOR_VERSION, SDL_PATCHLEVEL);
+
+                  ImGui::TableSetColumnIndex (2);
+                  ImGui::Text ("zlib");
 
                   // Vulkan Version
-                  if (!pPatataEngineInfo->VkVersionInUse.empty ())
+                  if (engineInfo->VkVersion[0] != '\0')
                     {
                       ImGui::TableNextRow ();
 
@@ -394,8 +392,10 @@ DrawDebugUI (Patata::EngineInfo * pPatataEngineInfo,
                       ImGui::Text ("Vulkan");
 
                       ImGui::TableSetColumnIndex (1);
-                      ImGui::Text ("%s",
-                                   pPatataEngineInfo->VkVersionInUse.c_str ());
+                      ImGui::Text ("%s", engineInfo->VkVersion);
+
+                      ImGui::TableSetColumnIndex (2);
+                      ImGui::Text ("Apache 2.0");
                     }
 
                     // ImGui Version
@@ -407,6 +407,9 @@ DrawDebugUI (Patata::EngineInfo * pPatataEngineInfo,
 
                   ImGui::TableSetColumnIndex (1);
                   ImGui::Text ("%s (%d)", IMGUI_VERSION, IMGUI_VERSION_NUM);
+
+                  ImGui::TableSetColumnIndex (2);
+                  ImGui::Text ("MIT");
 #endif
 
                   ImGui::EndTable ();
@@ -432,13 +435,13 @@ DrawDebugUI (Patata::EngineInfo * pPatataEngineInfo,
 
                   // Desktop
 #if defined(__linux__)
-                  if (pPatataEngineInfo->Desktop != nullptr)
+                  if (engineInfo->Desktop != nullptr)
                     {
                       ImGui::TableSetColumnIndex (0);
                       ImGui::Text ("Desktop");
 
                       ImGui::TableSetColumnIndex (1);
-                      ImGui::Text ("%s", pPatataEngineInfo->Desktop);
+                      ImGui::Text ("%s", engineInfo->Desktop);
 
                       ImGui::TableNextRow ();
                     }
@@ -450,18 +453,15 @@ DrawDebugUI (Patata::EngineInfo * pPatataEngineInfo,
 
                   ImGui::TableSetColumnIndex (1);
 #if defined(_WIN64) // Windows
-                  if (pPatataEngineInfo->WindowInfo.subsystem
-                      == SDL_SYSWM_WINDOWS)
+                  if (engineInfo->WindowInfo.subsystem == SDL_SYSWM_WINDOWS)
                     ImGui::Text ("Windows");
-                  else if (pPatataEngineInfo->WindowInfo.subsystem
-                           == SDL_SYSWM_WINRT)
+                  else if (engineInfo->WindowInfo.subsystem == SDL_SYSWM_WINRT)
                     ImGui::Text ("WinRT");
 #else // Linux
-                  if (pPatataEngineInfo->WindowInfo.subsystem == SDL_SYSWM_X11
-                      && strcmp (pPatataEngineInfo->SessionType, "wayland")
-                             == 0)
+                  if (engineInfo->WindowInfo.subsystem == SDL_SYSWM_X11
+                      && strcmp (engineInfo->SessionType, "wayland") == 0)
                     ImGui::Text ("XWayland");
-                  else if (pPatataEngineInfo->WindowInfo.subsystem
+                  else if (engineInfo->WindowInfo.subsystem
                            == SDL_SYSWM_WAYLAND)
                     ImGui::Text ("Wayland");
 #endif
@@ -469,13 +469,13 @@ DrawDebugUI (Patata::EngineInfo * pPatataEngineInfo,
 #if defined(__linux__)
                   ImGui::TableNextRow ();
 
-                  if (pPatataEngineInfo->SessionType != nullptr)
+                  if (engineInfo->SessionType != nullptr)
                     {
                       ImGui::TableSetColumnIndex (0);
                       ImGui::Text ("Session Type");
 
                       ImGui::TableSetColumnIndex (1);
-                      ImGui::Text ("%s", pPatataEngineInfo->SessionType);
+                      ImGui::Text ("%s", engineInfo->SessionType);
                     }
 #endif
                   ImGui::EndTable ();
@@ -493,28 +493,27 @@ DrawDebugUI (Patata::EngineInfo * pPatataEngineInfo,
                                            ImGuiTableColumnFlags_WidthFixed);
 
 #if defined(__linux__) // Linux
-                  if (pPatataEngineInfo->WindowInfo.subsystem
-                      == SDL_SYSWM_WAYLAND)
+                  if (engineInfo->WindowInfo.subsystem == SDL_SYSWM_WAYLAND)
                     {
                       // Wayland
                       // Has Display?
-                      if (pPatataEngineInfo->WindowInfo.info.wl.display
-                          != nullptr)
+                      if (engineInfo->WindowInfo.info.wl.display != nullptr)
                         {
                           ImGui::TableNextRow ();
 
                           ImGui::TableSetColumnIndex (0);
 #if defined(__GNUC__) || defined(__MINGW64__)
                           ImGui::Text (
-                              "%s", abi::__cxa_demangle (
-                                        typeid (pPatataEngineInfo->WindowInfo
-                                                    .info.wl.display)
-                                            .name (),
-                                        nullptr, nullptr, nullptr));
+                              "%s",
+                              abi::__cxa_demangle (
+                                  typeid (
+                                      engineInfo->WindowInfo.info.wl.display)
+                                      .name (),
+                                  nullptr, nullptr, nullptr));
 #else
-                          ImGui::Text (typeid (pPatataEngineInfo->WindowInfo
-                                                   .info.wl.display)
-                                           .name ());
+                          ImGui::Text (
+                              typeid (engineInfo->WindowInfo.info.wl.display)
+                                  .name ());
 #endif
 
                           ImGui::TableSetColumnIndex (1);
@@ -522,23 +521,23 @@ DrawDebugUI (Patata::EngineInfo * pPatataEngineInfo,
                         }
 
                       // Has Surface?
-                      if (pPatataEngineInfo->WindowInfo.info.wl.surface
-                          != nullptr)
+                      if (engineInfo->WindowInfo.info.wl.surface != nullptr)
                         {
                           ImGui::TableNextRow ();
 
                           ImGui::TableSetColumnIndex (0);
 #if defined(__GNUC__) || defined(__MINGW64__)
                           ImGui::Text (
-                              "%s", abi::__cxa_demangle (
-                                        typeid (pPatataEngineInfo->WindowInfo
-                                                    .info.wl.surface)
-                                            .name (),
-                                        nullptr, nullptr, nullptr));
+                              "%s",
+                              abi::__cxa_demangle (
+                                  typeid (
+                                      engineInfo->WindowInfo.info.wl.surface)
+                                      .name (),
+                                  nullptr, nullptr, nullptr));
 #else
-                          ImGui::Text (typeid (pPatataEngineInfo->WindowInfo
-                                                   .info.wl.surface)
-                                           .name ());
+                          ImGui::Text (
+                              typeid (engineInfo->WindowInfo.info.wl.surface)
+                                  .name ());
 #endif
 
                           ImGui::TableSetColumnIndex (1);
@@ -546,23 +545,24 @@ DrawDebugUI (Patata::EngineInfo * pPatataEngineInfo,
                         }
 
                       // Has wayland xdg surface?
-                      if (pPatataEngineInfo->WindowInfo.info.wl.xdg_surface
+                      if (engineInfo->WindowInfo.info.wl.xdg_surface
                           != nullptr)
                         {
                           ImGui::TableNextRow ();
 
                           ImGui::TableSetColumnIndex (0);
 #if defined(__GNUC__) || defined(__MINGW64__)
-                          ImGui::Text (
-                              "%s", abi::__cxa_demangle (
-                                        typeid (pPatataEngineInfo->WindowInfo
-                                                    .info.wl.xdg_surface)
-                                            .name (),
-                                        nullptr, nullptr, nullptr));
+                          ImGui::Text ("%s",
+                                       abi::__cxa_demangle (
+                                           typeid (engineInfo->WindowInfo.info
+                                                       .wl.xdg_surface)
+                                               .name (),
+                                           nullptr, nullptr, nullptr));
 #else
-                          ImGui::Text (typeid (pPatataEngineInfo->WindowInfo
-                                                   .info.wl.xdg_surface)
-                                           .name ());
+                          ImGui::Text (
+                              typeid (
+                                  engineInfo->WindowInfo.info.wl.xdg_surface)
+                                  .name ());
 #endif
 
                           ImGui::TableSetColumnIndex (1);
@@ -571,23 +571,23 @@ DrawDebugUI (Patata::EngineInfo * pPatataEngineInfo,
                         }
 
                       // Has wayland xdg popup?
-                      if (pPatataEngineInfo->WindowInfo.info.wl.xdg_popup
-                          != nullptr)
+                      if (engineInfo->WindowInfo.info.wl.xdg_popup != nullptr)
                         {
                           ImGui::TableNextRow ();
 
                           ImGui::TableSetColumnIndex (0);
 #if defined(__GNUC__) || defined(__MINGW64__)
                           ImGui::Text (
-                              "%s", abi::__cxa_demangle (
-                                        typeid (pPatataEngineInfo->WindowInfo
-                                                    .info.wl.xdg_popup)
-                                            .name (),
-                                        nullptr, nullptr, nullptr));
+                              "%s",
+                              abi::__cxa_demangle (
+                                  typeid (
+                                      engineInfo->WindowInfo.info.wl.xdg_popup)
+                                      .name (),
+                                  nullptr, nullptr, nullptr));
 #else
-                          ImGui::Text (typeid (pPatataEngineInfo->WindowInfo
-                                                   .info.wl.xdg_popup)
-                                           .name ());
+                          ImGui::Text (
+                              typeid (engineInfo->WindowInfo.info.wl.xdg_popup)
+                                  .name ());
 #endif
 
                           ImGui::TableSetColumnIndex (1);
@@ -595,52 +595,51 @@ DrawDebugUI (Patata::EngineInfo * pPatataEngineInfo,
                         }
 
                       // Has wayland egl window?
-                      if (pPatataEngineInfo->WindowInfo.info.wl.egl_window
-                          != nullptr)
+                      if (engineInfo->WindowInfo.info.wl.egl_window != nullptr)
                         {
                           ImGui::TableNextRow ();
 
                           ImGui::TableSetColumnIndex (0);
 #if defined(__GNUC__) || defined(__MINGW64__)
-                          ImGui::Text (
-                              "%s", abi::__cxa_demangle (
-                                        typeid (pPatataEngineInfo->WindowInfo
-                                                    .info.wl.egl_window)
-                                            .name (),
-                                        nullptr, nullptr, nullptr));
+                          ImGui::Text ("%s",
+                                       abi::__cxa_demangle (
+                                           typeid (engineInfo->WindowInfo.info
+                                                       .wl.egl_window)
+                                               .name (),
+                                           nullptr, nullptr, nullptr));
 #else
-                          ImGui::Text (typeid (pPatataEngineInfo->WindowInfo
-                                                   .info.wl.egl_window)
-                                           .name ());
+                          ImGui::Text (
+                              typeid (
+                                  engineInfo->WindowInfo.info.wl.egl_window)
+                                  .name ());
 #endif
 
                           ImGui::TableSetColumnIndex (1);
                           ImGui::Text ("Wayland EGL window (native window)");
                         }
                     }
-                  else if (pPatataEngineInfo->WindowInfo.subsystem
-                           == SDL_SYSWM_X11)
+                  else if (engineInfo->WindowInfo.subsystem == SDL_SYSWM_X11)
                     {
 #if defined(PATATA_LINUX_XORG_SUPPORT)
                       // X11 / Xorg
                       // Has Display?
-                      if (pPatataEngineInfo->WindowInfo.info.x11.display
-                          != nullptr)
+                      if (engineInfo->WindowInfo.info.x11.display != nullptr)
                         {
                           ImGui::TableNextRow ();
 
                           ImGui::TableSetColumnIndex (0);
 #if defined(__GNUC__) || defined(__MINGW64__)
                           ImGui::Text (
-                              "%s", abi::__cxa_demangle (
-                                        typeid (pPatataEngineInfo->WindowInfo
-                                                    .info.x11.display)
-                                            .name (),
-                                        nullptr, nullptr, nullptr));
+                              "%s",
+                              abi::__cxa_demangle (
+                                  typeid (
+                                      engineInfo->WindowInfo.info.x11.display)
+                                      .name (),
+                                  nullptr, nullptr, nullptr));
 #else
-                          ImGui::Text (typeid (pPatataEngineInfo->WindowInfo
-                                                   .info.x11.display)
-                                           .name ());
+                          ImGui::Text (
+                              typeid (engineInfo->WindowInfo.info.x11.display)
+                                  .name ());
 #endif
 
                           ImGui::TableSetColumnIndex (1);
@@ -649,22 +648,23 @@ DrawDebugUI (Patata::EngineInfo * pPatataEngineInfo,
 
                         // Has Window?
 #if defined(PATATA_LINUX_XORG_SUPPORT)
-                      if (pPatataEngineInfo->WindowInfo.info.x11.window)
+                      if (engineInfo->WindowInfo.info.x11.window)
                         {
                           ImGui::TableNextRow ();
 
                           ImGui::TableSetColumnIndex (0);
 #if defined(__GNUC__) || defined(__MINGW64__)
                           ImGui::Text (
-                              "%s", abi::__cxa_demangle (
-                                        typeid (pPatataEngineInfo->WindowInfo
-                                                    .info.x11.window)
-                                            .name (),
-                                        nullptr, nullptr, nullptr));
+                              "%s",
+                              abi::__cxa_demangle (
+                                  typeid (
+                                      engineInfo->WindowInfo.info.x11.window)
+                                      .name (),
+                                  nullptr, nullptr, nullptr));
 #else
-                          ImGui::Text (typeid (pPatataEngineInfo->WindowInfo
-                                                   .info.x11.window)
-                                           .name ());
+                          ImGui::Text (
+                              typeid (engineInfo->WindowInfo.info.x11.window)
+                                  .name ());
 #endif
 
                           ImGui::TableSetColumnIndex (1);
@@ -676,49 +676,46 @@ DrawDebugUI (Patata::EngineInfo * pPatataEngineInfo,
 #endif
 
 #if defined(_WIN64) // Windows
-                  if (pPatataEngineInfo->WindowInfo.subsystem
-                      == SDL_SYSWM_WINDOWS)
+                  if (engineInfo->WindowInfo.subsystem == SDL_SYSWM_WINDOWS)
                     {
-                      if (pPatataEngineInfo->WindowInfo.info.win.window
-                          != nullptr)
+                      if (engineInfo->WindowInfo.info.win.window != nullptr)
                         {
                           ImGui::TableNextRow ();
 
                           ImGui::TableSetColumnIndex (0);
 #if defined(__GNUC__) || defined(__MINGW64__)
                           ImGui::Text (
-                              "%s", abi::__cxa_demangle (
-                                        typeid (pPatataEngineInfo->WindowInfo
-                                                    .info.win.window)
-                                            .name (),
-                                        nullptr, nullptr, nullptr));
+                              "%s",
+                              abi::__cxa_demangle (
+                                  typeid (
+                                      engineInfo->WindowInfo.info.win.window)
+                                      .name (),
+                                  nullptr, nullptr, nullptr));
 #else
-                          ImGui::Text (typeid (pPatataEngineInfo->WindowInfo
-                                                   .info.win.window)
-                                           .name ());
+                          ImGui::Text (
+                              typeid (engineInfo->WindowInfo.info.win.window)
+                                  .name ());
 #endif
 
                           ImGui::TableSetColumnIndex (1);
                           ImGui::Text ("The window handle");
                         }
 
-                      if (pPatataEngineInfo->WindowInfo.info.win.hdc
-                          != nullptr)
+                      if (engineInfo->WindowInfo.info.win.hdc != nullptr)
                         {
                           ImGui::TableNextRow ();
 
                           ImGui::TableSetColumnIndex (0);
 #if defined(__GNUC__) || defined(__MINGW64__)
                           ImGui::Text (
-                              "%s", abi::__cxa_demangle (
-                                        typeid (pPatataEngineInfo->WindowInfo
-                                                    .info.win.hdc)
-                                            .name (),
-                                        nullptr, nullptr, nullptr));
+                              "%s",
+                              abi::__cxa_demangle (
+                                  typeid (engineInfo->WindowInfo.info.win.hdc)
+                                      .name (),
+                                  nullptr, nullptr, nullptr));
 #else
                           ImGui::Text (
-                              typeid (
-                                  pPatataEngineInfo->WindowInfo.info.win.hdc)
+                              typeid (engineInfo->WindowInfo.info.win.hdc)
                                   .name ());
 #endif
 
@@ -726,23 +723,23 @@ DrawDebugUI (Patata::EngineInfo * pPatataEngineInfo,
                           ImGui::Text ("The window device context");
                         }
 
-                      if (pPatataEngineInfo->WindowInfo.info.win.hinstance
-                          != nullptr)
+                      if (engineInfo->WindowInfo.info.win.hinstance != nullptr)
                         {
                           ImGui::TableNextRow ();
 
                           ImGui::TableSetColumnIndex (0);
 #if defined(__GNUC__) || defined(__MINGW64__)
-                          ImGui::Text (
-                              "%s", abi::__cxa_demangle (
-                                        typeid (pPatataEngineInfo->WindowInfo
-                                                    .info.win.hinstance)
-                                            .name (),
-                                        nullptr, nullptr, nullptr));
+                          ImGui::Text ("%s",
+                                       abi::__cxa_demangle (
+                                           typeid (engineInfo->WindowInfo.info
+                                                       .win.hinstance)
+                                               .name (),
+                                           nullptr, nullptr, nullptr));
 #else
-                          ImGui::Text (typeid (pPatataEngineInfo->WindowInfo
-                                                   .info.win.hinstance)
-                                           .name ());
+                          ImGui::Text (
+                              typeid (
+                                  engineInfo->WindowInfo.info.win.hinstance)
+                                  .name ());
 #endif
 
                           ImGui::TableSetColumnIndex (1);
@@ -759,93 +756,79 @@ DrawDebugUI (Patata::EngineInfo * pPatataEngineInfo,
           // List of windows creation flags
           if (ImGui::TreeNode ("Creation flags##1"))
             {
-              if (pPatataEngineInfo->WindowCreationFlags
-                  & SDL_WINDOW_FULLSCREEN)
+              if (engineInfo->WindowCreationFlags & SDL_WINDOW_FULLSCREEN)
                 ImGui::BulletText ("fullscreen window");
 
-              if (pPatataEngineInfo->WindowCreationFlags & SDL_WINDOW_OPENGL)
+              if (engineInfo->WindowCreationFlags & SDL_WINDOW_OPENGL)
                 ImGui::BulletText ("window usable with OpenGL context");
 
-              if (pPatataEngineInfo->WindowCreationFlags & SDL_WINDOW_SHOWN)
+              if (engineInfo->WindowCreationFlags & SDL_WINDOW_SHOWN)
                 ImGui::BulletText ("window is visible");
 
-              if (pPatataEngineInfo->WindowCreationFlags & SDL_WINDOW_HIDDEN)
+              if (engineInfo->WindowCreationFlags & SDL_WINDOW_HIDDEN)
                 ImGui::BulletText ("window is not visible");
 
-              if (pPatataEngineInfo->WindowCreationFlags
-                  & SDL_WINDOW_BORDERLESS)
+              if (engineInfo->WindowCreationFlags & SDL_WINDOW_BORDERLESS)
                 ImGui::BulletText ("no window decoration");
 
-              if (pPatataEngineInfo->WindowCreationFlags
-                  & SDL_WINDOW_RESIZABLE)
+              if (engineInfo->WindowCreationFlags & SDL_WINDOW_RESIZABLE)
                 ImGui::BulletText ("window can be resized");
 
-              if (pPatataEngineInfo->WindowCreationFlags
-                  & SDL_WINDOW_MINIMIZED)
+              if (engineInfo->WindowCreationFlags & SDL_WINDOW_MINIMIZED)
                 ImGui::BulletText ("window is minimized");
 
-              if (pPatataEngineInfo->WindowCreationFlags
-                  & SDL_WINDOW_MAXIMIZED)
+              if (engineInfo->WindowCreationFlags & SDL_WINDOW_MAXIMIZED)
                 ImGui::BulletText ("window is maximized");
 
-              if (pPatataEngineInfo->WindowCreationFlags
-                  & SDL_WINDOW_MOUSE_GRABBED)
+              if (engineInfo->WindowCreationFlags & SDL_WINDOW_MOUSE_GRABBED)
                 ImGui::BulletText ("window has grabbed mouse input");
 
-              if (pPatataEngineInfo->WindowCreationFlags
-                  & SDL_WINDOW_INPUT_FOCUS)
+              if (engineInfo->WindowCreationFlags & SDL_WINDOW_INPUT_FOCUS)
                 ImGui::BulletText ("window has input focus");
 
-              if (pPatataEngineInfo->WindowCreationFlags
-                  & SDL_WINDOW_MOUSE_FOCUS)
+              if (engineInfo->WindowCreationFlags & SDL_WINDOW_MOUSE_FOCUS)
                 ImGui::BulletText ("window has mouse focus");
 
-              if (pPatataEngineInfo->WindowCreationFlags & SDL_WINDOW_FOREIGN)
+              if (engineInfo->WindowCreationFlags & SDL_WINDOW_FOREIGN)
                 ImGui::BulletText ("window not created by SDL");
 
-              if (pPatataEngineInfo->WindowCreationFlags
-                  & SDL_WINDOW_ALLOW_HIGHDPI)
+              if (engineInfo->WindowCreationFlags & SDL_WINDOW_ALLOW_HIGHDPI)
                 ImGui::BulletText ("window should be created in "
                                    "high-DPI mode if supported");
 
-              if (pPatataEngineInfo->WindowCreationFlags
-                  & SDL_WINDOW_MOUSE_CAPTURE)
+              if (engineInfo->WindowCreationFlags & SDL_WINDOW_MOUSE_CAPTURE)
                 ImGui::BulletText ("window has mouse captured "
                                    "(unrelated to MOUSE_GRABBED)");
 
-              if (pPatataEngineInfo->WindowCreationFlags
-                  & SDL_WINDOW_ALWAYS_ON_TOP)
+              if (engineInfo->WindowCreationFlags & SDL_WINDOW_ALWAYS_ON_TOP)
                 ImGui::BulletText ("window should always be above others");
 
-              if (pPatataEngineInfo->WindowCreationFlags
-                  & SDL_WINDOW_SKIP_TASKBAR)
+              if (engineInfo->WindowCreationFlags & SDL_WINDOW_SKIP_TASKBAR)
                 ImGui::BulletText (
                     "window should not be added to the taskbar");
 
-              if (pPatataEngineInfo->WindowCreationFlags & SDL_WINDOW_UTILITY)
+              if (engineInfo->WindowCreationFlags & SDL_WINDOW_UTILITY)
                 ImGui::BulletText (
                     "window should be treated as a utility window");
 
-              if (pPatataEngineInfo->WindowCreationFlags & SDL_WINDOW_TOOLTIP)
+              if (engineInfo->WindowCreationFlags & SDL_WINDOW_TOOLTIP)
                 ImGui::BulletText ("window should be treated as a tooltip");
 
-              if (pPatataEngineInfo->WindowCreationFlags
-                  & SDL_WINDOW_POPUP_MENU)
+              if (engineInfo->WindowCreationFlags & SDL_WINDOW_POPUP_MENU)
                 ImGui::BulletText ("window should be treated as a popup menu");
 
-              if (pPatataEngineInfo->WindowCreationFlags
+              if (engineInfo->WindowCreationFlags
                   & SDL_WINDOW_KEYBOARD_GRABBED)
                 ImGui::BulletText ("window has grabbed keyboard input");
 
-              if (pPatataEngineInfo->WindowCreationFlags & SDL_WINDOW_VULKAN)
+              if (engineInfo->WindowCreationFlags & SDL_WINDOW_VULKAN)
                 ImGui::BulletText ("window usable for Vulkan surface");
 
-              if (pPatataEngineInfo->WindowCreationFlags & SDL_WINDOW_METAL)
+              if (engineInfo->WindowCreationFlags & SDL_WINDOW_METAL)
                 ImGui::BulletText ("window usable for Metal view");
 
               ImGui::TreePop ();
             }
-          ImGui::Spacing ();
         }
 
       ImGui::Spacing ();
@@ -896,7 +879,7 @@ DrawDebugUI (Patata::EngineInfo * pPatataEngineInfo,
                   ImGui::Text (PATATA_VULKAN_VALIDATION_LAYERS_VERSION);
 #endif
 
-                  if (!pPatataEngineInfo->VkVersionInUse.empty ())
+                  if (engineInfo->VkVersion[0] != '\0')
                     {
                       ImGui::TableNextRow ();
 
@@ -904,11 +887,12 @@ DrawDebugUI (Patata::EngineInfo * pPatataEngineInfo,
                       ImGui::Text ("Vulkan");
 
                       ImGui::TableSetColumnIndex (1);
-                      ImGui::Text ("%s",
-                                   pPatataEngineInfo->VkVersionInUse.c_str ());
+                      ImGui::Text ("%s", engineInfo->VkVersion);
                     }
                   ImGui::EndTable ();
                 }
+
+              ImGui::Spacing ();
               ImGui::TreePop ();
             }
 
@@ -927,7 +911,7 @@ DrawDebugUI (Patata::EngineInfo * pPatataEngineInfo,
                       ImGui::TableNextRow ();
 
                       ImGui::TableSetColumnIndex (0);
-                      ImGui::Text ("%s", pPatataEngineInfo->VkLayers[i]);
+                      ImGui::Text ("%s", engineInfo->ppVkLayers[i]);
                     }
 
                   ImGui::EndTable ();
@@ -942,18 +926,16 @@ DrawDebugUI (Patata::EngineInfo * pPatataEngineInfo,
                   ImGui::TableHeadersRow ();
 
                   for (uint16_t i = 0;
-                       i < pPatataEngineInfo->VkInstanceExtensionsCount; ++i)
+                       i < engineInfo->VkInstanceExtensionsCount; ++i)
                     {
                       ImGui::TableNextRow ();
 
                       ImGui::TableSetColumnIndex (0);
                       ImGui::Text ("%s",
-                                   pPatataEngineInfo->VkInstanceExtensions[i]);
+                                   engineInfo->ppVkInstanceExtensions[i]);
                     }
                   ImGui::EndTable ();
                 }
-
-              ImGui::Spacing ();
 
               if (ImGui::BeginTable ("Device##VkDeviceList", 1,
                                      PATATA_IMGUI_TABLE_FLAGS))
@@ -962,69 +944,66 @@ DrawDebugUI (Patata::EngineInfo * pPatataEngineInfo,
                                            ImGuiTableColumnFlags_WidthFixed);
                   ImGui::TableHeadersRow ();
 
-                  for (uint32_t i = 0;
-                       i < pPatataEngineInfo->VkDeviceExtensionsCount; ++i)
+                  for (uint32_t i = 0; i < engineInfo->VkDeviceExtensionsCount;
+                       ++i)
                     {
                       ImGui::TableNextRow ();
 
                       ImGui::TableSetColumnIndex (0);
-                      ImGui::Text ("%s",
-                                   pPatataEngineInfo->VkDeviceExtensions[i]);
+                      ImGui::Text ("%s", engineInfo->ppVkDeviceExtensions[i]);
                     }
                   ImGui::EndTable ();
                 }
+              ImGui::Spacing ();
               ImGui::TreePop ();
             }
 
           if (ImGui::TreeNode ("Device"))
             {
-              if (!pPatataEngineInfo->VkDeviceName.empty ())
+              if (engineInfo->VkDeviceName[0] != '\0')
                 {
-                  switch (pPatataEngineInfo->VkDeviceVendorId)
+                  switch (engineInfo->VkDeviceVendorId)
                     {
                     case 32902:
-                      ImGui::TextColored (
-                          ImVec4 (PATATA_IMGUI_INTEL_COLOR), "%s",
-                          pPatataEngineInfo->VkDeviceName.c_str ());
+                      ImGui::TextColored (ImVec4 (PATATA_IMGUI_INTEL_COLOR),
+                                          "%s", engineInfo->VkDeviceName);
                       break;
                     case 4098:
-                      ImGui::TextColored (
-                          ImVec4 (PATATA_IMGUI_AMD_COLOR), "%s",
-                          pPatataEngineInfo->VkDeviceName.c_str ());
+                      ImGui::TextColored (ImVec4 (PATATA_IMGUI_AMD_COLOR),
+                                          "%s", engineInfo->VkDeviceName);
                       break;
                     case 4318:
-                      ImGui::TextColored (
-                          ImVec4 (PATATA_IMGUI_NVIDIA_COLOR), "%s",
-                          pPatataEngineInfo->VkDeviceName.c_str ());
+                      ImGui::TextColored (ImVec4 (PATATA_IMGUI_NVIDIA_COLOR),
+                                          "%s", engineInfo->VkDeviceName);
                       break;
                     case 65541:
-                      ImGui::TextColored (
-                          ImVec4 (PATATA_IMGUI_MESA_COLOR), "Mesa %s",
-                          pPatataEngineInfo->VkDeviceName.c_str ());
+                      ImGui::TextColored (ImVec4 (PATATA_IMGUI_MESA_COLOR),
+                                          "Mesa %s", engineInfo->VkDeviceName);
                       break;
                     default:
                       ImGui::Text ("Unknown");
                       break;
                     }
+
+                  if (engineInfo->VkDeviceType[0] != '\0')
+                    ImGui::Text ("Type : %s", engineInfo->VkDeviceType);
                 }
 
-              if (ImGui::BeginTable ("Vulkan Device Info##1", 2,
-                                     PATATA_IMGUI_TABLE_FLAGS))
+              if (ImGui::BeginTable ("Vendor##1", 2, PATATA_IMGUI_TABLE_FLAGS))
                 {
-                  ImGui::TableSetupColumn ("",
+                  ImGui::TableSetupColumn ("Vendor",
                                            ImGuiTableColumnFlags_WidthFixed);
-                  ImGui::TableSetupColumn ("",
+                  ImGui::TableSetupColumn ("ID",
                                            ImGuiTableColumnFlags_WidthFixed);
 
-                  if (pPatataEngineInfo->VkDeviceVendorId != 0)
+                  ImGui::TableHeadersRow ();
+
+                  if (engineInfo->VkDeviceVendorId != 0)
                     {
                       ImGui::TableNextRow ();
 
                       ImGui::TableSetColumnIndex (0);
-                      ImGui::Text ("Vendor");
-
-                      ImGui::TableSetColumnIndex (1);
-                      switch (pPatataEngineInfo->VkDeviceVendorId)
+                      switch (engineInfo->VkDeviceVendorId)
                         {
                         case 32902:
                           ImGui::TextColored (
@@ -1048,70 +1027,41 @@ DrawDebugUI (Patata::EngineInfo * pPatataEngineInfo,
                               "Unknown");
                           break;
                         }
-
-                      ImGui::TableNextRow ();
-
-                      ImGui::TableSetColumnIndex (0);
-                      ImGui::Text ("Vendor Id");
-
-                      ImGui::TableSetColumnIndex (1);
-                      switch (pPatataEngineInfo->VkDeviceVendorId)
-                        {
-                        case 32902:
-                          ImGui::TextColored (
-                              ImVec4 (PATATA_IMGUI_INTEL_COLOR), "%u  0x%X",
-                              pPatataEngineInfo->VkDeviceVendorId,
-                              pPatataEngineInfo->VkDeviceVendorId);
-                          break;
-                        case 4098:
-                          ImGui::TextColored (
-                              ImVec4 (PATATA_IMGUI_AMD_COLOR), "%u  0x%X",
-                              pPatataEngineInfo->VkDeviceVendorId,
-                              pPatataEngineInfo->VkDeviceVendorId);
-                          break;
-                        case 4318:
-                          ImGui::TextColored (
-                              ImVec4 (PATATA_IMGUI_NVIDIA_COLOR), "%u  0x%X",
-                              pPatataEngineInfo->VkDeviceVendorId,
-                              pPatataEngineInfo->VkDeviceVendorId);
-                          break;
-                        case 65541:
-                          ImGui::TextColored (
-                              ImVec4 (PATATA_IMGUI_MESA_COLOR), "%u  0x%X",
-                              pPatataEngineInfo->VkDeviceVendorId,
-                              pPatataEngineInfo->VkDeviceVendorId);
-                          break;
-                        default:
-                          ImGui::TextColored (
-                              ImVec4 (PATATA_IMGUI_UNKNOWN_VENDOR_COLOR),
-                              "%u  0x%X", pPatataEngineInfo->VkDeviceVendorId,
-                              pPatataEngineInfo->VkDeviceVendorId);
-                          break;
-                        }
                     }
 
-                  if (!pPatataEngineInfo->VkDeviceType.empty ())
-                    {
-                      ImGui::TableNextRow ();
-
-                      ImGui::TableSetColumnIndex (0);
-                      ImGui::Text ("Type");
-
-                      ImGui::TableSetColumnIndex (1);
-                      ImGui::Text ("%s",
-                                   pPatataEngineInfo->VkDeviceType.c_str ());
-                    }
+                  ImGui::TableSetColumnIndex (1);
+                  ImGui::Text ("%u  0x%X", engineInfo->VkDeviceVendorId,
+                               engineInfo->VkDeviceVendorId);
 
                   ImGui::EndTable ();
                 }
+
+              // Queues
+              ImGui::Text ("Queues");
+              if (ImGui::BeginTable ("Queues##AboutQueues", 3,
+                                     PATATA_IMGUI_TABLE_FLAGS))
+                {
+                  ImGui::TableSetupColumn ("Index",
+                                           ImGuiTableColumnFlags_WidthFixed);
+                  ImGui::TableSetupColumn ("Family Properties",
+                                           ImGuiTableColumnFlags_WidthFixed);
+                  ImGui::TableSetupColumn ("Priority",
+                                           ImGuiTableColumnFlags_WidthFixed);
+
+                  ImGui::TableHeadersRow ();
+
+                  ImGui::EndTable ();
+                }
+
+              ImGui::Spacing ();
               ImGui::TreePop ();
             }
 
           if (ImGui::TreeNode ("Driver"))
             {
-              if (!pPatataEngineInfo->VkDriverName.empty ())
+              if (engineInfo->VkDriverName[0] != '\0')
                 {
-                  ImGui::Text ("%s", pPatataEngineInfo->VkDriverName.c_str ());
+                  ImGui::Text ("%s", engineInfo->VkDriverName);
                 }
 
               if (ImGui::BeginTable ("Vulkan Driver Info##1", 2,
@@ -1122,7 +1072,7 @@ DrawDebugUI (Patata::EngineInfo * pPatataEngineInfo,
                   ImGui::TableSetupColumn ("",
                                            ImGuiTableColumnFlags_WidthFixed);
 
-                  if (!pPatataEngineInfo->VkDriverId.empty ())
+                  if (engineInfo->VkDriverId[0] != '\0')
                     {
                       ImGui::TableNextRow ();
 
@@ -1130,11 +1080,10 @@ DrawDebugUI (Patata::EngineInfo * pPatataEngineInfo,
                       ImGui::Text ("Id");
 
                       ImGui::TableSetColumnIndex (1);
-                      ImGui::Text ("%s",
-                                   pPatataEngineInfo->VkDriverId.c_str ());
+                      ImGui::Text ("%s", engineInfo->VkDriverId);
                     }
 
-                  if (!pPatataEngineInfo->VkDriverInfo.empty ())
+                  if (engineInfo->VkDriverInfo[0] != '\0')
                     {
                       ImGui::TableNextRow ();
 
@@ -1142,11 +1091,10 @@ DrawDebugUI (Patata::EngineInfo * pPatataEngineInfo,
                       ImGui::Text ("Info");
 
                       ImGui::TableSetColumnIndex (1);
-                      ImGui::Text ("%s",
-                                   pPatataEngineInfo->VkDriverInfo.c_str ());
+                      ImGui::Text ("%s", engineInfo->VkDriverInfo);
                     }
 
-                  if (!pPatataEngineInfo->VkDriverVersion.empty ())
+                  if (engineInfo->VkDriverVersion[0] != '\0')
                     {
                       ImGui::TableNextRow ();
 
@@ -1154,12 +1102,12 @@ DrawDebugUI (Patata::EngineInfo * pPatataEngineInfo,
                       ImGui::Text ("Version");
 
                       ImGui::TableSetColumnIndex (1);
-                      ImGui::Text (
-                          "%s", pPatataEngineInfo->VkDriverVersion.c_str ());
+                      ImGui::Text ("%s", engineInfo->VkDriverVersion);
                     }
 
                   ImGui::EndTable ();
                 }
+              ImGui::Spacing ();
               ImGui::TreePop ();
             }
 
@@ -1181,26 +1129,25 @@ DrawDebugUI (Patata::EngineInfo * pPatataEngineInfo,
 
                   ImGui::TableSetColumnIndex (1);
                   ImGui::Text (
-                      "%s",
-                      vk::to_string (pPatataEngineInfo->VkSwapchainPresentMode)
-                          .c_str ());
+                      "%s", vk::to_string (engineInfo->VkSwapchainPresentMode)
+                                .c_str ());
 
-                  if ((pPatataEngineInfo->VkSwapchainPresentMode
+                  if ((engineInfo->VkSwapchainPresentMode
                            == vk::PresentModeKHR::eFifo
-                       || pPatataEngineInfo->VkSwapchainPresentMode
+                       || engineInfo->VkSwapchainPresentMode
                               == vk::PresentModeKHR::eFifoRelaxed
-                       || pPatataEngineInfo->VkSwapchainPresentMode
+                       || engineInfo->VkSwapchainPresentMode
                               == vk::PresentModeKHR::eSharedContinuousRefresh)
-                      && (pConfiguration->Vsync))
+                      && (configuration.Vsync))
                     ImGui::TextColored (ImVec4 (PATATA_IMGUI_POSITIVE_VALUE),
                                         "Vertical Sync");
-                  else if ((pPatataEngineInfo->VkSwapchainPresentMode
+                  else if ((engineInfo->VkSwapchainPresentMode
                                 == vk::PresentModeKHR::eMailbox
-                            || pPatataEngineInfo->VkSwapchainPresentMode
+                            || engineInfo->VkSwapchainPresentMode
                                    == vk::PresentModeKHR::eImmediate
-                            || pPatataEngineInfo->VkSwapchainPresentMode
+                            || engineInfo->VkSwapchainPresentMode
                                    == vk::PresentModeKHR::eSharedDemandRefresh)
-                           && (!pConfiguration->Vsync))
+                           && (!configuration.Vsync))
                     ImGui::TextColored (
                         ImVec4 (PATATA_IMGUI_WARNING_VALUE),
                         "Not synchronized with the refresh rate");
@@ -1232,9 +1179,9 @@ DrawDebugUI (Patata::EngineInfo * pPatataEngineInfo,
 
                   ImGui::TableSetColumnIndex (1);
                   ImGui::Text (
-                      "%s", vk::to_string (
-                                pPatataEngineInfo->VkSwapchainImageColorFormat)
-                                .c_str ());
+                      "%s",
+                      vk::to_string (engineInfo->VkSwapchainImageColorFormat)
+                          .c_str ());
 
                   ImGui::TableNextRow ();
 
@@ -1244,12 +1191,13 @@ DrawDebugUI (Patata::EngineInfo * pPatataEngineInfo,
 
                   ImGui::TableSetColumnIndex (1);
                   ImGui::Text (
-                      "%s", vk::to_string (
-                                pPatataEngineInfo->VkSwapchainImageColorSpace)
-                                .c_str ());
+                      "%s",
+                      vk::to_string (engineInfo->VkSwapchainImageColorSpace)
+                          .c_str ());
 
                   ImGui::EndTable ();
                 }
+              ImGui::Spacing ();
               ImGui::TreePop ();
             }
         }
@@ -1268,36 +1216,36 @@ DrawDebugUI (Patata::EngineInfo * pPatataEngineInfo,
     }
   // End Patata Window Info
 
-  // Patata Window Configuration
-  if (pPatataEngineInfo->PatataConfigWindow)
+  // Patata Window configuration
+  if (engineInfo->PatataConfigWindow)
     {
-      ImGui::Begin ("Configuration", &pPatataEngineInfo->PatataConfigWindow);
+      ImGui::Begin ("Configuration", &engineInfo->PatataConfigWindow);
       if (ImGui::Checkbox ("Show Fatal Error Messagebox",
-                           &pConfiguration->ShowFatalErrorMessagebox))
+                           &configuration.ShowFatalErrorMessagebox))
         {
-          pConfiguration->TriggeredChange
-              = &pConfiguration->ShowFatalErrorMessagebox;
+          configuration.TriggeredChange
+              = &configuration.ShowFatalErrorMessagebox;
         }
 
 #if defined(__linux__)
-      if (ImGui::Checkbox ("Prefer Wayland", &pConfiguration->PreferWayland))
+      if (ImGui::Checkbox ("Prefer Wayland", &configuration.PreferWayland))
         {
-          pConfiguration->TriggeredChange = &pConfiguration->PreferWayland;
+          configuration.TriggeredChange = &configuration.PreferWayland;
         }
 #endif
 
-      if (ImGui::Checkbox ("Vsync", &pConfiguration->Vsync))
+      if (ImGui::Checkbox ("Vsync", &configuration.Vsync))
         {
-          pConfiguration->TriggeredChange = &pConfiguration->Vsync;
+          configuration.TriggeredChange = &configuration.Vsync;
         }
 
-      if (ImGui::Checkbox ("10 Bit Depth", &pConfiguration->BitDepth10))
+      if (ImGui::Checkbox ("10 Bit Depth", &configuration.BitDepth10))
         {
-          pConfiguration->TriggeredChange = &pConfiguration->BitDepth10;
+          configuration.TriggeredChange = &configuration.BitDepth10;
         }
       ImGui::End ();
     }
-  // End Patata Window Configuration
+  // End Patata Window configuration
 
   // Reset Style
   ImGui::GetStyle ().Colors[ImGuiCol_TitleBgActive]     = tmp[0];

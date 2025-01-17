@@ -1,9 +1,14 @@
 #include "Vulkan_SetupRenderer.hpp"
 
 bool
-Patata::RaccoonRenderer::InitVulkanBackend (void)
+Patata::Engine::RaccoonRendererInit (const Patata::EngineCreateInfo & Info)
 {
-  if (!CreateInstance ())
+#if PATATA_DEBUG == 1
+  std::future<void> InitImgui_Async
+      = std::async (std::launch::async, &Patata::Engine::InitImgui, this);
+#endif
+
+  if (!CreateInstance (Info))
     return false;
 
   // Search a Physical Device
@@ -17,17 +22,17 @@ Patata::RaccoonRenderer::InitVulkanBackend (void)
   Vulkan.GraphicsQueueFamilyIndex = CreateLogicalDeviceAndCreateQueue ();
 
 #if PATATA_DEBUG == 1
-  std::future<bool> CreateImguiDescriptorPool_Async
-      = std::async (std::launch::async,
-                    &Patata::RaccoonRenderer::CreateImguiDescriptorPool, this);
-  std::future<bool> CreateImguiPipelineCache_Async
-      = std::async (std::launch::async,
-                    &Patata::RaccoonRenderer::CreateImguiPipelineCache, this);
+  InitImgui_Async.wait ();
+
+  std::future<bool> CreateImguiDescriptorPool_Async = std::async (
+      std::launch::async, &Patata::Engine::CreateImguiDescriptorPool, this);
+  std::future<bool> CreateImguiPipelineCache_Async = std::async (
+      std::launch::async, &Patata::Engine::CreateImguiPipelineCache, this);
 #endif
 
   // Create a surface for the window to draw on
   if (!SDL_Vulkan_CreateSurface (
-          *pRaccoonInfo->ppWindow, Vulkan.Instance,
+          GameWindow, Vulkan.Instance,
           reinterpret_cast<VkSurfaceKHR *> (&Vulkan.Surface)))
     {
       fast_io::io::println (
@@ -38,8 +43,8 @@ Patata::RaccoonRenderer::InitVulkanBackend (void)
           "SDL Create Window Surface : ", PATATA_TERM_RESET,
           PATATA_TERM_COLOR_YELLOW, "Fail", PATATA_TERM_RESET);
 
-      Patata::Log::FatalErrorMessage ("SDL", SDL_GetError (),
-                                      *pRaccoonInfo->pConfiguration);
+      Patata::Log::FatalErrorMessage ("SDL", SDL_GetError (), configuration);
+
       return false;
     }
 
@@ -68,23 +73,22 @@ Patata::RaccoonRenderer::InitVulkanBackend (void)
     return false;
 
   std::future<bool> CreateFrameBuffer_Async = std::async (
-      std::launch::async, &Patata::RaccoonRenderer::CreateFrameBuffer, this);
+      std::launch::async, &Patata::Engine::CreateFrameBuffer, this);
 
   std::future<bool> CreateCommandBuffer_Async = std::async (
-      std::launch::async, &Patata::RaccoonRenderer::CreateCommandBuffer, this);
+      std::launch::async, &Patata::Engine::CreateCommandBuffer, this);
 
-  std::future<bool> CreateFence_Async = std::async (
-      std::launch::async, &Patata::RaccoonRenderer::CreateFence, this);
+  std::future<bool> CreateFence_Async
+      = std::async (std::launch::async, &Patata::Engine::CreateFence, this);
 
   std::future<bool> CreateSemaphores_Async = std::async (
-      std::launch::async, &Patata::RaccoonRenderer::CreateSemaphores, this);
+      std::launch::async, &Patata::Engine::CreateSemaphores, this);
 
-  if (!CreatePipeline ())
-    return false;
+  std::future<bool> CreatePipeline_Async
+      = std::async (std::launch::async, &Patata::Engine::CreatePipeline, this);
 
-  std::future<void> VulkanInfo_Async
-      = std::async (std::launch::async, &Patata::RaccoonRenderer::VulkanInfo,
-                    this, SwapChainInfo);
+  std::future<void> VulkanInfo_Async = std::async (
+      std::launch::async, &Patata::Engine::VulkanInfo, this, SwapChainInfo);
 
 #if PATATA_DEBUG == 1
   CreateImguiPipelineCache_Async.wait ();
@@ -93,32 +97,40 @@ Patata::RaccoonRenderer::InitVulkanBackend (void)
   CreateImguiDescriptorPool_Async.wait ();
   if (!CreateImguiDescriptorPool_Async.get ())
     return false;
-  InitImguiVulkan (*pRaccoonInfo->ppWindow);
+
+  InitImguiVulkan ();
 #endif
 
   /*
   CreateDepthBuffer_Async.wait();
-  if (!CreateDepthBuffer_Async.get()) return;
+  if (!CreateDepthBuffer_Async.get()) return false;
   */
+
   CreateFrameBuffer_Async.wait ();
   if (!CreateFrameBuffer_Async.get ())
     return false;
+
   CreateCommandBuffer_Async.wait ();
   if (!CreateCommandBuffer_Async.get ())
     return false;
+
   CreateFence_Async.wait ();
   if (!CreateFence_Async.get ())
     return false;
+
   CreateSemaphores_Async.wait ();
   if (!CreateSemaphores_Async.get ())
     return false;
-  VulkanInfo_Async.wait ();
+
+  CreatePipeline_Async.wait ();
+  if (!CreatePipeline_Async.get ())
+    return false;
 
   return true;
 }
 
 void
-Patata::RaccoonRenderer::CloseVulkanBackend (void)
+Patata::Engine::RaccoonRendererClose (void)
 {
   vk::Result Result = Vulkan.Device.waitIdle ();
 

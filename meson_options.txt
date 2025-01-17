@@ -1,21 +1,3 @@
-option('use_custom_icon',
-  type : 'boolean',
-  value : false)
-
-option('libs_shared_build',
-  type : 'boolean',
-  value : false,
-  yield : true,
-  description : 'true or false to compile and link the libraries in the externals folder as shared or static')
-
-option('icon_path', type : 'string', value : '')
-
-option('enable_icon',
-  type : 'boolean',
-  value : true)
-
-option('game_name', type : 'string')
-
 option('use_git',
   type : 'boolean',
   value : true)

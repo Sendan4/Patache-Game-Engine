@@ -21,21 +21,12 @@
 #endif
 
 #include <fast_io.h>
-#if PATATA_DEBUG == 1
-#include <imgui_impl_sdl2.h>
-#include <imgui_impl_vulkan.h>
-#include <SDL_syswm.h>
-#endif
 #include <SDL.h>
-#include <vulkan/vulkan.hpp>
 #if defined(_WIN64)
 #include <windows.h>
 #endif
 
 // Patata Engine
+#include "PatataEngine/PatataEngine.hpp"
 #include "ColorTerminal.hpp"
-#if PATATA_DEBUG == 1
-#include "StructEngineInfo.hpp"
-#endif
-#include "StructConfig.hpp"
 #include "Log.hpp"

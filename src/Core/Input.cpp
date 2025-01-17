@@ -2,7 +2,7 @@
 #include "Input.hpp"
 
 void
-Patata::Engine::EngineImpl::HandleEvent (SDL_Event & Event)
+Patata::Engine::HandleEvent (const SDL_Event & Event)
 {
   static bool PatataFullScreen = false;
 
@@ -67,10 +67,10 @@ Patata::Engine::EngineImpl::HandleEvent (SDL_Event & Event)
         {
           if (Event.key.keysym.scancode == SDL_SCANCODE_P)
             {
-              if (PatataEngineInfo.ShowMainMenuBar)
-                PatataEngineInfo.ShowMainMenuBar = false;
+              if (engineInfo.ShowMainMenuBar)
+                engineInfo.ShowMainMenuBar = false;
               else
-                PatataEngineInfo.ShowMainMenuBar = true;
+                engineInfo.ShowMainMenuBar = true;
             }
         }
 #endif

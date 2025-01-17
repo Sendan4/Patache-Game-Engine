@@ -1,8 +1,7 @@
 #include "Vulkan_SwapChain.hpp"
 
 bool
-Patata::RaccoonRenderer::CreateSwapChain (
-    Patata::SwapChainInfo & SwapChainInfo)
+Patata::Engine::CreateSwapChain (Patata::SwapChainInfo & SwapChainInfo)
 {
   // Search Presentation modes
   uint32_t             PresentModesCount = 0;
@@ -59,18 +58,10 @@ Patata::RaccoonRenderer::CreateSwapChain (
   std::future<void> SDL_Vulkan_GetDrawableSize_Async
       = std::async (std::launch::async, [this] (void) {
           int w = 1, h = 1;
-          SDL_Vulkan_GetDrawableSize (*pRaccoonInfo->ppWindow, &w, &h);
+          SDL_Vulkan_GetDrawableSize (GameWindow, &w, &h);
 
           Vulkan.SwapChainExtent.width  = w;
           Vulkan.SwapChainExtent.height = h;
-
-          fast_io::io::println (
-#if defined(_WIN64)
-              fast_io::out (),
-#endif
-              PATATA_TERM_BOLD, PATATA_TERM_COLOR_PATATA, "Raccoon Renderer",
-              PATATA_TERM_RESET, PATATA_TERM_BOLD,
-              " : Window Drawable Size : ", PATATA_TERM_RESET, w, " x ", h);
         });
 
   /*
@@ -83,10 +74,10 @@ Patata::RaccoonRenderer::CreateSwapChain (
 
   Finding a Present Mode
   */
-  vk::PresentModeKHR SelectedPresentMode;
+  vk::PresentModeKHR SelectedPresentMode = vk::PresentModeKHR::eFifo;
   bool               Found = false;
 
-  if (!pRaccoonInfo->pConfiguration->Vsync)
+  if (!configuration.Vsync)
     {
       // No Vsync
       for (uint8_t i = 0; i < PresentModesCount; ++i)
@@ -129,10 +120,10 @@ Patata::RaccoonRenderer::CreateSwapChain (
 
   if (!Found)
     {
-      std::future<void> Err = std::async (
-          std::launch::async, Patata::Log::FatalErrorMessage,
-          "Patata - Raccoon Renderer", "No presentation modes found",
-          *pRaccoonInfo->pConfiguration);
+      std::future<void> Err
+          = std::async (std::launch::async, Patata::Log::FatalErrorMessage,
+                        "Patata - Raccoon Renderer",
+                        "No presentation modes found", configuration);
 
       return false;
     }
@@ -143,7 +134,7 @@ Patata::RaccoonRenderer::CreateSwapChain (
 
   for (uint32_t i = 0; i < SurfaceFormatsCount; ++i)
     {
-      if (pRaccoonInfo->pConfiguration->BitDepth10)
+      if (configuration.BitDepth10)
         {
           // 10 Bits
           if (SurfaceFormats[i].format == vk::Format::eA2R10G10B10UnormPack32
@@ -172,22 +163,19 @@ Patata::RaccoonRenderer::CreateSwapChain (
 
   if (!Found)
     {
-      std::future<void> Err = std::async (
-          std::launch::async, Patata::Log::FatalErrorMessage,
-          "Patata - Raccoon Renderer", "No surface formats found",
-          *pRaccoonInfo->pConfiguration);
+      std::future<void> Err
+          = std::async (std::launch::async, Patata::Log::FatalErrorMessage,
+                        "Patata - Raccoon Renderer",
+                        "No surface formats found", configuration);
 
       return false;
     }
 
 #if PATATA_DEBUG == 1
   // saving the data for display in imgui
-  pRaccoonInfo->pPatataEngineInfo->VkSwapchainPresentMode
-      = SelectedPresentMode;
-  pRaccoonInfo->pPatataEngineInfo->VkSwapchainImageColorFormat
-      = SelectedSurfaceFormat.format;
-  pRaccoonInfo->pPatataEngineInfo->VkSwapchainImageColorSpace
-      = vk::ColorSpaceKHR::eSrgbNonlinear;
+  engineInfo.VkSwapchainPresentMode      = SelectedPresentMode;
+  engineInfo.VkSwapchainImageColorFormat = SelectedSurfaceFormat.format;
+  engineInfo.VkSwapchainImageColorSpace  = vk::ColorSpaceKHR::eSrgbNonlinear;
 #endif
 
   vk::SurfaceCapabilitiesKHR SurfaceCapabilities;
@@ -208,7 +196,7 @@ Patata::RaccoonRenderer::CreateSwapChain (
                         "Patata Engine - Raccoon Renderer",
                         "The surface area capabilities of this device could "
                         "not be obtained.",
-                        *pRaccoonInfo->pConfiguration);
+                        configuration);
 
       return false;
     }
@@ -247,10 +235,10 @@ Patata::RaccoonRenderer::CreateSwapChain (
 
   if (Result != vk::Result::eSuccess)
     {
-      std::future<void> ReturnVulkanErr = std::async (
-          std::launch::async, Patata::Log::FatalErrorMessage,
-          "Patata Engine - Raccoon Renderer", "Swapchain creation failure",
-          *pRaccoonInfo->pConfiguration);
+      std::future<void> ReturnVulkanErr
+          = std::async (std::launch::async, Patata::Log::FatalErrorMessage,
+                        "Patata Engine - Raccoon Renderer",
+                        "Swapchain creation failure", configuration);
 
       return false;
     }
@@ -285,7 +273,7 @@ Patata::RaccoonRenderer::CreateSwapChain (
 
 // Recreate SwapChain
 void
-Patata::RaccoonRenderer::RecreateSwapChain (SDL_Event & Event)
+Patata::Engine::RecreateSwapChain (SDL_Event & Event)
 {
   // Minimization
   vk::SurfaceCapabilitiesKHR Sc;
@@ -297,6 +285,8 @@ Patata::RaccoonRenderer::RecreateSwapChain (SDL_Event & Event)
       std::future<void> ReturnVulkanCheck
           = std::async (std::launch::async, Patata::Log::VulkanCheck,
                         "Get Surface Capabilities KHR", Result);
+
+      return;
     }
 
   while (Sc.currentExtent.width <= 0 && Sc.currentExtent.height <= 0)
@@ -309,6 +299,8 @@ Patata::RaccoonRenderer::RecreateSwapChain (SDL_Event & Event)
           std::future<void> ReturnVulkanCheck
               = std::async (std::launch::async, Patata::Log::VulkanCheck,
                             "Get Surface Capabilities KHR", Result);
+
+          return;
         }
 
       SDL_WaitEvent (&Event);
@@ -323,10 +315,10 @@ Patata::RaccoonRenderer::RecreateSwapChain (SDL_Event & Event)
           = std::async (std::launch::async, Patata::Log::VulkanCheck,
                         "Device Wait Idle", Result);
 
-      std::future<void> ReturnVulkanErr = std::async (
-          std::launch::async, Patata::Log::FatalErrorMessage,
-          "Patata Engine - Raccoon Renderer", "Could not wait for the device",
-          *pRaccoonInfo->pConfiguration);
+      std::future<void> ReturnVulkanErr
+          = std::async (std::launch::async, Patata::Log::FatalErrorMessage,
+                        "Patata Engine - Raccoon Renderer",
+                        "Could not wait for the device", configuration);
 
       return;
     }
@@ -354,30 +346,30 @@ Patata::RaccoonRenderer::RecreateSwapChain (SDL_Event & Event)
 
   if (!CreateImageView (SwapChainInfo))
     {
-      std::future<void> Err = std::async (
-          std::launch::async, Patata::Log::FatalErrorMessage,
-          "Patata Engine - Raccoon Renderer",
-          "Color image view recreation failed", *pRaccoonInfo->pConfiguration);
+      std::future<void> Err
+          = std::async (std::launch::async, Patata::Log::FatalErrorMessage,
+                        "Patata Engine - Raccoon Renderer",
+                        "Color image view recreation failed", configuration);
 
       return;
     }
 
   std::future<bool> CreateCommandBuffer_Async = std::async (
-      std::launch::async, &Patata::RaccoonRenderer::CreateCommandBuffer, this);
+      std::launch::async, &Patata::Engine::CreateCommandBuffer, this);
 
   std::future<bool> CreateFrameBuffer_Async = std::async (
-      std::launch::async, &Patata::RaccoonRenderer::CreateFrameBuffer, this);
+      std::launch::async, &Patata::Engine::CreateFrameBuffer, this);
 
   std::future<bool> CreateSemaphores_Async = std::async (
-      std::launch::async, &Patata::RaccoonRenderer::CreateSemaphores, this);
+      std::launch::async, &Patata::Engine::CreateSemaphores, this);
 
   CreateCommandBuffer_Async.wait ();
   if (!CreateCommandBuffer_Async.get ())
     {
-      std::future<void> Err = std::async (
-          std::launch::async, Patata::Log::FatalErrorMessage,
-          "Patata Engine - Raccoon Renderer",
-          "Command buffer recreation failed", *pRaccoonInfo->pConfiguration);
+      std::future<void> Err
+          = std::async (std::launch::async, Patata::Log::FatalErrorMessage,
+                        "Patata Engine - Raccoon Renderer",
+                        "Command buffer recreation failed", configuration);
 
       return;
     }
@@ -385,10 +377,10 @@ Patata::RaccoonRenderer::RecreateSwapChain (SDL_Event & Event)
   CreateFrameBuffer_Async.wait ();
   if (!CreateFrameBuffer_Async.get ())
     {
-      std::future<void> Err = std::async (
-          std::launch::async, Patata::Log::FatalErrorMessage,
-          "Patata Engine - Raccoon Renderer", "Frame buffer recreation failed",
-          *pRaccoonInfo->pConfiguration);
+      std::future<void> Err
+          = std::async (std::launch::async, Patata::Log::FatalErrorMessage,
+                        "Patata Engine - Raccoon Renderer",
+                        "Frame buffer recreation failed", configuration);
 
       return;
     }
@@ -396,10 +388,10 @@ Patata::RaccoonRenderer::RecreateSwapChain (SDL_Event & Event)
   CreateSemaphores_Async.wait ();
   if (!CreateSemaphores_Async.get ())
     {
-      std::future<void> Err = std::async (
-          std::launch::async, Patata::Log::FatalErrorMessage,
-          "Patata Engine - Raccoon Renderer", "Semaphore recreation failed",
-          *pRaccoonInfo->pConfiguration);
+      std::future<void> Err
+          = std::async (std::launch::async, Patata::Log::FatalErrorMessage,
+                        "Patata Engine - Raccoon Renderer",
+                        "Semaphore recreation failed", configuration);
 
       return;
     }

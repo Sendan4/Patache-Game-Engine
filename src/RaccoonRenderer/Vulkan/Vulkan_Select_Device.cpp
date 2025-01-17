@@ -11,7 +11,7 @@ The larger the maximum image size the GPU can handle, the better.
 #include "Vulkan_Select_Device.hpp"
 
 bool
-Patata::RaccoonRenderer::SelectDevice (void)
+Patata::Engine::SelectDevice (void)
 {
   uint32_t GpuCount = 0;
 
@@ -30,10 +30,10 @@ Patata::RaccoonRenderer::SelectDevice (void)
 
   if (GpuCount <= 0)
     {
-      std::future<void> Err = std::async (
-          std::launch::async, Patata::Log::FatalErrorMessage,
-          "Patata - Raccoon Renderer", "No vulkan compatible device found",
-          *pRaccoonInfo->pConfiguration);
+      std::future<void> Err
+          = std::async (std::launch::async, Patata::Log::FatalErrorMessage,
+                        "Patata - Raccoon Renderer",
+                        "No vulkan compatible device found", configuration);
 
       return false;
     }
@@ -60,11 +60,10 @@ Patata::RaccoonRenderer::SelectDevice (void)
               = std::async (std::launch::async, Patata::Log::VulkanCheck,
                             "Enumerate Physical Devices", Result);
 
-          std::future<void> Err
-              = std::async (std::launch::async, Patata::Log::FatalErrorMessage,
-                            "Patata Engine - RaccoonRenderer",
-                            "Failed to obtain a physical device",
-                            *pRaccoonInfo->pConfiguration);
+          std::future<void> Err = std::async (
+              std::launch::async, Patata::Log::FatalErrorMessage,
+              "Patata Engine - RaccoonRenderer",
+              "Failed to obtain a physical device", configuration);
 
           delete[] TmpPhysicalDevices;
           TmpPhysicalDevices = nullptr;
@@ -198,7 +197,7 @@ Patata::RaccoonRenderer::SelectDevice (void)
                         "Patata - Raccoon Renderer",
                         "Cannot select a device (GPU) which does not support "
                         "geometry shader",
-                        *pRaccoonInfo->pConfiguration);
+                        configuration);
 
       return false;
     }

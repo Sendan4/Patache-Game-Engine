@@ -1,10 +1,9 @@
 #include "Vulkan_Info.hpp"
 
 void
-Patata::RaccoonRenderer::VulkanInfo (
-    const Patata::SwapChainInfo & SwapChainInfo)
+Patata::Engine::VulkanInfo (const Patata::SwapChainInfo & SwapChainInfo)
 {
-  fast_io::io::println ("\n", PATATA_TERM_BOLD, PATATA_TERM_COLOR_PATATA,
+  fast_io::io::println (PATATA_TERM_BOLD, PATATA_TERM_COLOR_PATATA,
                         "Raccoon Renderer ", PATATA_TERM_RESET, "INFO");
 
   vk::PhysicalDeviceDriverProperties Driver;
@@ -14,49 +13,67 @@ Patata::RaccoonRenderer::VulkanInfo (
   Vulkan.PhysicalDevice.getProperties2 (&PhysicalDeviceProperties);
 
 #if PATATA_DEBUG == 1
-  pRaccoonInfo->pPatataEngineInfo->VkVersionInUse
-      = std::to_string (
-            VK_VERSION_MAJOR (PhysicalDeviceProperties.properties.apiVersion))
-        + '.'
-        + std::to_string (
-            VK_VERSION_MINOR (PhysicalDeviceProperties.properties.apiVersion))
-        + '.'
-        + std::to_string (
-            VK_VERSION_PATCH (PhysicalDeviceProperties.properties.apiVersion))
-        + '.'
-        + std::to_string (VK_API_VERSION_VARIANT (
-            PhysicalDeviceProperties.properties.apiVersion));
+  /*
+   * Storing information about Vulkan to display it through ImGui.
+   * Only on debug builds
+   */
 
-  pRaccoonInfo->pPatataEngineInfo->VkDeviceName
-      = PhysicalDeviceProperties.properties.deviceName.data ();
-  pRaccoonInfo->pPatataEngineInfo->VkDeviceVendorId
+  // Vulkan Version
+  snprintf (
+      engineInfo.VkVersion, PATATA_VK_VERSION_SIZE, "%u.%u.%u.%u",
+      VK_VERSION_MAJOR (PhysicalDeviceProperties.properties.apiVersion),
+      VK_VERSION_MINOR (PhysicalDeviceProperties.properties.apiVersion),
+      VK_VERSION_PATCH (PhysicalDeviceProperties.properties.apiVersion),
+      VK_API_VERSION_VARIANT (PhysicalDeviceProperties.properties.apiVersion));
+
+  // Vulkan Device Name
+  std::copy_n (PhysicalDeviceProperties.properties.deviceName.data (),
+               VK_MAX_PHYSICAL_DEVICE_NAME_SIZE, engineInfo.VkDeviceName);
+
+  // Vulkan Device Vendor ID
+  engineInfo.VkDeviceVendorId
       = static_cast<uint32_t> (PhysicalDeviceProperties.properties.vendorID);
-  pRaccoonInfo->pPatataEngineInfo->VkDeviceType
-      = vk::to_string (PhysicalDeviceProperties.properties.deviceType);
-  pRaccoonInfo->pPatataEngineInfo->VkDriverName = Driver.driverName.data ();
-  pRaccoonInfo->pPatataEngineInfo->VkDriverId
-      = vk::to_string (Driver.driverID);
-  pRaccoonInfo->pPatataEngineInfo->VkDriverInfo = Driver.driverInfo.data ();
 
-  pRaccoonInfo->pPatataEngineInfo->VkDriverVersion
-      = std::to_string (VK_VERSION_MAJOR (
-            PhysicalDeviceProperties.properties.driverVersion))
-        + '.'
-        + std::to_string (VK_VERSION_MINOR (
-            PhysicalDeviceProperties.properties.driverVersion))
-        + '.'
-        + std::to_string (VK_VERSION_PATCH (
-            PhysicalDeviceProperties.properties.driverVersion))
-        + '.'
-        + std::to_string (VK_API_VERSION_VARIANT (
-            PhysicalDeviceProperties.properties.driverVersion));
+  // Vulkan Device Type
+  {
+    std::string DeviceType
+        = vk::to_string (PhysicalDeviceProperties.properties.deviceType);
+
+    for (uint8_t i = 0; i < DeviceType.size (); ++i)
+      engineInfo.VkDeviceType[i] = DeviceType[i];
+  }
+
+  // Vulkan Driver Name
+  std::copy_n (Driver.driverName.data (), VK_MAX_DRIVER_NAME_SIZE,
+               engineInfo.VkDriverName);
+
+  // Vulkan Driver ID
+  {
+    std::string DriverID = vk::to_string (Driver.driverID);
+
+    for (uint8_t i = 0; i < DriverID.size (); ++i)
+      engineInfo.VkDriverId[i] = DriverID[i];
+  }
+
+  // Vulkan Driver Info
+  std::copy_n (Driver.driverInfo.data (), VK_MAX_DRIVER_INFO_SIZE,
+               engineInfo.VkDriverInfo);
+
+  // Vulkan Driver Version
+  snprintf (
+      engineInfo.VkDriverVersion, PATATA_VK_DRIVER_VERSION_SIZE, "%u.%u.%u.%u",
+      VK_VERSION_MAJOR (PhysicalDeviceProperties.properties.driverVersion),
+      VK_VERSION_MINOR (PhysicalDeviceProperties.properties.driverVersion),
+      VK_VERSION_PATCH (PhysicalDeviceProperties.properties.driverVersion),
+      VK_API_VERSION_VARIANT (
+          PhysicalDeviceProperties.properties.driverVersion));
 #endif
 
   fast_io::io::println (PATATA_TERM_BOLD, "  Version", PATATA_TERM_RESET);
 
 // Vulkan Loader Version
 #if defined(PATATA_VULKAN_LOADER_VERSION)
-  if (strcmp (PATATA_VULKAN_LOADER_VERSION, "undefined") != 0)
+  if constexpr (strcmp (PATATA_VULKAN_LOADER_VERSION, "undefined") != 0)
     fast_io::io::println (PATATA_TERM_BOLD, "    Loader : ", PATATA_TERM_RESET,
                           PATATA_VULKAN_LOADER_VERSION);
 #endif
@@ -431,7 +448,7 @@ Patata::RaccoonRenderer::VulkanInfo (
   // Vulkan Vsync
   if ((SwapChainInfo.PresentMode == vk::PresentModeKHR::eFifo
        || SwapChainInfo.PresentMode == vk::PresentModeKHR::eFifoRelaxed)
-      && pRaccoonInfo->pConfiguration->Vsync)
+      && configuration.Vsync)
     fast_io::io::println (PATATA_TERM_COLOR_GREEN, "Vertical Sync",
                           PATATA_TERM_RESET);
   else
@@ -498,10 +515,10 @@ Patata::RaccoonRenderer::VulkanInfo (
 #endif // PATATA_DEBUG
       PATATA_TERM_RESET, PATATA_TERM_BOLD,
       "Surface Color Space : ", PATATA_TERM_RESET,
-      vk::to_string (SwapChainInfo.ImageColorSpace), "\n");
+      vk::to_string (SwapChainInfo.ImageColorSpace));
 
 #if PATATA_DEBUG == 1
-  fast_io::io::println (PATATA_TERM_BOLD, "  Debug", PATATA_TERM_RESET);
+  fast_io::io::println (PATATA_TERM_BOLD, "\n  Debug", PATATA_TERM_RESET);
 
 // Vulkan Validation Layer Version
 #if defined(PATATA_USE_VVL)
@@ -522,5 +539,5 @@ Patata::RaccoonRenderer::VulkanInfo (
                         PATATA_IMGUI_VERSION);
 #endif
 #endif // PATATA_DEBUG
-  fast_io::io::println ("");
+  fast_io::io::println (fast_io::c_stdout ());
 }

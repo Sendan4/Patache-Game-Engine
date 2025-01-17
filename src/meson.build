@@ -1,12 +1,8 @@
 source = files([
   'Core/PatataEngine.cpp',
-  'Core/PrivateToPublicWrapper.cpp',
   'Core/Configuration.cpp',
   'Core/Input.cpp',
-  'Core/RenderWrapper.cpp',
   'Core/ClearColor.cpp',
-  'Core/Window.cpp',
-  'RaccoonRenderer/RaccoonRenderer.cpp',
   'RaccoonRenderer/Vulkan/Vulkan_SetupRenderer.cpp',
   'RaccoonRenderer/Vulkan/Vulkan_Instance.cpp',
   'RaccoonRenderer/Vulkan/Vulkan_Select_Device.cpp',
@@ -37,7 +33,7 @@ else
 endif
 
 if get_option('buildtype') == 'debug' or get_option('buildtype') == 'debugoptimized'
-  source +=files(['ImGUI/SetupImgui.cpp'])
+  source += files(['ImGUI/SetupImgui.cpp'])
 endif
 
 lib = library(meson.project_name(),
@@ -48,7 +44,8 @@ lib = library(meson.project_name(),
     include_directories('Core'),
     include_directories('RaccoonRenderer'),
     include_directories('RaccoonRenderer/Vulkan'),
-    include_directories('ImGUI')],
+    include_directories('ImGUI'),
+    include_directories('../data/assets/icon')],
   d_import_dirs : include,
   dependencies : dependencies,
   soversion : meson.project_version(),

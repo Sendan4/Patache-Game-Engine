@@ -52,7 +52,7 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" OR (CMAKE_SYSTEM_NAME STREQUAL "Linux"
 
 	# build Vulkan
 	target_link_libraries(${PROJECT_NAME} PRIVATE vulkan Vulkan::Headers)
-else()
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
 	find_package(Vulkan REQUIRED)
 
 	set (VULKANSDK_LIBS_PATH "${Vulkan_LIBRARIES}")

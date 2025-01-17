@@ -1,7 +1,7 @@
 #include "Vulkan_DepthBuffer.hpp"
 
 bool
-Patata::RaccoonRenderer::CreateDepthBuffer (void)
+Patata::Engine::CreateDepthBuffer (void)
 {
   vk::ImageTiling Tiling = vk::ImageTiling::eOptimal;
 
@@ -40,11 +40,10 @@ Patata::RaccoonRenderer::CreateDepthBuffer (void)
 
   if (!Found)
     {
-      std::future<void> Err
-          = std::async (std::launch::async, Patata::Log::FatalErrorMessage,
-                        "Patata - Raccoon Renderer",
-                        "A ImageTiling or Depth Format was not found",
-                        *pRaccoonInfo->pConfiguration);
+      std::future<void> Err = std::async (
+          std::launch::async, Patata::Log::FatalErrorMessage,
+          "Patata - Raccoon Renderer",
+          "A ImageTiling or Depth Format was not found", configuration);
 
       return false;
     }

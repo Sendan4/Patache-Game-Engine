@@ -1,7 +1,7 @@
 #include "Vulkan_FrameBuffer.hpp"
 
 bool
-Patata::RaccoonRenderer::CreateFrameBuffer (void)
+Patata::Engine::CreateFrameBuffer (void)
 {
   Vulkan.SwapChainFrameBuffer
       = new vk::Framebuffer[Vulkan.SwapChainImageCount];

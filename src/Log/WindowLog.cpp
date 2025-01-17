@@ -1,23 +1,18 @@
 #include "WindowLog.hpp"
 
 void
-#if PATATA_DEBUG == 1
-Patata::Log::WindowLog (SDL_Window *         Window,
-                        Patata::EngineInfo * PatataEngineInfo)
-#else
-Patata::Log::WindowLog (SDL_Window * Window)
-#endif
+Patata::Engine::WindowLog (void)
 {
   fast_io::io::println (
 #if PATATA_DEBUG == 1
       PATATA_TERM_DIM, PATATA_TERM_COLOR_GRAY0,
 #if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
       "[",
-      std::string_view{ abi::__cxa_demangle (typeid (Window).name (), nullptr,
-                                             nullptr, nullptr) },
+      std::string_view{ abi::__cxa_demangle (typeid (GameWindow).name (),
+                                             nullptr, nullptr, nullptr) },
       "] ",
 #else
-      "[", std::string_view{ typeid (Window).name () }, "] ",
+      "[", std::string_view{ typeid (GameWindow).name () }, "] ",
 #endif
       PATATA_TERM_BOLD,
 #endif // PATATA_DEBUG
@@ -27,7 +22,7 @@ Patata::Log::WindowLog (SDL_Window * Window)
   const char * XDG_CURRENT_DESKTOP = getenv ("XDG_CURRENT_DESKTOP");
 
 #if PATATA_DEBUG == 1
-  PatataEngineInfo->Desktop = XDG_CURRENT_DESKTOP;
+  engineInfo.Desktop = XDG_CURRENT_DESKTOP;
 #endif
 
   if (XDG_CURRENT_DESKTOP != nullptr)
@@ -51,12 +46,12 @@ Patata::Log::WindowLog (SDL_Window * Window)
 
   SDL_SysWMinfo WindowInfo;
   SDL_VERSION (&WindowInfo.version);
-  SDL_GetWindowWMInfo (Window, &WindowInfo);
+  SDL_GetWindowWMInfo (GameWindow, &WindowInfo);
   const char * XDG_SESSION_TYPE = getenv ("XDG_SESSION_TYPE");
 
 #if PATATA_DEBUG == 1
-  PatataEngineInfo->WindowInfo  = WindowInfo;
-  PatataEngineInfo->SessionType = XDG_SESSION_TYPE;
+  engineInfo.WindowInfo  = WindowInfo;
+  engineInfo.SessionType = XDG_SESSION_TYPE;
 #endif
 
   switch (WindowInfo.subsystem)
@@ -308,9 +303,9 @@ Patata::Log::WindowLog (SDL_Window * Window)
   fast_io::io::println (PATATA_TERM_BOLD,
                         "  Window creation flags :", PATATA_TERM_RESET);
 
-  uint32_t WindowFlags = SDL_GetWindowFlags (Window);
+  uint32_t WindowFlags = SDL_GetWindowFlags (GameWindow);
 #if PATATA_DEBUG == 1
-  PatataEngineInfo->WindowCreationFlags = WindowFlags;
+  engineInfo.WindowCreationFlags = WindowFlags;
 #endif
 
   if (WindowFlags & SDL_WINDOW_FULLSCREEN)

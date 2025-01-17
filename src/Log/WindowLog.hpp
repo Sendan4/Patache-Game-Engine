@@ -3,17 +3,10 @@
 #endif
 
 #include <fast_io.h>
-#if PATATA_DEBUG == 1
-#include <imgui_impl_vulkan.h>
-#endif
-#include <SDL_syswm.h>
 #include <SDL.h>
-#include <vulkan/vulkan.hpp>
+#include <SDL_syswm.h>
 
 // Patata Engine
+#include "PatataEngine/PatataEngine.hpp"
 #include "ColorTerminal.hpp"
-#if PATATA_DEBUG == 1
-#include "StructEngineInfo.hpp"
-#endif
-#include "StructConfig.hpp"
 #include "Log.hpp"

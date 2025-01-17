@@ -1,7 +1,7 @@
 #include "SetupImgui.hpp"
 
 void
-Patata::Engine::EngineImpl::InitImgui (void)
+Patata::Engine::InitImgui (void)
 {
   IMGUI_CHECKVERSION ();
   ImGui::CreateContext ();
@@ -57,7 +57,7 @@ Patata::Engine::EngineImpl::InitImgui (void)
 }
 
 bool
-Patata::RaccoonRenderer::CreateImguiDescriptorPool (void)
+Patata::Engine::CreateImguiDescriptorPool (void)
 {
   if (ImGui::GetCurrentContext () == nullptr)
     {
@@ -96,7 +96,7 @@ Patata::RaccoonRenderer::CreateImguiDescriptorPool (void)
 }
 
 bool
-Patata::RaccoonRenderer::CreateImguiPipelineCache (void)
+Patata::Engine::CreateImguiPipelineCache (void)
 {
   if (ImGui::GetCurrentContext () == nullptr)
     {
@@ -124,7 +124,7 @@ Patata::RaccoonRenderer::CreateImguiPipelineCache (void)
 }
 
 bool
-Patata::RaccoonRenderer::InitImguiVulkan (SDL_Window * Window)
+Patata::Engine::InitImguiVulkan (void)
 {
   if (ImGui::GetCurrentContext () == nullptr)
     {
@@ -136,7 +136,7 @@ Patata::RaccoonRenderer::InitImguiVulkan (SDL_Window * Window)
       return false;
     }
 
-  ImGui_ImplSDL2_InitForVulkan (Window);
+  ImGui_ImplSDL2_InitForVulkan (GameWindow);
 
   vk::SurfaceCapabilitiesKHR   SurfaceCapabilities;
   vk::PhysicalDeviceProperties properties

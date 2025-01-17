@@ -1,7 +1,7 @@
 #include "Vulkan_SincronizationPrimitives.hpp"
 
 bool
-Patata::RaccoonRenderer::CreateSemaphores (void)
+Patata::Engine::CreateSemaphores (void)
 {
   vk::SemaphoreCreateInfo SemaphoreInfo;
 
@@ -31,7 +31,7 @@ Patata::RaccoonRenderer::CreateSemaphores (void)
 }
 
 bool
-Patata::RaccoonRenderer::CreateFence (void)
+Patata::Engine::CreateFence (void)
 {
   vk::FenceCreateInfo FenceInfo (vk::FenceCreateFlagBits::eSignaled, // flags
                                  nullptr                             // pNext

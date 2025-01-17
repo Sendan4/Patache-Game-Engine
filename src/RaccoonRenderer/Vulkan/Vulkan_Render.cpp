@@ -1,7 +1,7 @@
 #include "Vulkan_Render.hpp"
 
 bool
-Patata::RaccoonRenderer::BeginRender (SDL_Event & Event)
+Patata::Engine::BeginRender (SDL_Event & Event)
 {
   vk::Result Result
       = Vulkan.Device.waitForFences (1, &Vulkan.Fence, true, UINT64_MAX);
@@ -26,6 +26,7 @@ Patata::RaccoonRenderer::BeginRender (SDL_Event & Event)
     }
 #endif
 
+  // Acquire Next Image
   vk::AcquireNextImageInfoKHR NextImageInfo (
       Vulkan.SwapChain,        // swapchain
       UINT64_MAX,              // timeout
@@ -48,11 +49,11 @@ Patata::RaccoonRenderer::BeginRender (SDL_Event & Event)
 #endif
 
   // Resize
-  if (*pRaccoonInfo->pWindowResized || Result == vk::Result::eErrorOutOfDateKHR
+  if (WindowResized || Result == vk::Result::eErrorOutOfDateKHR
       || Result == vk::Result::eSuboptimalKHR)
     {
       RecreateSwapChain (Event);
-      *pRaccoonInfo->pWindowResized = false;
+      WindowResized = false;
       return false;
     }
 
@@ -62,6 +63,7 @@ Patata::RaccoonRenderer::BeginRender (SDL_Event & Event)
       nullptr                                           // pNext
   );
 
+  // Begin Command Buffer
   Result = Vulkan.cmd.begin (&cmdBufferBeginInfo);
 
 #if PATATA_DEBUG == 1
@@ -76,10 +78,10 @@ Patata::RaccoonRenderer::BeginRender (SDL_Event & Event)
   // Begin RenderPass
   {
     vk::ClearColorValue Color{};
-    Color.float32[0] = pRaccoonInfo->pClearColor->r;
-    Color.float32[1] = pRaccoonInfo->pClearColor->g;
-    Color.float32[2] = pRaccoonInfo->pClearColor->b;
-    Color.float32[3] = pRaccoonInfo->pClearColor->a;
+    Color.float32[0] = clearColor.r;
+    Color.float32[1] = clearColor.g;
+    Color.float32[2] = clearColor.b;
+    Color.float32[3] = clearColor.a;
 
     vk::ClearValue ClearValue{};
     ClearValue.color = Color;
@@ -118,14 +120,13 @@ Patata::RaccoonRenderer::BeginRender (SDL_Event & Event)
 #endif
 
 void
-Patata::RaccoonRenderer::EndRender (SDL_Event & Event)
+Patata::Engine::EndRender (SDL_Event & Event)
 {
 #if PATATA_DEBUG == 1
   // Imgui New Frame
   // ImGui::ShowDemoWindow ();
-  Patata::DrawDebugUI (pRaccoonInfo->pPatataEngineInfo,
-                       pRaccoonInfo->pConfiguration,
-                       Vulkan.SwapChainImageCount, Vulkan.SwapChainExtent);
+  Patata::DrawDebugUI (&engineInfo, configuration, Vulkan.SwapChainImageCount,
+                       Vulkan.SwapChainExtent);
 
   ImGui::Render ();
   ImGui_ImplVulkan_RenderDrawData (
@@ -170,6 +171,7 @@ Patata::RaccoonRenderer::EndRender (SDL_Event & Event)
     }
 #endif
 
+  // Submit Queue
   {
     vk::PipelineStageFlags PipeLineStageFlags
         = vk::PipelineStageFlagBits::eColorAttachmentOutput;
@@ -196,6 +198,7 @@ Patata::RaccoonRenderer::EndRender (SDL_Event & Event)
     }
 #endif
 
+  // Present to surface
   vk::PresentInfoKHR PresentInfo (1, // waitSemaphoreCount
                                   &Vulkan.SubmitSemaphore, // waitSemaphores
                                   1,                       // swapchainCount
@@ -216,11 +219,10 @@ Patata::RaccoonRenderer::EndRender (SDL_Event & Event)
 #endif
 
   // Resize
-  if (*pRaccoonInfo->pWindowResized
-      || Result == vk::Result::eErrorOutOfDateKHR)
+  if (WindowResized || Result == vk::Result::eErrorOutOfDateKHR)
     {
       RecreateSwapChain (Event);
-      *pRaccoonInfo->pWindowResized = false;
+      WindowResized = false;
     }
   else if (Result == vk::Result::eSuboptimalKHR)
     {

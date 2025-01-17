@@ -6,9 +6,9 @@ struct VulkanBackend
   vk::Instance Instance = nullptr;
 
   // Hardware
-  vk::PhysicalDevice PhysicalDevice           = VK_NULL_HANDLE;
-  vk::Queue          Queue                    = VK_NULL_HANDLE;
-  vk::Device         Device                   = VK_NULL_HANDLE;
+  vk::PhysicalDevice PhysicalDevice           = nullptr;
+  vk::Queue          Queue                    = nullptr;
+  vk::Device         Device                   = nullptr;
   uint32_t           GraphicsQueueFamilyIndex = 0;
 
   // Window Surface

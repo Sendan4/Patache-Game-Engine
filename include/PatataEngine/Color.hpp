@@ -3,7 +3,7 @@
 namespace Patata
 {
 // CSS Colors https://www.w3.org/wiki/CSS/Properties/color/keywords
-enum class eColor : uint8_t
+enum class Color : uint8_t
 {
   // Basic Colors
   Black   = 0,

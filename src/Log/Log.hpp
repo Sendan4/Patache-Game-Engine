@@ -4,13 +4,7 @@ namespace Patata
 {
 namespace Log
 {
-void StartMapache (void);
-void StartPatataLogInfo (void);
-#if PATATA_DEBUG == 1
-void WindowLog (SDL_Window *, Patata::EngineInfo *);
-#else
-void WindowLog (SDL_Window *);
-#endif
+void StartPatataLogInfo (const Patata::EngineCreateInfo &);
 
 // Vulkan Setup
 void VulkanCheck (const std::string_view &, const vk::Result &);

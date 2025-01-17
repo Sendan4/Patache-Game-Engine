@@ -1,8 +1,7 @@
 #include "Vulkan_ImageView.hpp"
 
 bool
-Patata::RaccoonRenderer::CreateImageView (
-    const Patata::SwapChainInfo & SwapChainInfo)
+Patata::Engine::CreateImageView (const Patata::SwapChainInfo & SwapChainInfo)
 {
   Vulkan.SwapChainColorImageView
       = new vk::ImageView[Vulkan.SwapChainImageCount];

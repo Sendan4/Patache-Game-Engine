@@ -1,12 +1,12 @@
 #include "Configuration.hpp"
 
 bool
-Patata::Engine::EngineImpl::LoadConfig (Patata::Config & Config)
+Patata::Engine::LoadConfiguration (void)
 {
   fast_io::dir_file ExecutableDirectory (
       static_cast<std::string> (SDL_GetBasePath ()));
   fast_io::native_file_loader YamlConfigFile (at (ExecutableDirectory),
-                                              GAME_CONFIG_FILE_NAME);
+                                              "config.yaml");
 
   // .data() to get char *
   ryml::Tree TreeConfig = ryml::parse_in_place (YamlConfigFile.data ());
@@ -36,7 +36,7 @@ Patata::Engine::EngineImpl::LoadConfig (Patata::Config & Config)
                      .is_number ()
                  == 0)
         YamlConfig["patata-engine"]["show-fatal-error-messagebox"]
-            >> Config.ShowFatalErrorMessagebox;
+            >> configuration.ShowFatalErrorMessagebox;
       else
         {
           std::future<void> Err = std::async (
@@ -58,7 +58,8 @@ Patata::Engine::EngineImpl::LoadConfig (Patata::Config & Config)
                  == 1
           || YamlConfig["patata-engine"]["prefer-wayland"].val ().is_number ()
                  == 0)
-        YamlConfig["patata-engine"]["prefer-wayland"] >> Config.PreferWayland;
+        YamlConfig["patata-engine"]["prefer-wayland"]
+            >> configuration.PreferWayland;
       else
         {
           std::future<void> Err = std::async (
@@ -86,7 +87,7 @@ Patata::Engine::EngineImpl::LoadConfig (Patata::Config & Config)
                      .is_number ()
                  == 0)
         YamlConfig["patata-engine"]["raccoon-renderer"]["vsync"]
-            >> Config.Vsync;
+            >> configuration.Vsync;
       else
         {
           std::future<void> Err = std::async (
@@ -114,7 +115,7 @@ Patata::Engine::EngineImpl::LoadConfig (Patata::Config & Config)
                      .is_number ()
                  == 0)
         YamlConfig["patata-engine"]["raccoon-renderer"]["10bit-depth"]
-            >> Config.BitDepth10;
+            >> configuration.BitDepth10;
       else
         {
           std::future<void> Err = std::async (

@@ -1,7 +1,7 @@
 #include "Start_Patata_Log_Info.hpp"
 
 void
-Patata::Log::StartPatataLogInfo (void)
+Patata::Log::StartPatataLogInfo (const Patata::EngineCreateInfo & Info)
 {
   HANDLE Terminal = GetStdHandle (STD_OUTPUT_HANDLE);
   DWORD  mode     = 0;
@@ -51,58 +51,32 @@ Patata::Log::StartPatataLogInfo (void)
   fast_io::io::println (fast_io::out ());
 #endif
 
-  fast_io::io::println (fast_io::out (), PATATA_TERM_BOLD,
-                        "  Version : ", PATATA_TERM_COLOR_GRAY1,
-                        PATATA_ENGINE_VERSION);
-
-  fast_io::io::println (fast_io::out (), PATATA_TERM_BOLD,
-                        "  Build Date : ", PATATA_TERM_COLOR_GRAY1, __DATE__,
-                        " ", __TIME__);
-
-  fast_io::io::println (fast_io::out (), PATATA_TERM_BOLD,
-                        "  Compiler : ", PATATA_TERM_COLOR_GRAY1,
-                        PATATA_COMPILER_PROGRAM, " | ", PATATA_COMPILER, " ",
-                        PATATA_COMPILER_VERSION);
-
-  fast_io::io::println (fast_io::out (), PATATA_TERM_BOLD,
-                        "  Build System : ", PATATA_TERM_COLOR_GRAY1,
-                        PATATA_BUILD_SYSTEM,
+  fast_io::io::println (
+      fast_io::out (), PATATA_TERM_BOLD,
+      "  Version : ", PATATA_TERM_COLOR_GRAY1, PATATA_ENGINE_VERSION, "\n",
+      PATATA_TERM_BOLD, "  Build Date : ", PATATA_TERM_COLOR_GRAY1, __DATE__,
+      " | ", __TIME__, "\n", PATATA_TERM_BOLD,
+      "  Compiler : ", PATATA_TERM_COLOR_GRAY1, PATATA_COMPILER_PROGRAM, " | ",
+      PATATA_COMPILER, " ", PATATA_COMPILER_VERSION, "\n", PATATA_TERM_BOLD,
+      "  Build System : ", PATATA_TERM_COLOR_GRAY1, PATATA_BUILD_SYSTEM,
 #if defined(PATATA_BUILD_SYSTEM_VERSION)
-                        " ", PATATA_BUILD_SYSTEM_VERSION,
+      " ", PATATA_BUILD_SYSTEM_VERSION,
 #endif
-                        " | ", PATATA_BUILD_SYSTEM_GENERATOR
+      " | ", PATATA_BUILD_SYSTEM_GENERATOR,
 #if defined(PATATA_BUILD_SYSTEM_GENERATOR_VERSION)
-                        ,
-                        " ", PATATA_BUILD_SYSTEM_GENERATOR_VERSION);
-#else
-  );
+      " ", PATATA_BUILD_SYSTEM_GENERATOR_VERSION,
 #endif
-
-  fast_io::io::println (fast_io::out (), PATATA_TERM_BOLD,
-                        "  Build Type : ", PATATA_TERM_COLOR_GRAY1,
-                        PATATA_BUILD_TYPE);
-
-  fast_io::io::println (fast_io::out (), PATATA_TERM_BOLD,
-                        "  Operating System : ", PATATA_TERM_COLOR_GRAY1,
-                        PATATA_OS);
-
-  fast_io::io::println (fast_io::out (), PATATA_TERM_BOLD,
-                        "  CPU Arch : ", PATATA_TERM_COLOR_GRAY1, PATATA_ARCH);
-
+      "\n", PATATA_TERM_BOLD, "  Build Type : ", PATATA_TERM_COLOR_GRAY1,
+      PATATA_BUILD_TYPE, "\n", PATATA_TERM_BOLD,
+      "  Operating System : ", PATATA_TERM_COLOR_GRAY1, PATATA_OS, "\n",
+      PATATA_TERM_BOLD, "  CPU Arch : ", PATATA_TERM_COLOR_GRAY1, PATATA_ARCH,
+      "\n",
 #if defined(PATATA_FAST_IO_GIT_COMMIT_HASH_SHORT)
-  fast_io::io::println (fast_io::out (), PATATA_TERM_BOLD,
-                        "  Fast IO Commit Hash : ", PATATA_TERM_COLOR_GRAY1,
-                        PATATA_FAST_IO_GIT_COMMIT_HASH_SHORT);
+      PATATA_TERM_BOLD, "  Fast IO Commit Hash : ", PATATA_TERM_COLOR_GRAY1,
+      PATATA_FAST_IO_GIT_COMMIT_HASH_SHORT, "\n",
 #endif
-  {
-    SDL_version sdlversion;
-    SDL_VERSION (&sdlversion);
-
-    fast_io::io::println (fast_io::out (), PATATA_TERM_BOLD,
-                          "  SDL Version : ", PATATA_TERM_COLOR_GRAY1,
-                          sdlversion.major, ".", sdlversion.minor, ".",
-                          sdlversion.patch);
-  }
+      PATATA_TERM_BOLD, "  SDL Version : ", PATATA_TERM_COLOR_GRAY1,
+      SDL_MAJOR_VERSION, ".", SDL_MINOR_VERSION, ".", SDL_PATCHLEVEL);
 
 #if defined(PATATA_RAPIDYAML_VERSION)
   fast_io::io::println (fast_io::out (), PATATA_TERM_BOLD,
@@ -110,12 +84,13 @@ Patata::Log::StartPatataLogInfo (void)
                         PATATA_RAPIDYAML_VERSION);
 #endif
 
-#if defined(PATATA_GAME_NAME)
-  fast_io::io::println (fast_io::out (), PATATA_TERM_BOLD,
-                        "  Game Name : ", PATATA_TERM_COLOR_GRAY1,
-                        PATATA_GAME_NAME);
-#endif
-
+if (Info.gameName != nullptr)
+    {
+      fast_io::io::println (fast_io::out (), PATATA_TERM_BOLD,
+                            "  Game Name : ", PATATA_TERM_COLOR_GRAY1,
+                            std::string_view{ Info.gameName });
+    }
+  
   SetConsoleOutputCP (defaultOutputCP);
   fast_io::io::println (fast_io::out (), PATATA_TERM_RESET);
   SetConsoleMode (Terminal, mode);

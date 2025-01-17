@@ -1,8 +1,7 @@
 #include "Vulkan_RenderPass.hpp"
 
 bool
-Patata::RaccoonRenderer::CreateRenderPass (
-    const Patata::SwapChainInfo & SwapChainInfo)
+Patata::Engine::CreateRenderPass (const Patata::SwapChainInfo & SwapChainInfo)
 {
   vk::AttachmentDescription ColorAttachmentDescriptionInfo (
       {},

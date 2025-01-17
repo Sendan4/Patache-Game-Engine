@@ -6,17 +6,13 @@ if (DEFINED SHARED_BUILD AND NOT SHARED_BUILD)
 	add_library(${PROJECT_NAME} STATIC)
 endif()
 
-add_dependencies(${PROJECT_NAME} Patata-Data Patata-Assets)
+add_dependencies(${PROJECT_NAME} Patata-Data)
 
 target_sources (${PROJECT_NAME} PRIVATE
-  "Core/PatataEngine.cpp"
-	"Core/RenderWrapper.cpp"
-	"Core/PrivateToPublicWrapper.cpp"
+	"Core/PatataEngine.cpp"
 	"Core/Configuration.cpp"
 	"Core/Input.cpp"
 	"Core/ClearColor.cpp"
-	"Core/Window.cpp"
-	"RaccoonRenderer/RaccoonRenderer.cpp"
 	"RaccoonRenderer/Vulkan/Vulkan_SetupRenderer.cpp"
 	"RaccoonRenderer/Vulkan/Vulkan_Instance.cpp"
 	"RaccoonRenderer/Vulkan/Vulkan_Select_Device.cpp"
@@ -35,7 +31,7 @@ target_sources (${PROJECT_NAME} PRIVATE
 if (MSVC)
 	# List Headers Files in Visual Studio
 	file(GLOB_RECURSE Include "${CMAKE_CURRENT_SOURCE_DIR}/../include/PatataEngine/*.hpp")
-  file(GLOB_RECURSE IncludeInternal "${CMAKE_CURRENT_SOURCE_DIR}/*.hpp")
+	file(GLOB_RECURSE IncludeInternal "${CMAKE_CURRENT_SOURCE_DIR}/*.hpp")
 
 	target_sources(${PROJECT_NAME} PRIVATE ${Include} ${IncludeInternal})
 endif()
@@ -67,8 +63,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 	"${CMAKE_CURRENT_SOURCE_DIR}/Core/"
 	"${CMAKE_CURRENT_SOURCE_DIR}/ImGUI/"
 	"${CMAKE_CURRENT_SOURCE_DIR}/Log/"
-	"${CMAKE_CURRENT_SOURCE_DIR}/RaccoonRenderer/"
-	"${CMAKE_CURRENT_SOURCE_DIR}/Window/")
+	"${CMAKE_CURRENT_SOURCE_DIR}/RaccoonRenderer/")
 
 # Compiler Flags
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
@@ -81,6 +76,9 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clan
     if (COMPILER_SUPPORTS_WEXTRA)
         target_compile_options(${PROJECT_NAME} PRIVATE "-Wextra")
     endif ()
+	if (COMPILER_SUPPORTS_WPEDANTIC)
+        target_compile_options(${PROJECT_NAME} PRIVATE "-Wpedantic")
+    endif ()
     if (COMPILER_SUPPORTS_NO_EXCEPTIONS)
         target_compile_options(${PROJECT_NAME} PRIVATE "-fno-exceptions")
     endif ()
@@ -90,6 +88,9 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clan
     if (COMPILER_SUPPORTS_NO_RTTI)
         target_compile_options(${PROJECT_NAME} PRIVATE "-fno-rtti")
     endif()
+	if (COMPILER_SUPPORTS_FAST_MATH)
+		target_compile_options(${PROJECT_NAME} PRIVATE "-ffast-math")
+	endif()
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     if (COMPILER_SUPPORTS_C++20)
 		target_compile_options(${PROJECT_NAME} PRIVATE "/std:c++20")
@@ -100,6 +101,18 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     if (COMPILER_SUPPORTS_NO_RTTI)
         target_compile_options(${PROJECT_NAME} PRIVATE "/GR-")
     endif()
+	if (COMPILER_SUPPORTS_FLOATING_POINT_FAST)
+		target_compile_options(${PROJECT_NAME} PRIVATE "/fp:fast")
+	endif()
+	if (COMPILER_SUPPORTS_NO_EXCEPCTION_FLOATING_POINT)
+		target_compile_options(${PROJECT_NAME} PRIVATE "/fp:except-")
+	endif()
+	if (COMPILER_SUPPORTS_NO_EXCEPCTION_HANDLING)
+		target_compile_options(${PROJECT_NAME} PRIVATE "/EHs-c-")
+	endif()
+
+	message(STATUS "Disabling exceptions with _HAS_EXCEPTIONS=0 for STL")
+	target_compile_definitions(${PROJECT_NAME} PRIVATE _HAS_EXCEPTIONS=0)
 endif()
 
 # Macros
@@ -172,19 +185,6 @@ if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWit
 	target_compile_definitions(${PROJECT_NAME} PRIVATE PATATA_IMGUI_VERSION="${Imgui_VERSION}")
 endif()
 
-if (GAME_NAME)
-	target_compile_definitions(${PROJECT_NAME} PUBLIC PATATA_GAME_NAME="${GAME_NAME}")
-else()
-	target_compile_definitions(${PROJECT_NAME} PUBLIC PATATA_GAME_NAME=0)
-endif()
-
-if (DEFINED GAME_VERSION_MAYOR AND DEFINED GAME_VERSION_MINOR AND GAME_VERSION_PATCH)
-	target_compile_definitions(${PROJECT_NAME} PUBLIC
-		PATATA_GAME_VERSION_MAYOR=${GAME_VERSION_MAYOR}
-		PATATA_GAME_VERSION_MINOR=${GAME_VERSION_MINOR}
-		PATATA_GAME_VERSION_PATCH=${GAME_VERSION_PATCH})
-endif()
-
 if (USE_VVL)
 	target_compile_definitions(${PROJECT_NAME} PRIVATE PATATA_USE_VVL)
 endif()
@@ -197,8 +197,8 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" OR (CMAKE_SYSTEM_NAME STREQUAL "Linux"
 	endif()
 
 	# build Vulkan
-	target_link_libraries(${PROJECT_NAME} PRIVATE vulkan Vulkan::Headers)
-else()
+	target_link_libraries(${PROJECT_NAME} PUBLIC vulkan Vulkan::Headers)
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
 	# Link Vulkan from SDK
 	message("")
 	message("  - Vulkan SDK -")

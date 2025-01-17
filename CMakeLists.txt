@@ -7,10 +7,6 @@ option(SHARED_BUILD "Build static or shared library" OFF)
 option(LIBS_SHARED_BUILD "Build and link Shared dependencies" OFF)
 option(USE_EXTERNAL_LIBS "Use libraries from external folder instead of system libraries" ON)
 option(USE_GIT "Grab git information" ON)
-option(USE_CUSTOM_ICON "..." OFF)
-option(ENABLE_ICON "use icon in runtime" ON)
-# GAME_NAME is a string
-option(GAME_NAME "specify the name of the game" OFF)
 option(USE_BIN_DIR "use the bin directory as output" ON)
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
@@ -61,33 +57,68 @@ if (NOT MSVC)
 	check_cxx_compiler_flag("-std=c++20" COMPILER_SUPPORTS_C++20) # Obligatory
 	check_cxx_compiler_flag("-Wextra" COMPILER_SUPPORTS_WEXTRA)
 	check_cxx_compiler_flag("-Wall" COMPILER_SUPPORTS_WALL)
-    check_cxx_compiler_flag("-fno-exceptions" COMPILER_SUPPORTS_NO_EXCEPTIONS)
-    check_cxx_compiler_flag("-fno-strict-aliasing" COMPILER_SUPPORTS_NO_STRICT_ALIASING)
-    if (CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "MinSizeRel")
-        check_cxx_compiler_flag("-fno-rtti" COMPILER_SUPPORTS_NO_RTTI)
-    endif()
+	check_cxx_compiler_flag("-Wpedantic" COMPILER_SUPPORTS_WPEDANTIC)
+	check_cxx_compiler_flag("-fno-exceptions" COMPILER_SUPPORTS_NO_EXCEPTIONS) # Obligatory
+	check_cxx_compiler_flag("-fno-strict-aliasing" COMPILER_SUPPORTS_NO_STRICT_ALIASING)
+	check_cxx_compiler_flag("-ffast-math" COMPILER_SUPPORTS_FAST_MATH) # Obligatory
+
+	if (CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "MinSizeRel")
+		check_cxx_compiler_flag("-fno-rtti" COMPILER_SUPPORTS_NO_RTTI) # Obligatory
+
+		if (NOT COMPILER_SUPPORTS_NO_RTTI) # Obligatory
+    		message(FATAL_ERROR "The compiler does not support -fno-rtti")
+		endif()
+	endif()
 
 	if (NOT COMPILER_SUPPORTS_C++20) # Obligatory
     	message(FATAL_ERROR "The compiler does not support the C++20 standard")
 	endif()
+
+	if (NOT COMPILER_SUPPORTS_NO_EXCEPTIONS) # Obligatory
+    	message(FATAL_ERROR "Exceptions cannot be disabled in this compiler")
+	endif()
+
+	if (NOT COMPILER_SUPPORTS_FAST_MATH) # Obligatory
+    	message(FATAL_ERROR "The compiler does not support -ffast-math")
+	endif()
 else()
 	check_cxx_compiler_flag("/std:c++20" COMPILER_SUPPORTS_C++20) # Obligatory
 	check_cxx_compiler_flag("/W4" COMPILER_SUPPORTS_W4)
-    if (CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "MinSizeRel")
-        check_cxx_compiler_flag("/GR-" COMPILER_SUPPORTS_NO_RTTI)
-    endif()
+	check_cxx_compiler_flag("/fp:fast" COMPILER_SUPPORTS_FLOATING_POINT_FAST) # Obligatory
+	check_cxx_compiler_flag("/fp:except-" COMPILER_SUPPORTS_NO_EXCEPCTION_FLOATING_POINT) # Obligatory
+	check_cxx_compiler_flag("/EHs-c-" COMPILER_SUPPORTS_NO_EXCEPCTION_HANDLING) # Obligatory
+
+	if (CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "MinSizeRel")
+		check_cxx_compiler_flag("/GR-" COMPILER_SUPPORTS_NO_RTTI) # Obligatory
+
+		if (NOT COMPILER_SUPPORTS_NO_RTTI) # Obligatory
+    		message(FATAL_ERROR "The compiler does not support /GR-")
+		endif()
+	endif()
 
 	if (NOT COMPILER_SUPPORTS_C++20) # Obligatory
     	message(FATAL_ERROR "The compiler does not support the C++20 standard")
+	endif()
+
+	if (NOT COMPILER_SUPPORTS_FLOATING_POINT_FAST) # Obligatory
+    	message(FATAL_ERROR "The compiler does not support /fp:fast")
+	endif()
+
+	if (NOT COMPILER_SUPPORTS_NO_EXCEPCTION_FLOATING_POINT) # Obligatory
+    	message(FATAL_ERROR "The compiler cannot disable excepctions for floating point")
+	endif()
+
+	if (NOT COMPILER_SUPPORTS_NO_EXCEPCTION_HANDLING) # Obligatory
+    	message(FATAL_ERROR "The compiler cannot disable excepctions")
 	endif()
 endif()
 
 if (WIN32 OR CMAKE_SYSTEM_NAME STREQUAL "Windows")
 	CHECK_INCLUDE_FILE("windows.h" HAVE_WINDOWS_H)
 
-    if (NOT HAVE_WINDOWS_H AND (WIN32 OR CMAKE_SYSTEM_NAME STREQUAL "Windows"))
-	   message(FATAL_ERROR "missing windows.h")
-    endif()
+  if (NOT HAVE_WINDOWS_H AND (WIN32 OR CMAKE_SYSTEM_NAME STREQUAL "Windows"))
+	  message(FATAL_ERROR "missing windows.h")
+  endif()
 endif()
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
@@ -99,6 +130,25 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 endif()
 
 # Check Headers
+if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo")
+	include(CheckCXXSymbolExists)
+
+	CHECK_INCLUDE_FILE_CXX("cstdio" HAVE_CSTDIO LANGUAGE CXX)
+	if (NOT HAVE_CSTDIO)
+		message(FATAL_ERROR "missing cstring header")
+	endif()
+
+	check_cxx_symbol_exists("snprintf" "cstdio" HAVE_SNPRINTF)
+	if (NOT HAVE_SNPRINTF)
+		message(FATAL_ERROR "missing snprintf function")
+	endif()
+
+	CHECK_INCLUDE_FILE_CXX("algorithm" HAVE_ALGORITHM LANGUAGE CXX)
+	if (NOT HAVE_ALGORITHM)
+		message(FATAL_ERROR "missing cstring header")
+	endif()
+endif()
+
 CHECK_INCLUDE_FILE_CXX("string" HAVE_STRING LANGUAGE CXX)
 if (NOT HAVE_STRING)
 	message(FATAL_ERROR "missing string header")
@@ -114,7 +164,6 @@ int main() {
 if (NOT std_string)
 	message(FATAL_ERROR "missing std::string type")
 endif()
-
 
 # std::string_view
 if (MSVC)
@@ -159,11 +208,6 @@ if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
     endif()
 endif()
 
-CHECK_INCLUDE_FILE_CXX("limits" HAVE_CSTDINT LANGUAGE CXX)
-if (NOT HAVE_CSTDINT)
-	message(FATAL_ERROR "missing limits header")
-endif()
-
 CHECK_INCLUDE_FILE_CXX("cstdint" HAVE_CSTDINT LANGUAGE CXX)
 if (NOT HAVE_CSTDINT)
 	message(FATAL_ERROR "missing cstdint header")
@@ -203,6 +247,19 @@ int main() {
 " UINT64_MAX)
 if (NOT UINT64_MAX)
 	message(FATAL_ERROR "missing UINT64_MAX macro")
+endif()
+
+check_cxx_source_compiles("
+#include <cstdint>
+int main() {
+    #if !defined(UINT32_MAX)
+    #error \"Missing UINT32_MAX\"
+    #endif
+    return 0;
+}
+" UINT32_MAX)
+if (NOT UINT32_MAX)
+	message(FATAL_ERROR "missing UINT32_MAX macro")
 endif()
 
 # Check Headers
@@ -325,12 +382,6 @@ else()
 endif()
 
 get_filename_component(compiler_program ${CMAKE_CXX_COMPILER} NAME)
-
-if (ENABLE_ICON)
-	add_compile_definitions(USE_ICON=1)
-else()
-	add_compile_definitions(USE_ICON=0)
-endif()
 
 # shared library
 if (SHARED_BUILD)
@@ -582,24 +633,15 @@ if (DEFINED XORG_SUPPORT)
 	message(STATUS "XORG_SUPPORT : ${XORG_SUPPORT}")
 endif()
 message(STATUS "USE_GIT : ${USE_GIT}")
-message(STATUS "ENABLE_ICON : ${ENABLE_ICON}")
-message(STATUS "USE_CUSTOM_ICON : ${USE_CUSTOM_ICON}")
 message(STATUS "USE_BIN_DIR : ${USE_BIN_DIR}")
 if (DEFINED USE_VVL)
 	message(STATUS "USE_VVL : ${USE_VVL}")
-endif()
-if (USE_CUSTOM_ICON)
-	message(STATUS "Custom Icon Path : ${ICON_PATH}")
 endif()
 message(STATUS "Build Type : ${CMAKE_BUILD_TYPE}")
 if (SHARED_BUILD)
 	message(STATUS "Library Type : Shared")
 else()
 	message(STATUS "Library Type : Static")
-endif()
-# if GAME_NAME is not empty
-if (GAME_NAME)
-	message(STATUS "Game Name : ${GAME_NAME}")
 endif()
 if (USE_GIT AND GIT)
 	message(STATUS "Git Branch : ${PATATA_GIT_BRANCH}")

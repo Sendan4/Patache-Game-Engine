@@ -1,7 +1,7 @@
 #include "Vulkan_CommandPoolAndBuffer.hpp"
 
 bool
-Patata::RaccoonRenderer::CreateCommandPool (void)
+Patata::Engine::CreateCommandPool (void)
 {
   vk::CommandPoolCreateInfo CommandPoolInfo (
       vk::CommandPoolCreateFlagBits::eTransient                 // flags
@@ -23,7 +23,7 @@ Patata::RaccoonRenderer::CreateCommandPool (void)
 }
 
 bool
-Patata::RaccoonRenderer::CreateCommandBuffer (void)
+Patata::Engine::CreateCommandBuffer (void)
 {
   vk::CommandBufferAllocateInfo cmdAllocateInfo (
       Vulkan.CommandPool,               // commandPool

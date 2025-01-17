@@ -1,12 +1,7 @@
 #include "WindowLog.hpp"
 
 void
-#if PATATA_DEBUG == 1
-Patata::Log::WindowLog (SDL_Window *         Window,
-                        Patata::EngineInfo * PatataEngineInfo)
-#else
-Patata::Log::WindowLog (SDL_Window * Window)
-#endif
+Patata::Engine::WindowLog (void)
 {
   HANDLE Terminal = GetStdHandle (STD_OUTPUT_HANDLE);
   DWORD  mode     = 0;
@@ -19,11 +14,11 @@ Patata::Log::WindowLog (SDL_Window * Window)
       PATATA_TERM_COLOR_GRAY0,
 #if defined(__GNUC__) || defined(__MINGW64__)
       "[",
-      std::string_view{ abi::__cxa_demangle (typeid (Window).name (), nullptr,
-                                             nullptr, nullptr) },
+      std::string_view{ abi::__cxa_demangle (typeid (GameWindow).name (),
+                                             nullptr, nullptr, nullptr) },
       "] ",
 #else
-      "[", std::string_view{ typeid (Window).name () }, "] ",
+      "[", std::string_view{ typeid (GameWindow).name () }, "] ",
 #endif // PATATA_DEBUG
       PATATA_TERM_RESET,
 #endif // PATATA_DEBUG
@@ -31,10 +26,10 @@ Patata::Log::WindowLog (SDL_Window * Window)
 
   SDL_SysWMinfo WindowInfo;
   SDL_VERSION (&WindowInfo.version);
-  SDL_GetWindowWMInfo (Window, &WindowInfo);
+  SDL_GetWindowWMInfo (GameWindow, &WindowInfo);
 
 #if PATATA_DEBUG == 1
-  PatataEngineInfo->WindowInfo = WindowInfo;
+  engineInfo.WindowInfo = WindowInfo;
 #endif
 
   switch (WindowInfo.subsystem)
@@ -129,9 +124,9 @@ Patata::Log::WindowLog (SDL_Window * Window)
   fast_io::io::println (fast_io::out (), PATATA_TERM_BOLD,
                         "  Window creation flags :", PATATA_TERM_COLOR_GRAY1);
 
-  uint32_t WindowFlags = SDL_GetWindowFlags (Window);
+  uint32_t WindowFlags = SDL_GetWindowFlags (GameWindow);
 #if PATATA_DEBUG == 1
-  PatataEngineInfo->WindowCreationFlags = WindowFlags;
+  engineInfo.WindowCreationFlags = WindowFlags;
 #endif
 
   if (WindowFlags & SDL_WINDOW_FULLSCREEN)

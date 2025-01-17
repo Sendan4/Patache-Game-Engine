@@ -1,11 +1,16 @@
 #include "Vulkan_Instance.hpp"
 
 bool
-Patata::RaccoonRenderer::CreateInstance (void)
+Patata::Engine::CreateInstance (const Patata::EngineCreateInfo & Info)
 {
+  const char * ApplicationName
+      = (Info.gameName != nullptr) ? Info.gameName : "Untitled Game";
+
+  uint32_t GameVersion = Info.gameVersion;
+
   vk::ApplicationInfo PatataEngineInfo (
-      PATATA_GAME_NAME,         // Application Name
-      PATATA_GAME_VERSION,      // Application Version
+      ApplicationName,          // Application Name
+      GameVersion,              // Application Version
       PATATA_ENGINE_NAME,       // Engine Name
       PATATA_ENGINE_VERSION_VK, // Engine Version
       VK_API_VERSION_1_3        // Vulkan API Version
@@ -17,23 +22,20 @@ They are for the development and testing of this backend.
 */
 // Layers
 #if PATATA_DEBUG == 1 && defined(PATATA_USE_VVL)
-  const char * pLayer[PATATA_VK_LAYER_COUNT]{
-    "VK_LAYER_KHRONOS_validation",
-  };
+  engineInfo.ppVkLayers    = new const char *[PATATA_VK_LAYER_COUNT];
+  engineInfo.ppVkLayers[0] = "VK_LAYER_KHRONOS_validation";
+
   {
     std::future<void> ReturnVulkanList
-        = std::async (std::launch::async, Patata::Log::VulkanList, pLayer,
-                      PATATA_VK_LAYER_COUNT, "Layers");
+        = std::async (std::launch::async, Patata::Log::VulkanList,
+                      engineInfo.ppVkLayers, PATATA_VK_LAYER_COUNT, "Layers");
   }
-  for (uint16_t i = 0; i < PATATA_VK_LAYER_COUNT; ++i)
-    pRaccoonInfo->pPatataEngineInfo->VkLayers[i] = pLayer[i];
 #endif
 
   // Get Extensions
   uint32_t SDLExtensionCount = 0;
 
-  SDL_Vulkan_GetInstanceExtensions (*pRaccoonInfo->ppWindow,
-                                    &SDLExtensionCount, nullptr);
+  SDL_Vulkan_GetInstanceExtensions (GameWindow, &SDLExtensionCount, nullptr);
 
 #if PATATA_DEBUG == 1
   uint32_t      MyExtensionCount        = SDLExtensionCount + 1;
@@ -43,7 +45,7 @@ They are for the development and testing of this backend.
 #endif
 
   bool FoundExtensions = SDL_Vulkan_GetInstanceExtensions (
-      *pRaccoonInfo->ppWindow, &SDLExtensionCount, pExtensionInstanceNames);
+      GameWindow, &SDLExtensionCount, pExtensionInstanceNames);
 
 #if PATATA_DEBUG == 1
   pExtensionInstanceNames[SDLExtensionCount] = "VK_EXT_debug_utils";
@@ -59,16 +61,14 @@ They are for the development and testing of this backend.
 #endif
         "Instance Extensions");
 
+  // Struct / Patata Engine Info
 #if PATATA_DEBUG == 1
-  pRaccoonInfo->pPatataEngineInfo->VkInstanceExtensions
-      = new const char *[MyExtensionCount];
+  engineInfo.ppVkInstanceExtensions = new const char *[MyExtensionCount];
 
-  for (uint32_t i = 0; i < MyExtensionCount; ++i)
-    pRaccoonInfo->pPatataEngineInfo->VkInstanceExtensions[i]
-        = pExtensionInstanceNames[i];
+  for (uint8_t i = 0; i < MyExtensionCount; ++i)
+    engineInfo.ppVkInstanceExtensions[i] = pExtensionInstanceNames[i];
 
-  pRaccoonInfo->pPatataEngineInfo->VkInstanceExtensionsCount
-      = MyExtensionCount;
+  engineInfo.VkInstanceExtensionsCount = MyExtensionCount;
 #endif
 
   // Create Instance
@@ -78,7 +78,7 @@ They are for the development and testing of this backend.
 #if PATATA_DEBUG == 1 && defined(PATATA_USE_VVL)
       // Using Layers
       PATATA_VK_LAYER_COUNT, // enabledLayerCount
-      pLayer,                // ppEnabledLayerNames
+      engineInfo.ppVkLayers, // ppEnabledLayerNames
 #else
       // Not Using Layers
       0,       // enabledLayerCount
@@ -103,10 +103,11 @@ They are for the development and testing of this backend.
       std::future<void> ReturnVulkanErr = std::async (
           std::launch::async, Patata::Log::FatalErrorMessage,
           "Patata Engine - Raccoon Renderer",
-          std::string ("You do not have Vulkan API compatible drivers or your "
-                       "GPU does not support the Vulkan API. "
-                       + vk::to_string (Result)),
-          *pRaccoonInfo->pConfiguration);
+          std::string_view{
+              "You do not have Vulkan API compatible drivers or your "
+              "GPU does not support the Vulkan API. "
+              + vk::to_string (Result) },
+          configuration);
 
       return false;
     }

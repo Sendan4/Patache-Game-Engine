@@ -1,7 +1,7 @@
 project('Patata_Engine',
   'cpp', 'c',
   version : '1',
-  meson_version : '>=1.4.0',
+  meson_version : '>=1.5.0',
   default_options : [
     'buildtype=release',
     'cpp_std=c++20',
@@ -49,25 +49,20 @@ if cpp.get_id() == 'gcc' or cpp.get_id() == 'clang'
   if cpp.has_argument('-fno-strict-aliasing')
     cpp_arguments += ['-fno-strict-aliasing']
   endif
-  if cpp.has_argument('-fno-rtti') and (get_option('default_library') == 'release' or get_option('default_library') == 'minsize')
-    cpp_arguments += ['-fno-rtti']
+  if cpp.has_argument('-ffast-math')
+    cpp_arguments += ['-ffast-math']
   endif
-endif
 
-if get_option('default_library') == 'static' or get_option('prefer_static') == true
-  cpp.has_argument('-static-libgcc')
-  cpp.has_argument('-static-libstdc++')
-
-  cpp_arguments = ['-static-libgcc', '-static-libstdc++']
+  if get_option('default_library') == 'release' or get_option('default_library') == 'minsize'
+    if cpp.has_argument('-fno-rtti')
+      cpp_arguments += ['-fno-rtti']
+    endif
+  endif
 endif
 
 bin_dir = meson.global_build_root()
 if get_option('use_bin_dir')
   bin_dir = join_paths(meson.global_build_root(), '../bin')
-endif
-
-if (cpp.has_link_argument('-ffast-math'))
-  cpp_arguments += ['-ffast-math']
 endif
 
 cpp.check_header('cstdint', required : true)
@@ -84,6 +79,7 @@ if not cpp.has_type('uint64_t', prefix : '#include <cstdint>')
   error('type uint64_t not usable in cstdint header')
 endif
 cpp.has_header_symbol('cstdint', 'UINT64_MAX', required : true)
+cpp.has_header_symbol('cstdint', 'UINT32_MAX', required : true)
 
 cpp.check_header('cstdlib', required : true)
 if build_machine.system() == 'linux'
@@ -97,6 +93,14 @@ endif
 
 if cpp.get_id() == 'gcc'
   cpp.check_header('cxxabi.h', required : true)
+endif
+
+if (get_option('buildtype') == 'debug' or get_option('buildtype') == 'debugoptimized')
+    cpp.check_header('cstdio', required : true)
+    cpp.has_header_symbol('cstdio', 'snprintf', required : true)
+
+    cpp.check_header('algorithm', required : true)
+    cpp.has_header_symbol('algorithm', 'std::copy_n', required : true)
 endif
 
 cpp.check_header('string', required : true)
@@ -116,7 +120,6 @@ if not cpp.has_type('std::future<bool>', prefix : '#include <future>')
 endif
 cpp.has_header_symbol('future', 'std::async', required : true)
 cpp.check_header('limits', required : true)
-cpp.has_header_symbol('limits', 'std::numeric_limits', required : true)
 
 c = meson.get_compiler('c')
 if target_machine.system() == 'windows'
@@ -190,8 +193,6 @@ if cpp.get_id() == 'gcc'
   compiler = find_program('g++', native: true, required : true)
 elif cpp.get_id() == 'clang'
   compiler = find_program('clang++', native: true, required : true)
-elif cpp.get_id() == 'msvc'
-  compiler = find_program('cl', native: true, required : true)
 endif
 
 fs = import('fs')
@@ -230,12 +231,12 @@ endif
 sdl2_dep = dependency('sdl2',
   required : true,
   static : false,
-  version : '>=2.30',
-  modules : ['SDL2::SDL2'])
+  version : '>=2.30.11')
 
 rapidyaml = dependency('ryml',
   static : false,
-  required : true)
+  required : true,
+  version : '>=0.7.2')
 
 Vulkan = dependency('Vulkan',
   static : false,
@@ -337,23 +338,12 @@ add_project_arguments(
   '-DPATATA_VULKAN_LOADER_VERSION="'+Vulkan.version()+'"',
   language : 'cpp')
 
-#Game name
-if get_option('game_name') != ''
-  add_project_arguments('-DPATATA_GAME_NAME="'+get_option('game_name')+'"', language : 'cpp')
-else
-  add_project_arguments('-DPATATA_GAME_NAME=0', language : 'cpp')
-endif
-
-subdir('data/assets')
 subdir('data')
-
+include_icon = include_directories('data/assets/icon')
 include = include_directories('include/')
 subdir('src')
 
 info = {
-  'Game Name' : get_option('game_name'),
-  'Icon' : get_option('enable_icon'),
-  'Custom Icon' : get_option('use_custom_icon'),
   'Branch' : branchCOutput,
   'Commit Hash' : git_commit_long_hash,
   'Build Type' : get_option('buildtype'),
@@ -363,9 +353,6 @@ info = {
 summary({
   'Branch' : info['Branch'],
   'Commit Hash' : info['Commit Hash'],
-  'Game Name' : info['Game Name'],
-  'Icon' : info['Icon'],
-  'Custom Icon' : info['Custom Icon'],
   'Build Type' : info['Build Type'],
   'Library Type' : info['Library Type']},
   bool_yn : true)
