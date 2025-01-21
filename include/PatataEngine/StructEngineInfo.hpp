@@ -1,23 +1,43 @@
 #if PATATA_DEBUG == 1
 #pragma once
 
-#define PATATA_VK_LAYER_COUNT         1
-#define PATATA_VK_VERSION_SIZE        20
-#define PATATA_VK_DRIVER_VERSION_SIZE 100
-#define PATATA_VK_DRIVER_ID_SIZE      256
-#define PATATA_VK_DEVICE_TYPE_SIZE    32
+#define PATATA_VK_LAYER_COUNT             1
+#define PATATA_VK_VERSION_SIZE            20
+#define PATATA_VK_DRIVER_VERSION_SIZE     100
+#define PATATA_VK_DRIVER_ID_SIZE          256
+#define PATATA_VK_DEVICE_TYPE_SIZE        32
+#define PATATA_VK_QUEUE_FAMILY_PROPERTIES 512
 
 namespace Patata
 {
+enum class WindowType : uint8_t
+{
+  Nothing,
+  Wayland,
+  Win32
+};
+
+enum class Desktop : uint8_t
+{
+  Nothing,
+  Gnome,
+  KdePlasma,
+  Xfce,
+  Pantheon,
+  Mate,
+  Cinnamon,
+  Lxqt,
+  Unity,
+  Cosmic,
+  Windows,
+};
+
 struct EngineInfo
 {
-// Window
-#if defined(__linux__)
-  const char * Desktop     = nullptr;
-  const char * SessionType = nullptr;
-#endif
-  SDL_SysWMinfo WindowInfo;
-  uint32_t      WindowCreationFlags = 0;
+  // Window
+  Patata::WindowType WindowType          = Patata::WindowType::Nothing;
+  Patata::Desktop    DesktopType         = Patata::Desktop::Nothing;
+  uint32_t           WindowCreationFlags = 0;
 
   // RaccoonRenderer
   // Vulkan
@@ -27,6 +47,12 @@ struct EngineInfo
   char     VkDeviceName[VK_MAX_PHYSICAL_DEVICE_NAME_SIZE]{ 0 };
   uint32_t VkDeviceVendorId = 0;
   char     VkDeviceType[PATATA_VK_DEVICE_TYPE_SIZE]{ 0 };
+
+  // Queue
+  // uint8_t VkQueuesCount = 0
+  uint32_t                     VkQueueIndex    = 0;
+  float                        VkQueuePriority = 0.0f;
+  vk::Flags<vk::QueueFlagBits> VkQueueFlags;
 
   // Driver
   char VkDriverName[VK_MAX_DRIVER_NAME_SIZE]{ 0 };

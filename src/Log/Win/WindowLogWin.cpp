@@ -28,10 +28,6 @@ Patata::Engine::WindowLog (void)
   SDL_VERSION (&WindowInfo.version);
   SDL_GetWindowWMInfo (GameWindow, &WindowInfo);
 
-#if PATATA_DEBUG == 1
-  engineInfo.WindowInfo = WindowInfo;
-#endif
-
   switch (WindowInfo.subsystem)
     {
     case SDL_SYSWM_WINDOWS:
@@ -105,6 +101,10 @@ Patata::Engine::WindowLog (void)
                             "  ",
 #endif // PATATA_DEBUG
                             PATATA_TERM_BOLD, "The instance handle");
+
+#if PATATA_DEBUG == 1
+      engineInfo.WindowType = Patata::WindowType::Win32;
+#endif
       break;
 
     case SDL_SYSWM_WINRT:
@@ -120,6 +120,10 @@ Patata::Engine::WindowLog (void)
                           "Unknown");
       break;
     }
+
+#if PATATA_DEBUG == 1
+  engineInfo.DesktopType = Patata::Desktop::Windows;
+#endif
 
   fast_io::io::println (fast_io::out (), PATATA_TERM_BOLD,
                         "  Window creation flags :", PATATA_TERM_COLOR_GRAY1);

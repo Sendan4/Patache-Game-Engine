@@ -21,8 +21,35 @@ Patata::Engine::WindowLog (void)
   // Desktop
   const char * XDG_CURRENT_DESKTOP = getenv ("XDG_CURRENT_DESKTOP");
 
+  // engineInfo / Desktop Type
 #if PATATA_DEBUG == 1
-  engineInfo.Desktop = XDG_CURRENT_DESKTOP;
+  if (strcmp (XDG_CURRENT_DESKTOP, "GNOME") == 0
+      || strcmp (XDG_CURRENT_DESKTOP, "GNOME-Classic") == 0)
+    engineInfo.DesktopType = Patata::Desktop::Gnome;
+
+  if (strcmp (XDG_CURRENT_DESKTOP, "KDE") == 0)
+    engineInfo.DesktopType = Patata::Desktop::KdePlasma;
+
+  if (strcmp (XDG_CURRENT_DESKTOP, "XFCE") == 0)
+    engineInfo.DesktopType = Patata::Desktop::Xfce;
+
+  if (strcmp (XDG_CURRENT_DESKTOP, "Pantheon") == 0)
+    engineInfo.DesktopType = Patata::Desktop::Pantheon;
+
+  if (strcmp (XDG_CURRENT_DESKTOP, "MATE") == 0)
+    engineInfo.DesktopType = Patata::Desktop::Mate;
+
+  if (strcmp (XDG_CURRENT_DESKTOP, "Cinnamon") == 0)
+    engineInfo.DesktopType = Patata::Desktop::Cinnamon;
+
+  if (strcmp (XDG_CURRENT_DESKTOP, "LXQt") == 0)
+    engineInfo.DesktopType = Patata::Desktop::Lxqt;
+
+  if (strcmp (XDG_CURRENT_DESKTOP, "Unity") == 0)
+    engineInfo.DesktopType = Patata::Desktop::Unity;
+
+  if (strcmp (XDG_CURRENT_DESKTOP, "COSMIC") == 0)
+    engineInfo.DesktopType = Patata::Desktop::Cosmic;
 #endif
 
   if (XDG_CURRENT_DESKTOP != nullptr)
@@ -48,11 +75,6 @@ Patata::Engine::WindowLog (void)
   SDL_VERSION (&WindowInfo.version);
   SDL_GetWindowWMInfo (GameWindow, &WindowInfo);
   const char * XDG_SESSION_TYPE = getenv ("XDG_SESSION_TYPE");
-
-#if PATATA_DEBUG == 1
-  engineInfo.WindowInfo  = WindowInfo;
-  engineInfo.SessionType = XDG_SESSION_TYPE;
-#endif
 
   switch (WindowInfo.subsystem)
     {
@@ -167,6 +189,10 @@ Patata::Engine::WindowLog (void)
 #endif // PATATA_DEBUG
             PATATA_TERM_BOLD, "Wayland EGL window (native window)",
             PATATA_TERM_RESET);
+
+#if PATATA_DEBUG == 1
+      engineInfo.WindowType = Patata::WindowType::Wayland;
+#endif
       break;
 
 #if defined(PATATA_LINUX_XORG_SUPPORT) && defined(SDL_VIDEO_DRIVER_X11)

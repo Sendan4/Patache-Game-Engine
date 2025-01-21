@@ -28,7 +28,7 @@
 
 namespace Patata
 {
-inline void
+static inline void
 DrawDebugUI (Patata::EngineInfo * engineInfo, Patata::Config & configuration,
              const uint32_t &     SwapChainImageCount,
              const vk::Extent2D & SwapChainExtent)
@@ -336,12 +336,13 @@ DrawDebugUI (Patata::EngineInfo * engineInfo, Patata::Config & configuration,
             {
               if (ImGui::BeginTable ("Libraries", 3, PATATA_IMGUI_TABLE_FLAGS))
                 {
-                  ImGui::TableSetupColumn ("Name",
+                  ImGui::TableSetupColumn ("Library",
                                            ImGuiTableColumnFlags_WidthFixed);
                   ImGui::TableSetupColumn ("Version",
                                            ImGuiTableColumnFlags_WidthFixed);
                   ImGui::TableSetupColumn ("Licence",
                                            ImGuiTableColumnFlags_WidthFixed);
+                  ImGui::TableHeadersRow ();
 
                   // Fast IO Commit Hash Short
 #if defined(PATATA_FAST_IO_GIT_COMMIT_HASH_SHORT)
@@ -421,414 +422,162 @@ DrawDebugUI (Patata::EngineInfo * engineInfo, Patata::Config & configuration,
 
       if (ImGui::CollapsingHeader ("Window"))
         {
-          // Tabla acerca del escritorio
-          if (ImGui::TreeNode ("Desktop"))
+          // Tabla acerca de la ventana
+          if (ImGui::BeginTable ("Window Info", 2, PATATA_IMGUI_TABLE_FLAGS))
             {
-              if (ImGui::BeginTable ("Desktop", 2, PATATA_IMGUI_TABLE_FLAGS))
+              ImGui::TableSetupColumn ("", ImGuiTableColumnFlags_WidthFixed);
+              ImGui::TableSetupColumn ("", ImGuiTableColumnFlags_WidthFixed);
+
+              // Window Type
+              ImGui::TableNextRow ();
+              ImGui::TableSetColumnIndex (0);
+              ImGui::Text ("Type");
+
+              ImGui::TableSetColumnIndex (1);
+
+              switch (engineInfo->WindowType)
                 {
-                  ImGui::TableSetupColumn ("",
-                                           ImGuiTableColumnFlags_WidthFixed);
-                  ImGui::TableSetupColumn ("",
-                                           ImGuiTableColumnFlags_WidthFixed);
+                default:
+                case Patata::WindowType::Nothing:
+                  ImGui::Text ("Unknown");
+                  break;
 
-                  ImGui::TableNextRow ();
+                case Patata::WindowType::Wayland:
+                  ImGui::Text ("Wayland");
+                  break;
 
-                  // Desktop
-#if defined(__linux__)
-                  if (engineInfo->Desktop != nullptr)
-                    {
-                      ImGui::TableSetColumnIndex (0);
-                      ImGui::Text ("Desktop");
-
-                      ImGui::TableSetColumnIndex (1);
-                      ImGui::Text ("%s", engineInfo->Desktop);
-
-                      ImGui::TableNextRow ();
-                    }
-#endif
-
-                  // Window System
-                  ImGui::TableSetColumnIndex (0);
-                  ImGui::Text ("Window Subsystem");
-
-                  ImGui::TableSetColumnIndex (1);
-#if defined(_WIN64) // Windows
-                  if (engineInfo->WindowInfo.subsystem == SDL_SYSWM_WINDOWS)
-                    ImGui::Text ("Windows");
-                  else if (engineInfo->WindowInfo.subsystem == SDL_SYSWM_WINRT)
-                    ImGui::Text ("WinRT");
-#else // Linux
-                  if (engineInfo->WindowInfo.subsystem == SDL_SYSWM_X11
-                      && strcmp (engineInfo->SessionType, "wayland") == 0)
-                    ImGui::Text ("XWayland");
-                  else if (engineInfo->WindowInfo.subsystem
-                           == SDL_SYSWM_WAYLAND)
-                    ImGui::Text ("Wayland");
-#endif
-
-#if defined(__linux__)
-                  ImGui::TableNextRow ();
-
-                  if (engineInfo->SessionType != nullptr)
-                    {
-                      ImGui::TableSetColumnIndex (0);
-                      ImGui::Text ("Session Type");
-
-                      ImGui::TableSetColumnIndex (1);
-                      ImGui::Text ("%s", engineInfo->SessionType);
-                    }
-#endif
-                  ImGui::EndTable ();
+                case Patata::WindowType::Win32:
+                  ImGui::Text ("Win32");
+                  break;
                 }
-              ImGui::TreePop ();
-            }
 
-          if (ImGui::TreeNode ("Window Manager##1"))
-            {
-              if (ImGui::BeginTable ("Desktop", 2, PATATA_IMGUI_TABLE_FLAGS))
+              ImGui::TableNextRow ();
+
+              // Desktop
+              ImGui::TableSetColumnIndex (0);
+              ImGui::Text ("Desktop");
+
+              ImGui::TableSetColumnIndex (1);
+
+              switch (engineInfo->DesktopType)
                 {
-                  ImGui::TableSetupColumn ("",
-                                           ImGuiTableColumnFlags_WidthFixed);
-                  ImGui::TableSetupColumn ("",
-                                           ImGuiTableColumnFlags_WidthFixed);
+                default:
+                case Patata::Desktop::Nothing:
+                  ImGui::Text ("Unknown");
+                  break;
 
-#if defined(__linux__) // Linux
-                  if (engineInfo->WindowInfo.subsystem == SDL_SYSWM_WAYLAND)
-                    {
-                      // Wayland
-                      // Has Display?
-                      if (engineInfo->WindowInfo.info.wl.display != nullptr)
-                        {
-                          ImGui::TableNextRow ();
+                case Patata::Desktop::Gnome:
+                  ImGui::Text ("Gnome");
+                  break;
 
-                          ImGui::TableSetColumnIndex (0);
-#if defined(__GNUC__) || defined(__MINGW64__)
-                          ImGui::Text (
-                              "%s",
-                              abi::__cxa_demangle (
-                                  typeid (
-                                      engineInfo->WindowInfo.info.wl.display)
-                                      .name (),
-                                  nullptr, nullptr, nullptr));
-#else
-                          ImGui::Text (
-                              typeid (engineInfo->WindowInfo.info.wl.display)
-                                  .name ());
-#endif
+                case Patata::Desktop::Xfce:
+                  ImGui::Text ("Xfce");
+                  break;
 
-                          ImGui::TableSetColumnIndex (1);
-                          ImGui::Text ("Wayland display");
-                        }
+                case Patata::Desktop::Pantheon:
+                  ImGui::Text ("Pantheon");
+                  break;
 
-                      // Has Surface?
-                      if (engineInfo->WindowInfo.info.wl.surface != nullptr)
-                        {
-                          ImGui::TableNextRow ();
+                case Patata::Desktop::Mate:
+                  ImGui::Text ("MATE");
+                  break;
 
-                          ImGui::TableSetColumnIndex (0);
-#if defined(__GNUC__) || defined(__MINGW64__)
-                          ImGui::Text (
-                              "%s",
-                              abi::__cxa_demangle (
-                                  typeid (
-                                      engineInfo->WindowInfo.info.wl.surface)
-                                      .name (),
-                                  nullptr, nullptr, nullptr));
-#else
-                          ImGui::Text (
-                              typeid (engineInfo->WindowInfo.info.wl.surface)
-                                  .name ());
-#endif
+                case Patata::Desktop::Cinnamon:
+                  ImGui::Text ("Cinnamon");
+                  break;
 
-                          ImGui::TableSetColumnIndex (1);
-                          ImGui::Text ("Wayland surface");
-                        }
+                case Patata::Desktop::Lxqt:
+                  ImGui::Text ("Lxqt");
+                  break;
 
-                      // Has wayland xdg surface?
-                      if (engineInfo->WindowInfo.info.wl.xdg_surface
-                          != nullptr)
-                        {
-                          ImGui::TableNextRow ();
+                case Patata::Desktop::Unity:
+                  ImGui::Text ("Unity");
+                  break;
 
-                          ImGui::TableSetColumnIndex (0);
-#if defined(__GNUC__) || defined(__MINGW64__)
-                          ImGui::Text ("%s",
-                                       abi::__cxa_demangle (
-                                           typeid (engineInfo->WindowInfo.info
-                                                       .wl.xdg_surface)
-                                               .name (),
-                                           nullptr, nullptr, nullptr));
-#else
-                          ImGui::Text (
-                              typeid (
-                                  engineInfo->WindowInfo.info.wl.xdg_surface)
-                                  .name ());
-#endif
+                case Patata::Desktop::Cosmic:
+                  ImGui::Text ("Cosmic");
+                  break;
 
-                          ImGui::TableSetColumnIndex (1);
-                          ImGui::Text ("Wayland xdg surface (window "
-                                       "manager handle)");
-                        }
-
-                      // Has wayland xdg popup?
-                      if (engineInfo->WindowInfo.info.wl.xdg_popup != nullptr)
-                        {
-                          ImGui::TableNextRow ();
-
-                          ImGui::TableSetColumnIndex (0);
-#if defined(__GNUC__) || defined(__MINGW64__)
-                          ImGui::Text (
-                              "%s",
-                              abi::__cxa_demangle (
-                                  typeid (
-                                      engineInfo->WindowInfo.info.wl.xdg_popup)
-                                      .name (),
-                                  nullptr, nullptr, nullptr));
-#else
-                          ImGui::Text (
-                              typeid (engineInfo->WindowInfo.info.wl.xdg_popup)
-                                  .name ());
-#endif
-
-                          ImGui::TableSetColumnIndex (1);
-                          ImGui::Text ("Wayland xdg popup role");
-                        }
-
-                      // Has wayland egl window?
-                      if (engineInfo->WindowInfo.info.wl.egl_window != nullptr)
-                        {
-                          ImGui::TableNextRow ();
-
-                          ImGui::TableSetColumnIndex (0);
-#if defined(__GNUC__) || defined(__MINGW64__)
-                          ImGui::Text ("%s",
-                                       abi::__cxa_demangle (
-                                           typeid (engineInfo->WindowInfo.info
-                                                       .wl.egl_window)
-                                               .name (),
-                                           nullptr, nullptr, nullptr));
-#else
-                          ImGui::Text (
-                              typeid (
-                                  engineInfo->WindowInfo.info.wl.egl_window)
-                                  .name ());
-#endif
-
-                          ImGui::TableSetColumnIndex (1);
-                          ImGui::Text ("Wayland EGL window (native window)");
-                        }
-                    }
-                  else if (engineInfo->WindowInfo.subsystem == SDL_SYSWM_X11)
-                    {
-#if defined(PATATA_LINUX_XORG_SUPPORT)
-                      // X11 / Xorg
-                      // Has Display?
-                      if (engineInfo->WindowInfo.info.x11.display != nullptr)
-                        {
-                          ImGui::TableNextRow ();
-
-                          ImGui::TableSetColumnIndex (0);
-#if defined(__GNUC__) || defined(__MINGW64__)
-                          ImGui::Text (
-                              "%s",
-                              abi::__cxa_demangle (
-                                  typeid (
-                                      engineInfo->WindowInfo.info.x11.display)
-                                      .name (),
-                                  nullptr, nullptr, nullptr));
-#else
-                          ImGui::Text (
-                              typeid (engineInfo->WindowInfo.info.x11.display)
-                                  .name ());
-#endif
-
-                          ImGui::TableSetColumnIndex (1);
-                          ImGui::Text ("The X11 display");
-                        }
-
-                        // Has Window?
-#if defined(PATATA_LINUX_XORG_SUPPORT)
-                      if (engineInfo->WindowInfo.info.x11.window)
-                        {
-                          ImGui::TableNextRow ();
-
-                          ImGui::TableSetColumnIndex (0);
-#if defined(__GNUC__) || defined(__MINGW64__)
-                          ImGui::Text (
-                              "%s",
-                              abi::__cxa_demangle (
-                                  typeid (
-                                      engineInfo->WindowInfo.info.x11.window)
-                                      .name (),
-                                  nullptr, nullptr, nullptr));
-#else
-                          ImGui::Text (
-                              typeid (engineInfo->WindowInfo.info.x11.window)
-                                  .name ());
-#endif
-
-                          ImGui::TableSetColumnIndex (1);
-                          ImGui::Text ("The X11 window");
-                        }
-#endif
-#endif
-                    }
-#endif
-
-#if defined(_WIN64) // Windows
-                  if (engineInfo->WindowInfo.subsystem == SDL_SYSWM_WINDOWS)
-                    {
-                      if (engineInfo->WindowInfo.info.win.window != nullptr)
-                        {
-                          ImGui::TableNextRow ();
-
-                          ImGui::TableSetColumnIndex (0);
-#if defined(__GNUC__) || defined(__MINGW64__)
-                          ImGui::Text (
-                              "%s",
-                              abi::__cxa_demangle (
-                                  typeid (
-                                      engineInfo->WindowInfo.info.win.window)
-                                      .name (),
-                                  nullptr, nullptr, nullptr));
-#else
-                          ImGui::Text (
-                              typeid (engineInfo->WindowInfo.info.win.window)
-                                  .name ());
-#endif
-
-                          ImGui::TableSetColumnIndex (1);
-                          ImGui::Text ("The window handle");
-                        }
-
-                      if (engineInfo->WindowInfo.info.win.hdc != nullptr)
-                        {
-                          ImGui::TableNextRow ();
-
-                          ImGui::TableSetColumnIndex (0);
-#if defined(__GNUC__) || defined(__MINGW64__)
-                          ImGui::Text (
-                              "%s",
-                              abi::__cxa_demangle (
-                                  typeid (engineInfo->WindowInfo.info.win.hdc)
-                                      .name (),
-                                  nullptr, nullptr, nullptr));
-#else
-                          ImGui::Text (
-                              typeid (engineInfo->WindowInfo.info.win.hdc)
-                                  .name ());
-#endif
-
-                          ImGui::TableSetColumnIndex (1);
-                          ImGui::Text ("The window device context");
-                        }
-
-                      if (engineInfo->WindowInfo.info.win.hinstance != nullptr)
-                        {
-                          ImGui::TableNextRow ();
-
-                          ImGui::TableSetColumnIndex (0);
-#if defined(__GNUC__) || defined(__MINGW64__)
-                          ImGui::Text ("%s",
-                                       abi::__cxa_demangle (
-                                           typeid (engineInfo->WindowInfo.info
-                                                       .win.hinstance)
-                                               .name (),
-                                           nullptr, nullptr, nullptr));
-#else
-                          ImGui::Text (
-                              typeid (
-                                  engineInfo->WindowInfo.info.win.hinstance)
-                                  .name ());
-#endif
-
-                          ImGui::TableSetColumnIndex (1);
-                          ImGui::Text ("The instance handle");
-                        }
-                    }
-#endif
-
-                  ImGui::EndTable ();
+                case Patata::Desktop::Windows:
+                  ImGui::Text ("Windows");
+                  break;
                 }
-              ImGui::TreePop ();
+              ImGui::EndTable ();
             }
 
           // List of windows creation flags
-          if (ImGui::TreeNode ("Creation flags##1"))
-            {
-              if (engineInfo->WindowCreationFlags & SDL_WINDOW_FULLSCREEN)
-                ImGui::BulletText ("fullscreen window");
+          ImGui::Spacing ();
+          ImGui::Text ("Creation Flags");
 
-              if (engineInfo->WindowCreationFlags & SDL_WINDOW_OPENGL)
-                ImGui::BulletText ("window usable with OpenGL context");
+          if (engineInfo->WindowCreationFlags & SDL_WINDOW_FULLSCREEN)
+            ImGui::BulletText ("fullscreen window");
 
-              if (engineInfo->WindowCreationFlags & SDL_WINDOW_SHOWN)
-                ImGui::BulletText ("window is visible");
+          if (engineInfo->WindowCreationFlags & SDL_WINDOW_OPENGL)
+            ImGui::BulletText ("window usable with OpenGL context");
 
-              if (engineInfo->WindowCreationFlags & SDL_WINDOW_HIDDEN)
-                ImGui::BulletText ("window is not visible");
+          if (engineInfo->WindowCreationFlags & SDL_WINDOW_SHOWN)
+            ImGui::BulletText ("window is visible");
 
-              if (engineInfo->WindowCreationFlags & SDL_WINDOW_BORDERLESS)
-                ImGui::BulletText ("no window decoration");
+          if (engineInfo->WindowCreationFlags & SDL_WINDOW_HIDDEN)
+            ImGui::BulletText ("window is not visible");
 
-              if (engineInfo->WindowCreationFlags & SDL_WINDOW_RESIZABLE)
-                ImGui::BulletText ("window can be resized");
+          if (engineInfo->WindowCreationFlags & SDL_WINDOW_BORDERLESS)
+            ImGui::BulletText ("no window decoration");
 
-              if (engineInfo->WindowCreationFlags & SDL_WINDOW_MINIMIZED)
-                ImGui::BulletText ("window is minimized");
+          if (engineInfo->WindowCreationFlags & SDL_WINDOW_RESIZABLE)
+            ImGui::BulletText ("window can be resized");
 
-              if (engineInfo->WindowCreationFlags & SDL_WINDOW_MAXIMIZED)
-                ImGui::BulletText ("window is maximized");
+          if (engineInfo->WindowCreationFlags & SDL_WINDOW_MINIMIZED)
+            ImGui::BulletText ("window is minimized");
 
-              if (engineInfo->WindowCreationFlags & SDL_WINDOW_MOUSE_GRABBED)
-                ImGui::BulletText ("window has grabbed mouse input");
+          if (engineInfo->WindowCreationFlags & SDL_WINDOW_MAXIMIZED)
+            ImGui::BulletText ("window is maximized");
 
-              if (engineInfo->WindowCreationFlags & SDL_WINDOW_INPUT_FOCUS)
-                ImGui::BulletText ("window has input focus");
+          if (engineInfo->WindowCreationFlags & SDL_WINDOW_MOUSE_GRABBED)
+            ImGui::BulletText ("window has grabbed mouse input");
 
-              if (engineInfo->WindowCreationFlags & SDL_WINDOW_MOUSE_FOCUS)
-                ImGui::BulletText ("window has mouse focus");
+          if (engineInfo->WindowCreationFlags & SDL_WINDOW_INPUT_FOCUS)
+            ImGui::BulletText ("window has input focus");
 
-              if (engineInfo->WindowCreationFlags & SDL_WINDOW_FOREIGN)
-                ImGui::BulletText ("window not created by SDL");
+          if (engineInfo->WindowCreationFlags & SDL_WINDOW_MOUSE_FOCUS)
+            ImGui::BulletText ("window has mouse focus");
 
-              if (engineInfo->WindowCreationFlags & SDL_WINDOW_ALLOW_HIGHDPI)
-                ImGui::BulletText ("window should be created in "
-                                   "high-DPI mode if supported");
+          if (engineInfo->WindowCreationFlags & SDL_WINDOW_FOREIGN)
+            ImGui::BulletText ("window not created by SDL");
 
-              if (engineInfo->WindowCreationFlags & SDL_WINDOW_MOUSE_CAPTURE)
-                ImGui::BulletText ("window has mouse captured "
-                                   "(unrelated to MOUSE_GRABBED)");
+          if (engineInfo->WindowCreationFlags & SDL_WINDOW_ALLOW_HIGHDPI)
+            ImGui::BulletText ("window should be created in "
+                               "high-DPI mode if supported");
 
-              if (engineInfo->WindowCreationFlags & SDL_WINDOW_ALWAYS_ON_TOP)
-                ImGui::BulletText ("window should always be above others");
+          if (engineInfo->WindowCreationFlags & SDL_WINDOW_MOUSE_CAPTURE)
+            ImGui::BulletText ("window has mouse captured "
+                               "(unrelated to MOUSE_GRABBED)");
 
-              if (engineInfo->WindowCreationFlags & SDL_WINDOW_SKIP_TASKBAR)
-                ImGui::BulletText (
-                    "window should not be added to the taskbar");
+          if (engineInfo->WindowCreationFlags & SDL_WINDOW_ALWAYS_ON_TOP)
+            ImGui::BulletText ("window should always be above others");
 
-              if (engineInfo->WindowCreationFlags & SDL_WINDOW_UTILITY)
-                ImGui::BulletText (
-                    "window should be treated as a utility window");
+          if (engineInfo->WindowCreationFlags & SDL_WINDOW_SKIP_TASKBAR)
+            ImGui::BulletText ("window should not be added to the taskbar");
 
-              if (engineInfo->WindowCreationFlags & SDL_WINDOW_TOOLTIP)
-                ImGui::BulletText ("window should be treated as a tooltip");
+          if (engineInfo->WindowCreationFlags & SDL_WINDOW_UTILITY)
+            ImGui::BulletText ("window should be treated as a utility window");
 
-              if (engineInfo->WindowCreationFlags & SDL_WINDOW_POPUP_MENU)
-                ImGui::BulletText ("window should be treated as a popup menu");
+          if (engineInfo->WindowCreationFlags & SDL_WINDOW_TOOLTIP)
+            ImGui::BulletText ("window should be treated as a tooltip");
 
-              if (engineInfo->WindowCreationFlags
-                  & SDL_WINDOW_KEYBOARD_GRABBED)
-                ImGui::BulletText ("window has grabbed keyboard input");
+          if (engineInfo->WindowCreationFlags & SDL_WINDOW_POPUP_MENU)
+            ImGui::BulletText ("window should be treated as a popup menu");
 
-              if (engineInfo->WindowCreationFlags & SDL_WINDOW_VULKAN)
-                ImGui::BulletText ("window usable for Vulkan surface");
+          if (engineInfo->WindowCreationFlags & SDL_WINDOW_KEYBOARD_GRABBED)
+            ImGui::BulletText ("window has grabbed keyboard input");
 
-              if (engineInfo->WindowCreationFlags & SDL_WINDOW_METAL)
-                ImGui::BulletText ("window usable for Metal view");
+          if (engineInfo->WindowCreationFlags & SDL_WINDOW_VULKAN)
+            ImGui::BulletText ("window usable for Vulkan surface");
 
-              ImGui::TreePop ();
-            }
+          if (engineInfo->WindowCreationFlags & SDL_WINDOW_METAL)
+            ImGui::BulletText ("window usable for Metal view");
+
+          ImGui::Spacing ();
         }
 
       ImGui::Spacing ();
@@ -958,6 +707,7 @@ DrawDebugUI (Patata::EngineInfo * engineInfo, Patata::Config & configuration,
               ImGui::TreePop ();
             }
 
+          // Device
           if (ImGui::TreeNode ("Device"))
             {
               if (engineInfo->VkDeviceName[0] != '\0')
@@ -984,25 +734,32 @@ DrawDebugUI (Patata::EngineInfo * engineInfo, Patata::Config & configuration,
                       ImGui::Text ("Unknown");
                       break;
                     }
-
-                  if (engineInfo->VkDeviceType[0] != '\0')
-                    ImGui::Text ("Type : %s", engineInfo->VkDeviceType);
                 }
 
-              if (ImGui::BeginTable ("Vendor##1", 2, PATATA_IMGUI_TABLE_FLAGS))
+              if (ImGui::BeginTable ("DeviceInfo##AboutDevice", 2,
+                                     PATATA_IMGUI_TABLE_FLAGS))
                 {
-                  ImGui::TableSetupColumn ("Vendor",
+                  ImGui::TableSetupColumn ("",
                                            ImGuiTableColumnFlags_WidthFixed);
-                  ImGui::TableSetupColumn ("ID",
+                  ImGui::TableSetupColumn ("",
                                            ImGuiTableColumnFlags_WidthFixed);
 
-                  ImGui::TableHeadersRow ();
+                  if (engineInfo->VkDeviceType[0] != '\0')
+                    {
+                      ImGui::TableNextRow ();
+                      ImGui::TableSetColumnIndex (0);
+                      ImGui::Text ("Type");
+                      ImGui::TableSetColumnIndex (1);
+                      ImGui::Text ("%s", engineInfo->VkDeviceType);
+                    }
 
                   if (engineInfo->VkDeviceVendorId != 0)
                     {
                       ImGui::TableNextRow ();
-
                       ImGui::TableSetColumnIndex (0);
+                      ImGui::Text ("Vendor");
+
+                      ImGui::TableSetColumnIndex (1);
                       switch (engineInfo->VkDeviceVendorId)
                         {
                         case 32902:
@@ -1029,7 +786,6 @@ DrawDebugUI (Patata::EngineInfo * engineInfo, Patata::Config & configuration,
                         }
                     }
 
-                  ImGui::TableSetColumnIndex (1);
                   ImGui::Text ("%u  0x%X", engineInfo->VkDeviceVendorId,
                                engineInfo->VkDeviceVendorId);
 
@@ -1050,6 +806,52 @@ DrawDebugUI (Patata::EngineInfo * engineInfo, Patata::Config & configuration,
 
                   ImGui::TableHeadersRow ();
 
+                  // Queue Index
+                  ImGui::TableNextRow ();
+                  ImGui::TableSetColumnIndex (0);
+                  ImGui::Text ("%d", engineInfo->VkQueueIndex);
+
+                  // Queue Family Properties
+                  ImGui::TableSetColumnIndex (1);
+
+                  if (engineInfo->VkQueueFlags & vk::QueueFlagBits::eGraphics)
+                    ImGui::BulletText ("Graphics");
+
+                  if (engineInfo->VkQueueFlags & vk::QueueFlagBits::eCompute)
+                    ImGui::BulletText ("Compute");
+
+                  if (engineInfo->VkQueueFlags & vk::QueueFlagBits::eTransfer)
+                    ImGui::BulletText ("Transfer");
+
+                  if (engineInfo->VkQueueFlags
+                      & vk::QueueFlagBits::eSparseBinding)
+                    ImGui::BulletText ("Sparse Binding");
+
+                  if (engineInfo->VkQueueFlags & vk::QueueFlagBits::eProtected)
+                    ImGui::BulletText ("Protected");
+
+                  if (engineInfo->VkQueueFlags
+                      & vk::QueueFlagBits::eVideoDecodeKHR)
+                    ImGui::BulletText ("Video Decode KHR");
+
+                  if (engineInfo->VkQueueFlags
+                      & vk::QueueFlagBits::eVideoEncodeKHR)
+                    ImGui::BulletText ("Video Encode KHR");
+
+                  if (engineInfo->VkQueueFlags
+                      & vk::QueueFlagBits::eOpticalFlowNV)
+                    ImGui::BulletText ("Nvidia Optical Flow");
+
+                  // Queue Priority
+                  ImGui::TableSetColumnIndex (2);
+
+                  if (engineInfo->VkQueuePriority == 1.0f)
+                    ImGui::Text ("%f (High)", engineInfo->VkQueuePriority);
+                  else if (engineInfo->VkQueuePriority < 0.4f)
+                    ImGui::Text ("%f (Low)", engineInfo->VkQueuePriority);
+                  else
+                    ImGui::Text ("%f", engineInfo->VkQueuePriority);
+
                   ImGui::EndTable ();
                 }
 
@@ -1057,6 +859,7 @@ DrawDebugUI (Patata::EngineInfo * engineInfo, Patata::Config & configuration,
               ImGui::TreePop ();
             }
 
+          // Driver
           if (ImGui::TreeNode ("Driver"))
             {
               if (engineInfo->VkDriverName[0] != '\0')
@@ -1111,6 +914,7 @@ DrawDebugUI (Patata::EngineInfo * engineInfo, Patata::Config & configuration,
               ImGui::TreePop ();
             }
 
+          // Swapchain
           if (ImGui::TreeNode ("SwapChain"))
             {
               if (ImGui::BeginTable ("Vulkan SwapChain Info##1", 2,

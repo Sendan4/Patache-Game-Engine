@@ -11,13 +11,13 @@ Patata::Engine::CreateLogicalDeviceAndCreateQueue (void)
   // find a queue of graphs
   Vulkan.PhysicalDevice.getQueueFamilyProperties (&QueueCount, nullptr);
 
-    fast_io::io::println (
+  fast_io::io::println (
 #if defined(_WIN64)
-        fast_io::out (),
+      fast_io::out (),
 #endif
-        PATATA_TERM_BOLD, PATATA_TERM_COLOR_PATATA, "Raccoon Renderer",
-        PATATA_TERM_RESET, PATATA_TERM_BOLD, " : Found ", QueueCount,
-        " queues", PATATA_TERM_RESET);
+      PATATA_TERM_BOLD, PATATA_TERM_COLOR_PATATA, "Raccoon Renderer",
+      PATATA_TERM_RESET, PATATA_TERM_BOLD, " : Found ", QueueCount, " queues",
+      PATATA_TERM_RESET);
 
   vk::QueueFamilyProperties * QueueFamilyProperties
       = new vk::QueueFamilyProperties[QueueCount];
@@ -55,11 +55,10 @@ Patata::Engine::CreateLogicalDeviceAndCreateQueue (void)
         "] : ", PATATA_TERM_RESET,
         vk::to_string (QueueFamilyProperties[i].queueFlags));
 
-  for (uint32_t index = 0; index < QueueCount; ++index)
+  for (uint16_t index = 0; index < QueueCount; ++index)
     {
-      if ((QueueFamilyProperties[index].queueFlags
-           & vk::QueueFlagBits::eGraphics)
-          == vk::QueueFlagBits::eGraphics)
+      if (QueueFamilyProperties[index].queueFlags
+          & vk::QueueFlagBits::eGraphics)
         {
           TMPGraphicsQueueFamilyIndex = index;
           FoundGraphicsQueue          = true;
@@ -88,6 +87,13 @@ Patata::Engine::CreateLogicalDeviceAndCreateQueue (void)
       // the graph queue.
       return UINT32_MAX;
     }
+
+#if PATATA_DEBUG == 1
+  engineInfo.VkQueueIndex    = TMPGraphicsQueueFamilyIndex;
+  engineInfo.VkQueuePriority = QueuePriority;
+  engineInfo.VkQueueFlags
+      = QueueFamilyProperties[TMPGraphicsQueueFamilyIndex].queueFlags;
+#endif
 
   delete[] QueueFamilyProperties;
   QueueFamilyProperties = nullptr;
@@ -131,9 +137,9 @@ Patata::Engine::CreateLogicalDeviceAndCreateQueue (void)
 #endif
     );
 
-    std::future<void> ReturnVulkanList = std::async (
-        std::launch::async, Patata::Log::VulkanList, DeviceExtensions,
-        1, "Device Extensions");
+    std::future<void> ReturnVulkanList
+        = std::async (std::launch::async, Patata::Log::VulkanList,
+                      DeviceExtensions, 1, "Device Extensions");
   }
 
   vk::Result Result = Vulkan.PhysicalDevice.createDevice (

@@ -1,5 +1,5 @@
 project('imgui', 'cpp',
-  version : 'v1.91.5-docking',
+  version : 'v1.91.7-docking',
   meson_version : '>=1.2.0')
 
 dependencies = []
@@ -7,8 +7,7 @@ dependencies = []
 sdl2_dep = dependency('sdl2',
   required : true,
   static : false,
-  version : '>=2.24.1',
-  modules : ['SDL2::SDL2'])
+  version : '>=2.24.1')
 
 Vulkan = dependency('Vulkan',
     static : false,

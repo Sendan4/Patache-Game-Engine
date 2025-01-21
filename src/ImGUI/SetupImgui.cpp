@@ -159,7 +159,7 @@ Patata::Engine::InitImguiVulkan (void)
     limits = properties.limits.minUniformBufferOffsetAlignment;
   else
     limits = properties.limits.minStorageBufferOffsetAlignment;
-
+  //
   ImGui_ImplVulkan_InitInfo init_info{
     .Instance       = static_cast<VkInstance> (Vulkan.Instance),
     .PhysicalDevice = static_cast<VkPhysicalDevice> (Vulkan.PhysicalDevice),
@@ -174,6 +174,7 @@ Patata::Engine::InitImguiVulkan (void)
     .MSAASamples   = VK_SAMPLE_COUNT_1_BIT,
     .PipelineCache = static_cast<VkPipelineCache> (Vulkan.ImguiPipelineCache),
     .Subpass       = 0,
+    .DescriptorPoolSize          = 0,
     .UseDynamicRendering         = false,
     .PipelineRenderingCreateInfo = {},
     .Allocator                   = nullptr,

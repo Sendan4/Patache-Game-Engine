@@ -3,9 +3,6 @@
 #include <cstdint>
 
 #include <vulkan/vulkan.hpp>
-#if PATATA_DEBUG == 1
-#include <SDL_syswm.h>
-#endif
 
 #include "PatataEngine/Libexport.h"
 #include "PatataEngine/Color.hpp"
@@ -15,15 +12,10 @@
 
 namespace Patata
 {
-enum class ViewMode : bool
-{
-  TwoDimensions,
-  TreeDimensions
-};
-
+// Versioning management in the style of Vulkan. // major.minor.patch.variant
 constexpr uint32_t
-MakeGameVersion (const uint32_t & Major, const uint32_t & Minor,
-                 const uint32_t & Patch, const uint32_t & Variant)
+MakeVersion (const uint8_t & Major, const uint16_t & Minor,
+             const uint16_t & Patch, const uint8_t & Variant)
 {
   return ((static_cast<uint32_t> (Variant)) << 29U
           | (static_cast<uint32_t> (Major)) << 22U
@@ -31,30 +23,81 @@ MakeGameVersion (const uint32_t & Major, const uint32_t & Minor,
           | static_cast<uint32_t> (Patch));
 }
 
-struct EngineCreateInfo
+constexpr uint8_t
+GetVersionMajor (const uint32_t & Major)
 {
-  const char *           gameName       = nullptr;
-  const uint32_t         gameVersion    = 0; // TODO
-  const char *           windowTitle    = nullptr;
-  const Patata::ViewMode viewMode       = Patata::ViewMode::TwoDimensions;
-  const char *           windowIconPath = nullptr;
+  // 6 bits
+  return Major >> 22U & 0b1111111;
+}
+
+constexpr uint16_t
+GetVersionMinor (const uint32_t & Minor)
+{
+  // 9 bits
+  return Minor >> 12U & 0b1111111111;
+}
+
+constexpr uint16_t
+GetVersionPatch (const uint32_t & Patch)
+{
+  // 11 bits
+  return Patch & 0b111111111111;
+}
+
+constexpr uint8_t
+GetVersionVariant (const uint32_t & Variant)
+{
+  // 5 bits
+  return Variant >> 29U & 0b111111;
+}
+
+enum class ViewMode : bool
+{
+  TwoDimensions, // 2D
+  TreeDimensions // 3D
 };
 
+// you can use nullptr to not use the options or not assign them at all.
+struct EngineCreateInfo
+{
+  const char * gameName = nullptr; // Name of the game // It is optional.
+  const uint32_t gameVersion = 0; // Vulkan version style: major.minor.patch.variant // It is optional.
+  const char * windowTitle = nullptr; // Initial title of the window. // It is optional.
+  const Patata::ViewMode viewMode = Patata::ViewMode::TwoDimensions;
+  // Determines whether the project uses 2D or 3D graphics.
+  // It is mandatory.
+  const char * windowIconPath = nullptr; // Initial icon of the window. // It is optional.
+  // Use bitmap (.bmp) format/codec. // It is optional.
+};
+
+// Float format
 struct ClearColor
 {
-  float r = 0.0f;
-  float g = 0.0f;
-  float b = 0.0f;
-  float a = 1.0f;
+  float r = 0.0f; // Red
+  float g = 0.0f; // Green
+  float b = 0.0f; // Blue
+  float a = 1.0f; // Alpha
 };
 
 class Engine
 {
 public:
   PATATA_API Engine (void) = default;
+  
   PATATA_API Engine (const Patata::EngineCreateInfo &, bool *);
-
+  /*
+   * This constructor takes the EngineCreateInfo structure for the initial
+   * project configuration. The second argument returns a false boolean if the
+   * engine fails to initialize due to a fatal error. If you don't want to use
+   * it, pass a nullptr.
+   */
+  
   PATATA_API bool Init (const Patata::EngineCreateInfo &);
+  /*
+   * This constructor takes the EngineCreateInfo structure for the initial
+   * project configuration. It returns a false boolean if the engine fails to
+   * initialize due to a fatal error.
+   */
 
   PATATA_API ~Engine (void);
 
@@ -73,6 +116,7 @@ public:
   PATATA_API void ClearColorRGBA (const float &, const float &, const float &);
 
 private:
+  // Window
   SDL_Window * GameWindow    = nullptr;
   bool         WindowResized = false;
 
