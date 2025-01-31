@@ -55,7 +55,7 @@ Patata::Engine::CreateLogicalDeviceAndCreateQueue (void)
         "] : ", PATATA_TERM_RESET,
         vk::to_string (QueueFamilyProperties[i].queueFlags));
 
-  for (uint16_t index = 0; index < QueueCount; ++index)
+  for (uint32_t index = 0; index < QueueCount; ++index)
     {
       if (QueueFamilyProperties[index].queueFlags
           & vk::QueueFlagBits::eGraphics)

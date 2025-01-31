@@ -60,13 +60,17 @@ enum class ViewMode : bool
 // you can use nullptr to not use the options or not assign them at all.
 struct EngineCreateInfo
 {
-  const char * gameName = nullptr; // Name of the game // It is optional.
-  const uint32_t gameVersion = 0; // Vulkan version style: major.minor.patch.variant // It is optional.
-  const char * windowTitle = nullptr; // Initial title of the window. // It is optional.
+  const char *   gameName    = nullptr; // Name of the game // It is optional.
+  const uint32_t gameVersion = 0;
+  // Vulkan version style: major.minor.patch.variant // It is
+  // optional.
+  const char * windowTitle = nullptr;
+  // Initial title of the window. // It is optional.
   const Patata::ViewMode viewMode = Patata::ViewMode::TwoDimensions;
   // Determines whether the project uses 2D or 3D graphics.
   // It is mandatory.
-  const char * windowIconPath = nullptr; // Initial icon of the window. // It is optional.
+  const char * windowIconPath = nullptr;
+  // Initial icon of the window. // It is optional.
   // Use bitmap (.bmp) format/codec. // It is optional.
 };
 
@@ -83,7 +87,7 @@ class Engine
 {
 public:
   PATATA_API Engine (void) = default;
-  
+
   PATATA_API Engine (const Patata::EngineCreateInfo &, bool *);
   /*
    * This constructor takes the EngineCreateInfo structure for the initial
@@ -91,7 +95,7 @@ public:
    * engine fails to initialize due to a fatal error. If you don't want to use
    * it, pass a nullptr.
    */
-  
+
   PATATA_API bool Init (const Patata::EngineCreateInfo &);
   /*
    * This constructor takes the EngineCreateInfo structure for the initial

@@ -86,7 +86,6 @@ else()
 	check_cxx_compiler_flag("/W4" COMPILER_SUPPORTS_W4)
 	check_cxx_compiler_flag("/fp:fast" COMPILER_SUPPORTS_FLOATING_POINT_FAST) # Obligatory
 	check_cxx_compiler_flag("/fp:except-" COMPILER_SUPPORTS_NO_EXCEPCTION_FLOATING_POINT) # Obligatory
-	check_cxx_compiler_flag("/EHs-c-" COMPILER_SUPPORTS_NO_EXCEPCTION_HANDLING) # Obligatory
 
 	if (CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "MinSizeRel")
 		check_cxx_compiler_flag("/GR-" COMPILER_SUPPORTS_NO_RTTI) # Obligatory
@@ -106,10 +105,6 @@ else()
 
 	if (NOT COMPILER_SUPPORTS_NO_EXCEPCTION_FLOATING_POINT) # Obligatory
     	message(FATAL_ERROR "The compiler cannot disable excepctions for floating point")
-	endif()
-
-	if (NOT COMPILER_SUPPORTS_NO_EXCEPCTION_HANDLING) # Obligatory
-    	message(FATAL_ERROR "The compiler cannot disable excepctions")
 	endif()
 endif()
 
@@ -397,7 +392,6 @@ if (USE_BIN_DIR)
 	set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 else()
 	set(BIN_DIR ${CMAKE_BINARY_DIR})
-	message(${CMAKE_BINARY_DIR})
 endif()
 
 if (NOT USE_EXTERNAL_LIBS)

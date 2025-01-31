@@ -29,7 +29,7 @@ Patata::Engine::InitImgui (void)
   io.LogFilename   = nullptr;
 
   ImFontConfig FontConfig;
-  FontConfig.RasterizerDensity = 6.0f;
+  FontConfig.RasterizerDensity = 4.0f;
   FontConfig.OversampleH       = 4;
   FontConfig.OversampleV       = 4;
   // FontConfig.GlyphExtraSpacing.x = 1.008f;
@@ -138,9 +138,7 @@ Patata::Engine::InitImguiVulkan (void)
 
   ImGui_ImplSDL2_InitForVulkan (GameWindow);
 
-  vk::SurfaceCapabilitiesKHR   SurfaceCapabilities;
-  vk::PhysicalDeviceProperties properties
-      = Vulkan.PhysicalDevice.getProperties ();
+  vk::SurfaceCapabilitiesKHR SurfaceCapabilities;
 
   vk::Result Result = Vulkan.PhysicalDevice.getSurfaceCapabilitiesKHR (
       Vulkan.Surface, &SurfaceCapabilities);
@@ -153,13 +151,6 @@ Patata::Engine::InitImguiVulkan (void)
       return false;
     }
 
-  vk::DeviceSize limits;
-  if (properties.limits.minUniformBufferOffsetAlignment
-      > properties.limits.minStorageBufferOffsetAlignment)
-    limits = properties.limits.minUniformBufferOffsetAlignment;
-  else
-    limits = properties.limits.minStorageBufferOffsetAlignment;
-  //
   ImGui_ImplVulkan_InitInfo init_info{
     .Instance       = static_cast<VkInstance> (Vulkan.Instance),
     .PhysicalDevice = static_cast<VkPhysicalDevice> (Vulkan.PhysicalDevice),
@@ -179,7 +170,7 @@ Patata::Engine::InitImguiVulkan (void)
     .PipelineRenderingCreateInfo = {},
     .Allocator                   = nullptr,
     .CheckVkResultFn             = nullptr,
-    .MinAllocationSize           = limits
+    .MinAllocationSize           = 1048576
   };
 
   if (!ImGui_ImplVulkan_Init (&init_info))

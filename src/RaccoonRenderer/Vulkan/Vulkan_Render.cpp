@@ -3,6 +3,7 @@
 bool
 Patata::Engine::BeginRender (SDL_Event & Event)
 {
+  // Wait Fences
   vk::Result Result
       = Vulkan.Device.waitForFences (1, &Vulkan.Fence, true, UINT64_MAX);
 
@@ -15,6 +16,7 @@ Patata::Engine::BeginRender (SDL_Event & Event)
     }
 #endif
 
+  // Reset Fences
   Result = Vulkan.Device.resetFences (1, &Vulkan.Fence);
 
 #if PATATA_DEBUG == 1
@@ -25,7 +27,7 @@ Patata::Engine::BeginRender (SDL_Event & Event)
                         "Reset Fences", Result);
     }
 #endif
-
+  
   // Acquire Next Image
   vk::AcquireNextImageInfoKHR NextImageInfo (
       Vulkan.SwapChain,        // swapchain
@@ -58,9 +60,9 @@ Patata::Engine::BeginRender (SDL_Event & Event)
     }
 
   vk::CommandBufferBeginInfo cmdBufferBeginInfo (
-      vk::CommandBufferUsageFlagBits::eSimultaneousUse, // flags
-      nullptr,                                          // pInheritanceInfo
-      nullptr                                           // pNext
+      vk::CommandBufferUsageFlagBits::eOneTimeSubmit, // flags
+      nullptr,                                        // pInheritanceInfo
+      nullptr                                         // pNext
   );
 
   // Begin Command Buffer
@@ -129,9 +131,12 @@ Patata::Engine::EndRender (SDL_Event & Event)
                        Vulkan.SwapChainExtent);
 
   ImGui::Render ();
-  ImGui_ImplVulkan_RenderDrawData (
-      ImGui::GetDrawData (), static_cast<VkCommandBuffer> (Vulkan.cmd),
-      static_cast<VkPipeline> (Vulkan.ImguiPipeLine));
+
+  if (engineInfo.ShowMainMenuBar || engineInfo.PatataInfoWindow
+      || engineInfo.PatataConfigWindow)
+    ImGui_ImplVulkan_RenderDrawData (
+        ImGui::GetDrawData (), static_cast<VkCommandBuffer> (Vulkan.cmd),
+        static_cast<VkPipeline> (Vulkan.ImguiPipeLine));
 #endif
 
   // End RenderPass
@@ -148,7 +153,7 @@ Patata::Engine::EndRender (SDL_Event & Event)
                         "End Command Buffer", Result);
     }
 #endif
-
+  
   Result = Vulkan.Device.waitForFences (1, &Vulkan.Fence, true, UINT64_MAX);
 
 #if PATATA_DEBUG == 1
@@ -170,7 +175,7 @@ Patata::Engine::EndRender (SDL_Event & Event)
                         "Reset Fences", Result);
     }
 #endif
-
+  
   // Submit Queue
   {
     vk::PipelineStageFlags PipeLineStageFlags

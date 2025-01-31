@@ -4,10 +4,9 @@ bool
 Patata::Engine::CreateCommandPool (void)
 {
   vk::CommandPoolCreateInfo CommandPoolInfo (
-      vk::CommandPoolCreateFlagBits::eTransient                 // flags
-          | vk::CommandPoolCreateFlagBits::eResetCommandBuffer, // flags
-      Vulkan.GraphicsQueueFamilyIndex, // queueFamilyIndex
-      nullptr                          // pNext
+      vk::CommandPoolCreateFlagBits::eResetCommandBuffer, // flags
+      Vulkan.GraphicsQueueFamilyIndex,                    // queueFamilyIndex
+      nullptr                                             // pNext
   );
 
   vk::Result Result = Vulkan.Device.createCommandPool (

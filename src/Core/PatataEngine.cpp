@@ -180,20 +180,34 @@ Patata::Engine::~Engine (void)
 
 #if PATATA_DEBUG == 1
   // Imgui
-  ImGui_ImplSDL2_Shutdown ();
-  ImGui::DestroyContext ();
+  ImGuiIO & io = ImGui::GetIO ();
+
+  if (io.BackendPlatformName != nullptr)
+    ImGui_ImplSDL2_Shutdown ();
+
+  if (ImGui::GetCurrentContext () != nullptr)
+    ImGui::DestroyContext ();
 
   // Struct / Patata Engine Info
-  delete[] engineInfo.ppVkLayers;
-  engineInfo.ppVkLayers = nullptr;
+  if (engineInfo.ppVkLayers != nullptr)
+    {
+      delete[] engineInfo.ppVkLayers;
+      engineInfo.ppVkLayers = nullptr;
+    }
 
-  delete[] engineInfo.ppVkInstanceExtensions;
-  engineInfo.ppVkInstanceExtensions    = nullptr;
-  engineInfo.VkInstanceExtensionsCount = 0;
+  if (engineInfo.ppVkInstanceExtensions != nullptr)
+    {
+      delete[] engineInfo.ppVkInstanceExtensions;
+      engineInfo.ppVkInstanceExtensions    = nullptr;
+      engineInfo.VkInstanceExtensionsCount = 0;
+    }
 
-  delete[] engineInfo.ppVkDeviceExtensions;
-  engineInfo.ppVkDeviceExtensions    = nullptr;
-  engineInfo.VkDeviceExtensionsCount = 0;
+  if (engineInfo.ppVkDeviceExtensions != nullptr)
+    {
+      delete[] engineInfo.ppVkDeviceExtensions;
+      engineInfo.ppVkDeviceExtensions    = nullptr;
+      engineInfo.VkDeviceExtensionsCount = 0;
+    }
 
   engineInfo.VkDeviceVendorId    = 0;
   engineInfo.WindowCreationFlags = 0;

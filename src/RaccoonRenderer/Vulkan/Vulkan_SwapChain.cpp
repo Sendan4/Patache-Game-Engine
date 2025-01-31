@@ -75,7 +75,7 @@ Patata::Engine::CreateSwapChain (Patata::SwapChainInfo & SwapChainInfo)
   Finding a Present Mode
   */
   vk::PresentModeKHR SelectedPresentMode = vk::PresentModeKHR::eFifo;
-  bool               Found = false;
+  bool               Found               = false;
 
   if (!configuration.Vsync)
     {
@@ -203,10 +203,15 @@ Patata::Engine::CreateSwapChain (Patata::SwapChainInfo & SwapChainInfo)
 
   SDL_Vulkan_GetDrawableSize_Async.wait ();
 
+#if defined(_WIN64)
+  if (configuration.Vsync && SurfaceCapabilities.minImageCount <= 2)
+    ++SurfaceCapabilities.minImageCount;
+#endif
+
   // Create SwapChain
   vk::SwapchainCreateInfoKHR SwapChainCreateInfo (
       {},
-      Vulkan.Surface,                    // surface
+      Vulkan.Surface, // surface
       SurfaceCapabilities.minImageCount, // minImageCount
       SelectedSurfaceFormat.format,      // imageFormat
       vk::ColorSpaceKHR::eSrgbNonlinear, // imageColorSpace
@@ -333,7 +338,8 @@ Patata::Engine::RecreateSwapChain (SDL_Event & Event)
       Vulkan.Device.destroyImageView (Vulkan.SwapChainColorImageView[i]);
     }
 
-  Vulkan.cmd.reset (vk::CommandBufferResetFlagBits::eReleaseResources);
+  Vulkan.Device.resetCommandPool (
+      Vulkan.CommandPool, vk::CommandPoolResetFlagBits::eReleaseResources);
 
   Vulkan.OldSwapChain = Vulkan.SwapChain;
 

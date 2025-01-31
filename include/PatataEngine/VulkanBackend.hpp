@@ -3,26 +3,26 @@ namespace Patata
 {
 struct VulkanBackend
 {
-  vk::Instance Instance = nullptr;
+  vk::Instance Instance = VK_NULL_HANDLE;
 
   // Hardware
-  vk::PhysicalDevice PhysicalDevice           = nullptr;
-  vk::Queue          Queue                    = nullptr;
-  vk::Device         Device                   = nullptr;
+  vk::PhysicalDevice PhysicalDevice           = VK_NULL_HANDLE;
+  vk::Queue          Queue                    = VK_NULL_HANDLE;
+  vk::Device         Device                   = VK_NULL_HANDLE;
   uint32_t           GraphicsQueueFamilyIndex = 0;
 
   // Window Surface
-  vk::SurfaceKHR Surface = nullptr;
+  vk::SurfaceKHR Surface = VK_NULL_HANDLE;
 
-  vk::SwapchainKHR SwapChain    = nullptr;
-  vk::SwapchainKHR OldSwapChain = nullptr;
+  vk::SwapchainKHR SwapChain    = VK_NULL_HANDLE;
+  vk::SwapchainKHR OldSwapChain = VK_NULL_HANDLE;
   uint32_t         ImageIndex   = 0;
   vk::Extent2D     SwapChainExtent{};
 
   // Color
   uint32_t        SwapChainImageCount     = 0;
-  vk::Image *     SwapChainImages         = nullptr;
-  vk::ImageView * SwapChainColorImageView = nullptr;
+  vk::Image *     SwapChainImages         = VK_NULL_HANDLE;
+  vk::ImageView * SwapChainColorImageView = VK_NULL_HANDLE;
 
   /*
   Depth buffer will not be useful for now.
@@ -32,31 +32,33 @@ struct VulkanBackend
   displayed correctly over another.
   */
   // Depth
-  vk::Image        DepthImage  = nullptr;
-  vk::ImageView    DepthView   = nullptr;
-  vk::DeviceMemory DepthMemory = nullptr;
+  vk::Image        DepthImage  = VK_NULL_HANDLE;
+  vk::ImageView    DepthView   = VK_NULL_HANDLE;
+  vk::DeviceMemory DepthMemory = VK_NULL_HANDLE;
 
   // Commands
-  vk::CommandPool   CommandPool = nullptr;
-  vk::CommandBuffer cmd         = nullptr;
+  vk::CommandPool   CommandPool = VK_NULL_HANDLE;
+  vk::CommandBuffer cmd         = VK_NULL_HANDLE;
 
-  vk::Framebuffer * SwapChainFrameBuffer = nullptr;
+  vk::Framebuffer * SwapChainFrameBuffer = VK_NULL_HANDLE;
 
-  vk::RenderPass RenderPass = nullptr;
+  vk::RenderPass RenderPass = VK_NULL_HANDLE;
 
 #if PATATA_DEBUG == 1
-  // Imgui
-  vk::PipelineLayout ImguiPipeLineLayout;
-  vk::Pipeline       ImguiPipeLine;
+  vk::DebugUtilsMessengerEXT DebugMessenger = VK_NULL_HANDLE;
 
-  vk::PipelineCache  ImguiPipelineCache  = nullptr;
-  vk::DescriptorPool ImguiDescriptorPool = nullptr;
+  // Imgui
+  vk::PipelineLayout ImguiPipeLineLayout = VK_NULL_HANDLE;
+  vk::Pipeline       ImguiPipeLine       = VK_NULL_HANDLE;
+
+  vk::PipelineCache  ImguiPipelineCache  = VK_NULL_HANDLE;
+  vk::DescriptorPool ImguiDescriptorPool = VK_NULL_HANDLE;
 #endif
 
   // Synchronization Primitives
-  vk::Semaphore AcquireSemaphore = nullptr;
-  vk::Semaphore SubmitSemaphore  = nullptr;
-  vk::Fence     Fence            = nullptr;
+  vk::Semaphore AcquireSemaphore = VK_NULL_HANDLE;
+  vk::Semaphore SubmitSemaphore  = VK_NULL_HANDLE;
+  vk::Fence     Fence            = VK_NULL_HANDLE;
 };
 
 struct SwapChainInfo

@@ -132,6 +132,9 @@ Patata::Engine::RaccoonRendererInit (const Patata::EngineCreateInfo & Info)
 void
 Patata::Engine::RaccoonRendererClose (void)
 {
+  if (Vulkan.Device == VK_NULL_HANDLE || Vulkan.Instance == VK_NULL_HANDLE)
+    return;
+
   vk::Result Result = Vulkan.Device.waitIdle ();
 
   if (Result != vk::Result::eSuccess)
@@ -140,6 +143,9 @@ Patata::Engine::RaccoonRendererClose (void)
           = std::async (std::launch::async, Patata::Log::VulkanCheck,
                         "Device Wait Idle", Result);
     }
+
+  if (Vulkan.Queue == VK_NULL_HANDLE)
+    return;
 
   Result = Vulkan.Queue.waitIdle ();
 
@@ -167,6 +173,7 @@ Patata::Engine::RaccoonRendererClose (void)
 // Imgui
 #if PATATA_DEBUG == 1
   ImGui_ImplVulkan_Shutdown ();
+
   Vulkan.Device.destroyDescriptorPool (Vulkan.ImguiDescriptorPool);
   Vulkan.Device.destroyPipelineCache (Vulkan.ImguiPipelineCache);
 #endif
@@ -184,6 +191,15 @@ Patata::Engine::RaccoonRendererClose (void)
   Vulkan.Device.destroy ();
 
   Vulkan.Instance.destroySurfaceKHR (Vulkan.Surface);
+
+#if PATATA_DEBUG == 1
+  pfnVkDestroyDebugUtilsMessengerEXT
+      = reinterpret_cast<PFN_vkDestroyDebugUtilsMessengerEXT> (
+          Vulkan.Instance.getProcAddr ("vkDestroyDebugUtilsMessengerEXT"));
+
+  if (pfnVkDestroyDebugUtilsMessengerEXT != nullptr)
+    Vulkan.Instance.destroyDebugUtilsMessengerEXT (Vulkan.DebugMessenger);
+#endif
 
   Vulkan.Instance.destroy ();
 }
