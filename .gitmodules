@@ -1,11 +1,11 @@
 [submodule "externals/Vulkan-Headers"]
 	path = externals/Vulkan-Headers
 	url = https://github.com/KhronosGroup/Vulkan-Headers.git
-	branch = vulkan-sdk-1.3.296
+	branch = vulkan-sdk-1.4.304.1
 [submodule "externals/Vulkan-Loader"]
 	path = externals/Vulkan-Loader
 	url = https://github.com/KhronosGroup/Vulkan-Loader.git
-	branch = vulkan-sdk-1.3.296
+	branch = vulkan-sdk-1.4.304.1
 [submodule "externals/rapidyaml"]
 	path = externals/rapidyaml
 	url = https://github.com/biojppm/rapidyaml.git
