@@ -1,4 +1,4 @@
-#include <string>
+#include <cstdio>
 #include <future>
 
 #include <fast_io.h>
@@ -15,3 +15,5 @@
 #else
 #define GAME_CONFIG_FILE_NAME "patata.yaml"
 #endif
+
+#define PATATA_ERROR_TEXT_SIZE 1024

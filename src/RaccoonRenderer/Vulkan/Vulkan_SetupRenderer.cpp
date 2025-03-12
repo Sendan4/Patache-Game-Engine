@@ -94,6 +94,7 @@ Patata::Engine::RaccoonRendererInit (const Patata::EngineCreateInfo & Info)
   CreateImguiPipelineCache_Async.wait ();
   if (!CreateImguiPipelineCache_Async.get ())
     return false;
+
   CreateImguiDescriptorPool_Async.wait ();
   if (!CreateImguiDescriptorPool_Async.get ())
     return false;
@@ -150,25 +151,25 @@ Patata::Engine::RaccoonRendererClose (void)
   Result = Vulkan.Queue.waitIdle ();
 
   if (Result != vk::Result::eSuccess)
-    {
-      std::future<void> ReturnVulkanCheck
-          = std::async (std::launch::async, Patata::Log::VulkanCheck,
-                        "Queue Wait Idle", Result);
-    }
+    std::future<void> ReturnVulkanCheck
+        = std::async (std::launch::async, Patata::Log::VulkanCheck,
+                      "Queue Wait Idle", Result);
 
   // Color
-  for (uint8_t i = 0; i < Vulkan.SwapChainImageCount; ++i)
+  for (std::uint8_t i = 0; i < Vulkan.SwapChainImageCount; ++i)
     {
       Vulkan.Device.destroyFramebuffer (Vulkan.SwapChainFrameBuffer[i]);
       Vulkan.Device.destroyImageView (Vulkan.SwapChainColorImageView[i]);
     }
 
-  Vulkan.SwapChainFrameBuffer    = nullptr;
-  Vulkan.SwapChainColorImageView = nullptr;
+  delete[] Vulkan.SwapChainFrameBuffer;
+  delete[] Vulkan.SwapChainColorImageView;
+  Vulkan.SwapChainFrameBuffer    = VK_NULL_HANDLE;
+  Vulkan.SwapChainColorImageView = VK_NULL_HANDLE;
 
   Vulkan.Device.destroySwapchainKHR (Vulkan.SwapChain);
   delete[] Vulkan.SwapChainImages;
-  Vulkan.SwapChainImages = nullptr;
+  Vulkan.SwapChainImages = VK_NULL_HANDLE;
 
 // Imgui
 #if PATATA_DEBUG == 1
@@ -181,12 +182,23 @@ Patata::Engine::RaccoonRendererClose (void)
   Vulkan.Device.destroyRenderPass (Vulkan.RenderPass);
 
   // Primitivas de sincronizacion
-  Vulkan.Device.destroySemaphore (Vulkan.AcquireSemaphore);
-  Vulkan.Device.destroySemaphore (Vulkan.SubmitSemaphore);
+  for (uint32_t i = 0; i < Vulkan.SwapChainImageCount; ++i)
+    {
+      Vulkan.Device.destroySemaphore (Vulkan.ImageAvailableSemaphore[i]);
+      Vulkan.Device.destroySemaphore (Vulkan.ImageFinishedSemaphore[i]);
+      Vulkan.Device.destroyFence (Vulkan.InFlightFences[i]);
+    }
+  delete[] Vulkan.ImageAvailableSemaphore;
+  delete[] Vulkan.ImageFinishedSemaphore;
+  delete[] Vulkan.InFlightFences;
 
-  Vulkan.Device.destroyFence (Vulkan.Fence);
+  Vulkan.ImageAvailableSemaphore = VK_NULL_HANDLE;
+  Vulkan.ImageFinishedSemaphore  = VK_NULL_HANDLE;
+  Vulkan.InFlightFences          = VK_NULL_HANDLE;
 
   Vulkan.Device.destroyCommandPool (Vulkan.CommandPool);
+  delete[] Vulkan.Cmd;
+  Vulkan.Cmd = VK_NULL_HANDLE;
 
   Vulkan.Device.destroy ();
 

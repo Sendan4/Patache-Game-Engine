@@ -3,49 +3,88 @@
 bool
 Patata::Engine::CreateSemaphores (void)
 {
-  vk::SemaphoreCreateInfo SemaphoreInfo;
+  static constexpr const vk::SemaphoreCreateInfo SemaphoreInfo{};
 
-  vk::Result Result = Vulkan.Device.createSemaphore (&SemaphoreInfo, nullptr,
-                                                     &Vulkan.AcquireSemaphore);
-  if (Result != vk::Result::eSuccess)
+  vk::Result Result;
+
+  if (Vulkan.ImageAvailableSemaphore == VK_NULL_HANDLE)
+    Vulkan.ImageAvailableSemaphore
+        = new vk::Semaphore[Vulkan.SwapChainImageCount];
+
+  if (Vulkan.ImageFinishedSemaphore == VK_NULL_HANDLE)
+    Vulkan.ImageFinishedSemaphore
+        = new vk::Semaphore[Vulkan.SwapChainImageCount];
+
+  for (uint32_t i = 0; i < Vulkan.SwapChainImageCount; ++i)
     {
-      std::future<void> ReturnVulkanCheck
-          = std::async (std::launch::async, Patata::Log::VulkanCheck,
-                        "Acquire Semaphore", Result);
+      // ImageAvailableSemaphore
+      Result = Vulkan.Device.createSemaphore (
+          &SemaphoreInfo, nullptr, &Vulkan.ImageAvailableSemaphore[i]);
 
-      return false;
+      if (Result != vk::Result::eSuccess)
+        {
+          char ErrorText[PATATA_ERROR_TEXT_SIZE]{ 0 };
+
+          std::snprintf (ErrorText, PATATA_ERROR_TEXT_SIZE - 1,
+                         "Image Available Semaphore #%.3u", i + 1);
+
+          std::future<void> ReturnVulkanCheck = std::async (
+              std::launch::async, Patata::Log::VulkanCheck, ErrorText, Result);
+
+          return false;
+        }
+
+      // ImageFinishedSemaphore
+      Result = Vulkan.Device.createSemaphore (
+          &SemaphoreInfo, nullptr, &Vulkan.ImageFinishedSemaphore[i]);
+
+      if (Result != vk::Result::eSuccess)
+        {
+          char ErrorText[PATATA_ERROR_TEXT_SIZE]{ 0 };
+
+          std::snprintf (ErrorText, PATATA_ERROR_TEXT_SIZE - 1,
+                         "Image Finished Semaphore #%.3u", i + 1);
+
+          std::future<void> ReturnVulkanCheck = std::async (
+              std::launch::async, Patata::Log::VulkanCheck, ErrorText, Result);
+
+          return false;
+        }
     }
 
-  Result = Vulkan.Device.createSemaphore (&SemaphoreInfo, nullptr,
-                                          &Vulkan.SubmitSemaphore);
-  if (Result != vk::Result::eSuccess)
-    {
-      std::future<void> ReturnVulkanCheck
-          = std::async (std::launch::async, Patata::Log::VulkanCheck,
-                        "Submit Semaphore", Result);
-
-      return false;
-    }
-  else
-    return true;
+  return true;
 }
 
 bool
 Patata::Engine::CreateFence (void)
 {
-  vk::FenceCreateInfo FenceInfo (vk::FenceCreateFlagBits::eSignaled, // flags
-                                 nullptr                             // pNext
-  );
+  static constexpr const vk::FenceCreateInfo FenceInfo{
+    .flags = vk::FenceCreateFlagBits::eSignaled
+  };
 
-  vk::Result Result
-      = Vulkan.Device.createFence (&FenceInfo, nullptr, &Vulkan.Fence);
-  if (Result != vk::Result::eSuccess)
+  vk::Result Result;
+
+  if (Vulkan.InFlightFences == VK_NULL_HANDLE)
+    Vulkan.InFlightFences = new vk::Fence[Vulkan.SwapChainImageCount];
+
+  for (uint32_t i = 0; i < Vulkan.SwapChainImageCount; ++i)
     {
-      std::future<void> ReturnVulkanCheck = std::async (
-          std::launch::async, Patata::Log::VulkanCheck, "Fence", Result);
+      Result = Vulkan.Device.createFence (&FenceInfo, nullptr,
+                                          &Vulkan.InFlightFences[i]);
 
-      return false;
+      if (Result != vk::Result::eSuccess)
+        {
+          char ErrorText[PATATA_ERROR_TEXT_SIZE]{ 0 };
+
+          std::snprintf (ErrorText, PATATA_ERROR_TEXT_SIZE - 1,
+                         "In Flight Fence #%.3u", i + 1);
+
+          std::future<void> ReturnVulkanCheck = std::async (
+              std::launch::async, Patata::Log::VulkanCheck, ErrorText, Result);
+
+          return false;
+        }
     }
-  else
-    return true;
+
+  return true;
 }

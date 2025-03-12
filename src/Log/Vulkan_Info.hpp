@@ -2,8 +2,9 @@
 #include <cxxabi.h>
 #endif
 #if PATATA_DEBUG == 1
-#include <algorithm>
 #include <cstdio>
+#include <future>
+#include <cstring>
 #endif
 
 #include <fast_io.h>
@@ -18,3 +19,5 @@
 #include "PatataEngine/PatataEngine.hpp"
 #include "ColorTerminal.hpp"
 #include "Log.hpp"
+#include "fast_io_buff.hpp"
+#include "CstringWrapped.hpp"

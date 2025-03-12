@@ -1,4 +1,4 @@
-#include <string_view>
+#include <cstring>
 
 #include <fast_io.h>
 #include <SDL.h>
@@ -10,3 +10,5 @@
 #include "PatataEngine/PatataEngine.hpp"
 #include "ColorTerminal.hpp"
 #include "Log.hpp"
+#include "CstringWrapped.hpp"
+#include "fast_io_buff.hpp"

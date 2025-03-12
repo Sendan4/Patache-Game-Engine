@@ -9,10 +9,11 @@
 
 // Others
 // Bold And Dim not supported in Windows
-#if !defined(_WIN64)
+#if defined(_WIN64)
+#define PATATA_TERM_DIM  ""
+#define PATATA_TERM_BOLD "\033[38;5;15m"
+#else
 #define PATATA_TERM_BOLD "\033[1m"
 #define PATATA_TERM_DIM  "\033[2m"
-#else
-#define PATATA_TERM_BOLD "\033[38;5;15m"
 #endif
 #define PATATA_TERM_RESET "\033[0m"

@@ -48,7 +48,7 @@ Patata::Engine::InitImgui (void)
   ImGui::GetStyle ().TabBorderSize     = 0.0f;
   ImGui::GetStyle ().TabBarBorderSize  = 0.0f;
   ImGui::GetStyle ().ScrollbarRounding = 0.0f;
-  ImGui::GetStyle ().ItemSpacing       = ImVec2 (8.0f, 10.0f);
+  ImGui::GetStyle ().ItemSpacing       = ImVec2 (8.0f, 12.0f);
   ImGui::GetStyle ().WindowPadding     = ImVec2 (20, 6);
   ImGui::GetStyle ().Colors[ImGuiCol_TitleBg]
       = ImGui::GetStyle ().Colors[ImGuiCol_WindowBg];
@@ -72,13 +72,12 @@ Patata::Engine::CreateImguiDescriptorPool (void)
   vk::DescriptorPoolSize PoolSize
       = { vk::DescriptorType::eCombinedImageSampler, 1 };
 
-  vk::DescriptorPoolCreateInfo Info (
-      vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet, // flags
-      1,                                                    // maxSets
-      1,                                                    // poolSizeCount
-      &PoolSize,                                            // pPoolSizes
-      nullptr                                               // pNext
-  );
+  vk::DescriptorPoolCreateInfo Info{
+    .flags         = vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet,
+    .maxSets       = 1,
+    .poolSizeCount = 1,
+    .pPoolSizes    = &PoolSize
+  };
 
   vk::Result Result = Vulkan.Device.createDescriptorPool (
       &Info, nullptr, &Vulkan.ImguiDescriptorPool);
@@ -142,6 +141,7 @@ Patata::Engine::InitImguiVulkan (void)
 
   vk::Result Result = Vulkan.PhysicalDevice.getSurfaceCapabilitiesKHR (
       Vulkan.Surface, &SurfaceCapabilities);
+
   if (Result != vk::Result::eSuccess)
     {
       std::future<void> ReturnVulkanCheck

@@ -4,17 +4,17 @@ namespace Patata
 {
 namespace Log
 {
-void StartPatataLogInfo (const Patata::EngineCreateInfo &);
+void StartPatataLogInfo (void);
 
 // Vulkan Setup
-void VulkanCheck (const std::string_view &, const vk::Result &);
-void VulkanList (const char * List[], const uint32_t &,
-                 const std::string_view &);
+void VulkanCheck (const char * const, const vk::Result &);
+void VulkanList (const char * const List[], const uint32_t &,
+                 const char * const);
 
 // Errors
-void FatalErrorMessage (const std::string_view &, const std::string_view &,
+void FatalErrorMessage (const char * const, const char * const,
                         const Patata::Config &);
-void ErrorMessage (const std::string_view &);
-void WarningMessage (const std::string_view &);
+void ErrorMessage (const char * const);
+void WarningMessage (const char * const);
 }
 }

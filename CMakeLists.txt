@@ -37,7 +37,10 @@ endif()
 
 set (CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-project("PatataEngine" LANGUAGES CXX VERSION 1 HOMEPAGE_URL "https://gitlab.com/Sendan/patata-engine.git")
+project("PatataEngine"
+  LANGUAGES CXX
+  VERSION 1 
+  HOMEPAGE_URL "https://gitlab.com/Sendan/patata-engine.git")
 
 set (PATATA_ENGINE_VERSION_MAYOR 1)
 set (PATATA_ENGINE_VERSION_MINOR 0)
@@ -62,6 +65,12 @@ if (NOT MSVC)
 	check_cxx_compiler_flag("-fno-strict-aliasing" COMPILER_SUPPORTS_NO_STRICT_ALIASING)
 	check_cxx_compiler_flag("-ffast-math" COMPILER_SUPPORTS_FAST_MATH) # Obligatory
 
+  if (CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64" OR CMAKE_SYSTEM_PROCESSOR STREQUAL "AMD64")
+    check_cxx_compiler_flag("-mmmx" COMPILER_SUPPORTS_MMX) # Obligatory
+    check_cxx_compiler_flag("-msse4.2" COMPILER_SUPPORTS_SSE4.2) # Obligatory
+    check_cxx_compiler_flag("-mavx" COMPILER_SUPPORTS_AVX) # Obligatory
+  endif()
+
 	if (CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "MinSizeRel")
 		check_cxx_compiler_flag("-fno-rtti" COMPILER_SUPPORTS_NO_RTTI) # Obligatory
 
@@ -81,11 +90,30 @@ if (NOT MSVC)
 	if (NOT COMPILER_SUPPORTS_FAST_MATH) # Obligatory
     	message(FATAL_ERROR "The compiler does not support -ffast-math")
 	endif()
+
+  if (CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64" OR CMAKE_SYSTEM_PROCESSOR STREQUAL "AMD64")
+	  if (NOT COMPILER_SUPPORTS_SSE4.2) # Obligatory
+    	  message(FATAL_ERROR "The compiler does not support -msse4.2")
+	  endif()
+
+	  if (NOT COMPILER_SUPPORTS_MMX) # Obligatory
+    	  message(FATAL_ERROR "The compiler does not support -mmmx")
+	  endif()
+
+    if (NOT COMPILER_SUPPORTS_AVX) # Obligatory
+    	  message(FATAL_ERROR "The compiler does not support -mavx")
+	  endif()
+  endif()
 else()
 	check_cxx_compiler_flag("/std:c++20" COMPILER_SUPPORTS_C++20) # Obligatory
 	check_cxx_compiler_flag("/W4" COMPILER_SUPPORTS_W4)
 	check_cxx_compiler_flag("/fp:fast" COMPILER_SUPPORTS_FLOATING_POINT_FAST) # Obligatory
 	check_cxx_compiler_flag("/fp:except-" COMPILER_SUPPORTS_NO_EXCEPCTION_FLOATING_POINT) # Obligatory
+
+	if (CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64" OR CMAKE_SYSTEM_PROCESSOR STREQUAL "AMD64")
+		check_cxx_compiler_flag("/arch:SSE4.2" COMPILER_SUPPORTS_SSE4.2) # Obligatory
+    check_cxx_compiler_flag("/arch:AVX" COMPILER_SUPPORTS_AVX) # Obligatory
+	endif()
 
 	if (CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "MinSizeRel")
 		check_cxx_compiler_flag("/GR-" COMPILER_SUPPORTS_NO_RTTI) # Obligatory
@@ -106,6 +134,15 @@ else()
 	if (NOT COMPILER_SUPPORTS_NO_EXCEPCTION_FLOATING_POINT) # Obligatory
     	message(FATAL_ERROR "The compiler cannot disable excepctions for floating point")
 	endif()
+
+	if (CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64" OR CMAKE_SYSTEM_PROCESSOR STREQUAL "AMD64")
+	  if (NOT COMPILER_SUPPORTS_SSE4.2) # Obligatory
+    	  message(FATAL_ERROR "The compiler does not support /arch:SSE4.2")
+	  endif()
+    if (NOT COMPILER_SUPPORTS_AVX) # Obligatory
+      message(FATAL_ERROR "The compiler does not support /arch:AVX")
+	  endif()
+  endif()
 endif()
 
 if (WIN32 OR CMAKE_SYSTEM_NAME STREQUAL "Windows")
@@ -130,7 +167,7 @@ if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWit
 
 	CHECK_INCLUDE_FILE_CXX("cstdio" HAVE_CSTDIO LANGUAGE CXX)
 	if (NOT HAVE_CSTDIO)
-		message(FATAL_ERROR "missing cstring header")
+		message(FATAL_ERROR "missing cstdio header")
 	endif()
 
 	check_cxx_symbol_exists("snprintf" "cstdio" HAVE_SNPRINTF)
@@ -138,50 +175,21 @@ if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWit
 		message(FATAL_ERROR "missing snprintf function")
 	endif()
 
-	CHECK_INCLUDE_FILE_CXX("algorithm" HAVE_ALGORITHM LANGUAGE CXX)
-	if (NOT HAVE_ALGORITHM)
-		message(FATAL_ERROR "missing cstring header")
-	endif()
+  if (NOT CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    CHECK_INCLUDE_FILE_CXX("cstdlib" HAVE_CSTDLIB LANGUAGE CXX)
+    if (NOT HAVE_CSTDLIB)
+	    message(FATAL_ERROR "missing cstdlib header")
+    endif()
+  endif()
 endif()
 
-CHECK_INCLUDE_FILE_CXX("string" HAVE_STRING LANGUAGE CXX)
-if (NOT HAVE_STRING)
-	message(FATAL_ERROR "missing string header")
-endif()
-
-check_cxx_source_compiles("
-#include <string>
-int main() {
-    std::string Test;
-    return 0;
-}
-" std_string)
-if (NOT std_string)
-	message(FATAL_ERROR "missing std::string type")
-endif()
-
-# std::string_view
-if (MSVC)
-	string(APPEND CMAKE_REQUIRED_FLAGS "/std:c++20")
-endif()
-check_cxx_source_compiles("
-#include <string>
-
-int main() {
-    std::string_view Test;
-    return 0;
-}
-" std_string_view)
-if (NOT std_string_view)
-	message(FATAL_ERROR "missing std::string_view type")
-endif()
 if (MSVC)
 	set (CMAKE_REQUIRED_FLAGS "")
 endif()
 
-CHECK_INCLUDE_FILE_CXX("cstdlib" HAVE_CSTDLIB LANGUAGE CXX)
-if (NOT HAVE_CSTDLIB)
-	message(FATAL_ERROR "missing cstdlib header")
+CHECK_INCLUDE_FILE_CXX("cstring" HAVE_CSTRING LANGUAGE CXX)
+if (NOT HAVE_CSTRING)
+	message(FATAL_ERROR "missing cstring header")
 endif()
 
 # Check setenv y getenv

@@ -67,10 +67,7 @@ Patata::Engine::HandleEvent (const SDL_Event & Event)
         {
           if (Event.key.keysym.scancode == SDL_SCANCODE_P)
             {
-              if (engineInfo.ShowMainMenuBar)
-                engineInfo.ShowMainMenuBar = false;
-              else
-                engineInfo.ShowMainMenuBar = true;
+              engineInfo.ShowMainMenuBar = engineInfo.ShowMainMenuBar ^ true;
             }
         }
 #endif

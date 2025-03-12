@@ -3,50 +3,53 @@
 bool
 Patata::Engine::CreateImageView (const Patata::SwapChainInfo & SwapChainInfo)
 {
-  Vulkan.SwapChainColorImageView
-      = new vk::ImageView[Vulkan.SwapChainImageCount];
+  if (Vulkan.SwapChainColorImageView == VK_NULL_HANDLE)
+    Vulkan.SwapChainColorImageView
+        = new vk::ImageView[Vulkan.SwapChainImageCount];
 
   vk::Result Result;
 
-  for (uint8_t i = 0; i < Vulkan.SwapChainImageCount; ++i)
+  for (std::uint8_t i = 0; i < Vulkan.SwapChainImageCount; ++i)
     {
-      vk::ImageViewCreateInfo ColorImageViewInfo (
-          {},
-          Vulkan.SwapChainImages[i],      // image
-          vk::ImageViewType::e2D,         // viewType
-          SwapChainInfo.ImageColorFormat, // format
-          // Component Mapping
-          {
-              vk::ComponentSwizzle::eIdentity, // R
-              vk::ComponentSwizzle::eIdentity, // G
-              vk::ComponentSwizzle::eIdentity, // B
-              vk::ComponentSwizzle::eIdentity  // A
-          },
-          // Subresource Range
-          {
-              vk::ImageAspectFlagBits::eColor, // aspectMask
-              0,                               // baseMipLevel
-              1,                               // levelCount
-              0,                               // baseArrayLayer
-              1                                // layerCount
-          },
-          nullptr // pNext
-      );
+      static constexpr vk::ComponentMapping ComponentMapping{
+        .r = vk::ComponentSwizzle::eIdentity,
+        .g = vk::ComponentSwizzle::eIdentity,
+        .b = vk::ComponentSwizzle::eIdentity,
+        .a = vk::ComponentSwizzle::eIdentity
+      };
+
+      static constexpr vk::ImageSubresourceRange ImageSubresourceRange{
+        .aspectMask     = vk::ImageAspectFlagBits::eColor,
+        .baseMipLevel   = 0,
+        .levelCount     = 1,
+        .baseArrayLayer = 0,
+        .layerCount     = 1
+      };
+
+      vk::ImageViewCreateInfo ColorImageViewInfo{
+        .image            = Vulkan.SwapChainImages[i],
+        .viewType         = vk::ImageViewType::e2D,
+        .format           = SwapChainInfo.ImageColorFormat,
+        .components       = ComponentMapping,
+        .subresourceRange = ImageSubresourceRange
+      };
 
       Result = Vulkan.Device.createImageView (
           &ColorImageViewInfo, nullptr, &Vulkan.SwapChainColorImageView[i]);
+
       if (Result != vk::Result::eSuccess)
         {
-          uint8_t tmp = i;
+          char ErrorText[PATATA_ERROR_TEXT_SIZE]{ 0 };
+
+          std::snprintf (ErrorText, PATATA_ERROR_TEXT_SIZE - 1,
+                         "Color Image View #%.3u", i + 1);
 
           std::future<void> ReturnVulkanCheck = std::async (
-              std::launch::async, Patata::Log::VulkanCheck,
-              std::string ("Color Image View " + std::to_string (++tmp) + '/'
-                           + std::to_string (Vulkan.SwapChainImageCount)),
-              Result);
+              std::launch::async, Patata::Log::VulkanCheck, ErrorText, Result);
 
           return false;
         }
     }
+
   return true;
 }

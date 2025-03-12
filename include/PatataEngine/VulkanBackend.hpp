@@ -9,18 +9,18 @@ struct VulkanBackend
   vk::PhysicalDevice PhysicalDevice           = VK_NULL_HANDLE;
   vk::Queue          Queue                    = VK_NULL_HANDLE;
   vk::Device         Device                   = VK_NULL_HANDLE;
-  uint32_t           GraphicsQueueFamilyIndex = 0;
+  std::uint32_t      GraphicsQueueFamilyIndex = 0;
 
   // Window Surface
   vk::SurfaceKHR Surface = VK_NULL_HANDLE;
 
   vk::SwapchainKHR SwapChain    = VK_NULL_HANDLE;
   vk::SwapchainKHR OldSwapChain = VK_NULL_HANDLE;
-  uint32_t         ImageIndex   = 0;
+  std::uint32_t	   ImageIndex   = 0;
   vk::Extent2D     SwapChainExtent{};
 
   // Color
-  uint32_t        SwapChainImageCount     = 0;
+  std::uint32_t   SwapChainImageCount     = 0;
   vk::Image *     SwapChainImages         = VK_NULL_HANDLE;
   vk::ImageView * SwapChainColorImageView = VK_NULL_HANDLE;
 
@@ -38,7 +38,7 @@ struct VulkanBackend
 
   // Commands
   vk::CommandPool   CommandPool = VK_NULL_HANDLE;
-  vk::CommandBuffer cmd         = VK_NULL_HANDLE;
+  vk::CommandBuffer * Cmd         = VK_NULL_HANDLE;
 
   vk::Framebuffer * SwapChainFrameBuffer = VK_NULL_HANDLE;
 
@@ -56,9 +56,18 @@ struct VulkanBackend
 #endif
 
   // Synchronization Primitives
-  vk::Semaphore AcquireSemaphore = VK_NULL_HANDLE;
-  vk::Semaphore SubmitSemaphore  = VK_NULL_HANDLE;
-  vk::Fence     Fence            = VK_NULL_HANDLE;
+  vk::Semaphore * ImageAvailableSemaphore = VK_NULL_HANDLE;
+  vk::Semaphore * ImageFinishedSemaphore  = VK_NULL_HANDLE;
+  vk::Fence *     InFlightFences          = VK_NULL_HANDLE;
+
+  std::uint8_t CurrentFrame = 0;
+
+  // ClearColor
+  vk::ClearColorValue Color{};
+  vk::ClearValue      ClearValue{ Color };
+
+  // Render Command Buffer Area
+  vk::Rect2D RenderArea{ vk::Offset2D{ 0, 0 } };
 };
 
 struct SwapChainInfo

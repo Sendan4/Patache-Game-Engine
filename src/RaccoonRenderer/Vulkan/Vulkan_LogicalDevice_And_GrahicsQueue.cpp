@@ -98,13 +98,11 @@ Patata::Engine::CreateLogicalDeviceAndCreateQueue (void)
   delete[] QueueFamilyProperties;
   QueueFamilyProperties = nullptr;
 
-  vk::DeviceQueueCreateInfo DeviceQueueCreateInfo (
-      {},
-      TMPGraphicsQueueFamilyIndex, // Queue Family Index
-      1,                           // Queue Count
-      &QueuePriority,              // Queue Priority
-      nullptr                      // pNext
-  );
+  vk::DeviceQueueCreateInfo DeviceQueueCreateInfo{
+    .queueFamilyIndex = TMPGraphicsQueueFamilyIndex,
+    .queueCount       = 1,
+    .pQueuePriorities = &QueuePriority,
+  };
 
   const char * DeviceExtensions[1]{ "VK_KHR_swapchain" };
 
@@ -115,17 +113,12 @@ Patata::Engine::CreateLogicalDeviceAndCreateQueue (void)
 #endif
 
   // Logical Device Info
-  vk::DeviceCreateInfo DeviceCreateInfo (
-      {},
-      1,                      // Queue Create Info Count
-      &DeviceQueueCreateInfo, // p Queue Create Infos
-      0,                      // Enabled Layer Count
-      nullptr,                // pp Enabled Layer Names
-      1,                      // Enabled Extension Count
-      DeviceExtensions,       // pp Enabled Extension Names
-      nullptr,                // p Enabled Features
-      nullptr                 // pNext
-  );
+  vk::DeviceCreateInfo DeviceCreateInfo{
+    .queueCreateInfoCount    = 1,
+    .pQueueCreateInfos       = &DeviceQueueCreateInfo,
+    .enabledExtensionCount   = 1,
+    .ppEnabledExtensionNames = DeviceExtensions,
+  };
 
   // List Device Extensions
   {

@@ -30,10 +30,9 @@ namespace Patata
 {
 static inline void
 DrawDebugUI (Patata::EngineInfo * engineInfo, Patata::Config & configuration,
-             const uint32_t &     SwapChainImageCount,
-             const vk::Extent2D & SwapChainExtent)
+             const std::uint32_t & SwapChainImageCount,
+             const vk::Extent2D &  SwapChainExtent)
 {
-
   // Guardando los estilos predeterminados para revertir los cambios
   ImVec4 tmp[16]{ ImGui::GetStyle ().Colors[ImGuiCol_TitleBgActive],
                   ImGui::GetStyle ().Colors[ImGuiCol_ResizeGrip],
@@ -103,28 +102,42 @@ DrawDebugUI (Patata::EngineInfo * engineInfo, Patata::Config & configuration,
       ImGui::GetStyle ().Colors[ImGuiCol_ButtonActive]
           = ImVec4 (PATATA_IMGUI_PATATA_DARKER_COLOR);
 
-      ImGui::BeginMainMenuBar ();
-      if (ImGui::Button ("(Patata Icon)"))
+      if (ImGui::BeginMainMenuBar ())
         {
-          engineInfo->ShowMainMenuBar = false;
-        }
+          if (ImGui::Button ("(Patata Icon)"))
+            // Cambiar bits
+            engineInfo->ShowMainMenuBar ^= 0b00000001;
 
-      if (ImGui::Button ("About"))
-        {
-          if (engineInfo->PatataInfoWindow)
-            engineInfo->PatataInfoWindow = false;
-          else
-            engineInfo->PatataInfoWindow = true;
-        }
+          if (ImGui::BeginMenu ("Raccoon"))
+            {
+              if (ImGui::MenuItem ("Renderer", ""))
+                // Cambiar bits
+                engineInfo->PatataRaccoonRendererInfoWindow ^= 0b00000001;
 
-      if (ImGui::Button ("Config"))
-        {
-          if (engineInfo->PatataConfigWindow)
-            engineInfo->PatataConfigWindow = false;
-          else
-            engineInfo->PatataConfigWindow = true;
+              // No implementado aun
+              // ImGui::MenuItem ("Audio", "");
+
+              ImGui::EndMenu ();
+            }
+
+          // No implementado aun
+          /*
+          if (ImGui::BeginMenu ("Tools"))
+            {
+              ImGui::EndMenu ();
+            }
+          */
+
+          if (ImGui::Button ("Configuration"))
+            // Cambiar bits
+            engineInfo->PatataConfigWindow ^= 0b00000001;
+
+          if (ImGui::Button ("About"))
+            // Cambiar bits
+            engineInfo->PatataInfoWindow ^= 0b00000001;
+
+          ImGui::EndMainMenuBar ();
         }
-      ImGui::EndMainMenuBar ();
 
       ImGui::GetStyle ().Colors[ImGuiCol_Button]
           = ImVec4 (PATATA_IMGUI_PATATA_COLOR);
@@ -132,22 +145,58 @@ DrawDebugUI (Patata::EngineInfo * engineInfo, Patata::Config & configuration,
   // End Menu Bar
 
   // Patata Window Info
-  ImGui::SetNextWindowSize (ImVec2 (570, 550), ImGuiCond_FirstUseEver);
-
   if (engineInfo->PatataInfoWindow)
     {
+      ImGui::SetNextWindowSize (ImVec2 (570, 550), ImGuiCond_FirstUseEver);
+
       ImGui::Begin ("About the patata engine", &engineInfo->PatataInfoWindow);
 
       ImGui::PushStyleVar (ImGuiStyleVar_CellPadding,
                            ImVec2 (PATATA_IMGUI_TABLE_PADDING));
 
       ImGui::Spacing ();
+      ImGui::SeparatorText ("Patata Engine");
+
+      if (ImGui::BeginTable ("##AboutBasicInfo", 3, PATATA_IMGUI_TABLE_FLAGS))
+        {
+          ImGui::TableSetupColumn ("", ImGuiTableColumnFlags_WidthFixed);
+          ImGui::TableSetupColumn ("", ImGuiTableColumnFlags_WidthFixed);
+
+#if defined(PATATA_ENGINE_VERSION)
+          ImGui::TableNextRow ();
+          ImGui::TableSetColumnIndex (0);
+          ImGui::Text ("Version");
+          ImGui::TableSetColumnIndex (1);
+          ImGui::Text (PATATA_ENGINE_VERSION);
+#endif
+#if defined(__DATE__) && defined(__TIME__)
+          ImGui::TableNextRow ();
+          ImGui::TableSetColumnIndex (0);
+          ImGui::Text ("Build Date");
+          ImGui::TableSetColumnIndex (1);
+          ImGui::Text ("%s %s", __DATE__, __TIME__);
+#endif
+
+#if defined(PATATA_ARCH)
+          ImGui::TableNextRow ();
+          ImGui::TableSetColumnIndex (0);
+          ImGui::Text ("CPU Architecture Target");
+
+          ImGui::TableSetColumnIndex (1);
+          ImGui::Text (PATATA_ARCH);
+#endif
+          ImGui::EndTable ();
+        }
+
+      ImGui::Text ("Simple and free Game Engine");
+      ImGui::Text ("Patata Engine is under the MIT License.");
+      ImGui::Spacing ();
 
       // General Engine Info
-      if (ImGui::CollapsingHeader ("General"))
+      if (ImGui::CollapsingHeader ("Advanced##AdvancedInfo"))
         {
           // Tabla de Git
-          if (ImGui::TreeNode ("Git"))
+          if (ImGui::TreeNode ("Git##AdvancedInfoGit"))
             {
 
               if (ImGui::BeginTable ("Git", 3, PATATA_IMGUI_TABLE_FLAGS))
@@ -209,7 +258,6 @@ DrawDebugUI (Patata::EngineInfo * engineInfo, Patata::Config & configuration,
                                       "Not Staged");
 #endif
 #endif
-
                   ImGui::EndTable ();
                 }
               ImGui::TreePop ();
@@ -227,35 +275,9 @@ DrawDebugUI (Patata::EngineInfo * engineInfo, Patata::Config & configuration,
                   ImGui::TableSetupColumn ("",
                                            ImGuiTableColumnFlags_WidthFixed);
 
-                  ImGui::TableNextRow ();
-
-                  // Version
-#if defined(PATATA_ENGINE_VERSION)
-                  ImGui::TableSetColumnIndex (0);
-                  ImGui::Text ("Version");
-
-                  ImGui::TableSetColumnIndex (1);
-                  ImGui::Text (PATATA_ENGINE_VERSION);
-#endif
-
-                  ImGui::TableNextRow ();
-
-                  // Build Date
-#if defined(__DATE__) && defined(__TIME__)
-                  ImGui::TableSetColumnIndex (0);
-                  ImGui::Text ("Build Date");
-
-                  ImGui::TableSetColumnIndex (1);
-                  ImGui::Text ("%s", __DATE__);
-
-                  ImGui::TableSetColumnIndex (2);
-                  ImGui::Text ("%s", __TIME__);
-#endif
-
-                  ImGui::TableNextRow ();
-
                   // Compiler
 #if defined(PATATA_COMPILER_PROGRAM) && defined(PATATA_COMPILER)
+                  ImGui::TableNextRow ();
                   ImGui::TableSetColumnIndex (0);
                   ImGui::Text ("Compiler");
 
@@ -269,10 +291,9 @@ DrawDebugUI (Patata::EngineInfo * engineInfo, Patata::Config & configuration,
 #endif
 #endif
 
-                  ImGui::TableNextRow ();
-
                   // Build System
 #if defined(PATATA_BUILD_SYSTEM) && defined(PATATA_BUILD_SYSTEM_GENERATOR)
+                  ImGui::TableNextRow ();
                   ImGui::TableSetColumnIndex (0);
                   ImGui::Text ("Build System");
 
@@ -291,10 +312,9 @@ DrawDebugUI (Patata::EngineInfo * engineInfo, Patata::Config & configuration,
 #endif
 #endif
 
-                  ImGui::TableNextRow ();
-
                   // Build Type
 #if defined(PATATA_BUILD_TYPE)
+                  ImGui::TableNextRow ();
                   ImGui::TableSetColumnIndex (0);
                   ImGui::Text ("Build Type");
 
@@ -302,31 +322,17 @@ DrawDebugUI (Patata::EngineInfo * engineInfo, Patata::Config & configuration,
                   ImGui::Text (PATATA_BUILD_TYPE);
 #endif
 
-                  ImGui::TableNextRow ();
-
                   // Operating System
 #if defined(PATATA_OS)
+                  ImGui::TableNextRow ();
                   ImGui::TableSetColumnIndex (0);
                   ImGui::Text ("Operating System");
 
                   ImGui::TableSetColumnIndex (1);
                   ImGui::Text (PATATA_OS);
 #endif
-
-                  ImGui::TableNextRow ();
-
-                  // CPU Architecture Type
-#if defined(PATATA_ARCH)
-                  ImGui::TableSetColumnIndex (0);
-                  ImGui::Text ("CPU Architecture");
-
-                  ImGui::TableSetColumnIndex (1);
-                  ImGui::Text (PATATA_ARCH);
-#endif
                   ImGui::EndTable ();
                 }
-              ImGui::Spacing ();
-              ImGui::Text ("Patata Engine is under the MIT License.");
               ImGui::Spacing ();
               ImGui::TreePop ();
             }
@@ -344,10 +350,9 @@ DrawDebugUI (Patata::EngineInfo * engineInfo, Patata::Config & configuration,
                                            ImGuiTableColumnFlags_WidthFixed);
                   ImGui::TableHeadersRow ();
 
+                  ImGui::TableNextRow ();
                   // Fast IO Commit Hash Short
 #if defined(PATATA_FAST_IO_GIT_COMMIT_HASH_SHORT)
-                  ImGui::TableNextRow ();
-
                   ImGui::TableSetColumnIndex (0);
                   ImGui::Text ("Fast IO");
 
@@ -356,11 +361,11 @@ DrawDebugUI (Patata::EngineInfo * engineInfo, Patata::Config & configuration,
 
                   ImGui::TableSetColumnIndex (2);
                   ImGui::Text ("MIT");
+                  ImGui::TableNextRow ();
 #endif
+
 #if defined(PATATA_RAPIDYAML_VERSION)
                   // RapidYaml Version
-                  ImGui::TableNextRow ();
-
                   ImGui::TableSetColumnIndex (0);
                   ImGui::Text ("RapidYaml");
 
@@ -369,9 +374,8 @@ DrawDebugUI (Patata::EngineInfo * engineInfo, Patata::Config & configuration,
 
                   ImGui::TableSetColumnIndex (2);
                   ImGui::Text ("MIT");
-#endif
-
                   ImGui::TableNextRow ();
+#endif
 
                   // SDL Version
                   ImGui::TableSetColumnIndex (0);
@@ -422,91 +426,6 @@ DrawDebugUI (Patata::EngineInfo * engineInfo, Patata::Config & configuration,
 
       if (ImGui::CollapsingHeader ("Window"))
         {
-          // Tabla acerca de la ventana
-          if (ImGui::BeginTable ("Window Info", 2, PATATA_IMGUI_TABLE_FLAGS))
-            {
-              ImGui::TableSetupColumn ("", ImGuiTableColumnFlags_WidthFixed);
-              ImGui::TableSetupColumn ("", ImGuiTableColumnFlags_WidthFixed);
-
-              // Window Type
-              ImGui::TableNextRow ();
-              ImGui::TableSetColumnIndex (0);
-              ImGui::Text ("Type");
-
-              ImGui::TableSetColumnIndex (1);
-
-              switch (engineInfo->WindowType)
-                {
-                default:
-                case Patata::WindowType::Nothing:
-                  ImGui::Text ("Unknown");
-                  break;
-
-                case Patata::WindowType::Wayland:
-                  ImGui::Text ("Wayland");
-                  break;
-
-                case Patata::WindowType::Win32:
-                  ImGui::Text ("Win32");
-                  break;
-                }
-
-              ImGui::TableNextRow ();
-
-              // Desktop
-              ImGui::TableSetColumnIndex (0);
-              ImGui::Text ("Desktop");
-
-              ImGui::TableSetColumnIndex (1);
-
-              switch (engineInfo->DesktopType)
-                {
-                default:
-                case Patata::Desktop::Nothing:
-                  ImGui::Text ("Unknown");
-                  break;
-
-                case Patata::Desktop::Gnome:
-                  ImGui::Text ("Gnome");
-                  break;
-
-                case Patata::Desktop::Xfce:
-                  ImGui::Text ("Xfce");
-                  break;
-
-                case Patata::Desktop::Pantheon:
-                  ImGui::Text ("Pantheon");
-                  break;
-
-                case Patata::Desktop::Mate:
-                  ImGui::Text ("MATE");
-                  break;
-
-                case Patata::Desktop::Cinnamon:
-                  ImGui::Text ("Cinnamon");
-                  break;
-
-                case Patata::Desktop::Lxqt:
-                  ImGui::Text ("Lxqt");
-                  break;
-
-                case Patata::Desktop::Unity:
-                  ImGui::Text ("Unity");
-                  break;
-
-                case Patata::Desktop::Cosmic:
-                  ImGui::Text ("Cosmic");
-                  break;
-
-                case Patata::Desktop::Windows:
-                  ImGui::Text ("Windows");
-                  break;
-                }
-              ImGui::EndTable ();
-            }
-
-          // List of windows creation flags
-          ImGui::Spacing ();
           ImGui::Text ("Creation Flags");
 
           if (engineInfo->WindowCreationFlags & SDL_WINDOW_FULLSCREEN)
@@ -580,473 +499,460 @@ DrawDebugUI (Patata::EngineInfo * engineInfo, Patata::Config & configuration,
           ImGui::Spacing ();
         }
 
-      ImGui::Spacing ();
-      ImGui::SeparatorText ("Raccoon Renderer");
-      // vulkan
-      if (ImGui::CollapsingHeader ("Vulkan"))
-        {
-          if (ImGui::TreeNode ("Version##1"))
-            {
-              if (ImGui::BeginTable ("Vulkan General Info", 2,
-                                     PATATA_IMGUI_TABLE_FLAGS))
-                {
-                  ImGui::TableSetupColumn ("",
-                                           ImGuiTableColumnFlags_WidthFixed);
-                  ImGui::TableSetupColumn ("",
-                                           ImGuiTableColumnFlags_WidthFixed);
-
-                  // Vulkan Loader Version
-#if defined(PATATA_VULKAN_LOADER_VERSION)
-                  ImGui::TableNextRow ();
-
-                  ImGui::TableSetColumnIndex (0);
-                  ImGui::Text ("Loader");
-
-                  ImGui::TableSetColumnIndex (1);
-                  ImGui::Text (PATATA_VULKAN_LOADER_VERSION);
-#endif
-
-                  // Vulkan Headers Version
-#if defined(PATATA_VULKAN_HEADERS_VERSION)
-                  ImGui::TableNextRow ();
-
-                  ImGui::TableSetColumnIndex (0);
-                  ImGui::Text ("Headers");
-
-                  ImGui::TableSetColumnIndex (1);
-                  ImGui::Text (PATATA_VULKAN_HEADERS_VERSION);
-#endif
-
-                  // VVL Version
-#if defined(PATATA_VULKAN_VALIDATION_LAYERS_VERSION)
-                  ImGui::TableNextRow ();
-
-                  ImGui::TableSetColumnIndex (0);
-                  ImGui::Text ("Validation Layers");
-
-                  ImGui::TableSetColumnIndex (1);
-                  ImGui::Text (PATATA_VULKAN_VALIDATION_LAYERS_VERSION);
-#endif
-
-                  if (engineInfo->VkVersion[0] != '\0')
-                    {
-                      ImGui::TableNextRow ();
-
-                      ImGui::TableSetColumnIndex (0);
-                      ImGui::Text ("Vulkan");
-
-                      ImGui::TableSetColumnIndex (1);
-                      ImGui::Text ("%s", engineInfo->VkVersion);
-                    }
-                  ImGui::EndTable ();
-                }
-
-              ImGui::Spacing ();
-              ImGui::TreePop ();
-            }
-
-          if (ImGui::TreeNode ("Extensions and layers"))
-            {
-#if defined(PATATA_USE_VVL)
-              if (ImGui::BeginTable ("Layers##VkLayerList", 1,
-                                     PATATA_IMGUI_TABLE_FLAGS))
-                {
-                  ImGui::TableSetupColumn ("Layer",
-                                           ImGuiTableColumnFlags_WidthFixed);
-                  ImGui::TableHeadersRow ();
-
-                  for (uint16_t i = 0; i < PATATA_VK_LAYER_COUNT; ++i)
-                    {
-                      ImGui::TableNextRow ();
-
-                      ImGui::TableSetColumnIndex (0);
-                      ImGui::Text ("%s", engineInfo->ppVkLayers[i]);
-                    }
-
-                  ImGui::EndTable ();
-                }
-#endif
-
-              if (ImGui::BeginTable ("Instance##VkInstanceList", 1,
-                                     PATATA_IMGUI_TABLE_FLAGS))
-                {
-                  ImGui::TableSetupColumn ("Instance",
-                                           ImGuiTableColumnFlags_WidthFixed);
-                  ImGui::TableHeadersRow ();
-
-                  for (uint16_t i = 0;
-                       i < engineInfo->VkInstanceExtensionsCount; ++i)
-                    {
-                      ImGui::TableNextRow ();
-
-                      ImGui::TableSetColumnIndex (0);
-                      ImGui::Text ("%s",
-                                   engineInfo->ppVkInstanceExtensions[i]);
-                    }
-                  ImGui::EndTable ();
-                }
-
-              if (ImGui::BeginTable ("Device##VkDeviceList", 1,
-                                     PATATA_IMGUI_TABLE_FLAGS))
-                {
-                  ImGui::TableSetupColumn ("Device",
-                                           ImGuiTableColumnFlags_WidthFixed);
-                  ImGui::TableHeadersRow ();
-
-                  for (uint32_t i = 0; i < engineInfo->VkDeviceExtensionsCount;
-                       ++i)
-                    {
-                      ImGui::TableNextRow ();
-
-                      ImGui::TableSetColumnIndex (0);
-                      ImGui::Text ("%s", engineInfo->ppVkDeviceExtensions[i]);
-                    }
-                  ImGui::EndTable ();
-                }
-              ImGui::Spacing ();
-              ImGui::TreePop ();
-            }
-
-          // Device
-          if (ImGui::TreeNode ("Device"))
-            {
-              if (engineInfo->VkDeviceName[0] != '\0')
-                {
-                  switch (engineInfo->VkDeviceVendorId)
-                    {
-                    case 32902:
-                      ImGui::TextColored (ImVec4 (PATATA_IMGUI_INTEL_COLOR),
-                                          "%s", engineInfo->VkDeviceName);
-                      break;
-                    case 4098:
-                      ImGui::TextColored (ImVec4 (PATATA_IMGUI_AMD_COLOR),
-                                          "%s", engineInfo->VkDeviceName);
-                      break;
-                    case 4318:
-                      ImGui::TextColored (ImVec4 (PATATA_IMGUI_NVIDIA_COLOR),
-                                          "%s", engineInfo->VkDeviceName);
-                      break;
-                    case 65541:
-                      ImGui::TextColored (ImVec4 (PATATA_IMGUI_MESA_COLOR),
-                                          "Mesa %s", engineInfo->VkDeviceName);
-                      break;
-                    default:
-                      ImGui::Text ("Unknown");
-                      break;
-                    }
-                }
-
-              if (ImGui::BeginTable ("DeviceInfo##AboutDevice", 2,
-                                     PATATA_IMGUI_TABLE_FLAGS))
-                {
-                  ImGui::TableSetupColumn ("",
-                                           ImGuiTableColumnFlags_WidthFixed);
-                  ImGui::TableSetupColumn ("",
-                                           ImGuiTableColumnFlags_WidthFixed);
-
-                  if (engineInfo->VkDeviceType[0] != '\0')
-                    {
-                      ImGui::TableNextRow ();
-                      ImGui::TableSetColumnIndex (0);
-                      ImGui::Text ("Type");
-                      ImGui::TableSetColumnIndex (1);
-                      ImGui::Text ("%s", engineInfo->VkDeviceType);
-                    }
-
-                  if (engineInfo->VkDeviceVendorId != 0)
-                    {
-                      ImGui::TableNextRow ();
-                      ImGui::TableSetColumnIndex (0);
-                      ImGui::Text ("Vendor");
-
-                      ImGui::TableSetColumnIndex (1);
-                      switch (engineInfo->VkDeviceVendorId)
-                        {
-                        case 32902:
-                          ImGui::TextColored (
-                              ImVec4 (PATATA_IMGUI_INTEL_COLOR), "Intel");
-                          break;
-                        case 4098:
-                          ImGui::TextColored (ImVec4 (PATATA_IMGUI_AMD_COLOR),
-                                              "AMD");
-                          break;
-                        case 4318:
-                          ImGui::TextColored (
-                              ImVec4 (PATATA_IMGUI_NVIDIA_COLOR), "Nvidia");
-                          break;
-                        case 65541:
-                          ImGui::TextColored (ImVec4 (PATATA_IMGUI_MESA_COLOR),
-                                              "Mesa");
-                          break;
-                        default:
-                          ImGui::TextColored (
-                              ImVec4 (PATATA_IMGUI_UNKNOWN_VENDOR_COLOR),
-                              "Unknown");
-                          break;
-                        }
-                    }
-
-                  ImGui::Text ("%u  0x%X", engineInfo->VkDeviceVendorId,
-                               engineInfo->VkDeviceVendorId);
-
-                  ImGui::EndTable ();
-                }
-
-              // Queues
-              ImGui::Text ("Queues");
-              if (ImGui::BeginTable ("Queues##AboutQueues", 3,
-                                     PATATA_IMGUI_TABLE_FLAGS))
-                {
-                  ImGui::TableSetupColumn ("Index",
-                                           ImGuiTableColumnFlags_WidthFixed);
-                  ImGui::TableSetupColumn ("Family Properties",
-                                           ImGuiTableColumnFlags_WidthFixed);
-                  ImGui::TableSetupColumn ("Priority",
-                                           ImGuiTableColumnFlags_WidthFixed);
-
-                  ImGui::TableHeadersRow ();
-
-                  // Queue Index
-                  ImGui::TableNextRow ();
-                  ImGui::TableSetColumnIndex (0);
-                  ImGui::Text ("%d", engineInfo->VkQueueIndex);
-
-                  // Queue Family Properties
-                  ImGui::TableSetColumnIndex (1);
-
-                  if (engineInfo->VkQueueFlags & vk::QueueFlagBits::eGraphics)
-                    ImGui::BulletText ("Graphics");
-
-                  if (engineInfo->VkQueueFlags & vk::QueueFlagBits::eCompute)
-                    ImGui::BulletText ("Compute");
-
-                  if (engineInfo->VkQueueFlags & vk::QueueFlagBits::eTransfer)
-                    ImGui::BulletText ("Transfer");
-
-                  if (engineInfo->VkQueueFlags
-                      & vk::QueueFlagBits::eSparseBinding)
-                    ImGui::BulletText ("Sparse Binding");
-
-                  if (engineInfo->VkQueueFlags & vk::QueueFlagBits::eProtected)
-                    ImGui::BulletText ("Protected");
-
-                  if (engineInfo->VkQueueFlags
-                      & vk::QueueFlagBits::eVideoDecodeKHR)
-                    ImGui::BulletText ("Video Decode KHR");
-
-                  if (engineInfo->VkQueueFlags
-                      & vk::QueueFlagBits::eVideoEncodeKHR)
-                    ImGui::BulletText ("Video Encode KHR");
-
-                  if (engineInfo->VkQueueFlags
-                      & vk::QueueFlagBits::eOpticalFlowNV)
-                    ImGui::BulletText ("Nvidia Optical Flow");
-
-                  // Queue Priority
-                  ImGui::TableSetColumnIndex (2);
-
-                  if (engineInfo->VkQueuePriority == 1.0f)
-                    ImGui::Text ("%f (High)", engineInfo->VkQueuePriority);
-                  else if (engineInfo->VkQueuePriority < 0.4f)
-                    ImGui::Text ("%f (Low)", engineInfo->VkQueuePriority);
-                  else
-                    ImGui::Text ("%f", engineInfo->VkQueuePriority);
-
-                  ImGui::EndTable ();
-                }
-
-              ImGui::Spacing ();
-              ImGui::TreePop ();
-            }
-
-          // Driver
-          if (ImGui::TreeNode ("Driver"))
-            {
-              if (engineInfo->VkDriverName[0] != '\0')
-                {
-                  ImGui::Text ("%s", engineInfo->VkDriverName);
-                }
-
-              if (ImGui::BeginTable ("Vulkan Driver Info##1", 2,
-                                     PATATA_IMGUI_TABLE_FLAGS))
-                {
-                  ImGui::TableSetupColumn ("",
-                                           ImGuiTableColumnFlags_WidthFixed);
-                  ImGui::TableSetupColumn ("",
-                                           ImGuiTableColumnFlags_WidthFixed);
-
-                  if (engineInfo->VkDriverId[0] != '\0')
-                    {
-                      ImGui::TableNextRow ();
-
-                      ImGui::TableSetColumnIndex (0);
-                      ImGui::Text ("Id");
-
-                      ImGui::TableSetColumnIndex (1);
-                      ImGui::Text ("%s", engineInfo->VkDriverId);
-                    }
-
-                  if (engineInfo->VkDriverInfo[0] != '\0')
-                    {
-                      ImGui::TableNextRow ();
-
-                      ImGui::TableSetColumnIndex (0);
-                      ImGui::Text ("Info");
-
-                      ImGui::TableSetColumnIndex (1);
-                      ImGui::Text ("%s", engineInfo->VkDriverInfo);
-                    }
-
-                  if (engineInfo->VkDriverVersion[0] != '\0')
-                    {
-                      ImGui::TableNextRow ();
-
-                      ImGui::TableSetColumnIndex (0);
-                      ImGui::Text ("Version");
-
-                      ImGui::TableSetColumnIndex (1);
-                      ImGui::Text ("%s", engineInfo->VkDriverVersion);
-                    }
-
-                  ImGui::EndTable ();
-                }
-              ImGui::Spacing ();
-              ImGui::TreePop ();
-            }
-
-          // Swapchain
-          if (ImGui::TreeNode ("SwapChain"))
-            {
-              if (ImGui::BeginTable ("Vulkan SwapChain Info##1", 2,
-                                     PATATA_IMGUI_TABLE_FLAGS))
-                {
-                  ImGui::TableSetupColumn ("",
-                                           ImGuiTableColumnFlags_WidthFixed);
-                  ImGui::TableSetupColumn ("",
-                                           ImGuiTableColumnFlags_WidthFixed);
-
-                  ImGui::TableNextRow ();
-
-                  // Present Mode
-                  ImGui::TableSetColumnIndex (0);
-                  ImGui::Text ("Present Mode");
-
-                  ImGui::TableSetColumnIndex (1);
-                  ImGui::Text (
-                      "%s", vk::to_string (engineInfo->VkSwapchainPresentMode)
-                                .c_str ());
-
-                  if ((engineInfo->VkSwapchainPresentMode
-                           == vk::PresentModeKHR::eFifo
-                       || engineInfo->VkSwapchainPresentMode
-                              == vk::PresentModeKHR::eFifoRelaxed
-                       || engineInfo->VkSwapchainPresentMode
-                              == vk::PresentModeKHR::eSharedContinuousRefresh)
-                      && (configuration.Vsync))
-                    ImGui::TextColored (ImVec4 (PATATA_IMGUI_POSITIVE_VALUE),
-                                        "Vertical Sync");
-                  else if ((engineInfo->VkSwapchainPresentMode
-                                == vk::PresentModeKHR::eMailbox
-                            || engineInfo->VkSwapchainPresentMode
-                                   == vk::PresentModeKHR::eImmediate
-                            || engineInfo->VkSwapchainPresentMode
-                                   == vk::PresentModeKHR::eSharedDemandRefresh)
-                           && (!configuration.Vsync))
-                    ImGui::TextColored (
-                        ImVec4 (PATATA_IMGUI_WARNING_VALUE),
-                        "Not synchronized with the refresh rate");
-
-                  ImGui::TableNextRow ();
-
-                  // Images
-                  ImGui::TableSetColumnIndex (0);
-                  ImGui::Text ("Images");
-
-                  ImGui::TableSetColumnIndex (1);
-                  ImGui::Text ("%u", SwapChainImageCount);
-
-                  ImGui::TableNextRow ();
-
-                  // Drawable Size
-                  ImGui::TableSetColumnIndex (0);
-                  ImGui::Text ("Drawable Size");
-
-                  ImGui::TableSetColumnIndex (1);
-                  ImGui::Text ("%u x %u", SwapChainExtent.width,
-                               SwapChainExtent.height);
-
-                  ImGui::TableNextRow ();
-
-                  // Image Color Format
-                  ImGui::TableSetColumnIndex (0);
-                  ImGui::Text ("Image Color Format");
-
-                  ImGui::TableSetColumnIndex (1);
-                  ImGui::Text (
-                      "%s",
-                      vk::to_string (engineInfo->VkSwapchainImageColorFormat)
-                          .c_str ());
-
-                  ImGui::TableNextRow ();
-
-                  // Image Color Space
-                  ImGui::TableSetColumnIndex (0);
-                  ImGui::Text ("Image Color Space");
-
-                  ImGui::TableSetColumnIndex (1);
-                  ImGui::Text (
-                      "%s",
-                      vk::to_string (engineInfo->VkSwapchainImageColorSpace)
-                          .c_str ());
-
-                  ImGui::EndTable ();
-                }
-              ImGui::Spacing ();
-              ImGui::TreePop ();
-            }
-        }
-
-      /*
-      ImGui::Spacing();
-      ImGui::SeparatorText("Raccoon Sound");
-      ImGui::Text("Actual Backend in use");
-      if (ImGui::CollapsingHeader("'Audio Backend Name'")) {
-
-      }*/
-
       ImGui::PopStyleVar ();
-
       ImGui::End ();
     }
   // End Patata Window Info
 
+  // Raccoon Renderer Info
+  if (engineInfo->PatataRaccoonRendererInfoWindow)
+    {
+      ImGui::SetNextWindowSize (ImVec2 (570, 550), ImGuiCond_FirstUseEver);
+
+      ImGui::Begin ("Raccoon Renderer Info",
+                    &engineInfo->PatataRaccoonRendererInfoWindow);
+
+      ImGui::PushStyleVar (ImGuiStyleVar_CellPadding,
+                           ImVec2 (PATATA_IMGUI_TABLE_PADDING));
+
+      ImGui::Spacing ();
+
+      if (ImGui::CollapsingHeader ("Version##RRI1"))
+        {
+          if (ImGui::BeginTable ("Vulkan General Info", 2,
+                                 PATATA_IMGUI_TABLE_FLAGS))
+            {
+              ImGui::TableSetupColumn ("", ImGuiTableColumnFlags_WidthFixed);
+              ImGui::TableSetupColumn ("", ImGuiTableColumnFlags_WidthFixed);
+
+              // Vulkan Loader Version
+#if defined(PATATA_VULKAN_LOADER_VERSION)
+              ImGui::TableNextRow ();
+
+              ImGui::TableSetColumnIndex (0);
+              ImGui::Text ("Loader");
+
+              ImGui::TableSetColumnIndex (1);
+              ImGui::Text (PATATA_VULKAN_LOADER_VERSION);
+#endif
+
+              // Vulkan Headers Version
+#if defined(PATATA_VULKAN_HEADERS_VERSION)
+              ImGui::TableNextRow ();
+
+              ImGui::TableSetColumnIndex (0);
+              ImGui::Text ("Headers");
+
+              ImGui::TableSetColumnIndex (1);
+              ImGui::Text (PATATA_VULKAN_HEADERS_VERSION);
+#endif
+
+              // VVL Version
+#if defined(PATATA_VULKAN_VALIDATION_LAYERS_VERSION)
+              ImGui::TableNextRow ();
+
+              ImGui::TableSetColumnIndex (0);
+              ImGui::Text ("Validation Layers");
+
+              ImGui::TableSetColumnIndex (1);
+              ImGui::Text (PATATA_VULKAN_VALIDATION_LAYERS_VERSION);
+#endif
+
+              if (engineInfo->VkVersion[0] != '\0')
+                {
+                  ImGui::TableNextRow ();
+
+                  ImGui::TableSetColumnIndex (0);
+                  ImGui::Text ("Vulkan");
+
+                  ImGui::TableSetColumnIndex (1);
+                  ImGui::Text ("%s", engineInfo->VkVersion);
+                }
+              ImGui::EndTable ();
+            }
+
+          ImGui::Spacing ();
+        }
+
+      if (ImGui::CollapsingHeader ("Extensions and layers##RRI2"))
+        {
+#if defined(PATATA_USE_VVL)
+          if (ImGui::BeginTable ("Layers##VkLayerList", 1,
+                                 PATATA_IMGUI_TABLE_FLAGS))
+            {
+              ImGui::TableSetupColumn ("Layer",
+                                       ImGuiTableColumnFlags_WidthFixed);
+              ImGui::TableHeadersRow ();
+
+              for (uint16_t i = 0; i < PATATA_VK_LAYER_COUNT; ++i)
+                {
+                  ImGui::TableNextRow ();
+
+                  ImGui::TableSetColumnIndex (0);
+                  ImGui::Text ("%s", engineInfo->ppVkLayers[i]);
+                }
+
+              ImGui::EndTable ();
+            }
+#endif
+
+          if (ImGui::BeginTable ("Instance##VkInstanceList", 1,
+                                 PATATA_IMGUI_TABLE_FLAGS))
+            {
+              ImGui::TableSetupColumn ("Instance",
+                                       ImGuiTableColumnFlags_WidthFixed);
+              ImGui::TableHeadersRow ();
+
+              for (std::uint16_t i = 0;
+                   i < engineInfo->VkInstanceExtensionsCount; ++i)
+                {
+                  ImGui::TableNextRow ();
+
+                  ImGui::TableSetColumnIndex (0);
+                  ImGui::Text ("%s", engineInfo->ppVkInstanceExtensions[i]);
+                }
+              ImGui::EndTable ();
+            }
+
+          if (ImGui::BeginTable ("Device##VkDeviceList", 1,
+                                 PATATA_IMGUI_TABLE_FLAGS))
+            {
+              ImGui::TableSetupColumn ("Device",
+                                       ImGuiTableColumnFlags_WidthFixed);
+              ImGui::TableHeadersRow ();
+
+              for (std::uint32_t i = 0;
+                   i < engineInfo->VkDeviceExtensionsCount; ++i)
+                {
+                  ImGui::TableNextRow ();
+
+                  ImGui::TableSetColumnIndex (0);
+                  ImGui::Text ("%s", engineInfo->ppVkDeviceExtensions[i]);
+                }
+              ImGui::EndTable ();
+            }
+          ImGui::Spacing ();
+        }
+
+      // Device
+      if (ImGui::CollapsingHeader ("Device##RRI3"))
+        {
+          if (engineInfo->VkDeviceName[0] != '\0')
+            {
+              switch (engineInfo->VkDeviceVendorId)
+                {
+                case 32902:
+                  ImGui::TextColored (ImVec4 (PATATA_IMGUI_INTEL_COLOR), "%s",
+                                      engineInfo->VkDeviceName);
+                  break;
+                case 4098:
+                  ImGui::TextColored (ImVec4 (PATATA_IMGUI_AMD_COLOR), "%s",
+                                      engineInfo->VkDeviceName);
+                  break;
+                case 4318:
+                  ImGui::TextColored (ImVec4 (PATATA_IMGUI_NVIDIA_COLOR), "%s",
+                                      engineInfo->VkDeviceName);
+                  break;
+                case 65541:
+                  ImGui::TextColored (ImVec4 (PATATA_IMGUI_MESA_COLOR),
+                                      "Mesa %s", engineInfo->VkDeviceName);
+                  break;
+                default:
+                  ImGui::Text ("Unknown");
+                  break;
+                }
+            }
+
+          if (ImGui::BeginTable ("DeviceInfo##AboutDevice", 2,
+                                 PATATA_IMGUI_TABLE_FLAGS))
+            {
+              ImGui::TableSetupColumn ("", ImGuiTableColumnFlags_WidthFixed);
+              ImGui::TableSetupColumn ("", ImGuiTableColumnFlags_WidthFixed);
+
+              if (engineInfo->VkDeviceType[0] != '\0')
+                {
+                  ImGui::TableNextRow ();
+                  ImGui::TableSetColumnIndex (0);
+                  ImGui::Text ("Type");
+                  ImGui::TableSetColumnIndex (1);
+                  ImGui::Text ("%s", engineInfo->VkDeviceType);
+                }
+
+              if (engineInfo->VkDeviceVendorId != 0)
+                {
+                  ImGui::TableNextRow ();
+                  ImGui::TableSetColumnIndex (0);
+                  ImGui::Text ("Vendor");
+
+                  ImGui::TableSetColumnIndex (1);
+                  switch (engineInfo->VkDeviceVendorId)
+                    {
+                    case 32902:
+                      ImGui::TextColored (ImVec4 (PATATA_IMGUI_INTEL_COLOR),
+                                          "Intel");
+                      break;
+                    case 4098:
+                      ImGui::TextColored (ImVec4 (PATATA_IMGUI_AMD_COLOR),
+                                          "AMD");
+                      break;
+                    case 4318:
+                      ImGui::TextColored (ImVec4 (PATATA_IMGUI_NVIDIA_COLOR),
+                                          "Nvidia");
+                      break;
+                    case 65541:
+                      ImGui::TextColored (ImVec4 (PATATA_IMGUI_MESA_COLOR),
+                                          "Mesa");
+                      break;
+                    default:
+                      ImGui::TextColored (
+                          ImVec4 (PATATA_IMGUI_UNKNOWN_VENDOR_COLOR),
+                          "Unknown");
+                      break;
+                    }
+                }
+
+              ImGui::Text ("%u  0x%X", engineInfo->VkDeviceVendorId,
+                           engineInfo->VkDeviceVendorId);
+
+              ImGui::EndTable ();
+            }
+
+          // Queues
+          ImGui::Text ("Queues");
+          if (ImGui::BeginTable ("Queues##AboutQueues", 3,
+                                 PATATA_IMGUI_TABLE_FLAGS))
+            {
+              ImGui::TableSetupColumn ("Index",
+                                       ImGuiTableColumnFlags_WidthFixed);
+              ImGui::TableSetupColumn ("Family Properties",
+                                       ImGuiTableColumnFlags_WidthFixed);
+              ImGui::TableSetupColumn ("Priority",
+                                       ImGuiTableColumnFlags_WidthFixed);
+
+              ImGui::TableHeadersRow ();
+
+              // Queue Index
+              ImGui::TableNextRow ();
+              ImGui::TableSetColumnIndex (0);
+              ImGui::Text ("%d", engineInfo->VkQueueIndex);
+
+              // Queue Family Properties
+              ImGui::TableSetColumnIndex (1);
+
+              if (engineInfo->VkQueueFlags & vk::QueueFlagBits::eGraphics)
+                ImGui::BulletText ("Graphics");
+
+              if (engineInfo->VkQueueFlags & vk::QueueFlagBits::eCompute)
+                ImGui::BulletText ("Compute");
+
+              if (engineInfo->VkQueueFlags & vk::QueueFlagBits::eTransfer)
+                ImGui::BulletText ("Transfer");
+
+              if (engineInfo->VkQueueFlags & vk::QueueFlagBits::eSparseBinding)
+                ImGui::BulletText ("Sparse Binding");
+
+              if (engineInfo->VkQueueFlags & vk::QueueFlagBits::eProtected)
+                ImGui::BulletText ("Protected");
+
+              if (engineInfo->VkQueueFlags
+                  & vk::QueueFlagBits::eVideoDecodeKHR)
+                ImGui::BulletText ("Video Decode KHR");
+
+              if (engineInfo->VkQueueFlags
+                  & vk::QueueFlagBits::eVideoEncodeKHR)
+                ImGui::BulletText ("Video Encode KHR");
+
+              if (engineInfo->VkQueueFlags & vk::QueueFlagBits::eOpticalFlowNV)
+                ImGui::BulletText ("Nvidia Optical Flow");
+
+              // Queue Priority
+              ImGui::TableSetColumnIndex (2);
+
+              if (engineInfo->VkQueuePriority == 1.0f)
+                ImGui::Text ("%f (High)", engineInfo->VkQueuePriority);
+              else if (engineInfo->VkQueuePriority < 0.4f)
+                ImGui::Text ("%f (Low)", engineInfo->VkQueuePriority);
+              else
+                ImGui::Text ("%f", engineInfo->VkQueuePriority);
+
+              ImGui::EndTable ();
+            }
+          ImGui::Spacing ();
+        }
+
+      // Driver
+      if (ImGui::CollapsingHeader ("Driver ##RRI4"))
+        {
+          if (engineInfo->VkDriverName[0] != '\0')
+            {
+              ImGui::Text ("%s", engineInfo->VkDriverName);
+            }
+
+          if (ImGui::BeginTable ("Vulkan Driver Info##1", 2,
+                                 PATATA_IMGUI_TABLE_FLAGS))
+            {
+              ImGui::TableSetupColumn ("", ImGuiTableColumnFlags_WidthFixed);
+              ImGui::TableSetupColumn ("", ImGuiTableColumnFlags_WidthFixed);
+
+              if (engineInfo->VkDriverId[0] != '\0')
+                {
+                  ImGui::TableNextRow ();
+
+                  ImGui::TableSetColumnIndex (0);
+                  ImGui::Text ("Id");
+
+                  ImGui::TableSetColumnIndex (1);
+                  ImGui::Text ("%s", engineInfo->VkDriverId);
+                }
+
+              if (engineInfo->VkDriverInfo[0] != '\0')
+                {
+                  ImGui::TableNextRow ();
+
+                  ImGui::TableSetColumnIndex (0);
+                  ImGui::Text ("Info");
+
+                  ImGui::TableSetColumnIndex (1);
+                  ImGui::Text ("%s", engineInfo->VkDriverInfo);
+                }
+
+              if (engineInfo->VkDriverVersion[0] != '\0')
+                {
+                  ImGui::TableNextRow ();
+
+                  ImGui::TableSetColumnIndex (0);
+                  ImGui::Text ("Version");
+
+                  ImGui::TableSetColumnIndex (1);
+                  ImGui::Text ("%s", engineInfo->VkDriverVersion);
+                }
+
+              ImGui::EndTable ();
+            }
+          ImGui::Spacing ();
+        }
+
+      // Swapchain
+      if (ImGui::CollapsingHeader ("SwapChain##RRI5"))
+        {
+          if (ImGui::BeginTable ("Vulkan SwapChain Info##1", 2,
+                                 PATATA_IMGUI_TABLE_FLAGS))
+            {
+              ImGui::TableSetupColumn ("", ImGuiTableColumnFlags_WidthFixed);
+              ImGui::TableSetupColumn ("", ImGuiTableColumnFlags_WidthFixed);
+
+              // Present Mode
+              ImGui::TableNextRow ();
+              ImGui::TableSetColumnIndex (0);
+              ImGui::Text ("Present Mode");
+
+              ImGui::TableSetColumnIndex (1);
+              ImGui::Text (
+                  "%s",
+                  vk::to_string (engineInfo->VkSwapchainPresentMode).c_str ());
+
+              if ((engineInfo->VkSwapchainPresentMode
+                       == vk::PresentModeKHR::eFifo
+                   || engineInfo->VkSwapchainPresentMode
+                          == vk::PresentModeKHR::eFifoRelaxed
+                   || engineInfo->VkSwapchainPresentMode
+                          == vk::PresentModeKHR::eSharedContinuousRefresh)
+                  && (configuration.Vsync))
+                ImGui::TextColored (ImVec4 (PATATA_IMGUI_POSITIVE_VALUE),
+                                    "Vertical Sync");
+              else if ((engineInfo->VkSwapchainPresentMode
+                            == vk::PresentModeKHR::eMailbox
+                        || engineInfo->VkSwapchainPresentMode
+                               == vk::PresentModeKHR::eImmediate
+                        || engineInfo->VkSwapchainPresentMode
+                               == vk::PresentModeKHR::eSharedDemandRefresh)
+                       && (!configuration.Vsync))
+                ImGui::TextColored (ImVec4 (PATATA_IMGUI_WARNING_VALUE),
+                                    "Not synchronized with the refresh rate");
+
+              // Images
+              ImGui::TableNextRow ();
+              ImGui::TableSetColumnIndex (0);
+              ImGui::Text ("Images");
+
+              ImGui::TableSetColumnIndex (1);
+              ImGui::Text ("%u", SwapChainImageCount);
+
+              // Drawable Size
+              ImGui::TableNextRow ();
+              ImGui::TableSetColumnIndex (0);
+              ImGui::Text ("Drawable Size");
+
+              ImGui::TableSetColumnIndex (1);
+              ImGui::Text ("%u x %u", SwapChainExtent.width,
+                           SwapChainExtent.height);
+
+              // Image Color Format
+              ImGui::TableNextRow ();
+              ImGui::TableSetColumnIndex (0);
+              ImGui::Text ("Image Color Format");
+
+              ImGui::TableSetColumnIndex (1);
+              ImGui::Text (
+                  "%s", vk::to_string (engineInfo->VkSwapchainImageColorFormat)
+                            .c_str ());
+
+              // Image Color Space
+              ImGui::TableNextRow ();
+              ImGui::TableSetColumnIndex (0);
+              ImGui::Text ("Image Color Space");
+
+              ImGui::TableSetColumnIndex (1);
+              ImGui::Text (
+                  "%s", vk::to_string (engineInfo->VkSwapchainImageColorSpace)
+                            .c_str ());
+
+              ImGui::EndTable ();
+            }
+          ImGui::Spacing ();
+        }
+
+      ImGui::PopStyleVar ();
+      ImGui::End ();
+    }
+  // End Raccoon Renderer Info
+
   // Patata Window configuration
   if (engineInfo->PatataConfigWindow)
     {
-      ImGui::Begin ("Configuration", &engineInfo->PatataConfigWindow);
-      if (ImGui::Checkbox ("Show Fatal Error Messagebox",
+      ImGui::Begin ("Configuration##ConfigView",
+                    &engineInfo->PatataConfigWindow);
+
+      // Show Fatal Error MessageBox
+      if (ImGui::Checkbox ("Show Fatal Error "
+                           "Messagebox##ConfigView_ShowFatalErrorMessagebox",
                            &configuration.ShowFatalErrorMessagebox))
-        {
-          configuration.TriggeredChange
-              = &configuration.ShowFatalErrorMessagebox;
-        }
+        configuration.TriggeredChange
+            |= Patata::ChangeConfigFlagBits::ShowFatalErrorMessagebox;
 
-#if defined(__linux__)
-      if (ImGui::Checkbox ("Prefer Wayland", &configuration.PreferWayland))
-        {
-          configuration.TriggeredChange = &configuration.PreferWayland;
-        }
-#endif
+      // Vsync
+      if (ImGui::Checkbox ("Vsync##ConfigView_Vsync", &configuration.Vsync))
+        configuration.TriggeredChange |= Patata::ChangeConfigFlagBits::Vsync;
 
-      if (ImGui::Checkbox ("Vsync", &configuration.Vsync))
-        {
-          configuration.TriggeredChange = &configuration.Vsync;
-        }
+      // 10 Bit Depth
+      if (ImGui::Checkbox ("10 Bit Depth##ConfigView_BitDepth",
+                           &configuration.BitDepth10))
+        configuration.TriggeredChange
+            |= Patata::ChangeConfigFlagBits::BitDepth10;
 
-      if (ImGui::Checkbox ("10 Bit Depth", &configuration.BitDepth10))
-        {
-          configuration.TriggeredChange = &configuration.BitDepth10;
-        }
+      // Add Image Count
+      ImGui::Spacing ();
+
+      int ActualCount = SwapChainImageCount;
+
+      ImGui::Text ("Add Image Count");
+
+      if (ImGui::SliderInt (
+              "##ConfigView_AddImageCount", &ActualCount, 0,
+              static_cast<int> (engineInfo->VkMinImageCount + 4)))
+        configuration.TriggeredChange
+            |= Patata::ChangeConfigFlagBits::AddImageCount;
+
       ImGui::End ();
     }
   // End Patata Window configuration

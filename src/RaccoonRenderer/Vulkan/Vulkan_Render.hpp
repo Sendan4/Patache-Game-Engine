@@ -2,7 +2,7 @@
 #include <cxxabi.h>
 #endif
 #include <future>
-#include <cstdint>
+#include <cstdio>
 
 #include <SDL.h>
 #if PATATA_DEBUG == 1
@@ -12,5 +12,7 @@
 #endif
 
 #include "PatataEngine/PatataEngine.hpp"
-#include "Start_Patata_Log_Info.hpp"
+#include "StartLogInfo.hpp"
 #include "Log.hpp"
+
+#define PATATA_ERROR_TEXT_SIZE 128

@@ -7,8 +7,12 @@
 #if defined(_WIN64)
 #include <windows.h>
 #endif
+#if PATATA_DEBUG == 1
+#include <imgui.h>
+#endif
 
 // Patata Engine
 #include "PatataEngine/PatataEngine.hpp"
 #include "ColorTerminal.hpp"
 #include "Log.hpp"
+#include "fast_io_buff.hpp"

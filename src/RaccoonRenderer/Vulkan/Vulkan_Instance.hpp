@@ -1,18 +1,22 @@
 #include <future>
+#include <cstring>
 
 #include <SDL.h>
 #include <SDL_vulkan.h>
-#define VULKAN_HPP_NO_CONSTRUCTORS
 
 // Patata Engine
 #include "PatataEngine/PatataEngine.hpp"
 #include "Log.hpp"
+#include "CstringWrapped.hpp"
 
 #define PATATA_ENGINE_VERSION_VK                                              \
   VK_MAKE_API_VERSION (0, PATATA_ENGINE_VERSION_MAYOR,                        \
                        PATATA_ENGINE_VERSION_MINOR,                           \
                        PATATA_ENGINE_VERSION_PATCH)
 
+#define PATATA_ERROR_TEXT_SIZE 256
+
+#if PATATA_DEBUG == 1
 // vkCreateDebugUtilsMessengerEXT
 PFN_vkCreateDebugUtilsMessengerEXT pfnVkCreateDebugUtilsMessengerEXT = nullptr;
 
@@ -44,6 +48,7 @@ debugMessageFunc (vk::DebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
       PATATA_TERM_BOLD, PATATA_TERM_COLOR_RED,
       "Vulkan Validation Layers :", PATATA_TERM_RESET, "\n Message Info : ");
 
+  // Message Severity
   switch (messageSeverity)
     {
     case vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose:
@@ -75,6 +80,7 @@ debugMessageFunc (vk::DebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
       break;
     }
 
+  // Message Types
   if (messageTypes & vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral)
     {
       fast_io::io::println (
@@ -111,29 +117,11 @@ debugMessageFunc (vk::DebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
       fast_io::out (),
 #endif
       fast_io::mnp::right ("ID Name: ", 11),
-      std::string_view{ pCallbackData->pMessageIdName });
-
-  fast_io::io::println (
-#if defined(_WIN64)
-      fast_io::out (),
-#endif
-      fast_io::mnp::right ("ID Number : ", 14),
-      pCallbackData->messageIdNumber);
-
-  fast_io::io::println (
-#if defined(_WIN64)
-      fast_io::out (),
-#endif
-      fast_io::mnp::right ("Message : ", 11),
-      std::string_view{ pCallbackData->pMessage });
-
-  fast_io::io::println (
-#if defined(_WIN64)
-      fast_io::out ()
-#else
-      fast_io::c_stdout ()
-#endif
-  );
+      fast_io::mnp::os_c_str (pCallbackData->pMessageIdName), "\n",
+      fast_io::mnp::right ("ID Number : ", 14), pCallbackData->messageIdNumber,
+      "\n", fast_io::mnp::right ("Message : ", 11),
+      fast_io::mnp::os_c_str (pCallbackData->pMessage), "\n");
 
   return false;
 }
+#endif

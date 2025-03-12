@@ -125,7 +125,6 @@ private:
   bool         WindowResized = false;
 
   bool LoadConfiguration (void);
-  void WindowLog (void);
 
   // Raccoon Renderer
   // Vulkan Backend

@@ -48,22 +48,23 @@ Patata::Engine::CreateDepthBuffer (void)
       return false;
     }
 
-  vk::ImageCreateInfo ImageInfo (
-      {},
-      vk::ImageType::e2D,                              // imageType
-      SelectedDepthFormat,                             // format
-      vk::Extent3D (Vulkan.SwapChainExtent, 1),        // extent
-      1,                                               // mipLevels
-      1,                                               // arrayLayers
-      vk::SampleCountFlagBits::e1,                     // samples
-      Tiling,                                          // tiling
-      vk::ImageUsageFlagBits::eDepthStencilAttachment, // usage
-      vk::SharingMode::eExclusive,                     // sharingMode
-      0,                                               // queueFamilyIndexCount
-      nullptr,                                         // pQueueFamilyIndices
-      vk::ImageLayout::eUndefined,                     // initialLayout
-      nullptr                                          // pNext
-  );
+  vk::Extent3D Extent{ .width  = Vulkan.SwapChainExtent.width,
+                       .height = Vulkan.SwapChainExtent.height,
+                       .depth  = 1 };
+
+  vk::ImageCreateInfo ImageInfo{
+    .imageType             = vk::ImageType::e2D,
+    .format                = SelectedDepthFormat,
+    .extent                = Extent,
+    .mipLevels             = 1,
+    .arrayLayers           = 1,
+    .samples               = vk::SampleCountFlagBits::e1,
+    .tiling                = Tiling,
+    .usage                 = vk::ImageUsageFlagBits::eDepthStencilAttachment,
+    .sharingMode           = vk::SharingMode::eExclusive,
+    .queueFamilyIndexCount = 0,
+    .initialLayout         = vk::ImageLayout::eUndefined
+  };
 
   vk::Result Result
       = Vulkan.Device.createImage (&ImageInfo, nullptr, &Vulkan.DepthImage);
@@ -78,9 +79,18 @@ Patata::Engine::CreateDepthBuffer (void)
   // Depth View
   vk::PhysicalDeviceMemoryProperties2 MemoryProperties
       = Vulkan.PhysicalDevice.getMemoryProperties2 ();
-  vk::MemoryRequirements2 MemoryRequirements
-      = Vulkan.Device.getImageMemoryRequirements2 (Vulkan.DepthImage);
-  uint32_t TypeIndex = 0;
+
+  vk::MemoryRequirements  mr;
+  vk::MemoryRequirements2 MemoryRequirements{ .memoryRequirements = mr };
+
+  vk::ImageMemoryRequirementsInfo2 ImageMemoryRequirementInfo{
+    .image = Vulkan.DepthImage
+  };
+
+  Vulkan.Device.getImageMemoryRequirements2 (&ImageMemoryRequirementInfo,
+                                             &MemoryRequirements);
+
+  std::uint32_t TypeIndex = 0;
 
   for (uint32_t i = 0; i < MemoryProperties.memoryProperties.memoryTypeCount;
        ++i)
@@ -94,11 +104,10 @@ Patata::Engine::CreateDepthBuffer (void)
         }
     }
 
-  vk::MemoryAllocateInfo DepthMemoryAllocateInfo (
-      MemoryRequirements.memoryRequirements.size, // allocationSize
-      TypeIndex,                                  // memoryTypeIndex
-      nullptr                                     // pNext
-  );
+  vk::MemoryAllocateInfo DepthMemoryAllocateInfo{
+    .allocationSize  = MemoryRequirements.memoryRequirements.size,
+    .memoryTypeIndex = TypeIndex,
+  };
 
   Result = Vulkan.Device.allocateMemory (&DepthMemoryAllocateInfo, nullptr,
                                          &Vulkan.DepthMemory);
@@ -122,22 +131,19 @@ Patata::Engine::CreateDepthBuffer (void)
       return false;
     }
 
-  vk::ComponentMapping Components;
+  vk::ComponentMapping Components{};
 
-  vk::ImageViewCreateInfo ImageDepthViewInfo (
-      {},
-      Vulkan.DepthImage,      // image
-      vk::ImageViewType::e2D, // viewType
-      SelectedDepthFormat,    // format
-      Components,             // components
-      // subresourceRange
-      {
-          vk::ImageAspectFlagBits::eDepth, // aspectMask
-          0,                               // baseMipLevel
-          1,                               // levelCount
-          0,                               // baseArrayLayer
-          1                                // layerCount
-      });
+  vk::ImageViewCreateInfo ImageDepthViewInfo{
+    .image      = Vulkan.DepthImage,
+    .viewType   = vk::ImageViewType::e2D,
+    .format     = SelectedDepthFormat,
+    .components = Components,
+    .subresourceRange{ .aspectMask     = vk::ImageAspectFlagBits::eDepth,
+                       .baseMipLevel   = 0,
+                       .levelCount     = 1,
+                       .baseArrayLayer = 0,
+                       .layerCount     = 1 }
+  };
 
   Result = Vulkan.Device.createImageView (&ImageDepthViewInfo, nullptr,
                                           &Vulkan.DepthView);

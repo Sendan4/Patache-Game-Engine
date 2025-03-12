@@ -6,7 +6,7 @@ Patata::Engine::CreateInstance (const Patata::EngineCreateInfo & Info)
   const char * ApplicationName
       = (Info.gameName != nullptr) ? Info.gameName : "Untitled Game";
 
-  uint32_t GameVersion = Info.gameVersion;
+  std::uint32_t GameVersion = Info.gameVersion;
 
   vk::ApplicationInfo PatataEngineInfo{ .pApplicationName   = ApplicationName,
                                         .applicationVersion = GameVersion,
@@ -41,10 +41,11 @@ Patata::Engine::CreateInstance (const Patata::EngineCreateInfo & Info)
 #else
   engineInfo.VkInstanceExtensionsCount = SDLExtensionCount + 1;
 #endif
+
 #define EXTENSION_COUNT engineInfo.VkInstanceExtensionsCount // Debug
-#else
-#define EXTENSION_COUNT SDLExtensionCount // Release
-#endif
+#else                                                        // PATATA_DEBUG
+#define EXTENSION_COUNT SDLExtensionCount                    // Release
+#endif                                                       // PATATA_DEBUG
 
   const char ** ppExtensionInstanceNames = new const char *[EXTENSION_COUNT];
 
@@ -62,7 +63,7 @@ Patata::Engine::CreateInstance (const Patata::EngineCreateInfo & Info)
       // Struct / Patata Engine Info
       engineInfo.ppVkInstanceExtensions = new const char *[EXTENSION_COUNT];
 
-      for (uint8_t i = 0; i < EXTENSION_COUNT; ++i)
+      for (std::uint8_t i = 0; i < EXTENSION_COUNT; ++i)
         engineInfo.ppVkInstanceExtensions[i] = ppExtensionInstanceNames[i];
 #endif
 
@@ -76,8 +77,11 @@ Patata::Engine::CreateInstance (const Patata::EngineCreateInfo & Info)
           std::launch::async, Patata::Log::FatalErrorMessage,
           "Patata Engine - Raccoon Renderer",
           "Cannot find vulkan surface extensions", configuration);
+
+      return false;
     }
 
+    // Configuration of Validation Layers
 #if PATATA_DEBUG == 1 && defined(PATATA_USE_VVL)
   static constexpr const vk::Bool32 EnableSetting = VK_TRUE;
 
@@ -137,14 +141,19 @@ Patata::Engine::CreateInstance (const Patata::EngineCreateInfo & Info)
 
   if (Result == vk::Result::eErrorIncompatibleDriver)
     {
+      char ErrorText[PATATA_ERROR_TEXT_SIZE]{ 0 };
+
+      PATATA_STRNCPY (ErrorText,
+                      "You do not have Vulkan API compatible drivers or your "
+                      "GPU does not support the Vulkan API. ",
+                      PATATA_ERROR_TEXT_SIZE - 1);
+
+      PATATA_STRNCAT (ErrorText, vk::to_string (Result).c_str (),
+                      PATATA_ERROR_TEXT_SIZE - 1);
+
       std::future<void> ReturnVulkanErr = std::async (
           std::launch::async, Patata::Log::FatalErrorMessage,
-          "Patata Engine - Raccoon Renderer",
-          std::string_view{
-              "You do not have Vulkan API compatible drivers or your "
-              "GPU does not support the Vulkan API. "
-              + vk::to_string (Result) },
-          configuration);
+          "Patata Engine - Raccoon Renderer", ErrorText, configuration);
 
       return false;
     }
@@ -157,6 +166,7 @@ Patata::Engine::CreateInstance (const Patata::EngineCreateInfo & Info)
       return false;
     }
 
+    // Debug Utils Messenger Info
 #if PATATA_DEBUG == 1
   // Get function address
   pfnVkCreateDebugUtilsMessengerEXT

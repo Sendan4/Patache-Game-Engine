@@ -3,35 +3,35 @@
 bool
 Patata::Engine::CreateFrameBuffer (void)
 {
-  Vulkan.SwapChainFrameBuffer
-      = new vk::Framebuffer[Vulkan.SwapChainImageCount];
+  if (Vulkan.SwapChainFrameBuffer == VK_NULL_HANDLE)
+    Vulkan.SwapChainFrameBuffer
+        = new vk::Framebuffer[Vulkan.SwapChainImageCount];
 
   vk::Result Result;
 
-  for (uint8_t i = 0; i < Vulkan.SwapChainImageCount; ++i)
+  for (std::uint8_t i = 0; i < Vulkan.SwapChainImageCount; ++i)
     {
-      vk::FramebufferCreateInfo FrameBufferInfo (
-          {},
-          Vulkan.RenderPass,                  // renderPass
-          1,                                  // attachmentCount
-          &Vulkan.SwapChainColorImageView[i], // pAttachments
-          Vulkan.SwapChainExtent.width,       // width
-          Vulkan.SwapChainExtent.height,      // height
-          1,                                  // layers
-          nullptr                             // pNext
-      );
+      vk::FramebufferCreateInfo FrameBufferInfo{
+        .renderPass      = Vulkan.RenderPass,
+        .attachmentCount = 1,
+        .pAttachments    = &Vulkan.SwapChainColorImageView[i],
+        .width           = Vulkan.SwapChainExtent.width,
+        .height          = Vulkan.SwapChainExtent.height,
+        .layers          = 1,
+      };
 
       Result = Vulkan.Device.createFramebuffer (
           &FrameBufferInfo, nullptr, &Vulkan.SwapChainFrameBuffer[i]);
+
       if (Result != vk::Result::eSuccess)
         {
-          uint8_t tmp = i;
+          char ErrorText[PATATA_ERROR_TEXT_SIZE]{ 0 };
+
+          std::snprintf (ErrorText, PATATA_ERROR_TEXT_SIZE - 1,
+                         "Frame Buffer #%.3u", i + 1);
 
           std::future<void> ReturnVulkanCheck = std::async (
-              std::launch::async, Patata::Log::VulkanCheck,
-              std::string ("Frame Buffer " + std::to_string (++tmp) + '/'
-                           + std::to_string (Vulkan.SwapChainImageCount)),
-              Result);
+              std::launch::async, Patata::Log::VulkanCheck, ErrorText, Result);
 
           return false;
         }

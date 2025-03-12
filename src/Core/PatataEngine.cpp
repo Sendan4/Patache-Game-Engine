@@ -1,6 +1,9 @@
+#if PATATA_DEBUG == 1 && !defined(_WIN64)
+#include <cstdlib>
+#endif
 #include <future>
+#include <cstring>
 
-#include <fast_io.h>
 #if defined(_WIN64)
 #include <windows.h>
 #endif
@@ -8,6 +11,10 @@
 
 // Patata Engine
 #include "PatataEngine/PatataEngine.hpp"
+#include "CstringWrapped.hpp"
+#if PATATA_DEBUG == 1
+#include "CstdlibWrapped.hpp"
+#endif
 #include "Log.hpp"
 #include "patata_icon.hpp"
 
@@ -19,20 +26,12 @@
 #define PATATA_VVL_PATH PATATA_VVL_SDK_PATH
 #endif
 
-#if defined(_WIN64)
-#define PATATA_SETENV(VARIABLE, VALUE) SetEnvironmentVariable (VARIABLE, VALUE)
-#define PATATA_SETENV_SUCCESS          1
-#else
-#define PATATA_SETENV(VARIABLE, VALUE) setenv (VARIABLE, VALUE, 1)
-#define PATATA_SETENV_SUCCESS          0
-#endif
-
 bool
 Patata::Engine::Init (const Patata::EngineCreateInfo & Info)
 {
   {
-    std::future<void> PatataStartLogInfo = std::async (
-        std::launch::async, Patata::Log::StartPatataLogInfo, Info);
+    std::future<void> PatataStartLogInfo
+        = std::async (std::launch::async, Patata::Log::StartPatataLogInfo);
   }
 
   if (!LoadConfiguration ())
@@ -52,7 +51,7 @@ Patata::Engine::Init (const Patata::EngineCreateInfo & Info)
       std::future<void> Err = std::async (
           std::launch::async, Patata::Log::FatalErrorMessage,
           "Patata Engine - SDL2", SDL_GetError (), configuration);
-      fast_io::io::println ("Test");
+
       return false;
     }
 
@@ -60,36 +59,40 @@ Patata::Engine::Init (const Patata::EngineCreateInfo & Info)
   {
     // Window Title
 #if PATATA_DEBUG == 1
-    std::string WindowTitle;
-#define PATATA_WINDOW_TITLE_STR WindowTitle.c_str ()
+    char WindowTitle[64]{ 0 };
 
-    if (Info.windowTitle == nullptr)
-      if (Info.gameName != nullptr)
-        WindowTitle = Info.gameName;
-      else
-        WindowTitle = "Patata Engine";
+    if (Info.windowTitle != nullptr)
+      {
+        PATATA_STRNCPY (WindowTitle, Info.windowTitle, 63);
+      }
+    else if (Info.gameName != nullptr)
+      {
+        PATATA_STRNCPY (WindowTitle, Info.gameName, 63);
+      }
     else
-      WindowTitle = Info.windowTitle;
+      {
+        PATATA_STRNCPY (WindowTitle, PATATA_ENGINE_NAME, 63);
+      }
 
-    WindowTitle.append (" (Debug / Development)");
-#else
+    PATATA_STRNCAT (WindowTitle, " (Debug / Development)", 63);
+
+#else  // PATATA_DEBUG
     const char * WindowTitle
         = (Info.windowTitle == nullptr) ? Info.gameName : Info.windowTitle;
-#define PATATA_WINDOW_TITLE_STR WindowTitle
 
     if (WindowTitle == nullptr)
       WindowTitle = "Patata Engine";
-#endif
+#endif // PATATA_DEBUG
 
     // Window Initial Size
-    uint32_t w = 0, h = 0;
+    std::uint32_t w = 0, h = 0;
 
     SDL_DisplayMode CurrentMode;
 
     if (SDL_GetCurrentDisplayMode (0, &CurrentMode) == 0)
       {
-        w = static_cast<uint32_t> (CurrentMode.w * 0.64);
-        h = static_cast<uint32_t> (CurrentMode.h * 0.64);
+        w = static_cast<std::uint32_t> (CurrentMode.w * 0.64);
+        h = static_cast<std::uint32_t> (CurrentMode.h * 0.64);
       }
     else
       {
@@ -104,8 +107,7 @@ Patata::Engine::Init (const Patata::EngineCreateInfo & Info)
 
     // Create Window
     GameWindow = SDL_CreateWindow (
-        PATATA_WINDOW_TITLE_STR, SDL_WINDOWPOS_CENTERED,
-        SDL_WINDOWPOS_CENTERED, w, h,
+        WindowTitle, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, w, h,
         SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_VULKAN
             | SDL_WINDOW_ALLOW_HIGHDPI);
 
@@ -120,8 +122,9 @@ Patata::Engine::Init (const Patata::EngineCreateInfo & Info)
 
     SDL_SetWindowMinimumSize (GameWindow, 640, 360);
 
-    std::future<void> Log
-        = std::async (std::launch::async, &Patata::Engine::WindowLog, this);
+#if PATATA_DEBUG == 1
+    engineInfo.WindowCreationFlags = SDL_GetWindowFlags (GameWindow);
+#endif
   }
 
   // Set Window Icon
@@ -130,11 +133,12 @@ Patata::Engine::Init (const Patata::EngineCreateInfo & Info)
 
     if (Info.windowIconPath != nullptr)
       {
-        std::string Path{ SDL_GetBasePath () };
-        Path.append ("/");
-        Path.append (Info.windowIconPath);
+        char Path[256]{ 0 };
+        PATATA_STRNCPY (Path, SDL_GetBasePath (), 255);
+        PATATA_STRNCAT (Path, "/", 255);
+        PATATA_STRNCAT (Path, Info.windowIconPath, 255);
 
-        WindowIcon = SDL_LoadBMP (Path.c_str ());
+        WindowIcon = SDL_LoadBMP (Path);
       }
     else
       WindowIcon = SDL_CreateRGBSurfaceWithFormatFrom (
@@ -167,6 +171,8 @@ Patata::Engine::Engine (const Patata::EngineCreateInfo & Info, bool * Err)
 {
   if (Err != nullptr)
     *Err = Init (Info);
+  else
+    Init (Info);
 }
 
 #if PATATA_DEBUG == 1

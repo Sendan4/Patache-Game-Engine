@@ -10,47 +10,23 @@
 
 namespace Patata
 {
-enum class WindowType : uint8_t
-{
-  Nothing,
-  Wayland,
-  Win32
-};
-
-enum class Desktop : uint8_t
-{
-  Nothing,
-  Gnome,
-  KdePlasma,
-  Xfce,
-  Pantheon,
-  Mate,
-  Cinnamon,
-  Lxqt,
-  Unity,
-  Cosmic,
-  Windows,
-};
-
 struct EngineInfo
 {
   // Window
-  Patata::WindowType WindowType          = Patata::WindowType::Nothing;
-  Patata::Desktop    DesktopType         = Patata::Desktop::Nothing;
-  uint32_t           WindowCreationFlags = 0;
+  std::uint32_t WindowCreationFlags = 0;
 
   // RaccoonRenderer
   // Vulkan
   char VkVersion[PATATA_VK_VERSION_SIZE]{ 0 };
 
   // Device
-  char     VkDeviceName[VK_MAX_PHYSICAL_DEVICE_NAME_SIZE]{ 0 };
-  uint32_t VkDeviceVendorId = 0;
-  char     VkDeviceType[PATATA_VK_DEVICE_TYPE_SIZE]{ 0 };
+  char          VkDeviceName[VK_MAX_PHYSICAL_DEVICE_NAME_SIZE]{ 0 };
+  std::uint32_t VkDeviceVendorId = 0;
+  char          VkDeviceType[PATATA_VK_DEVICE_TYPE_SIZE]{ 0 };
 
   // Queue
   // uint8_t VkQueuesCount = 0
-  uint32_t                     VkQueueIndex    = 0;
+  std::uint32_t                VkQueueIndex    = 0;
   float                        VkQueuePriority = 0.0f;
   vk::Flags<vk::QueueFlagBits> VkQueueFlags;
 
@@ -64,20 +40,23 @@ struct EngineInfo
   vk::PresentModeKHR VkSwapchainPresentMode;
   vk::Format         VkSwapchainImageColorFormat;
   vk::ColorSpaceKHR  VkSwapchainImageColorSpace;
+  std::uint32_t       VkMinImageCount = 0;
 
   // Extensions
   const char ** ppVkLayers                = nullptr;
   const char ** ppVkInstanceExtensions    = nullptr;
-  uint32_t      VkInstanceExtensionsCount = 0;
+  std::uint32_t VkInstanceExtensionsCount = 0;
   const char ** ppVkDeviceExtensions      = nullptr;
-  uint32_t      VkDeviceExtensionsCount   = 0;
+  std::uint32_t VkDeviceExtensionsCount   = 0;
 
   // RaccoonSound
 
   // ImGui
-  bool ShowMainMenuBar    = true;
-  bool PatataInfoWindow   = false;
-  bool PatataConfigWindow = false;
+  bool ShowMainMenuBar                 = true;
+  bool PatataInfoWindow                = false;
+  bool PatataConfigWindow              = false;
+  bool PatataRaccoonRendererInfoWindow = false;
+  bool ConfigBooleansTmp               = false;
 };
 }
 #endif
