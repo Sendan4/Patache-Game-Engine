@@ -127,7 +127,7 @@ if (MSVC OR LINUX)
     FetchContent_Declare(
       Vulkan-ValidationLayers
       GIT_REPOSITORY https://github.com/KhronosGroup/Vulkan-ValidationLayers.git
-      GIT_TAG "vulkan-sdk-1.3.296"
+      GIT_TAG "vulkan-sdk-1.4.309"
       BUILD_IN_SOURCE FALSE
       GIT_PROGRESS TRUE
       LOG_DOWNLOAD TRUE

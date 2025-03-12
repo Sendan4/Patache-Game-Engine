@@ -462,13 +462,12 @@ if (NOT USE_EXTERNAL_LIBS)
     	endif()
     endif()
 
-
 		include(FetchContent)
 
     FetchContent_Declare(
       Vulkan-Headers
       GIT_REPOSITORY https://github.com/KhronosGroup/Vulkan-Headers.git
-      GIT_TAG "vulkan-sdk-1.3.296"
+      GIT_TAG "vulkan-sdk-1.4.309"
       BUILD_IN_SOURCE FALSE
       GIT_PROGRESS TRUE
       LOG_DOWNLOAD TRUE
@@ -482,7 +481,7 @@ if (NOT USE_EXTERNAL_LIBS)
     FetchContent_Declare(
       Vulkan-Loader
       GIT_REPOSITORY https://github.com/KhronosGroup/Vulkan-Loader.git
-      GIT_TAG "vulkan-sdk-1.3.296"
+      GIT_TAG "vulkan-sdk-1.4.309"
       BUILD_IN_SOURCE FALSE
       GIT_PROGRESS TRUE
       LOG_DOWNLOAD TRUE
