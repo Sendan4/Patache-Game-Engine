@@ -56,6 +56,11 @@ if (WIN32 OR CMAKE_SYSTEM_NAME STREQUAL "Windows")
 	include(CheckIncludeFile)
 endif()
 
+if (MINGW AND (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo"))
+	# Mingw specific function conversion in vulkan
+	check_cxx_compiler_flag("-fpermissive" COMPILER_SUPPORTS_FPERMISSIVE)
+endif()
+
 if (NOT MSVC)
 	check_cxx_compiler_flag("-std=c++20" COMPILER_SUPPORTS_C++20) # Obligatory
 	check_cxx_compiler_flag("-Wextra" COMPILER_SUPPORTS_WEXTRA)

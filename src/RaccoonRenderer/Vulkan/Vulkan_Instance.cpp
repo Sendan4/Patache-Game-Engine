@@ -183,8 +183,7 @@ Patata::Engine::CreateInstance (const Patata::EngineCreateInfo & Info)
     .messageType = vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral
                    | vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation
                    | vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance,
-    .pfnUserCallback
-    = reinterpret_cast<PFN_vkDebugUtilsMessengerCallbackEXT> (debugMessageFunc)
+    .pfnUserCallback = &debugMessageFunc
   };
 
   Result = Vulkan.Instance.createDebugUtilsMessengerEXT (

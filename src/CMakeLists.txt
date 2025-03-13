@@ -60,6 +60,10 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 
 # Compiler Flags
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    if (MINGW AND (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo") AND COMPILER_SUPPORTS_FPERMISSIVE)
+        # Mingw specific function conversion in vulkan
+        target_compile_options(${PROJECT_NAME} PRIVATE "-fpermissive")
+    endif()
     if (COMPILER_SUPPORTS_C++20)
         target_compile_options(${PROJECT_NAME} PRIVATE "-std=c++20")
     endif ()
