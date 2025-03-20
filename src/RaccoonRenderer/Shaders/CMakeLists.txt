@@ -20,7 +20,7 @@ foreach(SHADER ${ShaderFiles})
 
   add_custom_command(
     TARGET Patata-Compile-Shaders POST_BUILD
-    DEPENDS "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Shaders/"
+    DEPENDS ${OUTPUT_DIR}
     COMMAND $<TARGET_FILE:glslang-standalone> ${SHADER} -o ${OUTPUT_DIR}/${ShaderFileName}.spv -V)
 endforeach()
 
