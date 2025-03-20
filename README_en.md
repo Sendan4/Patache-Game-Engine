@@ -22,9 +22,10 @@ _Dumb and simple game engine made in C++._
 	<li><a href = "http://www.libsdl.org/">SDL2</a></li>
 	<li><a href = "https://www.vulkan.org/">Vulkan</a></li>
 	<ul>
-		(<a href = "https://github.com/KhronosGroup/Vulkan-Headers.git">Vulkan-Headers</a>)
-		(<a href = "https://github.com/KhronosGroup/Vulkan-ValidationLayers.git">Vulkan-ValidationLayers</a>)
-		(<a href = "https://github.com/KhronosGroup/Vulkan-Loader.git">Vulkan-Loader</a>)
+		<li><a href = "https://github.com/KhronosGroup/Vulkan-Headers.git">Vulkan-Headers</a></li>
+		<li><a href = "https://github.com/KhronosGroup/Vulkan-ValidationLayers.git">Vulkan-ValidationLayers</a></li>
+		<li><a href = "https://github.com/KhronosGroup/Vulkan-Loader.git">Vulkan-Loader</a></li>
+		<li><a href = "https://github.com/KhronosGroup/glslang.git">Glslang</a></li>
 	</ul>
 	<li><a href = "https://github.com/cppfastio/fast_io.git">fast_io</a></li>
 	<li><a href = "https://github.com/biojppm/rapidyaml.git">RapidYaml</a></li>

@@ -6,7 +6,9 @@ if (DEFINED SHARED_BUILD AND NOT SHARED_BUILD)
     add_library(${PROJECT_NAME} STATIC)
 endif()
 
-add_dependencies(${PROJECT_NAME} Patata-Files)
+add_subdirectory(RaccoonRenderer/Shaders)
+
+add_dependencies(${PROJECT_NAME} Patata-Files Patata-Compile-Shaders)
 
 target_sources (${PROJECT_NAME} PRIVATE
  "Core/PatataEngine.cpp"
@@ -124,7 +126,6 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
       endif()
     endif()
 
-    message(STATUS "Disabling exceptions with _HAS_EXCEPTIONS=0 for STL")
     target_compile_definitions(${PROJECT_NAME} PRIVATE _HAS_EXCEPTIONS=0)
 endif()
 
@@ -166,7 +167,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
  PATATA_FAST_IO_GIT_COMMIT_HASH_SHORT="${Fast_io_COMMIT_SHORT_HASH}"
  VULKAN_HPP_NO_EXCEPTIONS
  VULKAN_HPP_NO_SMART_HANDLE
-  VULKAN_HPP_NO_CONSTRUCTORS)
+ VULKAN_HPP_NO_CONSTRUCTORS)
 
 if (MSVC OR CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     target_compile_definitions(${PROJECT_NAME} PRIVATE _HAS_EXCEPTIONS=0)
@@ -225,8 +226,8 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
     message(STATUS "Vulkan Libs Path : ${VULKANSDK_LIBS_PATH}")
 
     target_link_libraries(${PROJECT_NAME} PUBLIC
-  -lvulkan-1
-  -L${VULKANSDK_LIBS_PATH})
+        -lvulkan-1
+        -L${VULKANSDK_LIBS_PATH})
 
     target_include_directories(${PROJECT_NAME} PUBLIC "${Vulkan_INCLUDE_DIRS}")
 
@@ -250,10 +251,10 @@ endif()
 
 if (TARGET asm_offset)
     set_target_properties(asm_offset
-  PROPERTIES
-  ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}
-  LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}
-  RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+        PROPERTIES
+        ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}
+        LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}
+        RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 endif()
 
 if (LIBS_SHARED_BUILD)

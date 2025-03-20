@@ -18,3 +18,7 @@
 	path = externals/freetype
   url = https://gitlab.freedesktop.org/freetype/freetype.git
   branch = VER-2-13-3
+[submodule "externals/glslang"]
+	path = externals/glslang
+	url = https://github.com/KhronosGroup/glslang.git
+	branch = vulkan-sdk-1.4.309
