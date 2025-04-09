@@ -85,26 +85,48 @@ Patata::Engine::BeginRender (SDL_Event & Event)
 
   // Begin RenderPass
   {
-    // Render Pass
-    Vulkan.Color.float32[0] = clearColor.r;
-    Vulkan.Color.float32[1] = clearColor.g;
-    Vulkan.Color.float32[2] = clearColor.b;
-    Vulkan.Color.float32[3] = clearColor.a;
+    Vulkan.ClearColor.color.float32[0] = clearColor.r;
+    Vulkan.ClearColor.color.float32[1] = clearColor.g;
+    Vulkan.ClearColor.color.float32[2] = clearColor.b;
+    Vulkan.ClearColor.color.float32[3] = clearColor.a;
 
-    Vulkan.RenderArea.extent = vk::Extent2D{ Vulkan.SwapChainExtent.width,
+    Vulkan.RenderArea.extent   = vk::Extent2D{ Vulkan.SwapChainExtent.width,
                                              Vulkan.SwapChainExtent.height };
+    Vulkan.RenderArea.offset.x = 0;
+    Vulkan.RenderArea.offset.y = 0;
 
     vk::RenderPassBeginInfo Info{
       .renderPass      = Vulkan.RenderPass,
       .framebuffer     = Vulkan.SwapChainFrameBuffer[Vulkan.ImageIndex],
       .renderArea      = Vulkan.RenderArea,
       .clearValueCount = 1,
-      .pClearValues    = &Vulkan.ClearValue,
+      .pClearValues    = &Vulkan.ClearColor,
     };
 
     Vulkan.Cmd[Vulkan.CurrentFrame].beginRenderPass (
         Info, vk::SubpassContents::eInline);
   }
+
+  Vulkan.Cmd[Vulkan.CurrentFrame].bindPipeline (
+      vk::PipelineBindPoint::eGraphics, Vulkan.GraphicsPipeline);
+
+  /*vk::DeviceSize offsets[] = { 0 };
+  Vulkan.Cmd[Vulkan.CurrentFrame].bindVertexBuffers (
+      0, 1, &Vulkan.VertexBuffer, offsets);*/
+
+  Vulkan.Viewport.x      = 0;
+  Vulkan.Viewport.y      = 0;
+  Vulkan.Viewport.width  = static_cast<float> (Vulkan.SwapChainExtent.width);
+  Vulkan.Viewport.height = static_cast<float> (Vulkan.SwapChainExtent.height);
+  Vulkan.Viewport.minDepth = 0.0f;
+  Vulkan.Viewport.maxDepth = 1.0f;
+  Vulkan.Cmd[Vulkan.CurrentFrame].setViewport (0, 1, &Vulkan.Viewport);
+
+  Vulkan.Scissor.offset = vk::Offset2D (0, 0);
+  Vulkan.Scissor.extent = Vulkan.SwapChainExtent;
+  Vulkan.Cmd[Vulkan.CurrentFrame].setScissor (0, 1, &Vulkan.Scissor);
+
+  Vulkan.Cmd[Vulkan.CurrentFrame].draw (3, 1, 0, 0);
 
 // Imgui New Frame
 #if PATATA_DEBUG == 1

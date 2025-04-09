@@ -1,6 +1,9 @@
 The MIT License (MIT)
 
-Copyright (c) 2013-2022 David Herberth
+The MIT License (MIT) Copyright © 2022 cqwrteur (fast_io)
+Copyright (c) 2018, Joao Paulo Magalhaes <dev@jpmag.me> (Rapid Yaml)
+Copyright (c) 2014-2025 Omar Cornut (ImGui)
+Copyright (c) 2015 Recep Aslantas <info@recp.me> (cglm)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in

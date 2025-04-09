@@ -1,5 +1,13 @@
 #include "Vulkan_SetupRenderer.hpp"
 
+struct Vertex
+{
+  vec2 pos[3]{ { 0.0f, 0.0f }, { 0.5f, 0.5f }, { -0.5f, 0.5 } };
+  vec3 color[3]{ { 1.0f, 0.0f, 0.0f },
+                 { 0.0f, 1.0f, 0.0f },
+                 { 0.0f, 0.0f, 1.0f } };
+};
+
 bool
 Patata::Engine::RaccoonRendererInit (const Patata::EngineCreateInfo & Info)
 {
@@ -36,15 +44,13 @@ Patata::Engine::RaccoonRendererInit (const Patata::EngineCreateInfo & Info)
           reinterpret_cast<VkSurfaceKHR *> (&Vulkan.Surface)))
     {
       fast_io::io::println (
-#if defined(_WIN64)
-          fast_io::out (),
-#endif
-          PATATA_TERM_RESET, PATATA_TERM_BOLD,
+          PATATA_FAST_IO_BUFF_OUT, PATATA_TERM_RESET, PATATA_TERM_BOLD,
           "SDL Create Window Surface : ", PATATA_TERM_RESET,
           PATATA_TERM_COLOR_YELLOW, "Fail", PATATA_TERM_RESET);
 
-      Patata::Log::FatalErrorMessage ("SDL", SDL_GetError (), configuration);
-
+      std::future<void> FatalErr
+          = std::async (std::launch::async, Patata::Log::FatalErrorMessage,
+                        "SDL", SDL_GetError (), configuration);
       return false;
     }
 
@@ -90,6 +96,10 @@ Patata::Engine::RaccoonRendererInit (const Patata::EngineCreateInfo & Info)
   std::future<void> VulkanInfo_Async = std::async (
       std::launch::async, &Patata::Engine::VulkanInfo, this, SwapChainInfo);
 
+  // Create Buffer
+  /*std::future<bool> CreateBuffer_Async = std::async (
+      std::launch::async, [this] (void) -> bool { return true; });*/
+
 #if PATATA_DEBUG == 1
   CreateImguiPipelineCache_Async.wait ();
   if (!CreateImguiPipelineCache_Async.get ())
@@ -126,6 +136,10 @@ Patata::Engine::RaccoonRendererInit (const Patata::EngineCreateInfo & Info)
   CreatePipeline_Async.wait ();
   if (!CreatePipeline_Async.get ())
     return false;
+
+  /*CreateBuffer_Async.wait ();
+  if (!CreateBuffer_Async.get ())
+    return false;*/
 
   return true;
 }
@@ -171,6 +185,9 @@ Patata::Engine::RaccoonRendererClose (void)
   delete[] Vulkan.SwapChainImages;
   Vulkan.SwapChainImages = VK_NULL_HANDLE;
 
+  // Vulkan.Device.destroyBuffer (Vulkan.VertexBuffer);
+  // Vulkan.Device.freeMemory (Vulkan.VertexBufferMemory);
+
 // Imgui
 #if PATATA_DEBUG == 1
   ImGui_ImplVulkan_Shutdown ();
@@ -178,6 +195,10 @@ Patata::Engine::RaccoonRendererClose (void)
   Vulkan.Device.destroyDescriptorPool (Vulkan.ImguiDescriptorPool);
   Vulkan.Device.destroyPipelineCache (Vulkan.ImguiPipelineCache);
 #endif
+
+  Vulkan.Device.destroyPipelineCache (Vulkan.GraphicsPipelineCache);
+  Vulkan.Device.destroyPipelineLayout (Vulkan.PipelineLayout);
+  Vulkan.Device.destroyPipeline (Vulkan.GraphicsPipeline);
 
   Vulkan.Device.destroyRenderPass (Vulkan.RenderPass);
 

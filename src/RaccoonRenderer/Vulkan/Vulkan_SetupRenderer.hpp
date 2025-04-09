@@ -6,11 +6,13 @@
 #if PATATA_DEBUG == 1
 #include <imgui_impl_vulkan.h>
 #endif
+#include <cglm/cglm.h>
 
 // Patata Engine
 #include "PatataEngine/PatataEngine.hpp"
 #include "ColorTerminal.hpp"
 #include "Log.hpp"
+#include "fast_io_buff.hpp"
 
 PFN_vkDestroyDebugUtilsMessengerEXT pfnVkDestroyDebugUtilsMessengerEXT
     = nullptr;

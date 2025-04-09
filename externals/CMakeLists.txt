@@ -167,6 +167,20 @@ add_subdirectory(glslang)
 set	(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 set	(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 
+#cglm
+message("")
+message("  - cglm -")
+set (CGLM_USE_C99 OFF CACHE INTERNAL "..." FORCE)
+set (CGLM_USE_TEST OFF CACHE INTERNAL "..." FORCE)
+if (LIBS_SHARED_BUILD)
+  set (CGLM_SHARED ON CACHE INTERNAL "..." FORCE)
+  set (CGLM_STATIC OFF CACHE INTERNAL "..." FORCE)
+else()
+  set (CGLM_SHARED OFF CACHE INTERNAL "..." FORCE)
+  set (CGLM_STATIC ON CACHE INTERNAL "..." FORCE)
+endif()
+add_subdirectory(cglm)
+
 # SDL2
 message("")
 message("  - SDL2 -")

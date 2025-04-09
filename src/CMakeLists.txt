@@ -31,8 +31,7 @@ target_sources (${PROJECT_NAME} PRIVATE
  "Log/Messages.cpp"
  "Log/StartLogInfo.cpp"
  "Log/Vulkan_SetupLog.cpp"
- "Log/Vulkan_Info.cpp"
-)
+ "Log/Vulkan_Info.cpp")
 
 if (MSVC)
     # List Headers Files in Visual Studio
@@ -49,16 +48,15 @@ if (CMAKE_SYSTEM_NAME STREQUAL "Windows" OR WIN32)
 endif()
 
 if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo")
-    target_sources(${PROJECT_NAME} PRIVATE
-  "ImGUI/SetupImgui.cpp")
+    target_sources(${PROJECT_NAME} PRIVATE "ImGUI/SetupImgui.cpp")
 endif()
 
 target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../include/")
 target_include_directories(${PROJECT_NAME} PRIVATE
- "${CMAKE_CURRENT_SOURCE_DIR}/Core/"
- "${CMAKE_CURRENT_SOURCE_DIR}/ImGUI/"
- "${CMAKE_CURRENT_SOURCE_DIR}/Log/"
- "${CMAKE_CURRENT_SOURCE_DIR}/RaccoonRenderer/")
+  "${CMAKE_CURRENT_SOURCE_DIR}/Core/"
+  "${CMAKE_CURRENT_SOURCE_DIR}/ImGUI/"
+  "${CMAKE_CURRENT_SOURCE_DIR}/Log/"
+  "${CMAKE_CURRENT_SOURCE_DIR}/RaccoonRenderer/")
 
 # Compiler Flags
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
@@ -191,8 +189,8 @@ if (USE_EXTERNAL_LIBS)
     if (CMAKE_SYSTEM_NAME STREQUAL "Linux" OR MSVC)
         # Cannot compile Vulkan in Mingw
         target_compile_definitions(${PROJECT_NAME} PRIVATE
-   PATATA_VULKAN_LOADER_VERSION="${PATATA_VULKAN_LOADER_VERSION}"
-   PATATA_VULKAN_HEADERS_VERSION="${PATATA_VULKAN_HEADERS_VERSION}")
+        PATATA_VULKAN_LOADER_VERSION="${PATATA_VULKAN_LOADER_VERSION}"
+        PATATA_VULKAN_HEADERS_VERSION="${PATATA_VULKAN_HEADERS_VERSION}")
     endif()
 endif()
 
@@ -266,7 +264,7 @@ else()
 endif()
 
 target_link_libraries(${PROJECT_NAME} PUBLIC Fast_io)
-target_link_libraries(${PROJECT_NAME} PRIVATE ryml::ryml freetype)
+target_link_libraries(${PROJECT_NAME} PRIVATE ryml::ryml freetype cglm)
 target_include_directories(${PROJECT_NAME} PRIVATE ${FREETYPE_INCLUDE_DIRS} ${SDL2_INCLUDE_DIRS})
 
 if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo")

@@ -4,7 +4,7 @@ bool
 Patata::Engine::LoadConfiguration (void)
 {
   fast_io::dir_file ExecutableDirectory (
-      static_cast<std::string> (SDL_GetBasePath ()));
+      fast_io::mnp::os_c_str (SDL_GetBasePath ()));
   fast_io::native_file_loader YamlConfigFile (at (ExecutableDirectory),
                                               "config.yaml");
 

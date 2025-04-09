@@ -16,7 +16,7 @@ struct VulkanBackend
 
   vk::SwapchainKHR SwapChain    = VK_NULL_HANDLE;
   vk::SwapchainKHR OldSwapChain = VK_NULL_HANDLE;
-  std::uint32_t	   ImageIndex   = 0;
+  std::uint32_t    ImageIndex   = 0;
   vk::Extent2D     SwapChainExtent{};
 
   // Color
@@ -37,12 +37,17 @@ struct VulkanBackend
   vk::DeviceMemory DepthMemory = VK_NULL_HANDLE;
 
   // Commands
-  vk::CommandPool   CommandPool = VK_NULL_HANDLE;
+  vk::CommandPool     CommandPool = VK_NULL_HANDLE;
   vk::CommandBuffer * Cmd         = VK_NULL_HANDLE;
 
   vk::Framebuffer * SwapChainFrameBuffer = VK_NULL_HANDLE;
 
   vk::RenderPass RenderPass = VK_NULL_HANDLE;
+
+  // Pipeline
+  vk::PipelineLayout PipelineLayout        = VK_NULL_HANDLE;
+  vk::Pipeline       GraphicsPipeline      = VK_NULL_HANDLE;
+  vk::PipelineCache  GraphicsPipelineCache = VK_NULL_HANDLE;
 
 #if PATATA_DEBUG == 1
   vk::DebugUtilsMessengerEXT DebugMessenger = VK_NULL_HANDLE;
@@ -63,11 +68,15 @@ struct VulkanBackend
   std::uint8_t CurrentFrame = 0;
 
   // ClearColor
-  vk::ClearColorValue Color{};
-  vk::ClearValue      ClearValue{ Color };
+  vk::ClearValue ClearColor{};
 
   // Render Command Buffer Area
-  vk::Rect2D RenderArea{ vk::Offset2D{ 0, 0 } };
+  vk::Rect2D   RenderArea{ vk::Offset2D{ 0, 0 } };
+  vk::Viewport Viewport{};
+  vk::Rect2D   Scissor{};
+
+  /*vk::Buffer       VertexBuffer       = VK_NULL_HANDLE;
+  vk::DeviceMemory VertexBufferMemory = VK_NULL_HANDLE;*/
 };
 
 struct SwapChainInfo

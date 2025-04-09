@@ -22,3 +22,7 @@
 	path = externals/glslang
 	url = https://github.com/KhronosGroup/glslang.git
 	branch = vulkan-sdk-1.4.309
+[submodule "externals/cglm"]
+	path = externals/cglm
+	url = https://github.com/recp/cglm.git
+	branch = v0.9.6

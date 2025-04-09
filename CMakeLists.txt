@@ -408,6 +408,8 @@ else()
 endif()
 
 if (NOT USE_EXTERNAL_LIBS)
+  include(FetchContent)
+
   # === Package Mananger ===
 	message("")
 	message("  - fast_io -")
@@ -418,8 +420,6 @@ if (NOT USE_EXTERNAL_LIBS)
 	find_package(ryml)
 
   if (NOT ${ryml_FOUND})
-		include(FetchContent)
-
     FetchContent_Declare(
       RapidYaml
       GIT_REPOSITORY https://github.com/biojppm/rapidyaml.git
@@ -466,8 +466,6 @@ if (NOT USE_EXTERNAL_LIBS)
     		set (BUILD_WSI_XCB_SUPPORT ON CACHE BOOL "..." FORCE)
     	endif()
     endif()
-
-		include(FetchContent)
 
     FetchContent_Declare(
       Vulkan-Headers
@@ -521,13 +519,40 @@ if (NOT USE_EXTERNAL_LIBS)
   set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
   set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 
+  #cglm
+  message("")
+  message("  - cglm -")
+
+  FetchContent_Declare(
+    cglm
+    GIT_REPOSITORY https://github.com/recp/cglm.git
+    GIT_TAG "v0.9.6"
+    BUILD_IN_SOURCE FALSE
+    GIT_PROGRESS TRUE
+    LOG_DOWNLOAD TRUE
+    LOG_UPDATE TRUE
+    LOG_CONFIGURE TRUE
+    LOG_BUILD TRUE
+    LOG_INSTALL TRUE
+    GIT_SUBMODULES_RECURSE TRUE
+  )
+
+  set (CGLM_USE_C99 OFF CACHE INTERNAL "..." FORCE)
+  set (CGLM_USE_TEST OFF CACHE INTERNAL "..." FORCE)
+  if (LIBS_SHARED_BUILD)
+    set (CGLM_SHARED ON CACHE INTERNAL "..." FORCE)
+    set (CGLM_STATIC OFF CACHE INTERNAL "..." FORCE)
+  else()
+    set (CGLM_SHARED OFF CACHE INTERNAL "..." FORCE)
+    set (CGLM_STATIC ON CACHE INTERNAL "..." FORCE)
+  endif()
+  FetchContent_MakeAvailable(cglm)
+
 	message("")
   message("  - SDL -")
   find_package(SDL2)
 
   if (NOT ${SDL2_FOUND} AND NOT CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    include(FetchContent)
-
     FetchContent_Declare(
       SDL2
       GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
