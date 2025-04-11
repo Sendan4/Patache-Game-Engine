@@ -1,9 +1,7 @@
-if (DEFINED SHARED_BUILD AND SHARED_BUILD)
-    add_library(${PROJECT_NAME} SHARED)
-endif()
-
-if (DEFINED SHARED_BUILD AND NOT SHARED_BUILD)
-    add_library(${PROJECT_NAME} STATIC)
+if (BUILD_SHARED_LIBS)
+  add_library(${PROJECT_NAME} SHARED)
+else()
+  add_library(${PROJECT_NAME} STATIC)
 endif()
 
 add_subdirectory(RaccoonRenderer/Shaders)
@@ -240,7 +238,7 @@ if (TARGET asm_offset)
         RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 endif()
 
-if (LIBS_SHARED_BUILD)
+if (BUILD_SHARED_LIBS)
     # Shared
     target_link_libraries(${PROJECT_NAME} PUBLIC SDL2::SDL2main SDL2::SDL2)
 else()

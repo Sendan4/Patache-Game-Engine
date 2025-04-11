@@ -3,8 +3,7 @@ message("  - Patata Engine -")
 
 cmake_minimum_required(VERSION 3.18)
 
-option(SHARED_BUILD "Build static or shared library" OFF)
-option(LIBS_SHARED_BUILD "Build and link Shared dependencies" OFF)
+option(BUILD_SHARED_LIBS "Build static or shared library" OFF)
 option(USE_GIT "Grab git information" ON)
 option(USE_BIN_DIR "use the bin directory as output" ON)
 
@@ -21,14 +20,6 @@ if (MSVC)
 endif()
 
 set (CMAKE_FIND_PACKAGE_TARGETS_GLOBAL TRUE)
-
-if (SHARED_BUILD)
-	set (PATATA_SHARED_BUILD ON CACHE INTERNAL "...")
-endif()
-
-if (NOT SHARED_BUILD)
-	set (PATATA_STATIC_BUILD ON CACHE INTERNAL "...")
-endif()
 
 set (CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -365,7 +356,7 @@ endif()
 get_filename_component(compiler_program ${CMAKE_CXX_COMPILER} NAME)
 
 # shared library
-if (SHARED_BUILD)
+if (BUILD_SHARED_LIBS)
 	add_compile_definitions(SHARED_LIBRARY_EXPORT_DEFINE="1")
 else ()
 	add_compile_definitions(SHARED_LIBRARY_EXPORT_DEFINE="0")
@@ -395,18 +386,14 @@ endif()
 
 message("")
 message(" - Patata Engine Configuration -")
-message(STATUS "SHARED_BUILD : ${SHARED_BUILD}")
-message(STATUS "LIBS_SHARED_BUILD : ${LIBS_SHARED_BUILD}")
-if (DEFINED XORG_SUPPORT)
-	message(STATUS "XORG_SUPPORT : ${XORG_SUPPORT}")
-endif()
+message(STATUS "BUILD_SHARED_LIBS : ${BUILD_SHARED_LIBS}")
 message(STATUS "USE_GIT : ${USE_GIT}")
 message(STATUS "USE_BIN_DIR : ${USE_BIN_DIR}")
 if (DEFINED USE_VVL)
 	message(STATUS "USE_VVL : ${USE_VVL}")
 endif()
 message(STATUS "Build Type : ${CMAKE_BUILD_TYPE}")
-if (SHARED_BUILD)
+if (BUILD_SHARED_LIBS)
 	message(STATUS "Library Type : Shared")
 else()
 	message(STATUS "Library Type : Static")
