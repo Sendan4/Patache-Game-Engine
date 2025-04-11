@@ -352,30 +352,20 @@ DrawDebugUI (Patata::EngineInfo * engineInfo, Patata::Config & configuration,
 
                   ImGui::TableNextRow ();
                   // Fast IO Commit Hash Short
-#if defined(PATATA_FAST_IO_GIT_COMMIT_HASH_SHORT)
                   ImGui::TableSetColumnIndex (0);
                   ImGui::Text ("Fast IO");
-
-                  ImGui::TableSetColumnIndex (1);
-                  ImGui::Text (PATATA_FAST_IO_GIT_COMMIT_HASH_SHORT);
 
                   ImGui::TableSetColumnIndex (2);
                   ImGui::Text ("MIT");
                   ImGui::TableNextRow ();
-#endif
 
-#if defined(PATATA_RAPIDYAML_VERSION)
                   // RapidYaml Version
                   ImGui::TableSetColumnIndex (0);
                   ImGui::Text ("RapidYaml");
 
-                  ImGui::TableSetColumnIndex (1);
-                  ImGui::Text (PATATA_RAPIDYAML_VERSION);
-
                   ImGui::TableSetColumnIndex (2);
                   ImGui::Text ("MIT");
                   ImGui::TableNextRow ();
-#endif
 
                   // SDL Version
                   ImGui::TableSetColumnIndex (0);
@@ -517,62 +507,8 @@ DrawDebugUI (Patata::EngineInfo * engineInfo, Patata::Config & configuration,
 
       ImGui::Spacing ();
 
-      if (ImGui::CollapsingHeader ("Version##RRI1"))
-        {
-          if (ImGui::BeginTable ("Vulkan General Info", 2,
-                                 PATATA_IMGUI_TABLE_FLAGS))
-            {
-              ImGui::TableSetupColumn ("", ImGuiTableColumnFlags_WidthFixed);
-              ImGui::TableSetupColumn ("", ImGuiTableColumnFlags_WidthFixed);
-
-              // Vulkan Loader Version
-#if defined(PATATA_VULKAN_LOADER_VERSION)
-              ImGui::TableNextRow ();
-
-              ImGui::TableSetColumnIndex (0);
-              ImGui::Text ("Loader");
-
-              ImGui::TableSetColumnIndex (1);
-              ImGui::Text (PATATA_VULKAN_LOADER_VERSION);
-#endif
-
-              // Vulkan Headers Version
-#if defined(PATATA_VULKAN_HEADERS_VERSION)
-              ImGui::TableNextRow ();
-
-              ImGui::TableSetColumnIndex (0);
-              ImGui::Text ("Headers");
-
-              ImGui::TableSetColumnIndex (1);
-              ImGui::Text (PATATA_VULKAN_HEADERS_VERSION);
-#endif
-
-              // VVL Version
-#if defined(PATATA_VULKAN_VALIDATION_LAYERS_VERSION)
-              ImGui::TableNextRow ();
-
-              ImGui::TableSetColumnIndex (0);
-              ImGui::Text ("Validation Layers");
-
-              ImGui::TableSetColumnIndex (1);
-              ImGui::Text (PATATA_VULKAN_VALIDATION_LAYERS_VERSION);
-#endif
-
-              if (engineInfo->VkVersion[0] != '\0')
-                {
-                  ImGui::TableNextRow ();
-
-                  ImGui::TableSetColumnIndex (0);
-                  ImGui::Text ("Vulkan");
-
-                  ImGui::TableSetColumnIndex (1);
-                  ImGui::Text ("%s", engineInfo->VkVersion);
-                }
-              ImGui::EndTable ();
-            }
-
-          ImGui::Spacing ();
-        }
+      if (engineInfo->VkVersion[0] != '\0')
+        ImGui::Text ("Using the backend Vulkan %s", engineInfo->VkVersion);
 
       if (ImGui::CollapsingHeader ("Extensions and layers##RRI2"))
         {
@@ -584,7 +520,7 @@ DrawDebugUI (Patata::EngineInfo * engineInfo, Patata::Config & configuration,
                                        ImGuiTableColumnFlags_WidthFixed);
               ImGui::TableHeadersRow ();
 
-              for (uint16_t i = 0; i < PATATA_VK_LAYER_COUNT; ++i)
+              for (std::uint16_t i = 0; i < PATATA_VK_LAYER_COUNT; ++i)
                 {
                   ImGui::TableNextRow ();
 

@@ -81,7 +81,7 @@ Patata::Engine::Init (const Patata::EngineCreateInfo & Info)
         = (Info.windowTitle == nullptr) ? Info.gameName : Info.windowTitle;
 
     if (WindowTitle == nullptr)
-      WindowTitle = "Patata Engine";
+      WindowTitle = PATATA_ENGINE_NAME;
 #endif // PATATA_DEBUG
 
     // Window Initial Size

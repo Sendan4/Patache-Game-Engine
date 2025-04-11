@@ -5,13 +5,8 @@ cmake_minimum_required(VERSION 3.18)
 
 option(SHARED_BUILD "Build static or shared library" OFF)
 option(LIBS_SHARED_BUILD "Build and link Shared dependencies" OFF)
-option(USE_EXTERNAL_LIBS "Use libraries from external folder instead of system libraries" ON)
 option(USE_GIT "Grab git information" ON)
 option(USE_BIN_DIR "use the bin directory as output" ON)
-
-if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
-	option(XORG_SUPPORT "Disable or enable Xorg suport | Xorg is almost obsolete" OFF)
-endif ()
 
 if (NOT CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE Release)
@@ -158,17 +153,17 @@ if (WIN32 OR CMAKE_SYSTEM_NAME STREQUAL "Windows")
   endif()
 endif()
 
-if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-	CHECK_INCLUDE_FILE_CXX("cxxabi.h" HAVE_CXXABI_H LANGUAGE CXX)
-
-	if (NOT HAVE_CXXABI_H)
-		message(FATAL_ERROR "include files missing")
-	endif()
-endif()
-
 # Check Headers
 if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo")
 	include(CheckCXXSymbolExists)
+
+  if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+	  CHECK_INCLUDE_FILE_CXX("cxxabi.h" HAVE_CXXABI_H LANGUAGE CXX)
+
+	  if (NOT HAVE_CXXABI_H)
+		  message(FATAL_ERROR "include files missing")
+	  endif()
+  endif()
 
 	CHECK_INCLUDE_FILE_CXX("cstdio" HAVE_CSTDIO LANGUAGE CXX)
 	if (NOT HAVE_CSTDIO)
@@ -199,21 +194,19 @@ endif()
 
 # Check setenv y getenv
 if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    check_cxx_source_compiles(
-        "#include <cstdlib>\nint main(void) { setenv(\"MY_VAR\", \"VALUE\", 1); return 0; }"
-        HAVE_SETENV)
+  include(CheckCXXSymbolExists)
 
-    if (NOT HAVE_SETENV)
-        message(FATAL_ERROR "missing setenv function")
-    endif()
+  check_cxx_symbol_exists(setenv cstdlib HAVE_SETENV)
 
-    check_cxx_source_compiles(
-        "#include <cstdlib>\nint main(void) { getenv(\"HOME\"); return 0; }"
-        HAVE_GETENV)
+  if (NOT HAVE_SETENV)
+    message(FATAL_ERROR "missing setenv function")
+  endif()
 
-      if (NOT HAVE_GETENV)
-        message(FATAL_ERROR "missing getenv function")
-    endif()
+  check_cxx_symbol_exists(getenv cstdlib HAVE_GETENV)
+
+  if (NOT HAVE_GETENV)
+    message(FATAL_ERROR "missing getenv function")
+  endif()
 endif()
 
 CHECK_INCLUDE_FILE_CXX("cstdint" HAVE_CSTDINT LANGUAGE CXX)
@@ -348,26 +341,6 @@ if (USE_GIT AND GIT)
 		set (PATATA_GIT_WORK_DIR_IS_STAGED "Not Staged")
 		set (PATATA_GIT_WORK_DIR_IS_STAGED_BOOL 0)
 	endif()
-
-	if (USE_EXTERNAL_LIBS)
-		execute_process(
-			COMMAND git describe --tags --abbrev=0
-			WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/externals/rapidyaml/"
-			OUTPUT_VARIABLE PATATA_RAPIDYAML_VERSION
-			OUTPUT_STRIP_TRAILING_WHITESPACE)
-
-		execute_process(
-			COMMAND git describe --tags --abbrev=0
-			WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/externals/Vulkan-Loader/"
-			OUTPUT_VARIABLE PATATA_VULKAN_LOADER_VERSION
-			OUTPUT_STRIP_TRAILING_WHITESPACE)
-
-		execute_process(
-			COMMAND git describe --tags --abbrev=0
-			WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/externals/Vulkan-Headers/"
-			OUTPUT_VARIABLE PATATA_VULKAN_HEADERS_VERSION
-			OUTPUT_STRIP_TRAILING_WHITESPACE)
-	endif()
 endif()
 
 # Search Generator Version
@@ -407,258 +380,7 @@ else()
 	set(BIN_DIR ${CMAKE_BINARY_DIR})
 endif()
 
-if (NOT USE_EXTERNAL_LIBS)
-  include(FetchContent)
-
-  # === Package Mananger ===
-	message("")
-	message("  - fast_io -")
-	add_subdirectory(externals/fast_io)
-
-	message("")
-	message("  - RapidYaml -")
-	find_package(ryml)
-
-  if (NOT ${ryml_FOUND})
-    FetchContent_Declare(
-      RapidYaml
-      GIT_REPOSITORY https://github.com/biojppm/rapidyaml.git
-      GIT_TAG "v0.7.2"
-      BUILD_IN_SOURCE FALSE
-      GIT_PROGRESS TRUE
-      LOG_DOWNLOAD TRUE
-      LOG_UPDATE TRUE
-      LOG_CONFIGURE TRUE
-      LOG_BUILD TRUE
-      LOG_INSTALL TRUE
-      GIT_SUBMODULES_RECURSE TRUE
-    )
-    
-    set (RYML_DEV OFF CACHE INTERNAL "..." FORCE)
-    set (RYML_DEFAULT_CALLBACK_USES_EXCEPTIONS OFF CACHE INTERNAL "..." FORCE)
-    set (RYML_INSTALL OFF CACHE INTERNAL "..." FORCE)
-	  FetchContent_MakeAvailable(RapidYaml)
-  endif()
-
-	message("")
-	message("  - Vulkan -")
-	find_package(Vulkan)
-
-	if (NOT ${Vulkan_VERSION} VERSION_GREATER_EQUAL 1.3.296)
-		message(FATAL_ERROR "Vulkan >= 1.3.296")
-	endif()
-
-  if (NOT ${Vulkan_FOUND})
-  	set (BUILD_TESTS OFF CACHE INTERNAL "..." FORCE)
-    set (UPDATE_DEPS ON CACHE INTERNAL "..." FORCE)
-    set (VULKAN_HEADERS_ENABLE_MODULE OFF CACHE INTERNAL "..." FORCE)
-    if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
-	    # Linux Wayland / Xorg
-    	# Wayland Enable by default
-    	set (BUILD_WSI_WAYLAND_SUPPORT ON CACHE INTERNAL "..." FORCE)
-
-    	# Xorg Disable by default
-    	if (NOT XORG_SUPPORT)
-		    set (BUILD_WSI_XCB_SUPPORT OFF CACHE BOOL "..." FORCE)
-    		set (BUILD_WSI_XLIB_SUPPORT OFF CACHE BOOL "..." FORCE)
-    	else()
-		    set (BUILD_WSI_XLIB_SUPPORT ON CACHE BOOL "..." FORCE)
-    		set (BUILD_WSI_XCB_SUPPORT ON CACHE BOOL "..." FORCE)
-    	endif()
-    endif()
-
-    FetchContent_Declare(
-      Vulkan-Headers
-      GIT_REPOSITORY https://github.com/KhronosGroup/Vulkan-Headers.git
-      GIT_TAG "vulkan-sdk-1.4.309"
-      BUILD_IN_SOURCE FALSE
-      GIT_PROGRESS TRUE
-      LOG_DOWNLOAD TRUE
-      LOG_UPDATE TRUE
-      LOG_CONFIGURE TRUE
-      LOG_BUILD TRUE
-      LOG_INSTALL TRUE
-      GIT_SUBMODULES_RECURSE TRUE
-    )
-
-    FetchContent_Declare(
-      Vulkan-Loader
-      GIT_REPOSITORY https://github.com/KhronosGroup/Vulkan-Loader.git
-      GIT_TAG "vulkan-sdk-1.4.309"
-      BUILD_IN_SOURCE FALSE
-      GIT_PROGRESS TRUE
-      LOG_DOWNLOAD TRUE
-      LOG_UPDATE TRUE
-      LOG_CONFIGURE TRUE
-      LOG_BUILD TRUE
-      LOG_INSTALL TRUE
-      GIT_SUBMODULES_RECURSE TRUE
-    )
-
-	  message("")
-    message("  - Vulkan-Headers -")
-    FetchContent_MakeAvailable(Vulkan-Headers)
-	  message("")
-    message("  - Vulkan-Loader -")
-    FetchContent_MakeAvailable(Vulkan-Loader)
-  endif()
-
-  message("")
-  message("  - Glslang -")
-  set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
-  set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
-  set (ENABLE_RTTI OFF CACHE INTERNAL "..." FORCE)
-  set (ENABLE_EXCEPTIONS OFF CACHE INTERNAL "..." FORCE)
-  set (GLSLANG_TESTS OFF CACHE INTERNAL "..." FORCE)
-  set (ENABLE_HLSL OFF CACHE INTERNAL "..." FORCE)
-  set (ENABLE_PCH OFF CACHE INTERNAL "..." FORCE)
-  set (GLSLANG_ENABLE_INSTALL OFF CACHE INTERNAL "..." FORCE)
-  set (ENABLE_SPVREMAPPER OFF CACHE INTERNAL "..." FORCE)
-  set (ALLOW_EXTERNAL_SPIRV_TOOLS ON CACHE INTERNAL "..." FORCE)
-  add_subdirectory(externals/glslang)
-  set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
-  set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
-
-  #cglm
-  message("")
-  message("  - cglm -")
-
-  FetchContent_Declare(
-    cglm
-    GIT_REPOSITORY https://github.com/recp/cglm.git
-    GIT_TAG "v0.9.6"
-    BUILD_IN_SOURCE FALSE
-    GIT_PROGRESS TRUE
-    LOG_DOWNLOAD TRUE
-    LOG_UPDATE TRUE
-    LOG_CONFIGURE TRUE
-    LOG_BUILD TRUE
-    LOG_INSTALL TRUE
-    GIT_SUBMODULES_RECURSE TRUE
-  )
-
-  set (CGLM_USE_C99 OFF CACHE INTERNAL "..." FORCE)
-  set (CGLM_USE_TEST OFF CACHE INTERNAL "..." FORCE)
-  if (LIBS_SHARED_BUILD)
-    set (CGLM_SHARED ON CACHE INTERNAL "..." FORCE)
-    set (CGLM_STATIC OFF CACHE INTERNAL "..." FORCE)
-  else()
-    set (CGLM_SHARED OFF CACHE INTERNAL "..." FORCE)
-    set (CGLM_STATIC ON CACHE INTERNAL "..." FORCE)
-  endif()
-  FetchContent_MakeAvailable(cglm)
-
-	message("")
-  message("  - SDL -")
-  find_package(SDL2)
-
-  if (NOT ${SDL2_FOUND} AND NOT CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    FetchContent_Declare(
-      SDL2
-      GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
-      GIT_TAG "release-2.30.8"
-      BUILD_IN_SOURCE FALSE
-      GIT_PROGRESS TRUE
-      LOG_DOWNLOAD TRUE
-      LOG_UPDATE TRUE
-      LOG_CONFIGURE TRUE
-      LOG_BUILD TRUE
-      LOG_INSTALL TRUE
-      GIT_SUBMODULES_RECURSE TRUE
-    )
-
-    if (NOT LIBS_SHARED_BUILD)
-	    set(SDL_SHARED OFF CACHE INTERNAL "..." FORCE)
-	    set(SDL_STATIC ON CACHE INTERNAL "..." FORCE)
-	    if (SHARED_BUILD)
-		    set(SDL_STATIC_PIC ON CACHE INTERNAL "..." FORCE)
-	    endif()
-    else ()
-	    set(SDL_SHARED ON CACHE INTERNAL "..." FORCE)
-	    set(SDL_STATIC OFF CACHE INTERNAL "..." FORCE)
-    endif ()
-
-    set(SDL_UNUSED_SUBSYSTEMS
-      File
-      Locale
-	    Power
-	    Render
-	    Sensor
-	    Timers
-	    Atomic
-	    Audio)
-    foreach(_SUB ${SDL_UNUSED_SUBSYSTEMS})
-	    string(TOUPPER ${_SUB} _OPT)
-	    set(SDL_${_OPT} OFF CACHE INTERNAL "..." FORCE)
-    endforeach()
-
-    set (SDL_TEST OFF CACHE INTERNAL "..." FORCE)
-    set (SDL_DIRECTX OFF CACHE INTERNAL "..." FORCE)
-    set (SDL_RENDER_D3D OFF CACHE INTERNAL "..." FORCE)
-    set (SDL_OPENGL OFF CACHE INTERNAL "..." FORCE)
-    set (SDL_OPENGLES OFF CACHE INTERNAL "..." FORCE)
-    set (SDL_RENDER OFF CACHE INTERNAL "..." FORCE)
-    set (SDL_SNDIO OFF CACHE INTERNAL "..." FORCE)
-    set (SDL_SNDIO_SHARED OFF CACHE INTERNAL "..." FORCE)
-    set (SDL_PULSEAUDIO OFF CACHE INTERNAL "..." FORCE)
-    set (SDL_PULSEAUDIO_SHARED OFF CACHE INTERNAL "..." FORCE)
-    set (SDL_PULSEAUDIO_SHARED OFF CACHE INTERNAL "..." FORCE)
-    set (SDL_PIPEWIRE OFF CACHE INTERNAL "..." FORCE)
-    set (SDL_PIPEWIRE_SHARED OFF CACHE INTERNAL "..." FORCE)
-    set (SDL_WASAPI OFF CACHE INTERNAL "..." FORCE)
-    set (SDL_LIBSAMPLERATE OFF CACHE INTERNAL "..." FORCE)
-    set (SDL_LIBSAMPLERATE_SHARED OFF CACHE INTERNAL "..." FORCE)
-
-    if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
-	    if (NOT XORG_SUPPORT)
-		    set (SDL_X11 OFF CACHE INTERNAL "..." FORCE)
-		    set (SDL_X11_SHARED OFF CACHE INTERNAL "..." FORCE)
-	    endif ()
-    endif ()
-
-    FetchContent_MakeAvailable(SDL2)
-  endif()
-
-  message("")
-  message(" - FreeType -")
-  find_package(Freetype)
-
-  if (NOT ${Freetype_FOUND} AND NOT CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-    include(FetchContent)
-
-    FetchContent_Declare(
-      Freetype
-      GIT_REPOSITORY https://gitlab.freedesktop.org/freetype/freetype.git
-      GIT_TAG "VER-2-13-3"
-      BUILD_IN_SOURCE FALSE
-      GIT_PROGRESS TRUE
-      LOG_DOWNLOAD TRUE
-      LOG_UPDATE TRUE
-      LOG_CONFIGURE TRUE
-      LOG_BUILD TRUE
-      LOG_INSTALL TRUE
-      GIT_SUBMODULES_RECURSE TRUE
-      CMAKE_ARGS
-        "-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
-        -DRUNTIME_OUTPUT_DIRECTORY=${CMAKE_LIBRARY_OUTPUT_DIRECTORY}"
-    )
-
-    set (FT_DISABLE_ZLIB ON CACHE INTERNAL "..." FORCE)
-    set (FT_DISABLE_BZIP2 ON CACHE INTERNAL "..." FORCE)
-    set (FT_DISABLE_PNG ON CACHE INTERNAL "..." FORCE)
-    set (FT_DISABLE_HARFBUZZ ON CACHE INTERNAL "..." FORCE)
-    set (FT_DISABLE_BROTLI ON CACHE INTERNAL "..." FORCE)
-
-    FetchContent_MakeAvailable(Freetype)
-  endif()
-
-	if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo")
-	   add_subdirectory(externals/imgui)
-	endif()
-else()
-	# === using submodules ===
-	add_subdirectory(externals)
-endif()
+add_subdirectory(externals)
 
 # === Sources ===
 add_subdirectory(src)
@@ -675,7 +397,6 @@ message("")
 message(" - Patata Engine Configuration -")
 message(STATUS "SHARED_BUILD : ${SHARED_BUILD}")
 message(STATUS "LIBS_SHARED_BUILD : ${LIBS_SHARED_BUILD}")
-message(STATUS "USE_EXTERNAL_LIBS : ${USE_EXTERNAL_LIBS}")
 if (DEFINED XORG_SUPPORT)
 	message(STATUS "XORG_SUPPORT : ${XORG_SUPPORT}")
 endif()

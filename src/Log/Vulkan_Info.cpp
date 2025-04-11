@@ -68,21 +68,6 @@ Patata::Engine::VulkanInfo (const Patata::SwapChainInfo & SwapChainInfo)
   fast_io::io::println (PATATA_FAST_IO_BUFF_OUT, PATATA_TERM_BOLD, "  Version",
                         PATATA_TERM_RESET);
 
-// Vulkan Loader Version
-#if defined(PATATA_VULKAN_LOADER_VERSION)
-  if (std::strcmp (PATATA_VULKAN_LOADER_VERSION, "undefined") != 0)
-    fast_io::io::println (PATATA_FAST_IO_BUFF_OUT, PATATA_TERM_BOLD,
-                          fast_io::mnp::right ("Loader : ", 13),
-                          PATATA_TERM_RESET, PATATA_VULKAN_LOADER_VERSION);
-#endif
-
-// Vulkan Headers Version
-#if defined(PATATA_VULKAN_HEADERS_VERSION)
-  fast_io::io::println (PATATA_FAST_IO_BUFF_OUT, PATATA_TERM_BOLD,
-                        fast_io::mnp::right ("    Headers : ", 14),
-                        PATATA_TERM_RESET, PATATA_VULKAN_HEADERS_VERSION);
-#endif
-
   // Vulkan Version
   fast_io::io::println (
       PATATA_FAST_IO_BUFF_OUT,

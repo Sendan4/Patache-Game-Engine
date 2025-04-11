@@ -1,4 +1,6 @@
 # Externals / Thrid Party Libraries
+set (FETCHCONTENT_QUIET OFF)
+include(FetchContent)
 
 message("")
 message("  - Fast_io -")
@@ -77,68 +79,65 @@ if (LIBS_SHARED_BUILD)
     set(BUILD_SHARED_LIBS ON)
 endif()
 
-add_subdirectory(rapidyaml)
+if (EXISTS rapidyaml/)
+  add_subdirectory(rapidyaml)
+else()
+  FetchContent_Declare(
+    RapidYaml
+    GIT_REPOSITORY https://github.com/biojppm/rapidyaml.git
+    GIT_TAG v0.8.0
+  )
+  FetchContent_MakeAvailable(RapidYaml)
+endif()
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
 	# Linux Wayland / Xorg
 	# Wayland Enable by default
 	set (BUILD_WSI_WAYLAND_SUPPORT ON CACHE INTERNAL "..." FORCE)
-
-	# Xorg Disable by default
-	if (NOT XORG_SUPPORT)
-		set (BUILD_WSI_XCB_SUPPORT OFF CACHE BOOL "..." FORCE)
-		set (BUILD_WSI_XLIB_SUPPORT OFF CACHE BOOL "..." FORCE)
-	else()
-		set (BUILD_WSI_XLIB_SUPPORT ON CACHE BOOL "..." FORCE)
-		set (BUILD_WSI_XCB_SUPPORT ON CACHE BOOL "..." FORCE)
-	endif()
+	set (BUILD_WSI_XCB_SUPPORT OFF CACHE BOOL "..." FORCE)
+	set (BUILD_WSI_XLIB_SUPPORT OFF CACHE BOOL "..." FORCE)
 endif()
 
 if (MSVC OR LINUX)
-    # Vulkan Headers
-	message("")
-	message("  - Vulkan Headers -")
-
 	set (BUILD_TESTS OFF CACHE INTERNAL "..." FORCE)
   set (UPDATE_DEPS ON CACHE INTERNAL "..." FORCE)
   set (VULKAN_HEADERS_ENABLE_MODULE OFF CACHE INTERNAL "..." FORCE)
 
-	add_subdirectory(Vulkan-Headers)
-	message(STATUS "Header-Only")
+	message("")
+	message("  - Vulkan Headers -")
+  if (EXISTS Vulkan-Headers/)
+    add_subdirectory(Vulkan-Headers)
+  else()
+    FetchContent_Declare(
+      Vulkan-Headers
+      GIT_REPOSITORY https://github.com/KhronosGroup/Vulkan-Headers.git
+      GIT_TAG v1.4.312
+    )
+    FetchContent_MakeAvailable(Vulkan-Headers)
+  endif()
 
-	# Vulkan
 	message("")
 	message("  - Vulkan Loader -")
-	add_subdirectory(Vulkan-Loader)
+  if (EXISTS Vulkan-Loader/)
+    add_subdirectory(Vulkan-Loader)
+  else()
+    FetchContent_Declare(
+      Vulkan-Loader
+      GIT_REPOSITORY https://github.com/KhronosGroup/Vulkan-Loader.git
+      GIT_TAG v1.4.312
+    )
+    FetchContent_MakeAvailable(Vulkan-Loader)
+  endif()
 
   # Vulkan Validation Layer
 	if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo" AND USE_VVL)
     message("")
 	  message("  - Vulkan ValidationLayers -")
 
-	  if (CMAKE_SYSTEM_NAME STREQUAL "Linux" OR UNIX)
-	    message(STATUS "BUILD_WSI_XLIB_SUPPORT : ${BUILD_WSI_XLIB_SUPPORT}")
-	    message(STATUS "BUILD_WSI_XCB_SUPPORT : ${BUILD_WSI_XCB_SUPPORT}")
-	    message(STATUS "BUILD_WSI_WAYLAND_SUPPORT : ${BUILD_WSI_WAYLAND_SUPPORT}")
-		endif()
-
-    include(FetchContent)
-
     FetchContent_Declare(
       Vulkan-ValidationLayers
       GIT_REPOSITORY https://github.com/KhronosGroup/Vulkan-ValidationLayers.git
       GIT_TAG "vulkan-sdk-1.4.309"
-      BUILD_IN_SOURCE FALSE
-      GIT_PROGRESS TRUE
-      LOG_DOWNLOAD TRUE
-      LOG_UPDATE TRUE
-      LOG_CONFIGURE TRUE
-      LOG_BUILD TRUE
-      LOG_INSTALL TRUE
-      GIT_SUBMODULES_RECURSE TRUE
-      CMAKE_ARGS
-        "-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
-        -DRUNTIME_OUTPUT_DIRECTORY=${CMAKE_LIBRARY_OUTPUT_DIRECTORY}"
     )
 
 	  FetchContent_MakeAvailable(Vulkan-ValidationLayers)
@@ -159,11 +158,23 @@ set (ENABLE_SPVREMAPPER OFF CACHE INTERNAL "..." FORCE)
 set (ALLOW_EXTERNAL_SPIRV_TOOLS OFF CACHE INTERNAL "..." FORCE)
 set (BUILD_EXTERNAL ON CACHE INTERNAL "..." FORCE)
 
-execute_process(
-	COMMAND python3 update_glslang_sources.py
-	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/glslang)
+if (EXISTS glslang/)
+  execute_process(
+	  COMMAND python3 update_glslang_sources.py
+	  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/glslang)
+  add_subdirectory(glslang)
+else() 
+  set (BUILD_EXTERNAL OFF CACHE INTERNAL "..." FORCE)
+  set (ENABLE_OPT OFF CACHE INTERNAL "..." FORCE)
 
-add_subdirectory(glslang)
+  FetchContent_Declare(
+    Glslang
+    GIT_REPOSITORY https://github.com/KhronosGroup/glslang.git
+    GIT_TAG vulkan-sdk-1.4.309.0
+  )
+
+  FetchContent_MakeAvailable(Glslang)
+endif()
 set	(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 set	(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 
@@ -179,7 +190,17 @@ else()
   set (CGLM_SHARED OFF CACHE INTERNAL "..." FORCE)
   set (CGLM_STATIC ON CACHE INTERNAL "..." FORCE)
 endif()
-add_subdirectory(cglm)
+
+if (EXISTS cglm/)
+  add_subdirectory(cglm)
+else() 
+  FetchContent_Declare(
+    cglm
+    GIT_REPOSITORY https://github.com/recp/cglm.git
+    GIT_TAG v0.9.6
+  )
+  FetchContent_MakeAvailable(cglm)
+endif()
 
 # SDL2
 message("")
@@ -228,13 +249,20 @@ set (SDL_LIBSAMPLERATE OFF CACHE INTERNAL "..." FORCE)
 set (SDL_LIBSAMPLERATE_SHARED OFF CACHE INTERNAL "..." FORCE)
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
-	if (NOT XORG_SUPPORT)
-		set (SDL_X11 OFF CACHE INTERNAL "..." FORCE)
-		set (SDL_X11_SHARED OFF CACHE INTERNAL "..." FORCE)
-	endif ()
+	set (SDL_X11 OFF CACHE INTERNAL "..." FORCE)
+	set (SDL_X11_SHARED OFF CACHE INTERNAL "..." FORCE)
 endif ()
 
-add_subdirectory(SDL)
+if (EXISTS SDL/)
+  add_subdirectory(SDL)
+else() 
+  FetchContent_Declare(
+    SDL
+    GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
+    GIT_TAG release-2.32.4
+  )
+  FetchContent_MakeAvailable(SDL)
+endif()
 
 # FreeType
 message("")
@@ -249,7 +277,17 @@ if (LIBS_SHARED_BUILD)
 else()
   set (BUILD_SHARED_LIBS OFF CACHE INTERNAL "..." FORCE)
 endif()
-add_subdirectory(freetype)
+
+if (EXISTS freetype/)
+  add_subdirectory(freetype)
+else() 
+  FetchContent_Declare(
+    FreeType
+    GIT_REPOSITORY https://gitlab.freedesktop.org/freetype/freetype.git
+    GIT_TAG VER-2-13-3
+  )
+  FetchContent_MakeAvailable(FreeType)
+endif()
 
 if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo")
 	add_subdirectory(imgui)

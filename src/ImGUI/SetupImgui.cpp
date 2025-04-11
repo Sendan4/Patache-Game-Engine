@@ -38,18 +38,19 @@ Patata::Engine::InitImgui (void)
   io.Fonts->Build ();
 
   ImGui::StyleColorsDark ();
-  ImGui::GetStyle ().FrameBorderSize   = 0.0f;
-  ImGui::GetStyle ().FrameRounding     = 0.0f;
-  ImGui::GetStyle ().GrabRounding      = 0.0f;
-  ImGui::GetStyle ().WindowBorderSize  = 0.0f;
-  ImGui::GetStyle ().PopupBorderSize   = 0.0f;
-  ImGui::GetStyle ().ChildBorderSize   = 1.0f;
-  ImGui::GetStyle ().TabRounding       = 0.0f;
-  ImGui::GetStyle ().TabBorderSize     = 0.0f;
-  ImGui::GetStyle ().TabBarBorderSize  = 0.0f;
-  ImGui::GetStyle ().ScrollbarRounding = 0.0f;
-  ImGui::GetStyle ().ItemSpacing       = ImVec2 (8.0f, 12.0f);
-  ImGui::GetStyle ().WindowPadding     = ImVec2 (20, 6);
+  ImGui::GetStyle ().FrameBorderSize             = 0.0f;
+  ImGui::GetStyle ().FrameRounding               = 0.0f;
+  ImGui::GetStyle ().GrabRounding                = 0.0f;
+  ImGui::GetStyle ().WindowBorderSize            = 0.0f;
+  ImGui::GetStyle ().PopupBorderSize             = 0.0f;
+  ImGui::GetStyle ().ChildBorderSize             = 1.0f;
+  ImGui::GetStyle ().TabRounding                 = 0.0f;
+  ImGui::GetStyle ().TabBorderSize               = 0.0f;
+  ImGui::GetStyle ().TabBarBorderSize            = 0.0f;
+  ImGui::GetStyle ().ScrollbarRounding           = 0.0f;
+  ImGui::GetStyle ().ItemSpacing                 = ImVec2 (8.0f, 12.0f);
+  ImGui::GetStyle ().WindowPadding               = ImVec2 (20, 6);
+  ImGui::GetStyle ().Colors[ImGuiCol_WindowBg].w = 0.82f;
   ImGui::GetStyle ().Colors[ImGuiCol_TitleBg]
       = ImGui::GetStyle ().Colors[ImGuiCol_WindowBg];
   ImGui::GetStyle ().Colors[ImGuiCol_DockingEmptyBg]

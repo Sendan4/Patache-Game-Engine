@@ -72,25 +72,5 @@ Patata::Log::StartPatataLogInfo (void)
       PATATA_TERM_BOLD, fast_io::mnp::right ("CPU Architecture : ", 21),
       PATATA_TERM_RESET, PATATA_ARCH);
 
-  // Libs
-#if PATATA_DEBUG == 1
-  fast_io::io::println (
-      PATATA_FAST_IO_BUFF_OUT, PATATA_TERM_BOLD,
-      fast_io::mnp::right ("Libs :", 8), "\n",
-#if defined(PATATA_FAST_IO_GIT_COMMIT_HASH_SHORT)
-      fast_io::mnp::right ("Fast IO Commit Hash Short : ", 32),
-      PATATA_TERM_RESET, PATATA_FAST_IO_GIT_COMMIT_HASH_SHORT, "\n",
-#endif
-      PATATA_TERM_BOLD, fast_io::mnp::right ("SDL Version : ", 18),
-      PATATA_TERM_RESET, SDL_MAJOR_VERSION, ".", SDL_MINOR_VERSION, ".",
-      SDL_PATCHLEVEL
-#if defined(PATATA_RAPIDYAML_VERSION)
-      ,
-      "\n", PATATA_TERM_BOLD, fast_io::mnp::right ("RapidYaml Version : ", 24),
-      PATATA_TERM_RESET, PATATA_RAPIDYAML_VERSION
-#endif
-  );
-#endif // PATATA_DEBUG
-
   fast_io::io::println (PATATA_FAST_IO_BUFF_OUT);
 }
