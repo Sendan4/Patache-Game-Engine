@@ -2,7 +2,7 @@
 #include <cxxabi.h>
 #endif
 
-#include <SDL.h>
+#include <SDL3/SDL.h>
 #include <fast_io.h>
 #if defined(_WIN64)
 #include <windows.h>

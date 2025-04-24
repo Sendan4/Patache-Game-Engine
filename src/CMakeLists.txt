@@ -6,7 +6,7 @@ endif()
 
 add_subdirectory(RaccoonRenderer/Shaders)
 
-add_dependencies(${PROJECT_NAME} Patata-Files Patata-Compile-Shaders)
+add_dependencies(${PROJECT_NAME} PatataFiles PatataCompileShaders)
 
 target_sources (${PROJECT_NAME} PRIVATE
  "Core/PatataEngine.cpp"
@@ -238,15 +238,7 @@ if (TARGET asm_offset)
         RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 endif()
 
-if (BUILD_SHARED_LIBS)
-    # Shared
-    target_link_libraries(${PROJECT_NAME} PUBLIC SDL2::SDL2main SDL2::SDL2)
-else()
-    # Static
-    target_link_libraries(${PROJECT_NAME} PUBLIC SDL2::SDL2main SDL2-static)
-endif()
-
-target_link_libraries(${PROJECT_NAME} PUBLIC Fast_io)
+target_link_libraries(${PROJECT_NAME} PUBLIC Fast_io SDL3::SDL3)
 target_link_libraries(${PROJECT_NAME} PRIVATE ryml::ryml freetype cglm)
 target_include_directories(${PROJECT_NAME} PRIVATE ${FREETYPE_INCLUDE_DIRS} ${SDL2_INCLUDE_DIRS})
 
@@ -257,10 +249,10 @@ endif()
 # MSVC Folders
 if (MSVC)
     set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER "Engine")
-    set_target_properties(Patata-Compile-Shaders PROPERTIES FOLDER "Engine")
+    set_target_properties(PatataCompileShaders PROPERTIES FOLDER "Engine")
 
     if (TARGET cglm)
-      set_target_properties(cglm PROPERTIES FOLDER "Dependencies")
+      set_target_properties(cglm PROPERTIES FOLDER "Engine/Dependencies/")
     endif()
 
     # RapidYaml
@@ -278,13 +270,12 @@ if (MSVC)
     endif()
 
     #SDL2
-    if (TARGET SDL2)
-      set_target_properties(SDL2 PROPERTIES FOLDER "Engine/Dependencies/SDL2")
+    if (TARGET SDL_uclibc)
+      set_target_properties(SDL_uclibc PROPERTIES FOLDER "Engine/Dependencies/SDL3")
     endif()
-    if(TARGET SDL2-static)
-      set_target_properties(SDL2-static PROPERTIES FOLDER "Engine/Dependencies/SDL2")
+    if(TARGET SDL3-static)
+      set_target_properties(SDL3-static PROPERTIES FOLDER "Engine/Dependencies/SDL3")
     endif()
-      set_target_properties(SDL2main PROPERTIES FOLDER "Engine/Dependencies/SDL2")
     if (TARGET SDL2_test)
       set_target_properties(SDL2_test PROPERTIES FOLDER "Engine/Dependencies/SDL2")
     endif()
@@ -329,6 +320,29 @@ if (MSVC)
 
     # Freetype
     set_target_properties(freetype PROPERTIES FOLDER "Engine/Dependencies")
+
+    #Glslang
+    if (TARGET glslang-standalone)
+        set_target_properties(glslang-standalone PROPERTIES FOLDER "Engine/Dependencies/Glslang")
+    endif()
+    if (TARGET GenericCodeGen)
+        set_target_properties(GenericCodeGen PROPERTIES FOLDER "Engine/Dependencies/Glslang")
+    endif()
+    if (TARGET glslang)
+        set_target_properties(glslang PROPERTIES FOLDER "Engine/Dependencies/Glslang")
+    endif()
+    if (TARGET glslang-default-resource-limits)
+        set_target_properties(glslang-default-resource-limits PROPERTIES FOLDER "Engine/Dependencies/Glslang")
+    endif()
+    if (TARGET MachineIndependent)
+        set_target_properties(MachineIndependent PROPERTIES FOLDER "Engine/Dependencies/Glslang")
+    endif()
+    if (TARGET OSDependent)
+        set_target_properties(OSDependent PROPERTIES FOLDER "Engine/Dependencies/Glslang")
+    endif()
+    if (TARGET SPIRV)
+        set_target_properties(SPIRV PROPERTIES FOLDER "Engine/Dependencies/Glslang")
+    endif()
 
     #Imgui
     if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo")

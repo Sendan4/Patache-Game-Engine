@@ -40,7 +40,7 @@ Patata::Engine::RaccoonRendererInit (const Patata::EngineCreateInfo & Info)
 
   // Create a surface for the window to draw on
   if (!SDL_Vulkan_CreateSurface (
-          GameWindow, Vulkan.Instance,
+          GameWindow, Vulkan.Instance, nullptr,
           reinterpret_cast<VkSurfaceKHR *> (&Vulkan.Surface)))
     {
       fast_io::io::println (

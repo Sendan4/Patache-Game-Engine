@@ -1,7 +1,7 @@
 #include <future>
 
-#include <SDL.h>
-#include <SDL_vulkan.h>
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_vulkan.h>
 #if PATATA_DEBUG == 1
 #include <imgui_impl_vulkan.h>
 #endif

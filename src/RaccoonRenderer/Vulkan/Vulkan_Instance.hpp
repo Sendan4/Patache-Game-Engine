@@ -1,8 +1,8 @@
 #include <future>
 #include <cstring>
 
-#include <SDL.h>
-#include <SDL_vulkan.h>
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_vulkan.h>
 
 // Patata Engine
 #include "PatataEngine/PatataEngine.hpp"
@@ -43,8 +43,7 @@ debugMessageFunc (vk::DebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
                   void * /*pUserData*/)
 {
   fast_io::io::println (
-      PATATA_FAST_IO_BUFF_OUT,
-      PATATA_TERM_BOLD, PATATA_TERM_COLOR_RED,
+      PATATA_FAST_IO_BUFF_OUT, PATATA_TERM_BOLD, PATATA_TERM_COLOR_RED,
       "Vulkan Validation Layers :", PATATA_TERM_RESET, "\n Message Info : ");
 
   // Message Severity
@@ -52,24 +51,23 @@ debugMessageFunc (vk::DebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
     {
     case vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose:
     case vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo:
-      fast_io::io::println (
-          PATATA_FAST_IO_BUFF_OUT,
-          fast_io::mnp::right ("Severity : ", 13),
-          vk::to_string (messageSeverity));
+      fast_io::io::println (PATATA_FAST_IO_BUFF_OUT,
+                            fast_io::mnp::right ("Severity : ", 13),
+                            vk::to_string (messageSeverity));
       break;
 
     case vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning:
       fast_io::io::println (
-          PATATA_FAST_IO_BUFF_OUT,
-          fast_io::mnp::right ("Severity : ", 13), PATATA_TERM_COLOR_YELLOW,
-          vk::to_string (messageSeverity), PATATA_TERM_RESET);
+          PATATA_FAST_IO_BUFF_OUT, fast_io::mnp::right ("Severity : ", 13),
+          PATATA_TERM_COLOR_YELLOW, vk::to_string (messageSeverity),
+          PATATA_TERM_RESET);
       break;
 
     case vk::DebugUtilsMessageSeverityFlagBitsEXT::eError:
       fast_io::io::println (
-          PATATA_FAST_IO_BUFF_OUT,
-          fast_io::mnp::right ("Severity : ", 13), PATATA_TERM_COLOR_RED,
-          vk::to_string (messageSeverity), PATATA_TERM_RESET);
+          PATATA_FAST_IO_BUFF_OUT, fast_io::mnp::right ("Severity : ", 13),
+          PATATA_TERM_COLOR_RED, vk::to_string (messageSeverity),
+          PATATA_TERM_RESET);
       break;
     }
 
@@ -77,7 +75,8 @@ debugMessageFunc (vk::DebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
   if (messageTypes & vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral)
     {
       fast_io::io::println (PATATA_FAST_IO_BUFF_OUT,
-          fast_io::mnp::right ("Type : ", 9), vk::to_string (messageTypes));
+                            fast_io::mnp::right ("Type : ", 9),
+                            vk::to_string (messageTypes));
     }
 
   if (messageTypes & vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation
@@ -85,20 +84,21 @@ debugMessageFunc (vk::DebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
              & vk::DebugUtilsMessageTypeFlagBitsEXT::eDeviceAddressBinding)
     {
       fast_io::io::println (PATATA_FAST_IO_BUFF_OUT,
-          fast_io::mnp::right ("Type : ", 9), PATATA_TERM_COLOR_YELLOW,
-          vk::to_string (messageTypes), PATATA_TERM_RESET);
+                            fast_io::mnp::right ("Type : ", 9),
+                            PATATA_TERM_COLOR_YELLOW,
+                            vk::to_string (messageTypes), PATATA_TERM_RESET);
     }
 
   if (messageTypes & vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance)
     {
       fast_io::io::println (PATATA_FAST_IO_BUFF_OUT,
-          fast_io::mnp::right ("Type : ", 9), PATATA_TERM_COLOR_BLUE,
-          vk::to_string (messageTypes), PATATA_TERM_RESET);
+                            fast_io::mnp::right ("Type : ", 9),
+                            PATATA_TERM_COLOR_BLUE,
+                            vk::to_string (messageTypes), PATATA_TERM_RESET);
     }
 
   fast_io::io::println (
-      PATATA_FAST_IO_BUFF_OUT,
-      fast_io::mnp::right ("ID Name : ", 11),
+      PATATA_FAST_IO_BUFF_OUT, fast_io::mnp::right ("ID Name : ", 11),
       fast_io::mnp::os_c_str (pCallbackData->pMessageIdName), "\n",
       fast_io::mnp::right ("ID Number : ", 14), pCallbackData->messageIdNumber,
       "\n", fast_io::mnp::right ("Message : ", 11),

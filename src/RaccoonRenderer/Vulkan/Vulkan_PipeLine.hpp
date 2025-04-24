@@ -3,7 +3,7 @@
 
 #include <fast_io.h>
 #include <fast_io_device.h>
-#include <SDL.h>
+#include <SDL3/SDL.h>
 // #include <cglm/cglm.h>
 
 // Patata Engine

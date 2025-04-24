@@ -31,9 +31,11 @@ Patata::Engine::CreateInstance (const Patata::EngineCreateInfo & Info)
 #endif
 
   // Get Extensions
-  uint32_t SDLExtensionCount = 0;
+  uint32_t             SDLExtensionCount = 0;
+  const char * const * pSDLArrayInstanceExtensions
+      = SDL_Vulkan_GetInstanceExtensions (&SDLExtensionCount);
 
-  SDL_Vulkan_GetInstanceExtensions (GameWindow, &SDLExtensionCount, nullptr);
+  const char ** ppAllExtensionInstance = nullptr;
 
 #if PATATA_DEBUG == 1
 #if defined(PATATA_USE_VVL)
@@ -47,16 +49,18 @@ Patata::Engine::CreateInstance (const Patata::EngineCreateInfo & Info)
 #define EXTENSION_COUNT SDLExtensionCount                    // Release
 #endif                                                       // PATATA_DEBUG
 
-  const char ** ppExtensionInstanceNames = new const char *[EXTENSION_COUNT];
-
-  if (SDL_Vulkan_GetInstanceExtensions (GameWindow, &SDLExtensionCount,
-                                        ppExtensionInstanceNames))
+  if (pSDLArrayInstanceExtensions != nullptr)
     {
+      ppAllExtensionInstance = new const char *[EXTENSION_COUNT];
+
+      PATATA_MEMCPY (ppAllExtensionInstance, pSDLArrayInstanceExtensions,
+                     SDLExtensionCount * sizeof (const char *));
+
 #if PATATA_DEBUG == 1
-      ppExtensionInstanceNames[SDLExtensionCount]
+      ppAllExtensionInstance[SDLExtensionCount]
           = vk::EXTDebugUtilsExtensionName;
 #if defined(PATATA_USE_VVL)
-      ppExtensionInstanceNames[SDLExtensionCount + 1]
+      ppAllExtensionInstance[SDLExtensionCount + 1]
           = vk::EXTLayerSettingsExtensionName;
 #endif
 
@@ -64,12 +68,12 @@ Patata::Engine::CreateInstance (const Patata::EngineCreateInfo & Info)
       engineInfo.ppVkInstanceExtensions = new const char *[EXTENSION_COUNT];
 
       for (std::uint8_t i = 0; i < EXTENSION_COUNT; ++i)
-        engineInfo.ppVkInstanceExtensions[i] = ppExtensionInstanceNames[i];
+        engineInfo.ppVkInstanceExtensions[i] = ppAllExtensionInstance[i];
 #endif
 
       std::future<void> VulkanList = std::async (
-          std::launch::async, Patata::Log::VulkanList,
-          ppExtensionInstanceNames, EXTENSION_COUNT, "Instance Extensions");
+          std::launch::async, Patata::Log::VulkanList, ppAllExtensionInstance,
+          EXTENSION_COUNT, "Instance Extensions");
     }
   else
     {
@@ -131,13 +135,14 @@ Patata::Engine::CreateInstance (const Patata::EngineCreateInfo & Info)
     .ppEnabledLayerNames = nullptr,
 #endif
     .enabledExtensionCount   = EXTENSION_COUNT,
-    .ppEnabledExtensionNames = ppExtensionInstanceNames,
+    .ppEnabledExtensionNames = ppAllExtensionInstance,
   };
 
   vk::Result Result
       = vk::createInstance (&InstanceInfo, nullptr, &Vulkan.Instance);
 
-  delete[] ppExtensionInstanceNames;
+  delete[] ppAllExtensionInstance;
+  ppAllExtensionInstance = nullptr;
 
   if (Result == vk::Result::eErrorIncompatibleDriver)
     {

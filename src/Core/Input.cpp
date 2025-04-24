@@ -6,51 +6,50 @@ Patata::Engine::HandleEvent (const SDL_Event & Event)
 {
   static bool PatataFullScreen = false;
 
-  const uint8_t * State = SDL_GetKeyboardState (nullptr);
+  const bool * const KeyState = SDL_GetKeyboardState (nullptr);
 
   switch (Event.type)
     {
-    case SDL_KEYDOWN:
+    case SDL_EVENT_KEY_DOWN:
       // (begin) ALT + RETURN Hotkey for toggle full screen
-      if (State[SDL_SCANCODE_LALT] || State[SDL_SCANCODE_RALT])
+      if (KeyState[SDL_SCANCODE_RALT] || KeyState[SDL_SCANCODE_LALT])
         {
-          if (Event.key.keysym.scancode == SDL_SCANCODE_RETURN)
+          if (Event.key.key == SDLK_RETURN)
             {
               if (!PatataFullScreen)
                 {
-                  PatataFullScreen = true;
-                  SDL_DisplayMode DesktopMode;
+                  PatataFullScreen              = true;
+                  int             DisplaysCount = 0;
+                  SDL_DisplayID * DID = SDL_GetDisplays (&DisplaysCount);
+                  const SDL_DisplayMode * const DesktopMode
+                      = SDL_GetDesktopDisplayMode (*DID);
 
-                  if (SDL_GetDesktopDisplayMode (0, &DesktopMode) == 0)
+                  if (DesktopMode != nullptr)
                     {
-                      if (SDL_SetWindowDisplayMode (GameWindow, &DesktopMode)
-                          != 0)
-                        {
-                          std::future<void> Err = std::async (
-                              std::launch::async, Patata::Log::ErrorMessage,
-                              "Unable to apply full screen resolution");
-                        }
+                      if (!SDL_SetWindowFullscreenMode (GameWindow,
+                                                        DesktopMode))
+                        std::future<void> Err = std::async (
+                            std::launch::async, Patata::Log::ErrorMessage,
+                            "Unable to apply full screen resolution");
                     }
                   else
                     {
                       std::future<void> Err = std::async (
                           std::launch::async, Patata::Log::ErrorMessage,
-                          "Could not obtain desktop display mode");
+                          "Could not obtain Desktop Display Mode mode or "
+                          "Display ID");
                     }
 
-                  if (SDL_SetWindowFullscreen (GameWindow,
-                                               SDL_WINDOW_FULLSCREEN)
-                      != 0)
-                    {
-                      std::future<void> Err = std::async (
-                          std::launch::async, Patata::Log::ErrorMessage,
-                          "Could not switch to full screen mode");
-                    }
+                  if (!SDL_SetWindowFullscreen (GameWindow,
+                                                SDL_WINDOW_FULLSCREEN))
+                    std::future<void> Err = std::async (
+                        std::launch::async, Patata::Log::ErrorMessage,
+                        "Could not switch to full screen mode");
                 }
               else
                 {
                   PatataFullScreen = false;
-                  if (SDL_SetWindowFullscreen (GameWindow, 0) != 0)
+                  if (!SDL_SetWindowFullscreen (GameWindow, 0))
                     {
                       std::future<void> Err = std::async (
                           std::launch::async, Patata::Log::ErrorMessage,
@@ -63,27 +62,19 @@ Patata::Engine::HandleEvent (const SDL_Event & Event)
 
         // (begin) ctrl + p hotkey for toggle the menubar of debug ui
 #if PATATA_DEBUG == 1
-      if (State[SDL_SCANCODE_LCTRL] || State[SDL_SCANCODE_RCTRL])
-        {
-          if (Event.key.keysym.scancode == SDL_SCANCODE_P)
-            {
-              engineInfo.ShowMainMenuBar = engineInfo.ShowMainMenuBar ^ true;
-            }
-        }
+      if (KeyState[SDL_SCANCODE_LCTRL] || KeyState[SDL_SCANCODE_RCTRL])
+        if (Event.key.key == SDLK_P)
+          engineInfo.ShowMainMenuBar ^= true;
 #endif
-
-      // (end) ALT + RETURN Hotkey for toggle full screen
-      break;
-
-    case SDL_WINDOWEVENT:
-      // resize event
-      if (Event.window.event == SDL_WINDOWEVENT_RESIZED
-          || Event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED)
-        WindowResized = true;
       break;
     }
 
+  // resize event
+  if (Event.window.type == SDL_EVENT_WINDOW_RESIZED
+      || Event.window.type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED)
+    WindowResized = true;
+
 #if PATATA_DEBUG == 1
-  ImGui_ImplSDL2_ProcessEvent (&Event);
+  ImGui_ImplSDL3_ProcessEvent (&Event);
 #endif
 }

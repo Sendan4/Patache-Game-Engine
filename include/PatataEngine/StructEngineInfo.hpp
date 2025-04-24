@@ -13,7 +13,7 @@ namespace Patata
 struct EngineInfo
 {
   // Window
-  std::uint32_t WindowCreationFlags = 0;
+  std::uint64_t WindowCreationFlags = 0;
 
   // RaccoonRenderer
   // Vulkan
@@ -40,7 +40,7 @@ struct EngineInfo
   vk::PresentModeKHR VkSwapchainPresentMode;
   vk::Format         VkSwapchainImageColorFormat;
   vk::ColorSpaceKHR  VkSwapchainImageColorSpace;
-  std::uint32_t       VkMinImageCount = 0;
+  std::uint32_t      VkMinImageCount = 0;
 
   // Extensions
   const char ** ppVkLayers                = nullptr;

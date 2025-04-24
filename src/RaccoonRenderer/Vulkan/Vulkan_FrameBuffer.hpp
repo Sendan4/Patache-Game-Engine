@@ -1,7 +1,7 @@
 #include <cstdio>
 #include <future>
 
-#include <SDL.h>
+#include <SDL3/SDL.h>
 
 // Patata Engine
 #include "PatataEngine/PatataEngine.hpp"

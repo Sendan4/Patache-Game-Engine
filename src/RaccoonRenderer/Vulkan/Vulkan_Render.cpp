@@ -131,7 +131,7 @@ Patata::Engine::BeginRender (SDL_Event & Event)
 // Imgui New Frame
 #if PATATA_DEBUG == 1
   ImGui_ImplVulkan_NewFrame ();
-  ImGui_ImplSDL2_NewFrame ();
+  ImGui_ImplSDL3_NewFrame ();
   ImGui::NewFrame ();
   ImGui::SetNextWindowBgAlpha (0.0f);
   ImGui::DockSpaceOverViewport (0, ImGui::GetMainViewport ());

@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.18)
 
 project("Imgui" LANGUAGES CXX C VERSION 1.91.7)
 
-set(Imgui_VERSION "v1.91.7-docking" CACHE INTERNAL "Imgui version")
+set(Imgui_VERSION "v1.91.9d" CACHE INTERNAL "Imgui version")
 
 message("")
 message("  - Imgui -")
@@ -74,13 +74,7 @@ if (TARGET asm_offset)
 		RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 endif()
 
-if (LIBS_SHARED_BUILD)
-    target_link_libraries(${PROJECT_NAME} PRIVATE SDL2::SDL2)
-else()
-    target_link_libraries(${PROJECT_NAME} PRIVATE SDL2-static)
-endif()
-
-target_link_libraries(${PROJECT_NAME} PRIVATE freetype)
+target_link_libraries(${PROJECT_NAME} PRIVATE freetype SDL3::SDL3)
 target_include_directories(${PROJECT_NAME} PRIVATE ${FREETYPE_INCLUDE_DIRS} ${SDL2_INCLUDE_DIRS})
 
 set_target_properties(${PROJECT_NAME}
@@ -93,6 +87,6 @@ target_sources(${PROJECT_NAME} PRIVATE
 	"imgui_draw.cpp"
 	"imgui_tables.cpp"
 	"imgui_widgets.cpp"
-	"backends/imgui_impl_sdl2.cpp"
+	"backends/imgui_impl_sdl3.cpp"
 	"backends/imgui_impl_vulkan.cpp"
 	"misc/freetype/imgui_freetype.cpp")

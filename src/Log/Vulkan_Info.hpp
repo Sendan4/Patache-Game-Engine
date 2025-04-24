@@ -8,7 +8,7 @@
 #endif
 
 #include <fast_io.h>
-#include <SDL.h>
+#include <SDL3/SDL.h>
 #if PATATA_DEBUG == 1
 #include <imgui_impl_vulkan.h>
 #endif

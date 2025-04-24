@@ -82,7 +82,7 @@ else()
   FetchContent_Declare(
     RapidYaml
     GIT_REPOSITORY https://github.com/biojppm/rapidyaml.git
-    GIT_TAG v0.8.0
+    GIT_TAG v0.9.0
   )
   FetchContent_MakeAvailable(RapidYaml)
 endif()
@@ -108,7 +108,7 @@ if (MSVC OR LINUX)
     FetchContent_Declare(
       Vulkan-Headers
       GIT_REPOSITORY https://github.com/KhronosGroup/Vulkan-Headers.git
-      GIT_TAG v1.4.312
+      GIT_TAG v1.4.313
     )
     FetchContent_MakeAvailable(Vulkan-Headers)
   endif()
@@ -121,7 +121,7 @@ if (MSVC OR LINUX)
     FetchContent_Declare(
       Vulkan-Loader
       GIT_REPOSITORY https://github.com/KhronosGroup/Vulkan-Loader.git
-      GIT_TAG v1.4.312
+      GIT_TAG v1.4.313
     )
     FetchContent_MakeAvailable(Vulkan-Loader)
   endif()
@@ -134,7 +134,7 @@ if (MSVC OR LINUX)
     FetchContent_Declare(
       Vulkan-ValidationLayers
       GIT_REPOSITORY https://github.com/KhronosGroup/Vulkan-ValidationLayers.git
-      GIT_TAG "vulkan-sdk-1.4.309"
+      GIT_TAG v1.4.313
     )
 
 	  FetchContent_MakeAvailable(Vulkan-ValidationLayers)
@@ -159,6 +159,7 @@ if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/glslang)
   execute_process(
 	  COMMAND python3 update_glslang_sources.py
 	  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/glslang)
+
   add_subdirectory(glslang)
 else() 
   set (BUILD_EXTERNAL OFF CACHE INTERNAL "..." FORCE)
@@ -201,7 +202,7 @@ endif()
 
 # SDL2
 message("")
-message("  - SDL2 -")
+message("  - SDL3 -")
 
 if (BUILD_SHARED_LIBS)
   set(SDL_SHARED ON CACHE INTERNAL "..." FORCE)
@@ -218,21 +219,37 @@ set(SDL_UNUSED_SUBSYSTEMS
   Locale
 	Power
 	Render
+  Gpu
 	Sensor
 	Timers
 	Atomic
-	Audio)
+	Audio
+  Camera)
 foreach(_SUB ${SDL_UNUSED_SUBSYSTEMS})
 	string(TOUPPER ${_SUB} _OPT)
 	set(SDL_${_OPT} OFF CACHE INTERNAL "..." FORCE)
 endforeach()
 
+set (SDL_INSTALL OFF CACHE INTERNAL "..." FORCE)
+set (SDL_INSTALL_CPACK OFF CACHE INTERNAL "..." FORCE)
+set (SDL_ASSERTIONS ON CACHE INTERNAL "..." FORCE)
+if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo")
+set (SDL_ASSERTIONS "paranoid" CACHE INTERNAL "..." FORCE)
+else()
+set (SDL_ASSERTIONS "release" CACHE INTERNAL "..." FORCE)
+endif()
 set (SDL_TEST OFF CACHE INTERNAL "..." FORCE)
 set (SDL_DIRECTX OFF CACHE INTERNAL "..." FORCE)
 set (SDL_RENDER_D3D OFF CACHE INTERNAL "..." FORCE)
 set (SDL_OPENGL OFF CACHE INTERNAL "..." FORCE)
 set (SDL_OPENGLES OFF CACHE INTERNAL "..." FORCE)
+set (SDL_OSS OFF CACHE INTERNAL "..." FORCE)
+set (SDL_ALSA OFF CACHE INTERNAL "..." FORCE)
+set (SDL_ALSA_SHARED OFF CACHE INTERNAL "..." FORCE)
+set (SDL_JACK OFF CACHE INTERNAL "..." FORCE)
+set (SDL_JACK_SHARED OFF CACHE INTERNAL "..." FORCE)
 set (SDL_RENDER OFF CACHE INTERNAL "..." FORCE)
+set (SDL_RENDER_VULKAN OFF CACHE INTERNAL "..." FORCE)
 set (SDL_SNDIO OFF CACHE INTERNAL "..." FORCE)
 set (SDL_SNDIO_SHARED OFF CACHE INTERNAL "..." FORCE)
 set (SDL_PULSEAUDIO OFF CACHE INTERNAL "..." FORCE)
@@ -243,6 +260,14 @@ set (SDL_PIPEWIRE_SHARED OFF CACHE INTERNAL "..." FORCE)
 set (SDL_WASAPI OFF CACHE INTERNAL "..." FORCE)
 set (SDL_LIBSAMPLERATE OFF CACHE INTERNAL "..." FORCE)
 set (SDL_LIBSAMPLERATE_SHARED OFF CACHE INTERNAL "..." FORCE)
+set (SDL_RENDER_GPU OFF CACHE INTERNAL "..." FORCE)
+set (SDL_RENDER_D3D OFF CACHE INTERNAL "..." FORCE)
+set (SDL_RENDER_D3D11 OFF CACHE INTERNAL "..." FORCE)
+set (SDL_RENDER_D3D12 OFF CACHE INTERNAL "..." FORCE)
+set (SDL_RENDER_METAL OFF CACHE INTERNAL "..." FORCE)
+set (SDL_GPU_DXVK OFF CACHE INTERNAL "..." FORCE)
+set (SDL_TEST_LIBRARY OFF CACHE INTERNAL "..." FORCE)
+set (SDL_VENDOR_INFO "Patata Engine" CACHE STRING "Vendor name and/or version to add to SDL_REVISION")
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
 	set (SDL_X11 OFF CACHE INTERNAL "..." FORCE)
@@ -255,7 +280,7 @@ else()
   FetchContent_Declare(
     SDL
     GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
-    GIT_TAG release-2.32.4
+    GIT_TAG release-3.2.10
   )
   FetchContent_MakeAvailable(SDL)
 endif()

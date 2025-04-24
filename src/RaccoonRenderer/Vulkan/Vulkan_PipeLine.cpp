@@ -40,7 +40,6 @@ Patata::Engine::CreatePipeline (void)
   vk::Result Result = Vulkan.Device.createShaderModule (
       &ShaderModuleInfo[0], nullptr, &VertexShaderModule);
 
-#if PATATA_DEBUG == 1
   if (Result != vk::Result::eSuccess)
     {
       std::future<void> ReturnVulkanCheck
@@ -49,13 +48,11 @@ Patata::Engine::CreatePipeline (void)
 
       return false;
     }
-#endif
 
   // Fragment Shader Module
   Result = Vulkan.Device.createShaderModule (&ShaderModuleInfo[1], nullptr,
                                              &FragmentShaderModule);
 
-#if PATATA_DEBUG == 1
   if (Result != vk::Result::eSuccess)
     {
       std::future<void> ReturnVulkanCheck
@@ -64,7 +61,6 @@ Patata::Engine::CreatePipeline (void)
 
       return false;
     }
-#endif
 
   // Create Pipeline
   vk::PipelineShaderStageCreateInfo ShaderStageInfo[2]{

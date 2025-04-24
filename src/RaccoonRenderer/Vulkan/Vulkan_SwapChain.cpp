@@ -54,7 +54,7 @@ Patata::Engine::CreateSwapChain (Patata::SwapChainInfo & SwapChainInfo)
   std::future<void> SDL_Vulkan_GetDrawableSize_Async
       = std::async (std::launch::async, [this] (void) {
           int w = 1, h = 1;
-          SDL_Vulkan_GetDrawableSize (GameWindow, &w, &h);
+          SDL_GetWindowSizeInPixels (GameWindow, &w, &h);
 
           Vulkan.SwapChainExtent.width  = w;
           Vulkan.SwapChainExtent.height = h;

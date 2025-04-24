@@ -373,7 +373,7 @@ DrawDebugUI (Patata::EngineInfo * engineInfo, Patata::Config & configuration,
 
                   ImGui::TableSetColumnIndex (1);
                   ImGui::Text ("%u.%u.%u", SDL_MAJOR_VERSION,
-                               SDL_MINOR_VERSION, SDL_PATCHLEVEL);
+                               SDL_MINOR_VERSION, SDL_MICRO_VERSION);
 
                   ImGui::TableSetColumnIndex (2);
                   ImGui::Text ("zlib");
@@ -424,8 +424,8 @@ DrawDebugUI (Patata::EngineInfo * engineInfo, Patata::Config & configuration,
           if (engineInfo->WindowCreationFlags & SDL_WINDOW_OPENGL)
             ImGui::BulletText ("window usable with OpenGL context");
 
-          if (engineInfo->WindowCreationFlags & SDL_WINDOW_SHOWN)
-            ImGui::BulletText ("window is visible");
+          if (engineInfo->WindowCreationFlags & SDL_WINDOW_OCCLUDED)
+            ImGui::BulletText ("window is occluded");
 
           if (engineInfo->WindowCreationFlags & SDL_WINDOW_HIDDEN)
             ImGui::BulletText ("window is not visible");
@@ -451,22 +451,25 @@ DrawDebugUI (Patata::EngineInfo * engineInfo, Patata::Config & configuration,
           if (engineInfo->WindowCreationFlags & SDL_WINDOW_MOUSE_FOCUS)
             ImGui::BulletText ("window has mouse focus");
 
-          if (engineInfo->WindowCreationFlags & SDL_WINDOW_FOREIGN)
+          if (engineInfo->WindowCreationFlags & SDL_WINDOW_EXTERNAL)
             ImGui::BulletText ("window not created by SDL");
 
-          if (engineInfo->WindowCreationFlags & SDL_WINDOW_ALLOW_HIGHDPI)
-            ImGui::BulletText ("window should be created in "
-                               "high-DPI mode if supported");
+          if (engineInfo->WindowCreationFlags & SDL_WINDOW_MODAL)
+            ImGui::BulletText ("window is modal");
+
+          if (engineInfo->WindowCreationFlags & SDL_WINDOW_HIGH_PIXEL_DENSITY)
+            ImGui::BulletText (
+                "window uses high pixel density back buffer if possible");
 
           if (engineInfo->WindowCreationFlags & SDL_WINDOW_MOUSE_CAPTURE)
             ImGui::BulletText ("window has mouse captured "
                                "(unrelated to MOUSE_GRABBED)");
 
+          if (engineInfo->WindowCreationFlags & SDL_WINDOW_MOUSE_RELATIVE_MODE)
+            ImGui::BulletText ("window has relative mode enabled");
+
           if (engineInfo->WindowCreationFlags & SDL_WINDOW_ALWAYS_ON_TOP)
             ImGui::BulletText ("window should always be above others");
-
-          if (engineInfo->WindowCreationFlags & SDL_WINDOW_SKIP_TASKBAR)
-            ImGui::BulletText ("window should not be added to the taskbar");
 
           if (engineInfo->WindowCreationFlags & SDL_WINDOW_UTILITY)
             ImGui::BulletText ("window should be treated as a utility window");
@@ -485,6 +488,12 @@ DrawDebugUI (Patata::EngineInfo * engineInfo, Patata::Config & configuration,
 
           if (engineInfo->WindowCreationFlags & SDL_WINDOW_METAL)
             ImGui::BulletText ("window usable for Metal view");
+
+          if (engineInfo->WindowCreationFlags & SDL_WINDOW_TRANSPARENT)
+            ImGui::BulletText ("window with transparent buffer");
+
+          if (engineInfo->WindowCreationFlags & SDL_WINDOW_NOT_FOCUSABLE)
+            ImGui::BulletText ("window should not be focusable");
 
           ImGui::Spacing ();
         }

@@ -19,7 +19,7 @@ _Motor tonto y simple de videojuegos hecho en C++._
 
 ## Dependencias usadas en este proyecto
 <ul>
-	<li><a href = "http://www.libsdl.org/">SDL2</a></li>
+	<li><a href = "http://www.libsdl.org/">SDL3</a></li>
 	<li><a href = "https://www.vulkan.org/">Vulkan</a></li>
 	<ul>
 		<li><a href = "https://github.com/KhronosGroup/Vulkan-Headers.git">Vulkan-Headers</a></li>

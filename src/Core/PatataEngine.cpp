@@ -7,7 +7,7 @@
 #if defined(_WIN64)
 #include <windows.h>
 #endif
-#include <SDL.h>
+#include <SDL3/SDL.h>
 
 // Patata Engine
 #include "PatataEngine/PatataEngine.hpp"
@@ -46,7 +46,7 @@ Patata::Engine::Init (const Patata::EngineCreateInfo & Info)
 #endif // PATATA_VVL_PATH
 
   // SDL Subsystems
-  if (SDL_Init (SDL_INIT_VIDEO | SDL_INIT_EVENTS) != 0)
+  if (!SDL_Init (SDL_INIT_VIDEO | SDL_INIT_EVENTS))
     {
       std::future<void> Err = std::async (
           std::launch::async, Patata::Log::FatalErrorMessage,
@@ -87,12 +87,15 @@ Patata::Engine::Init (const Patata::EngineCreateInfo & Info)
     // Window Initial Size
     std::uint32_t w = 0, h = 0;
 
-    SDL_DisplayMode CurrentMode;
+    int                           DisplaysCount = 0;
+    SDL_DisplayID *               DID = SDL_GetDisplays (&DisplaysCount);
+    const SDL_DisplayMode * const CurrentMode
+        = SDL_GetCurrentDisplayMode (*DID);
 
-    if (SDL_GetCurrentDisplayMode (0, &CurrentMode) == 0)
+    if (CurrentMode != nullptr)
       {
-        w = static_cast<std::uint32_t> (CurrentMode.w * 0.64);
-        h = static_cast<std::uint32_t> (CurrentMode.h * 0.64);
+        w = static_cast<std::uint32_t> (CurrentMode->w * 0.64);
+        h = static_cast<std::uint32_t> (CurrentMode->h * 0.64);
       }
     else
       {
@@ -106,10 +109,9 @@ Patata::Engine::Init (const Patata::EngineCreateInfo & Info)
       }
 
     // Create Window
-    GameWindow = SDL_CreateWindow (
-        WindowTitle, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, w, h,
-        SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_VULKAN
-            | SDL_WINDOW_ALLOW_HIGHDPI);
+    GameWindow = SDL_CreateWindow (WindowTitle, w, h,
+                                   SDL_WINDOW_RESIZABLE | SDL_WINDOW_VULKAN
+                                       | SDL_WINDOW_HIGH_PIXEL_DENSITY);
 
     if (!GameWindow)
       {
@@ -133,31 +135,26 @@ Patata::Engine::Init (const Patata::EngineCreateInfo & Info)
 
     if (Info.windowIconPath != nullptr)
       {
-        char Path[256]{ 0 };
-        PATATA_STRNCPY (Path, SDL_GetBasePath (), 255);
-        PATATA_STRNCAT (Path, "/", 255);
-        PATATA_STRNCAT (Path, Info.windowIconPath, 255);
+        char Path[512]{ 0 };
+        PATATA_STRNCPY (Path, SDL_GetBasePath (), 511);
+        PATATA_STRNCAT (Path, "/", 511);
+        PATATA_STRNCAT (Path, Info.windowIconPath, 511);
 
         WindowIcon = SDL_LoadBMP (Path);
       }
     else
-      WindowIcon = SDL_CreateRGBSurfaceWithFormatFrom (
-          (void *)Patata::Icon::Data, Patata::Icon::Height,
-          Patata::Icon::Width, Patata::Icon::Bitdepth, Patata::Icon::Pitch,
-          SDL_PIXELFORMAT_BGRA8888);
+      WindowIcon = SDL_CreateSurfaceFrom (
+          Patata::Icon::Width, Patata::Icon::Height, SDL_PIXELFORMAT_BGRA8888,
+          (void *)Patata::Icon::Data, Patata::Icon::Pitch);
 
     if (WindowIcon == nullptr)
-      {
-        std::future<void> Err
-            = std::async (std::launch::async, Patata::Log::ErrorMessage,
-                          "Icon cannot be loaded");
-
-        return false;
-      }
+      std::future<void> Err
+          = std::async (std::launch::async, Patata::Log::ErrorMessage,
+                        "Icon cannot be loaded");
     else
       SDL_SetWindowIcon (GameWindow, WindowIcon);
 
-    SDL_FreeSurface (WindowIcon);
+    SDL_DestroySurface (WindowIcon);
     WindowIcon = nullptr;
   }
 
@@ -177,7 +174,7 @@ Patata::Engine::Engine (const Patata::EngineCreateInfo & Info, bool * Err)
 
 #if PATATA_DEBUG == 1
 #include <imgui.h>
-#include <imgui_impl_sdl2.h>
+#include <imgui_impl_sdl3.h>
 #endif
 
 Patata::Engine::~Engine (void)
@@ -189,7 +186,7 @@ Patata::Engine::~Engine (void)
   ImGuiIO & io = ImGui::GetIO ();
 
   if (io.BackendPlatformName != nullptr)
-    ImGui_ImplSDL2_Shutdown ();
+    ImGui_ImplSDL3_Shutdown ();
 
   if (ImGui::GetCurrentContext () != nullptr)
     ImGui::DestroyContext ();
@@ -221,7 +218,6 @@ Patata::Engine::~Engine (void)
 
   // SDL
   SDL_DestroyWindow (GameWindow);
-  SDL_QuitSubSystem (SDL_INIT_VIDEO | SDL_INIT_EVENTS
-                     | SDL_INIT_GAMECONTROLLER);
+  SDL_QuitSubSystem (SDL_INIT_VIDEO | SDL_INIT_EVENTS);
   SDL_Quit ();
 }

@@ -19,7 +19,7 @@ _Dumb and simple game engine made in C++._
 
 ## Dependencies used in this project
 <ul>
-	<li><a href = "http://www.libsdl.org/">SDL2</a></li>
+	<li><a href = "http://www.libsdl.org/">SDL3</a></li>
 	<li><a href = "https://www.vulkan.org/">Vulkan</a></li>
 	<ul>
 		<li><a href = "https://github.com/KhronosGroup/Vulkan-Headers.git">Vulkan-Headers</a></li>

@@ -9,10 +9,7 @@ Patata::Engine::InitImgui (void)
   if (ImGui::GetCurrentContext () == nullptr)
     {
       fast_io::io::println (
-#if defined(_WIN64)
-          fast_io::out (),
-#endif
-          PATATA_TERM_BOLD,
+          PATATA_FAST_IO_BUFF_OUT, PATATA_TERM_BOLD,
           "Initialize Global ImGui Context : ", PATATA_TERM_RESET,
           PATATA_TERM_COLOR_YELLOW, "Fail\n", PATATA_TERM_RESET);
 
@@ -70,7 +67,7 @@ Patata::Engine::CreateImguiDescriptorPool (void)
       return false;
     }
 
-  vk::DescriptorPoolSize PoolSize
+  constexpr vk::DescriptorPoolSize PoolSize
       = { vk::DescriptorType::eCombinedImageSampler, 1 };
 
   vk::DescriptorPoolCreateInfo Info{
@@ -136,13 +133,12 @@ Patata::Engine::InitImguiVulkan (void)
       return false;
     }
 
-  ImGui_ImplSDL2_InitForVulkan (GameWindow);
+  ImGui_ImplSDL3_InitForVulkan (GameWindow);
 
   vk::SurfaceCapabilitiesKHR SurfaceCapabilities;
 
   vk::Result Result = Vulkan.PhysicalDevice.getSurfaceCapabilitiesKHR (
       Vulkan.Surface, &SurfaceCapabilities);
-
   if (Result != vk::Result::eSuccess)
     {
       std::future<void> ReturnVulkanCheck
@@ -152,7 +148,8 @@ Patata::Engine::InitImguiVulkan (void)
       return false;
     }
 
-  ImGui_ImplVulkan_InitInfo init_info{
+  ImGui_ImplVulkan_InitInfo ImGuiImplInitInfo{
+    .ApiVersion     = VK_API_VERSION_1_3,
     .Instance       = static_cast<VkInstance> (Vulkan.Instance),
     .PhysicalDevice = static_cast<VkPhysicalDevice> (Vulkan.PhysicalDevice),
     .Device         = static_cast<VkDevice> (Vulkan.Device),
@@ -174,13 +171,10 @@ Patata::Engine::InitImguiVulkan (void)
     .MinAllocationSize           = 1048576
   };
 
-  if (!ImGui_ImplVulkan_Init (&init_info))
+  if (!ImGui_ImplVulkan_Init (&ImGuiImplInitInfo))
     {
       fast_io::io::print (
-#if defined(_WIN64)
-          fast_io::out (),
-#endif
-          PATATA_TERM_BOLD,
+          PATATA_FAST_IO_BUFF_OUT, PATATA_TERM_BOLD,
           "ImGui Vulkan Implementation Initialization : ", PATATA_TERM_RESET,
           PATATA_TERM_COLOR_YELLOW, "Fail", PATATA_TERM_RESET);
 
