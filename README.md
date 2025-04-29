@@ -42,5 +42,5 @@ _Motor tonto y simple de videojuegos hecho en C++._
 - [Motor](LICENSE.txt)
 
 ## Espejos Oficiales
-- [Github](https://github.com/Sendan4/Patata-Engine.git)
-- [Codeberg](https://codeberg.org/Sendan/patata-engine.git)
+- [Github](https://github.com/Sendan4/Patache-Game-Engine.git)
+- [Codeberg](https://codeberg.org/Patache/Game-Engine.git)
