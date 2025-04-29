@@ -42,5 +42,5 @@ _Dumb and simple game engine made in C++._
 - [Engine](LICENSE.txt)
 
 ## Official Mirrors
-- [Github](https://github.com/Sendan4/Patata-Engine.git)
-- [Codeberg](https://codeberg.org/Sendan/patata-engine.git)
+- [Github](https://github.com/Sendan4/Patache-Game-Engine.git)
+- [Codeberg](https://codeberg.org/Patache/Game-Engine.git)
