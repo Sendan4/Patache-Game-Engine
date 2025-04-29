@@ -1,7 +1,7 @@
-# Patata Engine Configuration File
+# Patache Engine Configuration File
 # uppercase and lowcase are valid
 
-patata-engine :
+patache-engine :
   show-fatal-error-messagebox : false
 
   raccoon-renderer :

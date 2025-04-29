@@ -19,10 +19,10 @@ BEGIN
 			VALUE "CompanyName", "Sendan"
 			VALUE "FileDescription", "Una libreria tonta y facil de usar para comenzar a hacer juegos"
 			VALUE "FileVersion", "1, 0, 0, 0"
-			VALUE "InternalName", "Patata Engine"
+			VALUE "InternalName", "Patache Engine"
 			VALUE "LegalCopyright", "Copyright (c) 2023 Sendan"
-			VALUE "OriginalFilename", "PatataEngine.dll"
-			VALUE "ProductName", "Patata Engine"
+			VALUE "OriginalFilename", "PatacheEngine.dll"
+			VALUE "ProductName", "Patache Engine"
 			VALUE "ProductVersion", "1"
 		END
 	END

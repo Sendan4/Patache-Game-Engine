@@ -2,12 +2,12 @@
 
 #include <fast_io.h>
 #include <SDL3/SDL.h>
-#if PATATA_DEBUG == 1
+#if PATACHE_DEBUG == 1
 #include <imgui_impl_sdl3.h>
 #include <imgui_impl_vulkan.h>
 #endif
 
-// Patata Engine
-#include "PatataEngine/PatataEngine.hpp"
+// Patache Engine
+#include "PatacheEngine/PatacheEngine.hpp"
 #include "ColorTerminal.hpp"
 #include "Log.hpp"

@@ -1,6 +1,6 @@
 #pragma once
 
-namespace Patata
+namespace Patache
 {
 // CSS Colors https://www.w3.org/wiki/CSS/Properties/color/keywords
 enum class Color : uint8_t

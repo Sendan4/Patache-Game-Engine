@@ -1,7 +1,7 @@
 #include "Vulkan_LogicalDevice_And_GrahicsQueue.hpp"
 
 uint32_t
-Patata::Engine::CreateLogicalDeviceAndCreateQueue (void)
+Patache::Engine::CreateLogicalDeviceAndCreateQueue (void)
 {
   uint32_t QueueCount                  = 0;
   float    QueuePriority               = 1.0f;
@@ -11,13 +11,10 @@ Patata::Engine::CreateLogicalDeviceAndCreateQueue (void)
   // find a queue of graphs
   Vulkan.PhysicalDevice.getQueueFamilyProperties (&QueueCount, nullptr);
 
-  fast_io::io::println (
-#if defined(_WIN64)
-      fast_io::out (),
-#endif
-      PATATA_TERM_BOLD, PATATA_TERM_COLOR_PATATA, "Raccoon Renderer",
-      PATATA_TERM_RESET, PATATA_TERM_BOLD, " : Found ", QueueCount, " queues",
-      PATATA_TERM_RESET);
+  fast_io::io::println (PATACHE_FAST_IO_BUFF_OUT, PATACHE_TERM_BOLD,
+                        PATACHE_TERM_COLOR_PATACHE, "Raccoon Renderer",
+                        PATACHE_TERM_RESET, PATACHE_TERM_BOLD, " : Found ",
+                        QueueCount, " queues", PATACHE_TERM_RESET);
 
   vk::QueueFamilyProperties * QueueFamilyProperties
       = new vk::QueueFamilyProperties[QueueCount];
@@ -25,37 +22,35 @@ Patata::Engine::CreateLogicalDeviceAndCreateQueue (void)
   Vulkan.PhysicalDevice.getQueueFamilyProperties (&QueueCount,
                                                   QueueFamilyProperties);
 
-  for (uint32_t i = 0; i < QueueCount; ++i)
+  for (std::uint32_t i = 0; i < QueueCount; ++i)
     fast_io::io::println (
-#if defined(_WIN64)
-        fast_io::out (),
-#endif
-#if PATATA_DEBUG == 1
+        PATACHE_FAST_IO_BUFF_OUT,
+#if PATACHE_DEBUG == 1
 #if !defined(_WIN64)
-        PATATA_TERM_DIM,
+        PATACHE_TERM_DIM,
 #endif
-        PATATA_TERM_COLOR_GRAY0,
+        PATACHE_TERM_COLOR_GRAY0,
 #if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
         "  [",
-        std::string_view{ abi::__cxa_demangle (
+        fast_io::mnp::os_c_str (abi::__cxa_demangle (
             typeid (QueueFamilyProperties[i].queueFlags).name (), nullptr,
-            nullptr, nullptr) },
+            nullptr, nullptr)),
         "] ",
 #else
         "  [",
-        std::string_view{
-            typeid (QueueFamilyProperties[i].queueFlags).name () },
+        fast_io::mnp::os_c_str (
+            typeid (QueueFamilyProperties[i].queueFlags).name ()),
         "] ",
 #endif
-        PATATA_TERM_RESET,
-#else  // PATATA_DEBUG
+        PATACHE_TERM_RESET,
+#else  // PATACHE_DEBUG
         "  ",
-#endif // PATATA_DEBUG
-        PATATA_TERM_BOLD, "Index [", PATATA_TERM_RESET, i, PATATA_TERM_BOLD,
-        "] : ", PATATA_TERM_RESET,
+#endif // PATACHE_DEBUG
+        PATACHE_TERM_BOLD, "Index [", PATACHE_TERM_RESET, i, PATACHE_TERM_BOLD,
+        "] : ", PATACHE_TERM_RESET,
         vk::to_string (QueueFamilyProperties[i].queueFlags));
 
-  for (uint32_t index = 0; index < QueueCount; ++index)
+  for (std::uint32_t index = 0; index < QueueCount; ++index)
     {
       if (QueueFamilyProperties[index].queueFlags
           & vk::QueueFlagBits::eGraphics)
@@ -63,14 +58,12 @@ Patata::Engine::CreateLogicalDeviceAndCreateQueue (void)
           TMPGraphicsQueueFamilyIndex = index;
           FoundGraphicsQueue          = true;
 
-          fast_io::io::println (
-#if defined(_WIN64)
-              fast_io::out (),
-#endif
-              PATATA_TERM_BOLD, PATATA_TERM_COLOR_PATATA, "Raccoon Renderer",
-              PATATA_TERM_RESET, PATATA_TERM_BOLD, " : Found index ",
-              TMPGraphicsQueueFamilyIndex, " that contains a graphics queue",
-              PATATA_TERM_RESET);
+          fast_io::io::println (PATACHE_FAST_IO_BUFF_OUT, PATACHE_TERM_BOLD,
+                                PATACHE_TERM_COLOR_PATACHE, "Raccoon Renderer",
+                                PATACHE_TERM_RESET, PATACHE_TERM_BOLD,
+                                " : Found index ", TMPGraphicsQueueFamilyIndex,
+                                " that contains a graphics queue",
+                                PATACHE_TERM_RESET);
 
           break;
         }
@@ -79,8 +72,8 @@ Patata::Engine::CreateLogicalDeviceAndCreateQueue (void)
   if (!FoundGraphicsQueue)
     {
       std::future<void> ReturnVulkanErr
-          = std::async (std::launch::async, Patata::Log::FatalErrorMessage,
-                        "Patata Engine - Raccoon Renderer",
+          = std::async (std::launch::async, Patache::Log::FatalErrorMessage,
+                        "Patache Engine - Raccoon Renderer",
                         "No Queue found for graphics", configuration);
 
       // returning the maximum of uint32_t is the equivalent of failing to find
@@ -88,7 +81,7 @@ Patata::Engine::CreateLogicalDeviceAndCreateQueue (void)
       return UINT32_MAX;
     }
 
-#if PATATA_DEBUG == 1
+#if PATACHE_DEBUG == 1
   engineInfo.VkQueueIndex    = TMPGraphicsQueueFamilyIndex;
   engineInfo.VkQueuePriority = QueuePriority;
   engineInfo.VkQueueFlags
@@ -106,7 +99,7 @@ Patata::Engine::CreateLogicalDeviceAndCreateQueue (void)
 
   const char * DeviceExtensions[1]{ "VK_KHR_swapchain" };
 
-#if PATATA_DEBUG == 1
+#if PATACHE_DEBUG == 1
   engineInfo.ppVkDeviceExtensions    = new const char *[1];
   engineInfo.ppVkDeviceExtensions[0] = DeviceExtensions[0];
   engineInfo.VkDeviceExtensionsCount = 1;
@@ -122,16 +115,10 @@ Patata::Engine::CreateLogicalDeviceAndCreateQueue (void)
 
   // List Device Extensions
   {
-    fast_io::io::println (
-#if defined(_WIN64)
-        fast_io::out ()
-#else
-        ""
-#endif
-    );
+    fast_io::io::println (PATACHE_FAST_IO_BUFF_OUT);
 
     std::future<void> ReturnVulkanList
-        = std::async (std::launch::async, Patata::Log::VulkanList,
+        = std::async (std::launch::async, Patache::Log::VulkanList,
                       DeviceExtensions, 1, "Device Extensions");
   }
 
@@ -141,12 +128,12 @@ Patata::Engine::CreateLogicalDeviceAndCreateQueue (void)
   if (Result != vk::Result::eSuccess)
     {
       std::future<void> ReturnVulkanCheck
-          = std::async (std::launch::async, Patata::Log::VulkanCheck,
+          = std::async (std::launch::async, Patache::Log::VulkanCheck,
                         "Logical Device", Result);
 
       std::future<void> ReturnVulkanErr
-          = std::async (std::launch::async, Patata::Log::FatalErrorMessage,
-                        "Patata Engine - Raccoon Renderer",
+          = std::async (std::launch::async, Patache::Log::FatalErrorMessage,
+                        "Patache Engine - Raccoon Renderer",
                         "Logical device creation failed", configuration);
 
       // returning the maximum of uint32_t is the equivalent of failing to find

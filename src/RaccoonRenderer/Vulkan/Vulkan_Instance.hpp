@@ -4,20 +4,20 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_vulkan.h>
 
-// Patata Engine
-#include "PatataEngine/PatataEngine.hpp"
+// Patache Engine
+#include "PatacheEngine/PatacheEngine.hpp"
 #include "Log.hpp"
 #include "CstringWrapped.hpp"
 #include "fast_io_buff.hpp"
 
-#define PATATA_ENGINE_VERSION_VK                                              \
-  VK_MAKE_API_VERSION (0, PATATA_ENGINE_VERSION_MAYOR,                        \
-                       PATATA_ENGINE_VERSION_MINOR,                           \
-                       PATATA_ENGINE_VERSION_PATCH)
+#define PATACHE_ENGINE_VERSION_VK                                             \
+  VK_MAKE_API_VERSION (0, PATACHE_ENGINE_VERSION_MAYOR,                       \
+                       PATACHE_ENGINE_VERSION_MINOR,                          \
+                       PATACHE_ENGINE_VERSION_PATCH)
 
-#define PATATA_ERROR_TEXT_SIZE 256
+#define PATACHE_ERROR_TEXT_SIZE 256
 
-#if PATATA_DEBUG == 1
+#if PATACHE_DEBUG == 1
 // vkCreateDebugUtilsMessengerEXT
 PFN_vkCreateDebugUtilsMessengerEXT pfnVkCreateDebugUtilsMessengerEXT = nullptr;
 
@@ -43,65 +43,59 @@ debugMessageFunc (vk::DebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
                   void * /*pUserData*/)
 {
   fast_io::io::println (
-      PATATA_FAST_IO_BUFF_OUT, PATATA_TERM_BOLD, PATATA_TERM_COLOR_RED,
-      "Vulkan Validation Layers :", PATATA_TERM_RESET, "\n Message Info : ");
+      PATACHE_FAST_IO_BUFF_OUT, PATACHE_TERM_BOLD, PATACHE_TERM_COLOR_RED,
+      "Vulkan Validation Layers :", PATACHE_TERM_RESET);
 
   // Message Severity
   switch (messageSeverity)
     {
     case vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose:
     case vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo:
-      fast_io::io::println (PATATA_FAST_IO_BUFF_OUT,
+      fast_io::io::println (PATACHE_FAST_IO_BUFF_OUT,
                             fast_io::mnp::right ("Severity : ", 13),
                             vk::to_string (messageSeverity));
       break;
 
     case vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning:
       fast_io::io::println (
-          PATATA_FAST_IO_BUFF_OUT, fast_io::mnp::right ("Severity : ", 13),
-          PATATA_TERM_COLOR_YELLOW, vk::to_string (messageSeverity),
-          PATATA_TERM_RESET);
+          PATACHE_FAST_IO_BUFF_OUT, fast_io::mnp::right ("Severity : ", 13),
+          PATACHE_TERM_COLOR_YELLOW, vk::to_string (messageSeverity),
+          PATACHE_TERM_RESET);
       break;
 
     case vk::DebugUtilsMessageSeverityFlagBitsEXT::eError:
       fast_io::io::println (
-          PATATA_FAST_IO_BUFF_OUT, fast_io::mnp::right ("Severity : ", 13),
-          PATATA_TERM_COLOR_RED, vk::to_string (messageSeverity),
-          PATATA_TERM_RESET);
+          PATACHE_FAST_IO_BUFF_OUT, fast_io::mnp::right ("Severity : ", 13),
+          PATACHE_TERM_COLOR_RED, vk::to_string (messageSeverity),
+          PATACHE_TERM_RESET);
       break;
     }
 
   // Message Types
   if (messageTypes & vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral)
-    {
-      fast_io::io::println (PATATA_FAST_IO_BUFF_OUT,
-                            fast_io::mnp::right ("Type : ", 9),
-                            vk::to_string (messageTypes));
-    }
+    fast_io::io::println (PATACHE_FAST_IO_BUFF_OUT,
+                          fast_io::mnp::right ("Type : ", 9),
+                          vk::to_string (messageTypes));
 
   if (messageTypes & vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation
       || messageTypes
              & vk::DebugUtilsMessageTypeFlagBitsEXT::eDeviceAddressBinding)
-    {
-      fast_io::io::println (PATATA_FAST_IO_BUFF_OUT,
-                            fast_io::mnp::right ("Type : ", 9),
-                            PATATA_TERM_COLOR_YELLOW,
-                            vk::to_string (messageTypes), PATATA_TERM_RESET);
-    }
+    fast_io::io::println (PATACHE_FAST_IO_BUFF_OUT,
+                          fast_io::mnp::right ("Type : ", 9),
+                          PATACHE_TERM_COLOR_YELLOW,
+                          vk::to_string (messageTypes), PATACHE_TERM_RESET);
 
   if (messageTypes & vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance)
-    {
-      fast_io::io::println (PATATA_FAST_IO_BUFF_OUT,
-                            fast_io::mnp::right ("Type : ", 9),
-                            PATATA_TERM_COLOR_BLUE,
-                            vk::to_string (messageTypes), PATATA_TERM_RESET);
-    }
+    fast_io::io::println (PATACHE_FAST_IO_BUFF_OUT,
+                          fast_io::mnp::right ("Type : ", 9),
+                          PATACHE_TERM_COLOR_BLUE,
+                          vk::to_string (messageTypes), PATACHE_TERM_RESET);
 
   fast_io::io::println (
-      PATATA_FAST_IO_BUFF_OUT, fast_io::mnp::right ("ID Name : ", 11),
+      PATACHE_FAST_IO_BUFF_OUT, fast_io::mnp::right ("ID Name : ", 12),
       fast_io::mnp::os_c_str (pCallbackData->pMessageIdName), "\n",
       fast_io::mnp::right ("ID Number : ", 14), pCallbackData->messageIdNumber,
-      "\n", fast_io::mnp::right ("Message : ", 11),
+      "\n", fast_io::mnp::right ("Message : ", 12),
       fast_io::mnp::os_c_str (pCallbackData->pMessage), "\n");
 
   return false;

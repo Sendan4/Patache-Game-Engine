@@ -1,7 +1,7 @@
 #include "Vulkan_SincronizationPrimitives.hpp"
 
 bool
-Patata::Engine::CreateSemaphores (void)
+Patache::Engine::CreateSemaphores (void)
 {
   static constexpr const vk::SemaphoreCreateInfo SemaphoreInfo{};
 
@@ -15,7 +15,7 @@ Patata::Engine::CreateSemaphores (void)
     Vulkan.ImageFinishedSemaphore
         = new vk::Semaphore[Vulkan.SwapChainImageCount];
 
-  for (uint32_t i = 0; i < Vulkan.SwapChainImageCount; ++i)
+  for (std::uint32_t i = 0; i < Vulkan.SwapChainImageCount; ++i)
     {
       // ImageAvailableSemaphore
       Result = Vulkan.Device.createSemaphore (
@@ -23,13 +23,13 @@ Patata::Engine::CreateSemaphores (void)
 
       if (Result != vk::Result::eSuccess)
         {
-          char ErrorText[PATATA_ERROR_TEXT_SIZE]{ 0 };
+          char ErrorText[PATACHE_ERROR_TEXT_SIZE]{ 0 };
 
-          std::snprintf (ErrorText, PATATA_ERROR_TEXT_SIZE - 1,
+          std::snprintf (ErrorText, PATACHE_ERROR_TEXT_SIZE - 1,
                          "Image Available Semaphore #%.3u", i + 1);
 
           std::future<void> ReturnVulkanCheck = std::async (
-              std::launch::async, Patata::Log::VulkanCheck, ErrorText, Result);
+              std::launch::async, Patache::Log::VulkanCheck, ErrorText, Result);
 
           return false;
         }
@@ -40,13 +40,13 @@ Patata::Engine::CreateSemaphores (void)
 
       if (Result != vk::Result::eSuccess)
         {
-          char ErrorText[PATATA_ERROR_TEXT_SIZE]{ 0 };
+          char ErrorText[PATACHE_ERROR_TEXT_SIZE]{ 0 };
 
-          std::snprintf (ErrorText, PATATA_ERROR_TEXT_SIZE - 1,
+          std::snprintf (ErrorText, PATACHE_ERROR_TEXT_SIZE - 1,
                          "Image Finished Semaphore #%.3u", i + 1);
 
           std::future<void> ReturnVulkanCheck = std::async (
-              std::launch::async, Patata::Log::VulkanCheck, ErrorText, Result);
+              std::launch::async, Patache::Log::VulkanCheck, ErrorText, Result);
 
           return false;
         }
@@ -56,7 +56,7 @@ Patata::Engine::CreateSemaphores (void)
 }
 
 bool
-Patata::Engine::CreateFence (void)
+Patache::Engine::CreateFence (void)
 {
   static constexpr const vk::FenceCreateInfo FenceInfo{
     .flags = vk::FenceCreateFlagBits::eSignaled
@@ -67,20 +67,20 @@ Patata::Engine::CreateFence (void)
   if (Vulkan.InFlightFences == VK_NULL_HANDLE)
     Vulkan.InFlightFences = new vk::Fence[Vulkan.SwapChainImageCount];
 
-  for (uint32_t i = 0; i < Vulkan.SwapChainImageCount; ++i)
+  for (std::uint32_t i = 0; i < Vulkan.SwapChainImageCount; ++i)
     {
       Result = Vulkan.Device.createFence (&FenceInfo, nullptr,
                                           &Vulkan.InFlightFences[i]);
 
       if (Result != vk::Result::eSuccess)
         {
-          char ErrorText[PATATA_ERROR_TEXT_SIZE]{ 0 };
+          char ErrorText[PATACHE_ERROR_TEXT_SIZE]{ 0 };
 
-          std::snprintf (ErrorText, PATATA_ERROR_TEXT_SIZE - 1,
+          std::snprintf (ErrorText, PATACHE_ERROR_TEXT_SIZE - 1,
                          "In Flight Fence #%.3u", i + 1);
 
           std::future<void> ReturnVulkanCheck = std::async (
-              std::launch::async, Patata::Log::VulkanCheck, ErrorText, Result);
+              std::launch::async, Patache::Log::VulkanCheck, ErrorText, Result);
 
           return false;
         }

@@ -1,21 +1,23 @@
 | Español | [English](README_en.md) |
 | :--: | :--: |
 
-<p align = "center"><img draggable = false src = "data/assets/icon/patata_icon.svg?ref_type=heads&inline=false" width=64></p>
+<p align = "center"><img draggable = false src = "data/assets/patache.svg?ref_type=heads&inline=false" width=64></p>
 
-<h1 align = "center">Motor Patata</h1>
+<h1 align = "center">Motor Patache</h1>
 
 _Motor tonto y simple de videojuegos hecho en C++._
 
-<p>Patata es un motor 2D, sencillo y ligero con el enfoque en el desarrollo de videojuegos utilizando directamente C++. Este motor abstrae tareas como la creacion de la ventana y la gestion de las entradas gracias a SDL. hace renderizado, sonido y su misma configuracion en una API sencilla de utilizar.</p>
+<p><strong>Es un motor 2D sencillo y ligero</strong> con el enfoque en el desarrollo de videojuegos utilizando C++.</p>
 
-⚠️ Aun no esta listo para su uso.
+<p>Este motor esta hecho para ser utilizado junto con <a href = "http://www.libsdl.org/">SDL3</a>. Se abstrae la creacion de la ventana, el renderizado de graficos, el sonido y la configuracion en una API sencilla de utilizar.</p>
 
-## Sistemas Operativos Compatibles
+<p><strong>Es portable</strong>, funciona en varios sistemas operativos.</p>
 
 | Windows | GNU/Linux |
 | :-----: | :-----: |
 |<b>x86_64</b> | <b>x86_64</b> |
+
+<p>⚠️ <strong>Advertencia</strong>: Esta en un estado muy temprano de desarrollo y no es estable.</p>
 
 ## Dependencias usadas en este proyecto
 <ul>
@@ -34,7 +36,10 @@ _Motor tonto y simple de videojuegos hecho en C++._
   <li><a href = "https://github.com/recp/cglm.git">cglm</a></li>
 </ul>
 
-## [Wiki](https://448envio.gitbook.io/motor-patata-wiki/)
+## [Documentacion](#)
+
+## Licencia
+- [Motor](LICENSE.txt)
 
 ## Espejos Oficiales
 - [Github](https://github.com/Sendan4/Patata-Engine.git)

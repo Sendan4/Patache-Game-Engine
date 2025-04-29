@@ -3,8 +3,8 @@
 
 #include <SDL3/SDL.h>
 
-// Patata Engine
-#include "PatataEngine/PatataEngine.hpp"
+// Patache Engine
+#include "PatacheEngine/PatacheEngine.hpp"
 #include "Log.hpp"
 
-#define PATATA_ERROR_TEXT_SIZE 240
+#define PATACHE_ERROR_TEXT_SIZE 240

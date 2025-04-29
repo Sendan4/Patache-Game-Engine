@@ -9,11 +9,11 @@ struct Vertex
 };
 
 bool
-Patata::Engine::RaccoonRendererInit (const Patata::EngineCreateInfo & Info)
+Patache::Engine::RaccoonRendererInit (const Patache::EngineCreateInfo & Info)
 {
-#if PATATA_DEBUG == 1
+#if PATACHE_DEBUG == 1
   std::future<void> InitImgui_Async
-      = std::async (std::launch::async, &Patata::Engine::InitImgui, this);
+      = std::async (std::launch::async, &Patache::Engine::InitImgui, this);
 #endif
 
   if (!CreateInstance (Info))
@@ -29,13 +29,13 @@ Patata::Engine::RaccoonRendererInit (const Patata::EngineCreateInfo & Info)
   */
   Vulkan.GraphicsQueueFamilyIndex = CreateLogicalDeviceAndCreateQueue ();
 
-#if PATATA_DEBUG == 1
+#if PATACHE_DEBUG == 1
   InitImgui_Async.wait ();
 
   std::future<bool> CreateImguiDescriptorPool_Async = std::async (
-      std::launch::async, &Patata::Engine::CreateImguiDescriptorPool, this);
+      std::launch::async, &Patache::Engine::CreateImguiDescriptorPool, this);
   std::future<bool> CreateImguiPipelineCache_Async = std::async (
-      std::launch::async, &Patata::Engine::CreateImguiPipelineCache, this);
+      std::launch::async, &Patache::Engine::CreateImguiPipelineCache, this);
 #endif
 
   // Create a surface for the window to draw on
@@ -44,17 +44,17 @@ Patata::Engine::RaccoonRendererInit (const Patata::EngineCreateInfo & Info)
           reinterpret_cast<VkSurfaceKHR *> (&Vulkan.Surface)))
     {
       fast_io::io::println (
-          PATATA_FAST_IO_BUFF_OUT, PATATA_TERM_RESET, PATATA_TERM_BOLD,
-          "SDL Create Window Surface : ", PATATA_TERM_RESET,
-          PATATA_TERM_COLOR_YELLOW, "Fail", PATATA_TERM_RESET);
+          PATACHE_FAST_IO_BUFF_OUT, PATACHE_TERM_RESET, PATACHE_TERM_BOLD,
+          "SDL Create Window Surface : ", PATACHE_TERM_RESET,
+          PATACHE_TERM_COLOR_YELLOW, "Fail", PATACHE_TERM_RESET);
 
       std::future<void> FatalErr
-          = std::async (std::launch::async, Patata::Log::FatalErrorMessage,
+          = std::async (std::launch::async, Patache::Log::FatalErrorMessage,
                         "SDL", SDL_GetError (), configuration);
       return false;
     }
 
-  Patata::SwapChainInfo SwapChainInfo;
+  Patache::SwapChainInfo SwapChainInfo;
   if (!CreateSwapChain (SwapChainInfo))
     return false;
 
@@ -79,28 +79,28 @@ Patata::Engine::RaccoonRendererInit (const Patata::EngineCreateInfo & Info)
     return false;
 
   std::future<bool> CreateFrameBuffer_Async = std::async (
-      std::launch::async, &Patata::Engine::CreateFrameBuffer, this);
+      std::launch::async, &Patache::Engine::CreateFrameBuffer, this);
 
   std::future<bool> CreateCommandBuffer_Async = std::async (
-      std::launch::async, &Patata::Engine::CreateCommandBuffer, this);
+      std::launch::async, &Patache::Engine::CreateCommandBuffer, this);
 
   std::future<bool> CreateFence_Async
-      = std::async (std::launch::async, &Patata::Engine::CreateFence, this);
+      = std::async (std::launch::async, &Patache::Engine::CreateFence, this);
 
   std::future<bool> CreateSemaphores_Async = std::async (
-      std::launch::async, &Patata::Engine::CreateSemaphores, this);
+      std::launch::async, &Patache::Engine::CreateSemaphores, this);
 
   std::future<bool> CreatePipeline_Async
-      = std::async (std::launch::async, &Patata::Engine::CreatePipeline, this);
+      = std::async (std::launch::async, &Patache::Engine::CreatePipeline, this);
 
   std::future<void> VulkanInfo_Async = std::async (
-      std::launch::async, &Patata::Engine::VulkanInfo, this, SwapChainInfo);
+      std::launch::async, &Patache::Engine::VulkanInfo, this, SwapChainInfo);
 
   // Create Buffer
   /*std::future<bool> CreateBuffer_Async = std::async (
       std::launch::async, [this] (void) -> bool { return true; });*/
 
-#if PATATA_DEBUG == 1
+#if PATACHE_DEBUG == 1
   CreateImguiPipelineCache_Async.wait ();
   if (!CreateImguiPipelineCache_Async.get ())
     return false;
@@ -145,7 +145,7 @@ Patata::Engine::RaccoonRendererInit (const Patata::EngineCreateInfo & Info)
 }
 
 void
-Patata::Engine::RaccoonRendererClose (void)
+Patache::Engine::RaccoonRendererClose (void)
 {
   if (Vulkan.Device == VK_NULL_HANDLE || Vulkan.Instance == VK_NULL_HANDLE)
     return;
@@ -155,7 +155,7 @@ Patata::Engine::RaccoonRendererClose (void)
   if (Result != vk::Result::eSuccess)
     {
       std::future<void> ReturnVulkanCheck
-          = std::async (std::launch::async, Patata::Log::VulkanCheck,
+          = std::async (std::launch::async, Patache::Log::VulkanCheck,
                         "Device Wait Idle", Result);
     }
 
@@ -166,7 +166,7 @@ Patata::Engine::RaccoonRendererClose (void)
 
   if (Result != vk::Result::eSuccess)
     std::future<void> ReturnVulkanCheck
-        = std::async (std::launch::async, Patata::Log::VulkanCheck,
+        = std::async (std::launch::async, Patache::Log::VulkanCheck,
                       "Queue Wait Idle", Result);
 
   // Color
@@ -189,7 +189,7 @@ Patata::Engine::RaccoonRendererClose (void)
   // Vulkan.Device.freeMemory (Vulkan.VertexBufferMemory);
 
 // Imgui
-#if PATATA_DEBUG == 1
+#if PATACHE_DEBUG == 1
   ImGui_ImplVulkan_Shutdown ();
 
   Vulkan.Device.destroyDescriptorPool (Vulkan.ImguiDescriptorPool);
@@ -203,7 +203,7 @@ Patata::Engine::RaccoonRendererClose (void)
   Vulkan.Device.destroyRenderPass (Vulkan.RenderPass);
 
   // Primitivas de sincronizacion
-  for (uint32_t i = 0; i < Vulkan.SwapChainImageCount; ++i)
+  for (std::uint32_t i = 0; i < Vulkan.SwapChainImageCount; ++i)
     {
       Vulkan.Device.destroySemaphore (Vulkan.ImageAvailableSemaphore[i]);
       Vulkan.Device.destroySemaphore (Vulkan.ImageFinishedSemaphore[i]);
@@ -225,7 +225,7 @@ Patata::Engine::RaccoonRendererClose (void)
 
   Vulkan.Instance.destroySurfaceKHR (Vulkan.Surface);
 
-#if PATATA_DEBUG == 1
+#if PATACHE_DEBUG == 1
   pfnVkDestroyDebugUtilsMessengerEXT
       = reinterpret_cast<PFN_vkDestroyDebugUtilsMessengerEXT> (
           Vulkan.Instance.getProcAddr ("vkDestroyDebugUtilsMessengerEXT"));

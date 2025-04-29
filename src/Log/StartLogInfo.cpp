@@ -1,76 +1,76 @@
 #include "StartLogInfo.hpp"
 
 void
-Patata::Log::StartPatataLogInfo (void)
+Patache::Log::StartPatacheLogInfo (void)
 {
-  fast_io::io::println (PATATA_FAST_IO_BUFF_OUT, PATATA_TERM_COLOR_PATATA,
-                        PATATA_ENGINE_NAME, PATATA_TERM_RESET, " INFO");
+  fast_io::io::println (PATACHE_FAST_IO_BUFF_OUT, PATACHE_TERM_COLOR_PATACHE,
+                        PATACHE_ENGINE_NAME, PATACHE_TERM_RESET, " INFO");
 
-#if PATATA_DEBUG == 1
+#if PATACHE_DEBUG == 1
   fast_io::io::println (
-      PATATA_FAST_IO_BUFF_OUT,
-#if defined(PATATA_GIT_BRANCH)
-      PATATA_TERM_BOLD, fast_io::mnp::right ("Branch : ", 11),
-      PATATA_TERM_RESET, PATATA_GIT_BRANCH, "\n",
+      PATACHE_FAST_IO_BUFF_OUT,
+#if defined(PATACHE_GIT_BRANCH)
+      PATACHE_TERM_BOLD, fast_io::mnp::right ("Branch : ", 11),
+      PATACHE_TERM_RESET, PATACHE_GIT_BRANCH, "\n",
 #endif
-#if defined(PATATA_GIT_HASH_LONG) && defined(PATATA_GIT_HASH_SHORT)
-      PATATA_TERM_BOLD, fast_io::mnp::right ("Commit Hash : ", 16), "\n",
-      PATATA_TERM_RESET, "    ", PATATA_GIT_HASH_LONG, "\n    ",
-      PATATA_GIT_HASH_SHORT, "\n",
-#if defined(PATATA_GIT_WORK_DIR_IS_CLEAN)
-#if PATATA_GIT_WORK_DIR_IS_CLEAN_BOOL == 1
-      PATATA_TERM_COLOR_GREEN,
+#if defined(PATACHE_GIT_HASH_LONG) && defined(PATACHE_GIT_HASH_SHORT)
+      PATACHE_TERM_BOLD, fast_io::mnp::right ("Commit Hash : ", 16), "\n",
+      PATACHE_TERM_RESET, "    ", PATACHE_GIT_HASH_LONG, "\n    ",
+      PATACHE_GIT_HASH_SHORT, "\n",
+#if defined(PATACHE_GIT_WORK_DIR_IS_CLEAN)
+#if PATACHE_GIT_WORK_DIR_IS_CLEAN_BOOL == 1
+      PATACHE_TERM_COLOR_GREEN,
 #else
-      PATATA_TERM_COLOR_YELLOW,
+      PATACHE_TERM_COLOR_YELLOW,
 #endif
-      "    ", PATATA_GIT_WORK_DIR_IS_CLEAN,
+      "    ", PATACHE_GIT_WORK_DIR_IS_CLEAN,
 #endif
-#if defined(PATATA_GIT_WORK_DIR_IS_STAGED)
-      PATATA_TERM_RESET, " | ",
-#if PATATA_GIT_WORK_DIR_IS_STAGED_BOOL == 1
-      PATATA_TERM_COLOR_GREEN,
+#if defined(PATACHE_GIT_WORK_DIR_IS_STAGED)
+      PATACHE_TERM_RESET, " | ",
+#if PATACHE_GIT_WORK_DIR_IS_STAGED_BOOL == 1
+      PATACHE_TERM_COLOR_GREEN,
 #else
-      PATATA_TERM_COLOR_YELLOW,
+      PATACHE_TERM_COLOR_YELLOW,
 #endif
-      PATATA_GIT_WORK_DIR_IS_STAGED,
+      PATACHE_GIT_WORK_DIR_IS_STAGED,
 #endif
-      PATATA_TERM_RESET
+      PATACHE_TERM_RESET
 #endif
   );
-#endif // PATATA_DEBUG
+#endif // PATACHE_DEBUG
 
   fast_io::io::println (
-      PATATA_FAST_IO_BUFF_OUT,
-      // Patata Version
-      PATATA_TERM_BOLD, fast_io::mnp::right ("Version : ", 12),
-      PATATA_TERM_RESET, PATATA_ENGINE_VERSION, " \n",
-      // Patata Build Date
-      PATATA_TERM_BOLD, fast_io::mnp::right ("Build Date : ", 15),
-      PATATA_TERM_RESET, __DATE__, " | ", __TIME__, " \n",
-      // Patata Compiler
-      PATATA_TERM_BOLD, fast_io::mnp::right ("Compiler : ", 13),
-      PATATA_TERM_RESET, PATATA_TERM_DIM, PATATA_COMPILER_PROGRAM,
-      PATATA_TERM_RESET, " | ", PATATA_TERM_RESET, PATATA_COMPILER, " ",
-      PATATA_COMPILER_VERSION, " \n",
-      // Patata Build System
-      PATATA_TERM_BOLD, fast_io::mnp::right ("Build System : ", 17),
-      PATATA_TERM_RESET, PATATA_TERM_DIM, PATATA_BUILD_SYSTEM, " ",
-      PATATA_BUILD_SYSTEM_VERSION, PATATA_TERM_RESET, " | ",
-      PATATA_BUILD_SYSTEM_GENERATOR, " ",
-#if defined(PATATA_BUILD_SYSTEM_GENERATOR_VERSION)
-      PATATA_BUILD_SYSTEM_GENERATOR_VERSION, " \n",
+      PATACHE_FAST_IO_BUFF_OUT,
+      // Patache Version
+      PATACHE_TERM_BOLD, fast_io::mnp::right ("Version : ", 12),
+      PATACHE_TERM_RESET, PATACHE_ENGINE_VERSION, " \n",
+      // Patache Build Date
+      PATACHE_TERM_BOLD, fast_io::mnp::right ("Build Date : ", 15),
+      PATACHE_TERM_RESET, __DATE__, " | ", __TIME__, " \n",
+      // Patache Compiler
+      PATACHE_TERM_BOLD, fast_io::mnp::right ("Compiler : ", 13),
+      PATACHE_TERM_RESET, PATACHE_TERM_DIM, PATACHE_COMPILER_PROGRAM,
+      PATACHE_TERM_RESET, " | ", PATACHE_TERM_RESET, PATACHE_COMPILER, " ",
+      PATACHE_COMPILER_VERSION, " \n",
+      // Patache Build System
+      PATACHE_TERM_BOLD, fast_io::mnp::right ("Build System : ", 17),
+      PATACHE_TERM_RESET, PATACHE_TERM_DIM, PATACHE_BUILD_SYSTEM, " ",
+      PATACHE_BUILD_SYSTEM_VERSION, PATACHE_TERM_RESET, " | ",
+      PATACHE_BUILD_SYSTEM_GENERATOR, " ",
+#if defined(PATACHE_BUILD_SYSTEM_GENERATOR_VERSION)
+      PATACHE_BUILD_SYSTEM_GENERATOR_VERSION, " \n",
 #else
       " \n",
 #endif
-      // Patata Build Type
-      PATATA_TERM_BOLD, fast_io::mnp::right ("Build Type : ", 15),
-      PATATA_TERM_RESET, PATATA_BUILD_TYPE, " \n",
-      // Patata OS
-      PATATA_TERM_BOLD, fast_io::mnp::right ("Operating System : ", 21),
-      PATATA_TERM_RESET, PATATA_OS, " \n",
+      // Patache Build Type
+      PATACHE_TERM_BOLD, fast_io::mnp::right ("Build Type : ", 15),
+      PATACHE_TERM_RESET, PATACHE_BUILD_TYPE, " \n",
+      // Patache OS
+      PATACHE_TERM_BOLD, fast_io::mnp::right ("Operating System : ", 21),
+      PATACHE_TERM_RESET, PATACHE_OS, " \n",
       // CPU Arch
-      PATATA_TERM_BOLD, fast_io::mnp::right ("CPU Architecture : ", 21),
-      PATATA_TERM_RESET, PATATA_ARCH);
+      PATACHE_TERM_BOLD, fast_io::mnp::right ("CPU Architecture : ", 21),
+      PATACHE_TERM_RESET, PATACHE_ARCH);
 
-  fast_io::io::println (PATATA_FAST_IO_BUFF_OUT);
+  fast_io::io::println (PATACHE_FAST_IO_BUFF_OUT);
 }

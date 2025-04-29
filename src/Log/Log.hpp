@@ -1,10 +1,10 @@
 #pragma once
 
-namespace Patata
+namespace Patache
 {
 namespace Log
 {
-void StartPatataLogInfo (void);
+void StartPatacheLogInfo (void);
 
 // Vulkan Setup
 void VulkanCheck (const char * const, const vk::Result &);
@@ -13,7 +13,7 @@ void VulkanList (const char * const List[], const uint32_t &,
 
 // Errors
 void FatalErrorMessage (const char * const, const char * const,
-                        const Patata::Config &);
+                        const Patache::Config &);
 void ErrorMessage (const char * const);
 void WarningMessage (const char * const);
 }

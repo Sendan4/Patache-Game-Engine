@@ -1,4 +1,4 @@
-#if PATATA_DEBUG == 1 && !defined(_WIN64)
+#if PATACHE_DEBUG == 1 && !defined(_WIN64)
 #include <cstdlib>
 #endif
 #include <future>
@@ -9,48 +9,48 @@
 #endif
 #include <SDL3/SDL.h>
 
-// Patata Engine
-#include "PatataEngine/PatataEngine.hpp"
+// Patache Engine
+#include "PatacheEngine/PatacheEngine.hpp"
 #include "CstringWrapped.hpp"
-#if PATATA_DEBUG == 1
+#if PATACHE_DEBUG == 1
 #include "CstdlibWrapped.hpp"
 #endif
 #include "Log.hpp"
-#include "patata_icon.hpp"
+#include "PatacheIcon.hpp"
 
 // VVL Path macros
-#if defined(PATATA_FIND_VVL_IN_THE_CURRENT_PATH)
-#define PATATA_VVL_PATH SDL_GetBasePath ()
+#if defined(PATACHE_FIND_VVL_IN_THE_CURRENT_PATH)
+#define PATACHE_VVL_PATH SDL_GetBasePath ()
 #endif
-#if defined(PATATA_FIND_VVL_FROM_SDK)
-#define PATATA_VVL_PATH PATATA_VVL_SDK_PATH
+#if defined(PATACHE_FIND_VVL_FROM_SDK)
+#define PATACHE_VVL_PATH PATACHE_VVL_SDK_PATH
 #endif
 
 bool
-Patata::Engine::Init (const Patata::EngineCreateInfo & Info)
+Patache::Engine::Init (const Patache::EngineCreateInfo & Info)
 {
   {
-    std::future<void> PatataStartLogInfo
-        = std::async (std::launch::async, Patata::Log::StartPatataLogInfo);
+    std::future<void> PatacheStartLogInfo
+        = std::async (std::launch::async, Patache::Log::StartPatacheLogInfo);
   }
 
   if (!LoadConfiguration ())
     return false;
 
-#if defined(PATATA_VVL_PATH)
-  if (PATATA_SETENV ("VK_LAYER_PATH", PATATA_VVL_PATH)
-      != PATATA_SETENV_SUCCESS)
+#if defined(PATACHE_VVL_PATH)
+  if (PATACHE_SETENV ("VK_LAYER_PATH", PATACHE_VVL_PATH)
+      != PATACHE_SETENV_SUCCESS)
     std::future<void> Err
-        = std::async (std::launch::async, Patata::Log::ErrorMessage,
+        = std::async (std::launch::async, Patache::Log::ErrorMessage,
                       "Cannot set enviroment varible VK_LAYER_PATH");
-#endif // PATATA_VVL_PATH
+#endif // PATACHE_VVL_PATH
 
   // SDL Subsystems
   if (!SDL_Init (SDL_INIT_VIDEO | SDL_INIT_EVENTS))
     {
       std::future<void> Err = std::async (
-          std::launch::async, Patata::Log::FatalErrorMessage,
-          "Patata Engine - SDL2", SDL_GetError (), configuration);
+          std::launch::async, Patache::Log::FatalErrorMessage,
+          "Patache Engine - SDL2", SDL_GetError (), configuration);
 
       return false;
     }
@@ -58,40 +58,42 @@ Patata::Engine::Init (const Patata::EngineCreateInfo & Info)
   // Create Window
   {
     // Window Title
-#if PATATA_DEBUG == 1
+#if PATACHE_DEBUG == 1
     char WindowTitle[64]{ 0 };
 
     if (Info.windowTitle != nullptr)
       {
-        PATATA_STRNCPY (WindowTitle, Info.windowTitle, 63);
+        PATACHE_STRNCPY (WindowTitle, Info.windowTitle, 63);
       }
     else if (Info.gameName != nullptr)
       {
-        PATATA_STRNCPY (WindowTitle, Info.gameName, 63);
+        PATACHE_STRNCPY (WindowTitle, Info.gameName, 63);
       }
     else
       {
-        PATATA_STRNCPY (WindowTitle, PATATA_ENGINE_NAME, 63);
+        PATACHE_STRNCPY (WindowTitle, PATACHE_ENGINE_NAME, 63);
       }
 
-    PATATA_STRNCAT (WindowTitle, " (Debug / Development)", 63);
+    PATACHE_STRNCAT (WindowTitle, " (Debug / Development)", 63);
 
-#else  // PATATA_DEBUG
+#else  // PATACHE_DEBUG
     const char * WindowTitle
         = (Info.windowTitle == nullptr) ? Info.gameName : Info.windowTitle;
 
     if (WindowTitle == nullptr)
-      WindowTitle = PATATA_ENGINE_NAME;
-#endif // PATATA_DEBUG
+      WindowTitle = PATACHE_ENGINE_NAME;
+#endif // PATACHE_DEBUG
 
     // Window Initial Size
     std::uint32_t w = 0, h = 0;
 
+    // Displays
     int                           DisplaysCount = 0;
     SDL_DisplayID *               DID = SDL_GetDisplays (&DisplaysCount);
     const SDL_DisplayMode * const CurrentMode
         = SDL_GetCurrentDisplayMode (*DID);
 
+    // Initial Resolution
     if (CurrentMode != nullptr)
       {
         w = static_cast<std::uint32_t> (CurrentMode->w * 0.64);
@@ -100,7 +102,7 @@ Patata::Engine::Init (const Patata::EngineCreateInfo & Info)
     else
       {
         std::future<void> Err = std::async (
-            std::launch::async, Patata::Log::ErrorMessage,
+            std::launch::async, Patache::Log::ErrorMessage,
             "can't get the current resolution. starting with 480p "
             "(1.78)");
 
@@ -116,7 +118,7 @@ Patata::Engine::Init (const Patata::EngineCreateInfo & Info)
     if (!GameWindow)
       {
         std::future<void> Err = std::async (
-            std::launch::async, Patata::Log::FatalErrorMessage,
+            std::launch::async, Patache::Log::FatalErrorMessage,
             "Window cannot be created", SDL_GetError (), configuration);
 
         return false;
@@ -124,7 +126,7 @@ Patata::Engine::Init (const Patata::EngineCreateInfo & Info)
 
     SDL_SetWindowMinimumSize (GameWindow, 640, 360);
 
-#if PATATA_DEBUG == 1
+#if PATACHE_DEBUG == 1
     engineInfo.WindowCreationFlags = SDL_GetWindowFlags (GameWindow);
 #endif
   }
@@ -136,20 +138,20 @@ Patata::Engine::Init (const Patata::EngineCreateInfo & Info)
     if (Info.windowIconPath != nullptr)
       {
         char Path[512]{ 0 };
-        PATATA_STRNCPY (Path, SDL_GetBasePath (), 511);
-        PATATA_STRNCAT (Path, "/", 511);
-        PATATA_STRNCAT (Path, Info.windowIconPath, 511);
+        PATACHE_STRNCPY (Path, SDL_GetBasePath (), 511);
+        PATACHE_STRNCAT (Path, "/", 511);
+        PATACHE_STRNCAT (Path, Info.windowIconPath, 511);
 
         WindowIcon = SDL_LoadBMP (Path);
       }
     else
       WindowIcon = SDL_CreateSurfaceFrom (
-          Patata::Icon::Width, Patata::Icon::Height, SDL_PIXELFORMAT_BGRA8888,
-          (void *)Patata::Icon::Data, Patata::Icon::Pitch);
+          Patache::Icon::Width, Patache::Icon::Height, SDL_PIXELFORMAT_BGRA8888,
+          (void *)Patache::Icon::Data, Patache::Icon::Pitch);
 
     if (WindowIcon == nullptr)
       std::future<void> Err
-          = std::async (std::launch::async, Patata::Log::ErrorMessage,
+          = std::async (std::launch::async, Patache::Log::ErrorMessage,
                         "Icon cannot be loaded");
     else
       SDL_SetWindowIcon (GameWindow, WindowIcon);
@@ -164,7 +166,7 @@ Patata::Engine::Init (const Patata::EngineCreateInfo & Info)
   return true;
 }
 
-Patata::Engine::Engine (const Patata::EngineCreateInfo & Info, bool * Err)
+Patache::Engine::Engine (const Patache::EngineCreateInfo & Info, bool * Err)
 {
   if (Err != nullptr)
     *Err = Init (Info);
@@ -172,16 +174,16 @@ Patata::Engine::Engine (const Patata::EngineCreateInfo & Info, bool * Err)
     Init (Info);
 }
 
-#if PATATA_DEBUG == 1
+#if PATACHE_DEBUG == 1
 #include <imgui.h>
 #include <imgui_impl_sdl3.h>
 #endif
 
-Patata::Engine::~Engine (void)
+Patache::Engine::~Engine (void)
 {
   RaccoonRendererClose ();
 
-#if PATATA_DEBUG == 1
+#if PATACHE_DEBUG == 1
   // Imgui
   ImGuiIO & io = ImGui::GetIO ();
 
@@ -191,7 +193,7 @@ Patata::Engine::~Engine (void)
   if (ImGui::GetCurrentContext () != nullptr)
     ImGui::DestroyContext ();
 
-  // Struct / Patata Engine Info
+  // Struct / Patache Engine Info
   if (engineInfo.ppVkLayers != nullptr)
     {
       delete[] engineInfo.ppVkLayers;

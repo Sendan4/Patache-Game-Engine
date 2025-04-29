@@ -1,9 +1,9 @@
 #include <SDL3/SDL.h>
 
-#include "PatataEngine/PatataEngine.hpp"
+#include "PatacheEngine/PatacheEngine.hpp"
 
 void
-Patata::Engine::ClearColorRGBA (const float & R, const float & G,
+Patache::Engine::ClearColorRGBA (const float & R, const float & G,
                                 const float & B, const float & A)
 {
   clearColor.r = R;
@@ -13,7 +13,7 @@ Patata::Engine::ClearColorRGBA (const float & R, const float & G,
 }
 
 void
-Patata::Engine::ClearColorRGBA (const float & R, const float & G,
+Patache::Engine::ClearColorRGBA (const float & R, const float & G,
                                 const float & B)
 {
   clearColor.r = R;
@@ -22,7 +22,7 @@ Patata::Engine::ClearColorRGBA (const float & R, const float & G,
 }
 
 void
-Patata::Engine::ClearColor (const Color & Color)
+Patache::Engine::ClearColor (const Color & Color)
 {
   switch (Color)
     {

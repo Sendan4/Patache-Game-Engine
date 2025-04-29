@@ -1,7 +1,7 @@
 #include "SetupImgui.hpp"
 
 void
-Patata::Engine::InitImgui (void)
+Patache::Engine::InitImgui (void)
 {
   IMGUI_CHECKVERSION ();
   ImGui::CreateContext ();
@@ -9,9 +9,9 @@ Patata::Engine::InitImgui (void)
   if (ImGui::GetCurrentContext () == nullptr)
     {
       fast_io::io::println (
-          PATATA_FAST_IO_BUFF_OUT, PATATA_TERM_BOLD,
-          "Initialize Global ImGui Context : ", PATATA_TERM_RESET,
-          PATATA_TERM_COLOR_YELLOW, "Fail\n", PATATA_TERM_RESET);
+          PATACHE_FAST_IO_BUFF_OUT, PATACHE_TERM_BOLD,
+          "Initialize Global ImGui Context : ", PATACHE_TERM_RESET,
+          PATACHE_TERM_COLOR_YELLOW, "Fail\n", PATACHE_TERM_RESET);
 
       return;
     }
@@ -55,12 +55,12 @@ Patata::Engine::InitImgui (void)
 }
 
 bool
-Patata::Engine::CreateImguiDescriptorPool (void)
+Patache::Engine::CreateImguiDescriptorPool (void)
 {
   if (ImGui::GetCurrentContext () == nullptr)
     {
       std::future<void> Err
-          = std::async (std::launch::async, Patata::Log::ErrorMessage,
+          = std::async (std::launch::async, Patache::Log::ErrorMessage,
                         "You cannot initialize the descriptor pool for imgui "
                         "without having initialized the ImGui context first");
 
@@ -83,7 +83,7 @@ Patata::Engine::CreateImguiDescriptorPool (void)
   if (Result != vk::Result::eSuccess)
     {
       std::future<void> ReturnVulkanCheck
-          = std::async (std::launch::async, Patata::Log::VulkanCheck,
+          = std::async (std::launch::async, Patache::Log::VulkanCheck,
                         "Imgui Descriptor Pool", Result);
 
       return false;
@@ -93,12 +93,12 @@ Patata::Engine::CreateImguiDescriptorPool (void)
 }
 
 bool
-Patata::Engine::CreateImguiPipelineCache (void)
+Patache::Engine::CreateImguiPipelineCache (void)
 {
   if (ImGui::GetCurrentContext () == nullptr)
     {
       std::future<void> Err
-          = std::async (std::launch::async, Patata::Log::ErrorMessage,
+          = std::async (std::launch::async, Patache::Log::ErrorMessage,
                         "You cannot initialize the pipeline cache for imgui "
                         "without having initialized the ImGui context first");
 
@@ -112,7 +112,7 @@ Patata::Engine::CreateImguiPipelineCache (void)
   if (Result != vk::Result::eSuccess)
     {
       std::future<void> ReturnVulkanCheck
-          = std::async (std::launch::async, Patata::Log::VulkanCheck,
+          = std::async (std::launch::async, Patache::Log::VulkanCheck,
                         "Imgui PipeLine Cache", Result);
       return false;
     }
@@ -121,12 +121,12 @@ Patata::Engine::CreateImguiPipelineCache (void)
 }
 
 bool
-Patata::Engine::InitImguiVulkan (void)
+Patache::Engine::InitImguiVulkan (void)
 {
   if (ImGui::GetCurrentContext () == nullptr)
     {
       std::future<void> Err
-          = std::async (std::launch::async, Patata::Log::ErrorMessage,
+          = std::async (std::launch::async, Patache::Log::ErrorMessage,
                         "You cannot initialize the implementation without "
                         "having initialized the ImGui context first");
 
@@ -142,7 +142,7 @@ Patata::Engine::InitImguiVulkan (void)
   if (Result != vk::Result::eSuccess)
     {
       std::future<void> ReturnVulkanCheck
-          = std::async (std::launch::async, Patata::Log::VulkanCheck,
+          = std::async (std::launch::async, Patache::Log::VulkanCheck,
                         "Get Surface Capabilities KHR", Result);
 
       return false;
@@ -174,9 +174,9 @@ Patata::Engine::InitImguiVulkan (void)
   if (!ImGui_ImplVulkan_Init (&ImGuiImplInitInfo))
     {
       fast_io::io::print (
-          PATATA_FAST_IO_BUFF_OUT, PATATA_TERM_BOLD,
-          "ImGui Vulkan Implementation Initialization : ", PATATA_TERM_RESET,
-          PATATA_TERM_COLOR_YELLOW, "Fail", PATATA_TERM_RESET);
+          PATACHE_FAST_IO_BUFF_OUT, PATACHE_TERM_BOLD,
+          "ImGui Vulkan Implementation Initialization : ", PATACHE_TERM_RESET,
+          PATACHE_TERM_COLOR_YELLOW, "Fail", PATACHE_TERM_RESET);
 
       return false;
     }

@@ -6,7 +6,7 @@
 #include <SDL3/SDL.h>
 // #include <cglm/cglm.h>
 
-// Patata Engine
-#include "PatataEngine/PatataEngine.hpp"
+// Patache Engine
+#include "PatacheEngine/PatacheEngine.hpp"
 #include "Log.hpp"
 #include "CstringWrapped.hpp"

@@ -1,9 +1,9 @@
-add_custom_target(PatataFiles
+add_custom_target(PatacheFiles
   COMMENT "Copying engine files")
 
 if (MSVC)
-	if (TARGET PatataFiles)
-		set_target_properties(PatataFiles PROPERTIES FOLDER "Engine")
+  if (TARGET PatacheFiles)
+		set_target_properties(PatacheFiles PROPERTIES FOLDER "Engine")
 	endif()
 endif()
 
@@ -11,7 +11,7 @@ endif()
 if (MSVC)
 	add_custom_command(
         POST_BUILD
-        TARGET PatataFiles
+        TARGET PatacheFiles
         COMMAND ${CMAKE_COMMAND} -E copy
             ${CMAKE_CURRENT_SOURCE_DIR}/config.yaml
             ${BIN_DIR}/${CMAKE_BUILD_TYPE}
@@ -19,7 +19,7 @@ if (MSVC)
 
     add_custom_command(
         POST_BUILD
-        TARGET PatataFiles
+        TARGET PatacheFiles
         COMMAND ${CMAKE_COMMAND} -E copy_directory
             ${CMAKE_CURRENT_SOURCE_DIR}/LICENSES
             ${BIN_DIR}/${CMAKE_BUILD_TYPE}/LICENSES
@@ -28,7 +28,7 @@ if (MSVC)
     # El Caso especial de Visual Studio. Sin esto, la bibloteca no podra encontrar el archivo YAML cuando se ejecute desde Visual Studio
     add_custom_command(
         POST_BUILD
-        TARGET PatataFiles
+        TARGET PatacheFiles
         COMMAND ${CMAKE_COMMAND} -E copy
             ${CMAKE_CURRENT_SOURCE_DIR}/config.yaml
             ${CMAKE_BINARY_DIR}
@@ -37,7 +37,7 @@ else ()
     # === GCC or Clang ===
     add_custom_command(
         POST_BUILD
-        TARGET PatataFiles
+        TARGET PatacheFiles
         COMMAND ${CMAKE_COMMAND} -E copy
             ${CMAKE_CURRENT_SOURCE_DIR}/config.yaml
             ${BIN_DIR}
@@ -45,7 +45,7 @@ else ()
 
     add_custom_command(
         POST_BUILD
-        TARGET PatataFiles
+        TARGET PatacheFiles
         COMMAND ${CMAKE_COMMAND} -E copy_directory
             ${CMAKE_CURRENT_SOURCE_DIR}/LICENSES
             ${BIN_DIR}/LICENSES

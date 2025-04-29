@@ -1,22 +1,22 @@
 #include "Vulkan_Render.hpp"
 
 bool
-Patata::Engine::BeginRender (SDL_Event & Event)
+Patache::Engine::BeginRender (SDL_Event & Event)
 {
   // Wait Fences
   vk::Result Result = Vulkan.Device.waitForFences (
       1, &Vulkan.InFlightFences[Vulkan.CurrentFrame], VK_TRUE, UINT64_MAX);
 
-#if PATATA_DEBUG == 1
+#if PATACHE_DEBUG == 1
   if (Result != vk::Result::eSuccess)
     {
-      char ErrorText[PATATA_ERROR_TEXT_SIZE]{ 0 };
+      char ErrorText[PATACHE_ERROR_TEXT_SIZE]{ 0 };
 
-      std::snprintf (ErrorText, PATATA_ERROR_TEXT_SIZE - 1,
+      std::snprintf (ErrorText, PATACHE_ERROR_TEXT_SIZE - 1,
                      "Wait For Fence #%.3u", Vulkan.CurrentFrame);
 
       std::future<void> ReturnVulkanCheck = std::async (
-          std::launch::async, Patata::Log::VulkanCheck, ErrorText, Result);
+          std::launch::async, Patache::Log::VulkanCheck, ErrorText, Result);
     }
 #endif
 
@@ -32,10 +32,10 @@ Patata::Engine::BeginRender (SDL_Event & Event)
   Result = Vulkan.Device.acquireNextImage2KHR (&NextImageInfo,
                                                &Vulkan.ImageIndex);
 
-#if PATATA_DEBUG == 1
+#if PATACHE_DEBUG == 1
   if (Result != vk::Result::eSuccess)
     std::future<void> ReturnVulkanCheck
-        = std::async (std::launch::async, Patata::Log::VulkanCheck,
+        = std::async (std::launch::async, Patache::Log::VulkanCheck,
                       "Acquire Next Image 2 KHR", Result);
 #endif
 
@@ -52,16 +52,16 @@ Patata::Engine::BeginRender (SDL_Event & Event)
   Result = Vulkan.Device.resetFences (
       1, &Vulkan.InFlightFences[Vulkan.CurrentFrame]);
 
-#if PATATA_DEBUG == 1
+#if PATACHE_DEBUG == 1
   if (Result != vk::Result::eSuccess)
     {
-      char ErrorText[PATATA_ERROR_TEXT_SIZE]{ 0 };
+      char ErrorText[PATACHE_ERROR_TEXT_SIZE]{ 0 };
 
-      std::snprintf (ErrorText, PATATA_ERROR_TEXT_SIZE - 1,
+      std::snprintf (ErrorText, PATACHE_ERROR_TEXT_SIZE - 1,
                      "Reset Fence #%.3u", Vulkan.CurrentFrame);
 
       std::future<void> ReturnVulkanCheck = std::async (
-          std::launch::async, Patata::Log::VulkanCheck, ErrorText, Result);
+          std::launch::async, Patache::Log::VulkanCheck, ErrorText, Result);
     }
 #endif
 
@@ -76,10 +76,10 @@ Patata::Engine::BeginRender (SDL_Event & Event)
   // Begin Command Buffer
   Result = Vulkan.Cmd[Vulkan.CurrentFrame].begin (&cmdBufferBeginInfo);
 
-#if PATATA_DEBUG == 1
+#if PATACHE_DEBUG == 1
   if (Result != vk::Result::eSuccess)
     std::future<void> ReturnVulkanCheck
-        = std::async (std::launch::async, Patata::Log::VulkanCheck,
+        = std::async (std::launch::async, Patache::Log::VulkanCheck,
                       "Command Buffer Begin", Result);
 #endif
 
@@ -129,7 +129,7 @@ Patata::Engine::BeginRender (SDL_Event & Event)
   Vulkan.Cmd[Vulkan.CurrentFrame].draw (3, 1, 0, 0);
 
 // Imgui New Frame
-#if PATATA_DEBUG == 1
+#if PATACHE_DEBUG == 1
   ImGui_ImplVulkan_NewFrame ();
   ImGui_ImplSDL3_NewFrame ();
   ImGui::NewFrame ();
@@ -140,23 +140,23 @@ Patata::Engine::BeginRender (SDL_Event & Event)
   return true;
 }
 
-#if PATATA_DEBUG == 1
+#if PATACHE_DEBUG == 1
 #include "DrawDebugUI.hpp"
 #endif
 
 void
-Patata::Engine::EndRender (SDL_Event & Event)
+Patache::Engine::EndRender (SDL_Event & Event)
 {
-#if PATATA_DEBUG == 1
+#if PATACHE_DEBUG == 1
   // Imgui New Frame
   // ImGui::ShowDemoWindow ();
-  Patata::DrawDebugUI (&engineInfo, configuration, Vulkan.SwapChainImageCount,
+  Patache::DrawDebugUI (&engineInfo, configuration, Vulkan.SwapChainImageCount,
                        Vulkan.SwapChainExtent);
 
   ImGui::Render ();
 
-  if (engineInfo.ShowMainMenuBar || engineInfo.PatataInfoWindow
-      || engineInfo.PatataConfigWindow)
+  if (engineInfo.ShowMainMenuBar || engineInfo.PatacheInfoWindow
+      || engineInfo.PatacheConfigWindow)
     ImGui_ImplVulkan_RenderDrawData (
         ImGui::GetDrawData (),
         static_cast<VkCommandBuffer> (Vulkan.Cmd[Vulkan.CurrentFrame]),
@@ -169,16 +169,16 @@ Patata::Engine::EndRender (SDL_Event & Event)
   // End Command Buffer
   vk::Result Result = Vulkan.Cmd[Vulkan.CurrentFrame].end ();
 
-#if PATATA_DEBUG == 1
+#if PATACHE_DEBUG == 1
   if (Result != vk::Result::eSuccess)
     {
-      char ErrorText[PATATA_ERROR_TEXT_SIZE]{ 0 };
+      char ErrorText[PATACHE_ERROR_TEXT_SIZE]{ 0 };
 
-      std::snprintf (ErrorText, PATATA_ERROR_TEXT_SIZE - 1,
+      std::snprintf (ErrorText, PATACHE_ERROR_TEXT_SIZE - 1,
                      "End Command Buffer #%.3u", Vulkan.CurrentFrame);
 
       std::future<void> ReturnVulkanCheck = std::async (
-          std::launch::async, Patata::Log::VulkanCheck, ErrorText, Result);
+          std::launch::async, Patache::Log::VulkanCheck, ErrorText, Result);
     }
 #endif
 
@@ -202,10 +202,10 @@ Patata::Engine::EndRender (SDL_Event & Event)
                                   Vulkan.InFlightFences[Vulkan.CurrentFrame]);
   }
 
-#if PATATA_DEBUG == 1
+#if PATACHE_DEBUG == 1
   if (Result != vk::Result::eSuccess)
     std::future<void> ReturnVulkanCheck
-        = std::async (std::launch::async, Patata::Log::VulkanCheck,
+        = std::async (std::launch::async, Patache::Log::VulkanCheck,
                       "Queue Submit 2", Result);
 #endif
 
@@ -220,10 +220,10 @@ Patata::Engine::EndRender (SDL_Event & Event)
 
   Result = Vulkan.Queue.presentKHR (&PresentInfo);
 
-#if PATATA_DEBUG == 1
+#if PATACHE_DEBUG == 1
   if (Result != vk::Result::eSuccess)
     std::future<void> ReturnVulkanCheck = std::async (
-        std::launch::async, Patata::Log::VulkanCheck, "Present KHR", Result);
+        std::launch::async, Patache::Log::VulkanCheck, "Present KHR", Result);
 #endif
 
   // Resize
@@ -240,7 +240,7 @@ Patata::Engine::EndRender (SDL_Event & Event)
 
       if (Result != vk::Result::eSuccess)
         std::future<void> ReturnVulkanCheck
-            = std::async (std::launch::async, Patata::Log::VulkanCheck,
+            = std::async (std::launch::async, Patache::Log::VulkanCheck,
                           "Get Surface Capabilities KHR", Result);
 
       if (Sc.currentExtent.width != Vulkan.SwapChainExtent.width

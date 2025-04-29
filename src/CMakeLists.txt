@@ -6,10 +6,10 @@ endif()
 
 add_subdirectory(RaccoonRenderer/Shaders)
 
-add_dependencies(${PROJECT_NAME} PatataFiles PatataCompileShaders)
+add_dependencies(${PROJECT_NAME} PatacheFiles PatacheCompileShaders)
 
 target_sources (${PROJECT_NAME} PRIVATE
- "Core/PatataEngine.cpp"
+ "Core/PatacheEngine.cpp"
  "Core/Configuration.cpp"
  "Core/Input.cpp"
  "Core/ClearColor.cpp"
@@ -33,7 +33,7 @@ target_sources (${PROJECT_NAME} PRIVATE
 
 if (MSVC)
     # List Headers Files in Visual Studio
-    file(GLOB_RECURSE Include "${CMAKE_CURRENT_SOURCE_DIR}/../include/PatataEngine/*.hpp")
+    file(GLOB_RECURSE Include "${CMAKE_CURRENT_SOURCE_DIR}/../include/PatacheEngine/*.hpp")
     file(GLOB_RECURSE IncludeInternal "${CMAKE_CURRENT_SOURCE_DIR}/*.hpp")
 
     target_sources(${PROJECT_NAME} PRIVATE ${Include} ${IncludeInternal})
@@ -42,22 +42,23 @@ endif()
 if (CMAKE_SYSTEM_NAME STREQUAL "Windows" OR WIN32)
     enable_language(RC)
 
-    target_sources (${PROJECT_NAME} PRIVATE "PatataEngine.rc")
+    target_sources (${PROJECT_NAME} PRIVATE "PatacheEngine.rc")
 endif()
 
 if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo")
-    target_sources(${PROJECT_NAME} PRIVATE "ImGUI/SetupImgui.cpp")
+    target_sources(${PROJECT_NAME} PRIVATE "ImGui/SetupImgui.cpp")
 endif()
 
 target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../include/")
 target_include_directories(${PROJECT_NAME} PRIVATE
   "${CMAKE_CURRENT_SOURCE_DIR}/Core/"
-  "${CMAKE_CURRENT_SOURCE_DIR}/ImGUI/"
+  "${CMAKE_CURRENT_SOURCE_DIR}/ImGui/"
   "${CMAKE_CURRENT_SOURCE_DIR}/Log/"
   "${CMAKE_CURRENT_SOURCE_DIR}/RaccoonRenderer/")
 
 # Compiler Flags
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    # GNU & Clang
     if (MINGW AND (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo") AND COMPILER_SUPPORTS_FPERMISSIVE)
         # Mingw specific function conversion in vulkan
         target_compile_options(${PROJECT_NAME} PRIVATE "-fpermissive")
@@ -98,6 +99,7 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clan
       endif()
     endif()
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+    # MSVC
     if (COMPILER_SUPPORTS_C++20)
         target_compile_options(${PROJECT_NAME} PRIVATE "/std:c++20")
     endif()
@@ -127,36 +129,37 @@ endif()
 
 # Macros
 if (${CMAKE_BUILD_TYPE} STREQUAL "Release")
-    target_compile_definitions(${PROJECT_NAME} PRIVATE PATATA_BUILD_TYPE="Release")
-    target_compile_definitions(${PROJECT_NAME} PUBLIC PATATA_DEBUG=0)
+  target_compile_definitions(${PROJECT_NAME} PRIVATE PATACHE_BUILD_TYPE="Release")
+  target_compile_definitions(${PROJECT_NAME} PUBLIC PATACHE_DEBUG=0)
 elseif(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
-    target_compile_definitions(${PROJECT_NAME} PRIVATE PATATA_BUILD_TYPE="Debug")
-    target_compile_definitions(${PROJECT_NAME} PUBLIC PATATA_DEBUG=1)
+  target_compile_definitions(${PROJECT_NAME} PRIVATE PATACHE_BUILD_TYPE="Debug")
+  target_compile_definitions(${PROJECT_NAME} PUBLIC PATACHE_DEBUG=1)
 elseif(${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo")
-    target_compile_definitions(${PROJECT_NAME} PRIVATE PATATA_BUILD_TYPE="Debug Optimized")
-    target_compile_definitions(${PROJECT_NAME} PUBLIC PATATA_DEBUG=1)
+  target_compile_definitions(${PROJECT_NAME} PRIVATE PATACHE_BUILD_TYPE="Debug Optimized")
+  target_compile_definitions(${PROJECT_NAME} PUBLIC PATACHE_DEBUG=1)
 elseif(${CMAKE_BUILD_TYPE} STREQUAL "MinSizeRel")
-    target_compile_definitions(${PROJECT_NAME} PRIVATE PATATA_BUILD_TYPE="Minimal Size Release")
-    target_compile_definitions(${PROJECT_NAME} PUBLIC PATATA_DEBUG=0)
+  target_compile_definitions(${PROJECT_NAME} PRIVATE PATACHE_BUILD_TYPE="Minimal Size Release")
+  target_compile_definitions(${PROJECT_NAME} PUBLIC PATACHE_DEBUG=0)
 endif()
 
 if (NOT "${CMAKE_GENERATOR_VERSION}" STREQUAL "")
-    target_compile_definitions(${PROJECT_NAME} PRIVATE PATATA_BUILD_SYSTEM_GENERATOR_VERSION="${CMAKE_GENERATOR_VERSION}")
+  target_compile_definitions(${PROJECT_NAME} PRIVATE
+    PATACHE_BUILD_SYSTEM_GENERATOR_VERSION="${CMAKE_GENERATOR_VERSION}")
 endif()
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE
- PATATA_BUILD_SYSTEM="CMake"
- PATATA_BUILD_SYSTEM_VERSION="${CMAKE_VERSION}"
- PATATA_BUILD_SYSTEM_GENERATOR="${CMAKE_GENERATOR}"
- PATATA_ENGINE_VERSION="${PATATA_ENGINE_VERSION}"
- PATATA_ENGINE_VERSION_MAYOR=${PATATA_ENGINE_VERSION_MAYOR}
- PATATA_ENGINE_VERSION_MINOR=${PATATA_ENGINE_VERSION_MINOR}
- PATATA_ENGINE_VERSION_PATCH=${PATATA_ENGINE_VERSION_PATCH}
- PATATA_ENGINE_NAME="Patata Engine"
- PATATA_COMPILER_PROGRAM="${compiler_program}"
- PATATA_COMPILER_VERSION="${CMAKE_CXX_COMPILER_VERSION}"
- PATATA_ARCH="${CMAKE_SYSTEM_PROCESSOR}"
- PATATA_FAST_IO_GIT_COMMIT_HASH_SHORT="${Fast_io_COMMIT_SHORT_HASH}"
+ PATACHE_BUILD_SYSTEM="CMake"
+ PATACHE_BUILD_SYSTEM_VERSION="${CMAKE_VERSION}"
+ PATACHE_BUILD_SYSTEM_GENERATOR="${CMAKE_GENERATOR}"
+ PATACHE_ENGINE_VERSION="${PATACHE_ENGINE_VERSION}"
+ PATACHE_ENGINE_VERSION_MAYOR=${PATACHE_ENGINE_VERSION_MAYOR}
+ PATACHE_ENGINE_VERSION_MINOR=${PATACHE_ENGINE_VERSION_MINOR}
+ PATACHE_ENGINE_VERSION_PATCH=${PATACHE_ENGINE_VERSION_PATCH}
+ PATACHE_ENGINE_NAME="Patache Engine"
+ PATACHE_COMPILER_PROGRAM="${compiler_program}"
+ PATACHE_COMPILER_VERSION="${CMAKE_CXX_COMPILER_VERSION}"
+ PATACHE_ARCH="${CMAKE_SYSTEM_PROCESSOR}"
+ PATACHE_FAST_IO_GIT_COMMIT_HASH_SHORT="${Fast_io_COMMIT_SHORT_HASH}"
  VULKAN_HPP_NO_EXCEPTIONS
  VULKAN_HPP_NO_SMART_HANDLE
  VULKAN_HPP_NO_CONSTRUCTORS)
@@ -168,28 +171,28 @@ endif()
 # Git
 if (USE_GIT AND GIT)
     target_compile_definitions(${PROJECT_NAME} PRIVATE
-        PATATA_GIT_BRANCH="${PATATA_GIT_BRANCH}"
-        PATATA_GIT_HASH_LONG="${PATATA_GIT_HASH_LONG}"
-        PATATA_GIT_HASH_SHORT="${PATATA_GIT_HASH_SHORT}"
-        PATATA_GIT_WORK_DIR_IS_CLEAN="${PATATA_GIT_WORK_DIR_IS_CLEAN}"
-        PATATA_GIT_WORK_DIR_IS_CLEAN_BOOL=${PATATA_GIT_WORK_DIR_IS_CLEAN_BOOL}
-        PATATA_GIT_WORK_DIR_IS_STAGED="${PATATA_GIT_WORK_DIR_IS_STAGED}"
-        PATATA_GIT_WORK_DIR_IS_STAGED_BOOL=${PATATA_GIT_WORK_DIR_IS_STAGED_BOOL})
+        PATACHE_GIT_BRANCH="${PATACHE_GIT_BRANCH}"
+        PATACHE_GIT_HASH_LONG="${PATACHE_GIT_HASH_LONG}"
+        PATACHE_GIT_HASH_SHORT="${PATACHE_GIT_HASH_SHORT}"
+        PATACHE_GIT_WORK_DIR_IS_CLEAN="${PATACHE_GIT_WORK_DIR_IS_CLEAN}"
+        PATACHE_GIT_WORK_DIR_IS_CLEAN_BOOL=${PATACHE_GIT_WORK_DIR_IS_CLEAN_BOOL}
+        PATACHE_GIT_WORK_DIR_IS_STAGED="${PATACHE_GIT_WORK_DIR_IS_STAGED}"
+        PATACHE_GIT_WORK_DIR_IS_STAGED_BOOL=${PATACHE_GIT_WORK_DIR_IS_STAGED_BOOL})
 endif()
 
 if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo")
-    target_compile_definitions(${PROJECT_NAME} PRIVATE PATATA_IMGUI_VERSION="${Imgui_VERSION}")
+    target_compile_definitions(${PROJECT_NAME} PRIVATE PATACHE_IMGUI_VERSION="${Imgui_VERSION}")
 endif()
 
 if (USE_VVL)
-    target_compile_definitions(${PROJECT_NAME} PRIVATE PATATA_USE_VVL)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE PATACHE_USE_VVL)
 endif()
 
 # Link Libraries
 if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" OR (CMAKE_SYSTEM_NAME STREQUAL "Linux" AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU"))
     # Using VVL
     if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo" AND USE_VVL)
-        target_compile_definitions(${PROJECT_NAME} PRIVATE PATATA_FIND_VVL_IN_THE_CURRENT_PATH)
+        target_compile_definitions(${PROJECT_NAME} PRIVATE PATACHE_FIND_VVL_IN_THE_CURRENT_PATH)
     endif()
 
     # build Vulkan
@@ -219,7 +222,8 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
         set (VULKANSDK_VVL_PATH "${VULKANSDK_VVL_PATH}/Bin")
         message(STATUS "Validation Layer Path : ${VULKANSDK_VVL_PATH}")
 
-        target_compile_definitions(${PROJECT_NAME} PRIVATE PATATA_FIND_VVL_FROM_SDK PATATA_VVL_SDK_PATH="${VULKANSDK_VVL_PATH}")
+        target_compile_definitions(${PROJECT_NAME} PRIVATE
+          PATACHE_FIND_VVL_FROM_SDK PATACHE_VVL_SDK_PATH="${VULKANSDK_VVL_PATH}")
     endif()
 endif()
 
@@ -249,7 +253,7 @@ endif()
 # MSVC Folders
 if (MSVC)
     set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER "Engine")
-    set_target_properties(PatataCompileShaders PROPERTIES FOLDER "Engine")
+    set_target_properties(PatacheCompileShaders PROPERTIES FOLDER "Engine")
 
     if (TARGET cglm)
       set_target_properties(cglm PROPERTIES FOLDER "Engine/Dependencies/")
@@ -352,5 +356,5 @@ endif()
 
 set_target_properties(${PROJECT_NAME}
     PROPERTIES
-    VERSION "${PATATA_ENGINE_VERSION}"
+    VERSION "${PATACHE_ENGINE_VERSION}"
     INTERPROCEDURAL_OPTIMIZATION TRUE)

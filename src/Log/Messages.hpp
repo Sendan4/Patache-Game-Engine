@@ -6,8 +6,8 @@
 #include <windows.h>
 #endif
 
-// Patata Engine
-#include "PatataEngine/PatataEngine.hpp"
+// Patache Engine
+#include "PatacheEngine/PatacheEngine.hpp"
 #include "ColorTerminal.hpp"
 #include "Log.hpp"
 #include "CstringWrapped.hpp"

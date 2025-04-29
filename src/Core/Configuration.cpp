@@ -1,7 +1,7 @@
 #include "Configuration.hpp"
 
 bool
-Patata::Engine::LoadConfiguration (void)
+Patache::Engine::LoadConfiguration (void)
 {
   fast_io::dir_file ExecutableDirectory (
       fast_io::mnp::os_c_str (SDL_GetBasePath ()));
@@ -16,130 +16,145 @@ Patata::Engine::LoadConfiguration (void)
   if (YamlConfig.invalid () || !YamlConfig.readable ())
     {
       std::future<void> Err
-          = std::async (std::launch::async, Patata::Log::ErrorMessage,
+          = std::async (std::launch::async, Patache::Log::ErrorMessage,
                         "Yaml Config File is invalid or inreadable");
     }
   else
     {
       // General
       // Bool Type
-      if (YamlConfig["patata-engine"]["show-fatal-error-messagebox"].val ()
+      if (YamlConfig["patache-engine"]["show-fatal-error-messagebox"].val ()
               == "true"
-          || YamlConfig["patata-engine"]["show-fatal-error-messagebox"].val ()
+          || YamlConfig["patache-engine"]["show-fatal-error-messagebox"].val ()
                  == "false"
-          || YamlConfig["patata-engine"]["show-fatal-error-messagebox"].val ()
+          || YamlConfig["patache-engine"]["show-fatal-error-messagebox"].val ()
                  == "1"
-          || YamlConfig["patata-engine"]["show-fatal-error-messagebox"].val ()
+          || YamlConfig["patache-engine"]["show-fatal-error-messagebox"].val ()
                  == "0")
-        YamlConfig["patata-engine"]["show-fatal-error-messagebox"]
-            >> configuration.ShowFatalErrorMessagebox;
+        {
+          YamlConfig["patache-engine"]["show-fatal-error-messagebox"]
+              >> configuration.ShowFatalErrorMessagebox;
+        }
       else
         {
-          char ErrorText[PATATA_ERROR_TEXT_SIZE]{ 0 };
+          char ErrorText[PATACHE_ERROR_TEXT_SIZE]{ 0 };
 
-          std::snprintf (ErrorText, PATATA_ERROR_TEXT_SIZE - 1,
-                         "in YAML configure file (%s%s)\n'patata-engine : "
-                         "show-fatal-error-messagebox' must "
-                         "be a boolean value (True or False)",
-                         SDL_GetBasePath (), GAME_CONFIG_FILE_NAME);
+          std::snprintf (
+              ErrorText, PATACHE_ERROR_TEXT_SIZE - 1,
+              "in YAML configure file (%s/config.yaml)\n'patache-engine : "
+              "show-fatal-error-messagebox' must "
+              "be a boolean value (True or False)",
+              SDL_GetBasePath ());
 
           std::future<void> Err = std::async (
-              std::launch::async, Patata::Log::ErrorMessage, ErrorText);
+              std::launch::async, Patache::Log::ErrorMessage, ErrorText);
         }
 
       // Raccoon Renderer
       // Bool Type
       // Vsync
-      if (YamlConfig["patata-engine"]["raccoon-renderer"]["vsync"].val ()
+      if (YamlConfig["patache-engine"]["raccoon-renderer"]["vsync"].val ()
               == "true"
-          || YamlConfig["patata-engine"]["raccoon-renderer"]["vsync"].val ()
+          || YamlConfig["patache-engine"]["raccoon-renderer"]["vsync"].val ()
                  == "false"
-          || YamlConfig["patata-engine"]["raccoon-renderer"]["vsync"].val ()
+          || YamlConfig["patache-engine"]["raccoon-renderer"]["vsync"].val ()
                  == "1"
-          || YamlConfig["patata-engine"]["raccoon-renderer"]["vsync"].val ()
+          || YamlConfig["patache-engine"]["raccoon-renderer"]["vsync"].val ()
                  == "0")
-        YamlConfig["patata-engine"]["raccoon-renderer"]["vsync"]
-            >> configuration.Vsync;
+        {
+          YamlConfig["patache-engine"]["raccoon-renderer"]["vsync"]
+              >> configuration.Vsync;
+        }
       else
         {
-          char ErrorText[PATATA_ERROR_TEXT_SIZE]{ 0 };
+          char ErrorText[PATACHE_ERROR_TEXT_SIZE]{ 0 };
 
-          std::snprintf (ErrorText, PATATA_ERROR_TEXT_SIZE - 1,
-                         "in YAML configure file (%s%s)\n'patata-engine : "
-                         "raccoon-renderer : vsync' must "
-                         "be a boolean value (True or False)",
-                         SDL_GetBasePath (), GAME_CONFIG_FILE_NAME);
+          std::snprintf (
+              ErrorText, PATACHE_ERROR_TEXT_SIZE - 1,
+              "in YAML configure file (%s/config.yaml)\n'patache-engine : "
+              "raccoon-renderer : vsync' must "
+              "be a boolean value (True or False)",
+              SDL_GetBasePath ());
 
           std::future<void> Err = std::async (
-              std::launch::async, Patata::Log::ErrorMessage, ErrorText);
+              std::launch::async, Patache::Log::ErrorMessage, ErrorText);
         }
 
       // Bool Type
       // 10 Bit Depth
-      if (YamlConfig["patata-engine"]["raccoon-renderer"]["10bit-depth"].val ()
+      if (YamlConfig["patache-engine"]["raccoon-renderer"]["10bit-depth"]
+                  .val ()
               == "true"
-          || YamlConfig["patata-engine"]["raccoon-renderer"]["10bit-depth"]
+          || YamlConfig["patache-engine"]["raccoon-renderer"]["10bit-depth"]
                      .val ()
                  == "false"
-          || YamlConfig["patata-engine"]["raccoon-renderer"]["10bit-depth"]
+          || YamlConfig["patache-engine"]["raccoon-renderer"]["10bit-depth"]
                      .val ()
                  == "1"
-          || YamlConfig["patata-engine"]["raccoon-renderer"]["10bit-depth"]
+          || YamlConfig["patache-engine"]["raccoon-renderer"]["10bit-depth"]
                      .val ()
                  == "0")
-        YamlConfig["patata-engine"]["raccoon-renderer"]["10bit-depth"]
-            >> configuration.BitDepth10;
+        {
+          YamlConfig["patache-engine"]["raccoon-renderer"]["10bit-depth"]
+              >> configuration.BitDepth10;
+        }
       else
         {
-          char ErrorText[PATATA_ERROR_TEXT_SIZE]{ 0 };
+          char ErrorText[PATACHE_ERROR_TEXT_SIZE]{ 0 };
 
-          std::snprintf (ErrorText, PATATA_ERROR_TEXT_SIZE - 1,
-                         "in YAML configure file (%s%s)\n'patata-engine : "
-                         "raccoon-renderer : 10bit-depth' must "
-                         "be a boolean value (True or False)",
-                         SDL_GetBasePath (), GAME_CONFIG_FILE_NAME);
+          std::snprintf (
+              ErrorText, PATACHE_ERROR_TEXT_SIZE - 1,
+              "in YAML configure file (%s/config.yaml)\n'patache-engine : "
+              "raccoon-renderer : 10bit-depth' must "
+              "be a boolean value (True or False)",
+              SDL_GetBasePath ());
 
           std::future<void> Err = std::async (
-              std::launch::async, Patata::Log::ErrorMessage, ErrorText);
+              std::launch::async, Patache::Log::ErrorMessage, ErrorText);
         }
 
       // std::uint8_t type
       // Add Image Count
       if (!ryml::overflows<std::uint8_t> (
-              YamlConfig["patata-engine"]["raccoon-renderer"]
+              YamlConfig["patache-engine"]["raccoon-renderer"]
                         ["add-image-count"]
                             .val ())
-          && YamlConfig["patata-engine"]["raccoon-renderer"]["add-image-count"]
-                 .val ()
-                 .is_integer ())
-        YamlConfig["patata-engine"]["raccoon-renderer"]["add-image-count"]
-            >> configuration.AddImageCount;
+          && YamlConfig["patache-engine"]["raccoon-renderer"]
+                       ["add-image-count"]
+                           .val ()
+                           .is_integer ())
+        {
+          YamlConfig["patache-engine"]["raccoon-renderer"]["add-image-count"]
+              >> configuration.AddImageCount;
+        }
       else
         {
-          char ErrorText[PATATA_ERROR_TEXT_SIZE]{ 0 };
+          char ErrorText[PATACHE_ERROR_TEXT_SIZE]{ 0 };
 
-          std::snprintf (ErrorText, PATATA_ERROR_TEXT_SIZE - 1,
-                         "in YAML configure file (%s%s)\n'patata-engine : "
-                         "raccoon-renderer : add-image-count' must "
-                         "be a 8bit unsigned interger (0 - 4)",
-                         SDL_GetBasePath (), GAME_CONFIG_FILE_NAME);
+          std::snprintf (
+              ErrorText, PATACHE_ERROR_TEXT_SIZE - 1,
+              "in YAML configure file (%s/config.yaml)\n'patache-engine : "
+              "raccoon-renderer : add-image-count' must "
+              "be a 8bit unsigned interger (0 - 4)",
+              SDL_GetBasePath ());
 
           std::future<void> Err = std::async (
-              std::launch::async, Patata::Log::ErrorMessage, ErrorText);
+              std::launch::async, Patache::Log::ErrorMessage, ErrorText);
         }
 
       if (configuration.AddImageCount > 4)
         {
-          char ErrorText[PATATA_ERROR_TEXT_SIZE]{ 0 };
+          char ErrorText[PATACHE_ERROR_TEXT_SIZE]{ 0 };
 
-          std::snprintf (ErrorText, PATATA_ERROR_TEXT_SIZE - 1,
-                         "in YAML configure file (%s%s)\n'patata-engine : "
-                         "raccoon-renderer : add-image-count' The allowed "
-                         "range is (0 - 4)",
-                         SDL_GetBasePath (), GAME_CONFIG_FILE_NAME);
+          std::snprintf (
+              ErrorText, PATACHE_ERROR_TEXT_SIZE - 1,
+              "in YAML configure file (%s/config.yaml)\n'patache-engine : "
+              "raccoon-renderer : add-image-count' The allowed "
+              "range is (0 - 4)",
+              SDL_GetBasePath ());
 
           std::future<void> Err = std::async (
-              std::launch::async, Patata::Log::ErrorMessage, ErrorText);
+              std::launch::async, Patache::Log::ErrorMessage, ErrorText);
 
           configuration.AddImageCount = 0;
         }

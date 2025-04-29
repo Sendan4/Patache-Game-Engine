@@ -1,7 +1,7 @@
 #include "Vulkan_CommandPoolAndBuffer.hpp"
 
 bool
-Patata::Engine::CreateCommandPool (void)
+Patache::Engine::CreateCommandPool (void)
 {
   vk::CommandPoolCreateInfo CommandPoolInfo{
     .flags            = vk::CommandPoolCreateFlagBits::eResetCommandBuffer,
@@ -14,7 +14,7 @@ Patata::Engine::CreateCommandPool (void)
   if (Result != vk::Result::eSuccess)
     {
       std::future<void> ReturnVulkanCheck
-          = std::async (std::launch::async, Patata::Log::VulkanCheck,
+          = std::async (std::launch::async, Patache::Log::VulkanCheck,
                         "Command Pool", Result);
       return false;
     }
@@ -23,7 +23,7 @@ Patata::Engine::CreateCommandPool (void)
 }
 
 bool
-Patata::Engine::CreateCommandBuffer (void)
+Patache::Engine::CreateCommandBuffer (void)
 {
   vk::CommandBufferAllocateInfo cmdAllocateInfo{
     .commandPool        = Vulkan.CommandPool,
@@ -39,13 +39,13 @@ Patata::Engine::CreateCommandBuffer (void)
 
   if (Result != vk::Result::eSuccess)
     {
-      char ErrorText[PATATA_ERROR_TEXT_SIZE]{ 0 };
+      char ErrorText[PATACHE_ERROR_TEXT_SIZE]{ 0 };
 
-      std::snprintf (ErrorText, PATATA_ERROR_TEXT_SIZE - 1,
+      std::snprintf (ErrorText, PATACHE_ERROR_TEXT_SIZE - 1,
                      "Allocate Command Buffer #%.3u", Vulkan.CurrentFrame);
 
       std::future<void> ReturnVulkanCheck = std::async (
-          std::launch::async, Patata::Log::VulkanCheck, ErrorText, Result);
+          std::launch::async, Patache::Log::VulkanCheck, ErrorText, Result);
 
       return false;
     }

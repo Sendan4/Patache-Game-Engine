@@ -2,6 +2,6 @@
 
 #include <SDL3/SDL.h>
 
-// Patata Engine
-#include "PatataEngine/PatataEngine.hpp"
+// Patache Engine
+#include "PatacheEngine/PatacheEngine.hpp"
 #include "Log.hpp"

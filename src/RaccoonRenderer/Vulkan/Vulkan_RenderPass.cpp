@@ -1,7 +1,7 @@
 #include "Vulkan_RenderPass.hpp"
 
 bool
-Patata::Engine::CreateRenderPass (const Patata::SwapChainInfo & SwapChainInfo)
+Patache::Engine::CreateRenderPass (const Patache::SwapChainInfo & SwapChainInfo)
 {
   vk::AttachmentDescription ColorAttachmentDescriptionInfo{
     .format         = SwapChainInfo.ImageColorFormat,
@@ -38,7 +38,7 @@ Patata::Engine::CreateRenderPass (const Patata::SwapChainInfo & SwapChainInfo)
   if (Result != vk::Result::eSuccess)
     {
       std::future<void> ReturnVulkanCheck = std::async (
-          std::launch::async, Patata::Log::VulkanCheck, "Render Pass", Result);
+          std::launch::async, Patache::Log::VulkanCheck, "Render Pass", Result);
 
       return false;
     }

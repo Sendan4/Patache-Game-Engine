@@ -1,5 +1,5 @@
 #pragma once
-namespace Patata
+namespace Patache
 {
 struct VulkanBackend
 {
@@ -49,7 +49,7 @@ struct VulkanBackend
   vk::Pipeline       GraphicsPipeline      = VK_NULL_HANDLE;
   vk::PipelineCache  GraphicsPipelineCache = VK_NULL_HANDLE;
 
-#if PATATA_DEBUG == 1
+#if PATACHE_DEBUG == 1
   vk::DebugUtilsMessengerEXT DebugMessenger = VK_NULL_HANDLE;
 
   // Imgui

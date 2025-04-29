@@ -1,21 +1,23 @@
 | [Español](README.md) | English |
 | :--: | :--: |
 
-<p align = "center"><img draggable = false src = "data/assets/icon/patata_icon.svg?ref_type=heads&inline=false" width=64></p>
+<p align = "center"><img draggable = false src = "data/assets/patache.svg?ref_type=heads&inline=false" width=64></p>
 
-<h1 align = "center">Potato Engine</h1>
+<h1 align = "center">Patache Engine</h1>
 
 _Dumb and simple game engine made in C++._
 
-<p>Patata is a 2D engine, simple and lightweight with a focus on game development using directly C++. This engine abstracts tasks such as window creation and input management thanks to SDL. It does rendering, sound and its own configuration in a simple to use API.</p>
+<p><strong>Is a 2D engine, simple and lightweight</strong> with a focus on game development using C++.</p>
 
-⚠️ Not ready for use yet
+<p>This engine is intended to be used in conjunction with <a href = "http://www.libsdl.org/">SDL3</a>. Abstracts window creation, graphics rendering, sound and configuration into one easy-to-use API.</p>
 
-# Available Operating Systems
+<p><strong>It is portable</strong>, works on various operating systems.</p>
 
 | Windows | GNU/Linux |
 | :-----: | :-----: |
 |<b>x86_64</b> | <b>x86_64</b> |
+
+<p>⚠️ <strong>WARNING</strong>: It is at a very early stage of development and is not stable.</p>
 
 ## Dependencies used in this project
 <ul>
@@ -34,12 +36,10 @@ _Dumb and simple game engine made in C++._
   <li><a href = "https://github.com/recp/cglm.git">cglm</a></li>
 </ul>
 
-<hr>
+### [Documentation](#)
 
-
-### [Wiki](#)
-
-<hr>
+## Licencia
+- [Engine](LICENSE.txt)
 
 ## Official Mirrors
 - [Github](https://github.com/Sendan4/Patata-Engine.git)

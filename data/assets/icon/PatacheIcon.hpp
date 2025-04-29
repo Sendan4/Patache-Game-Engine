@@ -1,5 +1,5 @@
 // Pixel Format BGRA
-namespace Patata
+namespace Patache
 {
 namespace Icon
 {

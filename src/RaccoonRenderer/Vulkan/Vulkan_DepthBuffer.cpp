@@ -1,7 +1,7 @@
 #include "Vulkan_DepthBuffer.hpp"
 
 bool
-Patata::Engine::CreateDepthBuffer (void)
+Patache::Engine::CreateDepthBuffer (void)
 {
   vk::ImageTiling Tiling = vk::ImageTiling::eOptimal;
 
@@ -14,7 +14,7 @@ Patata::Engine::CreateDepthBuffer (void)
   bool       Found               = false;
 
   // Depth Image And Image Tiling
-  for (uint8_t i = 0; i < 4; ++i)
+  for (std::uint8_t i = 0; i < 4; ++i)
     {
       vk::FormatProperties2 FormatProperties
           = Vulkan.PhysicalDevice.getFormatProperties2 (
@@ -41,8 +41,8 @@ Patata::Engine::CreateDepthBuffer (void)
   if (!Found)
     {
       std::future<void> Err = std::async (
-          std::launch::async, Patata::Log::FatalErrorMessage,
-          "Patata - Raccoon Renderer",
+          std::launch::async, Patache::Log::FatalErrorMessage,
+          "Patache - Raccoon Renderer",
           "A ImageTiling or Depth Format was not found", configuration);
 
       return false;
@@ -71,7 +71,7 @@ Patata::Engine::CreateDepthBuffer (void)
   if (Result != vk::Result::eSuccess)
     {
       std::future<void> ReturnVulkanCheck = std::async (
-          std::launch::async, Patata::Log::VulkanCheck, "Depth Image", Result);
+          std::launch::async, Patache::Log::VulkanCheck, "Depth Image", Result);
 
       return false;
     }
@@ -114,7 +114,7 @@ Patata::Engine::CreateDepthBuffer (void)
   if (Result != vk::Result::eSuccess)
     {
       std::future<void> ReturnVulkanCheck
-          = std::async (std::launch::async, Patata::Log::VulkanCheck,
+          = std::async (std::launch::async, Patache::Log::VulkanCheck,
                         "Allocate Depth Memory", Result);
 
       return false;
@@ -125,7 +125,7 @@ Patata::Engine::CreateDepthBuffer (void)
   if (Result != vk::Result::eSuccess)
     {
       std::future<void> ReturnVulkanCheck
-          = std::async (std::launch::async, Patata::Log::VulkanCheck,
+          = std::async (std::launch::async, Patache::Log::VulkanCheck,
                         "Bind Image Depth Memory", Result);
 
       return false;
@@ -150,7 +150,7 @@ Patata::Engine::CreateDepthBuffer (void)
   if (Result != vk::Result::eSuccess)
     {
       std::future<void> ReturnVulkanCheck
-          = std::async (std::launch::async, Patata::Log::VulkanCheck,
+          = std::async (std::launch::async, Patache::Log::VulkanCheck,
                         "Depth Image View", Result);
 
       return false;

@@ -4,13 +4,13 @@
 
 #include <vulkan/vulkan.hpp>
 
-#include "PatataEngine/Libexport.h"
-#include "PatataEngine/Color.hpp"
-#include "PatataEngine/VulkanBackend.hpp"
-#include "PatataEngine/StructConfig.hpp"
-#include "PatataEngine/StructEngineInfo.hpp"
+#include "PatacheEngine/Libexport.h"
+#include "PatacheEngine/Color.hpp"
+#include "PatacheEngine/VulkanBackend.hpp"
+#include "PatacheEngine/StructConfig.hpp"
+#include "PatacheEngine/StructEngineInfo.hpp"
 
-namespace Patata
+namespace Patache
 {
 // Versioning management in the style of Vulkan. // major.minor.patch.variant
 constexpr uint32_t
@@ -66,7 +66,7 @@ struct EngineCreateInfo
   // optional.
   const char * windowTitle = nullptr;
   // Initial title of the window. // It is optional.
-  const Patata::ViewMode viewMode = Patata::ViewMode::TwoDimensions;
+  const Patache::ViewMode viewMode = Patache::ViewMode::TwoDimensions;
   // Determines whether the project uses 2D or 3D graphics.
   // It is mandatory.
   const char * windowIconPath = nullptr;
@@ -86,9 +86,10 @@ struct ClearColor
 class Engine
 {
 public:
-  PATATA_API Engine (void) = default;
+  // Public API
+  PATACHE_API Engine (void) = default;
 
-  PATATA_API Engine (const Patata::EngineCreateInfo &, bool *);
+  PATACHE_API Engine (const Patache::EngineCreateInfo &, bool *);
   /*
    * This constructor takes the EngineCreateInfo structure for the initial
    * project configuration. The second argument returns a false boolean if the
@@ -96,28 +97,29 @@ public:
    * it, pass a nullptr.
    */
 
-  PATATA_API bool Init (const Patata::EngineCreateInfo &);
+  PATACHE_API bool Init (const Patache::EngineCreateInfo &);
   /*
    * This constructor takes the EngineCreateInfo structure for the initial
    * project configuration. It returns a false boolean if the engine fails to
    * initialize due to a fatal error.
    */
 
-  PATATA_API ~Engine (void);
+  PATACHE_API ~Engine (void);
 
-  Patata::Config configuration;
+  Patache::Config configuration;
 
-  PATATA_API void HandleEvent (const SDL_Event &); // Patata Events
-  PATATA_API bool BeginRender (SDL_Event &);
-  PATATA_API void EndRender (SDL_Event &);
+  PATACHE_API void HandleEvent (const SDL_Event &); // Patache Events
+  PATACHE_API bool BeginRender (SDL_Event &);
+  PATACHE_API void EndRender (SDL_Event &);
 
   // Clear Color
-  Patata::ClearColor clearColor{};
+  Patache::ClearColor clearColor{};
 
-  PATATA_API void ClearColor (const Patata::Color &);
-  PATATA_API void ClearColorRGBA (const float &, const float &, const float &,
-                                  const float &);
-  PATATA_API void ClearColorRGBA (const float &, const float &, const float &);
+  PATACHE_API void ClearColor (const Patache::Color &);
+  PATACHE_API void ClearColorRGBA (const float &, const float &, const float &,
+                                   const float &);
+  PATACHE_API void ClearColorRGBA (const float &, const float &,
+                                   const float &);
 
 private:
   // Window
@@ -128,11 +130,11 @@ private:
 
   // Raccoon Renderer
   // Vulkan Backend
-  Patata::VulkanBackend Vulkan;
+  Patache::VulkanBackend Vulkan;
 
-  bool     RaccoonRendererInit (const Patata::EngineCreateInfo &);
+  bool     RaccoonRendererInit (const Patache::EngineCreateInfo &);
   void     RaccoonRendererClose (void);
-  bool     CreateInstance (const Patata::EngineCreateInfo &);
+  bool     CreateInstance (const Patache::EngineCreateInfo &);
   bool     SelectDevice (void);
   uint32_t CreateLogicalDeviceAndCreateQueue (void);
   bool     CreateSwapChain (SwapChainInfo &);
@@ -147,16 +149,16 @@ private:
   bool     CreateFence (void);
   void     RecreateSwapChain (SDL_Event &);
 
-#if PATATA_DEBUG == 1
+#if PATACHE_DEBUG == 1
   // Imgui
   void InitImgui (void);
   bool InitImguiVulkan (void);
   bool CreateImguiDescriptorPool (void);
   bool CreateImguiPipelineCache (void);
 
-  Patata::EngineInfo engineInfo;
+  Patache::EngineInfo engineInfo;
 #endif
 
   void VulkanInfo (const SwapChainInfo &);
 }; // End Engine Namespace
-} // End Patata Namespace
+} // End Patache Namespace

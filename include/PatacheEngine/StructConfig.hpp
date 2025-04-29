@@ -1,6 +1,6 @@
 #pragma once
 
-namespace Patata
+namespace Patache
 {
 enum ChangeConfigFlagBits : std::uint8_t
 {
@@ -22,6 +22,6 @@ struct Config
   std::uint8_t AddImageCount = 0;
 
   // Change
-  std::uint8_t TriggeredChange = Patata::ChangeConfigFlagBits::None;
+  std::uint8_t TriggeredChange = Patache::ChangeConfigFlagBits::None;
 };
 }

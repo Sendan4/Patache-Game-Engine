@@ -1,7 +1,7 @@
 #include "Vulkan_SwapChain.hpp"
 
 bool
-Patata::Engine::CreateSwapChain (Patata::SwapChainInfo & SwapChainInfo)
+Patache::Engine::CreateSwapChain (Patache::SwapChainInfo & SwapChainInfo)
 {
   // Search Presentation modes
   std::uint32_t        PresentModesCount = 0;
@@ -12,7 +12,7 @@ Patata::Engine::CreateSwapChain (Patata::SwapChainInfo & SwapChainInfo)
 
   if (Result != vk::Result::eSuccess)
     std::future<void> ReturnVulkanCheck = std::async (
-        std::launch::async, Patata::Log::VulkanCheck,
+        std::launch::async, Patache::Log::VulkanCheck,
         "Get Surface Present Modes - Obtaining the count", Result);
 
   PresentModes = new vk::PresentModeKHR[PresentModesCount];
@@ -22,7 +22,7 @@ Patata::Engine::CreateSwapChain (Patata::SwapChainInfo & SwapChainInfo)
 
   if (Result != vk::Result::eSuccess)
     std::future<void> ReturnVulkanCheck
-        = std::async (std::launch::async, Patata::Log::VulkanCheck,
+        = std::async (std::launch::async, Patache::Log::VulkanCheck,
                       "Get Surface Present Modes", Result);
 
   // Search for window surface formats
@@ -34,7 +34,7 @@ Patata::Engine::CreateSwapChain (Patata::SwapChainInfo & SwapChainInfo)
 
   if (Result != vk::Result::eSuccess)
     std::future<void> ReturnVulkanCheck
-        = std::async (std::launch::async, Patata::Log::VulkanCheck,
+        = std::async (std::launch::async, Patache::Log::VulkanCheck,
                       "Get Surface Formats - Obtaining the count", Result);
 
   SurfaceFormats = new vk::SurfaceFormatKHR[SurfaceFormatsCount];
@@ -44,7 +44,7 @@ Patata::Engine::CreateSwapChain (Patata::SwapChainInfo & SwapChainInfo)
 
   if (Result != vk::Result::eSuccess)
     std::future<void> ReturnVulkanCheck
-        = std::async (std::launch::async, Patata::Log::VulkanCheck,
+        = std::async (std::launch::async, Patache::Log::VulkanCheck,
                       "Get Surface Formats", Result);
 
   /*
@@ -95,7 +95,7 @@ Patata::Engine::CreateSwapChain (Patata::SwapChainInfo & SwapChainInfo)
   else
     {
       // Vsync
-      for (uint8_t i = 0; i < PresentModesCount; ++i)
+      for (std::uint8_t i = 0; i < PresentModesCount; ++i)
         {
           if (PresentModes[i] == vk::PresentModeKHR::eFifo)
             {
@@ -116,8 +116,8 @@ Patata::Engine::CreateSwapChain (Patata::SwapChainInfo & SwapChainInfo)
   if (!Found)
     {
       std::future<void> Err
-          = std::async (std::launch::async, Patata::Log::FatalErrorMessage,
-                        "Patata - Raccoon Renderer",
+          = std::async (std::launch::async, Patache::Log::FatalErrorMessage,
+                        "Patache engine - Raccoon Renderer",
                         "No presentation modes found", configuration);
 
       return false;
@@ -159,8 +159,8 @@ Patata::Engine::CreateSwapChain (Patata::SwapChainInfo & SwapChainInfo)
   if (!Found)
     {
       std::future<void> Err
-          = std::async (std::launch::async, Patata::Log::FatalErrorMessage,
-                        "Patata - Raccoon Renderer",
+          = std::async (std::launch::async, Patache::Log::FatalErrorMessage,
+                        "Patache engine - Raccoon Renderer",
                         "No surface formats found", configuration);
 
       return false;
@@ -172,7 +172,7 @@ Patata::Engine::CreateSwapChain (Patata::SwapChainInfo & SwapChainInfo)
       Vulkan.Surface, &SurfaceCapabilities);
   //
 
-#if PATATA_DEBUG == 1
+#if PATACHE_DEBUG == 1
   // saving the data for display in imgui
   engineInfo.VkSwapchainPresentMode      = SelectedPresentMode;
   engineInfo.VkSwapchainImageColorFormat = SelectedSurfaceFormat.format;
@@ -183,12 +183,12 @@ Patata::Engine::CreateSwapChain (Patata::SwapChainInfo & SwapChainInfo)
   if (Result != vk::Result::eSuccess)
     {
       std::future<void> ReturnVulkanCheck
-          = std::async (std::launch::async, Patata::Log::VulkanCheck,
+          = std::async (std::launch::async, Patache::Log::VulkanCheck,
                         "Get Surface Capabilities KHR", Result);
 
       std::future<void> ReturnVulkanErr
-          = std::async (std::launch::async, Patata::Log::FatalErrorMessage,
-                        "Patata Engine - Raccoon Renderer",
+          = std::async (std::launch::async, Patache::Log::FatalErrorMessage,
+                        "Patache Engine - Raccoon Renderer",
                         "The surface area capabilities of this device could "
                         "not be obtained.",
                         configuration);
@@ -225,11 +225,11 @@ Patata::Engine::CreateSwapChain (Patata::SwapChainInfo & SwapChainInfo)
   if (Result != vk::Result::eSuccess)
     {
       std::future<void> ReturnVulkanCheck = std::async (
-          std::launch::async, Patata::Log::VulkanCheck, "SwapChain", Result);
+          std::launch::async, Patache::Log::VulkanCheck, "SwapChain", Result);
 
       std::future<void> ReturnVulkanErr
-          = std::async (std::launch::async, Patata::Log::FatalErrorMessage,
-                        "Patata Engine - Raccoon Renderer",
+          = std::async (std::launch::async, Patache::Log::FatalErrorMessage,
+                        "Patache Engine - Raccoon Renderer",
                         "Swapchain creation failure", configuration);
 
       return false;
@@ -241,7 +241,7 @@ Patata::Engine::CreateSwapChain (Patata::SwapChainInfo & SwapChainInfo)
 
   if (Result != vk::Result::eSuccess)
     std::future<void> ReturnVulkanCheck = std::async (
-        std::launch::async, Patata::Log::VulkanCheck,
+        std::launch::async, Patache::Log::VulkanCheck,
         "Get SwapChain Images KHR - Obtaining the count", Result);
 
   Vulkan.SwapChainImages = new vk::Image[Vulkan.SwapChainImageCount];
@@ -251,7 +251,7 @@ Patata::Engine::CreateSwapChain (Patata::SwapChainInfo & SwapChainInfo)
 
   if (Result != vk::Result::eSuccess)
     std::future<void> ReturnVulkanCheck
-        = std::async (std::launch::async, Patata::Log::VulkanCheck,
+        = std::async (std::launch::async, Patache::Log::VulkanCheck,
                       "Get SwapChain Images KHR", Result);
 
   SwapChainInfo.PresentMode      = SelectedPresentMode;
@@ -263,7 +263,7 @@ Patata::Engine::CreateSwapChain (Patata::SwapChainInfo & SwapChainInfo)
 
 // Recreate SwapChain
 void
-Patata::Engine::RecreateSwapChain (SDL_Event & Event)
+Patache::Engine::RecreateSwapChain (SDL_Event & Event)
 {
   // Minimization
   vk::SurfaceCapabilitiesKHR Sc;
@@ -273,7 +273,7 @@ Patata::Engine::RecreateSwapChain (SDL_Event & Event)
   if (Result != vk::Result::eSuccess)
     {
       std::future<void> ReturnVulkanCheck
-          = std::async (std::launch::async, Patata::Log::VulkanCheck,
+          = std::async (std::launch::async, Patache::Log::VulkanCheck,
                         "Get Surface Capabilities KHR", Result);
 
       return;
@@ -287,7 +287,7 @@ Patata::Engine::RecreateSwapChain (SDL_Event & Event)
       if (Result != vk::Result::eSuccess)
         {
           std::future<void> ReturnVulkanCheck
-              = std::async (std::launch::async, Patata::Log::VulkanCheck,
+              = std::async (std::launch::async, Patache::Log::VulkanCheck,
                             "Get Surface Capabilities KHR", Result);
 
           return;
@@ -302,12 +302,12 @@ Patata::Engine::RecreateSwapChain (SDL_Event & Event)
   if (Result != vk::Result::eSuccess)
     {
       std::future<void> ReturnVulkanCheck
-          = std::async (std::launch::async, Patata::Log::VulkanCheck,
+          = std::async (std::launch::async, Patache::Log::VulkanCheck,
                         "Device Wait Idle", Result);
 
       std::future<void> ReturnVulkanErr
-          = std::async (std::launch::async, Patata::Log::FatalErrorMessage,
-                        "Patata Engine - Raccoon Renderer",
+          = std::async (std::launch::async, Patache::Log::FatalErrorMessage,
+                        "Patache Engine - Raccoon Renderer",
                         "Could not wait for the device", configuration);
 
       return;
@@ -329,7 +329,7 @@ Patata::Engine::RecreateSwapChain (SDL_Event & Event)
 
   Vulkan.OldSwapChain = Vulkan.SwapChain;
 
-  Patata::SwapChainInfo SwapChainInfo;
+  Patache::SwapChainInfo SwapChainInfo;
   CreateSwapChain (SwapChainInfo);
 
   // the new swapchain is ready, I don't need the old swapchain.
@@ -341,25 +341,25 @@ Patata::Engine::RecreateSwapChain (SDL_Event & Event)
   if (!CreateImageView (SwapChainInfo))
     {
       std::future<void> Err
-          = std::async (std::launch::async, Patata::Log::FatalErrorMessage,
-                        "Patata Engine - Raccoon Renderer",
+          = std::async (std::launch::async, Patache::Log::FatalErrorMessage,
+                        "Patache Engine - Raccoon Renderer",
                         "Color image view recreation failed", configuration);
 
       return;
     }
 
   std::future<bool> CreateFrameBuffer_Async = std::async (
-      std::launch::async, &Patata::Engine::CreateFrameBuffer, this);
+      std::launch::async, &Patache::Engine::CreateFrameBuffer, this);
 
   std::future<bool> CreateSemaphores_Async = std::async (
-      std::launch::async, &Patata::Engine::CreateSemaphores, this);
+      std::launch::async, &Patache::Engine::CreateSemaphores, this);
 
   CreateFrameBuffer_Async.wait ();
   if (!CreateFrameBuffer_Async.get ())
     {
       std::future<void> Err
-          = std::async (std::launch::async, Patata::Log::FatalErrorMessage,
-                        "Patata Engine - Raccoon Renderer",
+          = std::async (std::launch::async, Patache::Log::FatalErrorMessage,
+                        "Patache Engine - Raccoon Renderer",
                         "Frame buffer recreation failed", configuration);
 
       return;
@@ -369,8 +369,8 @@ Patata::Engine::RecreateSwapChain (SDL_Event & Event)
   if (!CreateSemaphores_Async.get ())
     {
       std::future<void> Err
-          = std::async (std::launch::async, Patata::Log::FatalErrorMessage,
-                        "Patata Engine - Raccoon Renderer",
+          = std::async (std::launch::async, Patache::Log::FatalErrorMessage,
+                        "Patache Engine - Raccoon Renderer",
                         "Semaphore recreation failed", configuration);
 
       return;

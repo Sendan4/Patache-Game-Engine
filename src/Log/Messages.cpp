@@ -1,16 +1,16 @@
 #include "Messages.hpp"
 
 void
-Patata::Log::FatalErrorMessage (const char * const     Title,
+Patache::Log::FatalErrorMessage (const char * const     Title,
                                 const char * const     Message,
-                                const Patata::Config & Config)
+                                const Patache::Config & Config)
 {
-  char PatataErrorTitle[1024] = "Patata Engine - ";
+  char ErrorTitle[1024] = "Patache Engine - ";
 
-  PATATA_STRNCPY (PatataErrorTitle, Title, 1024);
+  PATACHE_STRNCPY (ErrorTitle, Title, 1024);
 
   if (Config.ShowFatalErrorMessagebox)
-    SDL_ShowSimpleMessageBox (SDL_MESSAGEBOX_ERROR, PatataErrorTitle, Message,
+    SDL_ShowSimpleMessageBox (SDL_MESSAGEBOX_ERROR, ErrorTitle, Message,
                               nullptr);
   else
     {
@@ -21,9 +21,9 @@ Patata::Log::FatalErrorMessage (const char * const     Title,
       SetConsoleMode (Terminal, ENABLE_VIRTUAL_TERMINAL_PROCESSING | mode);
 #endif
 
-      fast_io::io::perrln (PATATA_FAST_IO_BUFF_OUT, PATATA_TERM_BOLD,
-                           PATATA_TERM_COLOR_RED,
-                           "ERROR FATAL : ", PATATA_TERM_RESET,
+      fast_io::io::perrln (PATACHE_FAST_IO_BUFF_OUT, PATACHE_TERM_BOLD,
+                           PATACHE_TERM_COLOR_RED,
+                           "ERROR FATAL : ", PATACHE_TERM_RESET,
                            fast_io::mnp::os_c_str (Message));
 
 #if defined(_WIN64)
@@ -33,7 +33,7 @@ Patata::Log::FatalErrorMessage (const char * const     Title,
 }
 
 void
-Patata::Log::ErrorMessage (const char * const Message)
+Patache::Log::ErrorMessage (const char * const Message)
 {
 #if defined(_WIN64)
   HANDLE Terminal = GetStdHandle (STD_OUTPUT_HANDLE);
@@ -42,8 +42,8 @@ Patata::Log::ErrorMessage (const char * const Message)
   SetConsoleMode (Terminal, ENABLE_VIRTUAL_TERMINAL_PROCESSING | mode);
 #endif
 
-  fast_io::io::perrln (PATATA_FAST_IO_BUFF_OUT, PATATA_TERM_BOLD,
-                       PATATA_TERM_COLOR_RED, "ERROR : ", PATATA_TERM_RESET,
+  fast_io::io::perrln (PATACHE_FAST_IO_BUFF_OUT, PATACHE_TERM_BOLD,
+                       PATACHE_TERM_COLOR_RED, "ERROR : ", PATACHE_TERM_RESET,
                        fast_io::mnp::os_c_str (Message));
 
 #if defined(_WIN64)
@@ -52,7 +52,7 @@ Patata::Log::ErrorMessage (const char * const Message)
 }
 
 void
-Patata::Log::WarningMessage (const char * const Message)
+Patache::Log::WarningMessage (const char * const Message)
 {
 #if defined(_WIN64)
   HANDLE Terminal = GetStdHandle (STD_OUTPUT_HANDLE);
@@ -62,8 +62,8 @@ Patata::Log::WarningMessage (const char * const Message)
 #endif
 
   fast_io::io::perrln (
-      PATATA_FAST_IO_BUFF_OUT, PATATA_TERM_BOLD, PATATA_TERM_COLOR_YELLOW,
-      "WARNING : ", PATATA_TERM_RESET, fast_io::mnp::os_c_str (Message));
+      PATACHE_FAST_IO_BUFF_OUT, PATACHE_TERM_BOLD, PATACHE_TERM_COLOR_YELLOW,
+      "WARNING : ", PATACHE_TERM_RESET, fast_io::mnp::os_c_str (Message));
 
 #if defined(_WIN64)
   SetConsoleMode (Terminal, mode);

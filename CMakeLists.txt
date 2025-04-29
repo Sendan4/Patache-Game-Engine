@@ -1,5 +1,5 @@
 message("")
-message("  - Patata Engine -")
+message("  - Patache Engine -")
 
 cmake_minimum_required(VERSION 3.18)
 
@@ -23,15 +23,15 @@ set (CMAKE_FIND_PACKAGE_TARGETS_GLOBAL TRUE)
 
 set (CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-project("PatataEngine"
+project("PatacheEngine"
   LANGUAGES CXX
   VERSION 1 
   HOMEPAGE_URL "https://gitlab.com/Sendan/patata-engine.git")
 
-set (PATATA_ENGINE_VERSION_MAYOR 1)
-set (PATATA_ENGINE_VERSION_MINOR 0)
-set (PATATA_ENGINE_VERSION_PATCH 0)
-set (PATATA_ENGINE_VERSION "1.0.0")
+set (PATACHE_ENGINE_VERSION_MAYOR 1)
+set (PATACHE_ENGINE_VERSION_MINOR 0)
+set (PATACHE_ENGINE_VERSION_PATCH 0)
+set (PATACHE_ENGINE_VERSION "1.0.0")
 
 include(CheckCXXCompilerFlag)
 include(CheckIncludeFileCXX)
@@ -156,22 +156,22 @@ if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWit
 	  endif()
   endif()
 
-	CHECK_INCLUDE_FILE_CXX("cstdio" HAVE_CSTDIO LANGUAGE CXX)
-	if (NOT HAVE_CSTDIO)
-		message(FATAL_ERROR "missing cstdio header")
-	endif()
-
-	check_cxx_symbol_exists("snprintf" "cstdio" HAVE_SNPRINTF)
-	if (NOT HAVE_SNPRINTF)
-		message(FATAL_ERROR "missing snprintf function")
-	endif()
-
   if (NOT CMAKE_SYSTEM_NAME STREQUAL "Windows")
     CHECK_INCLUDE_FILE_CXX("cstdlib" HAVE_CSTDLIB LANGUAGE CXX)
     if (NOT HAVE_CSTDLIB)
 	    message(FATAL_ERROR "missing cstdlib header")
     endif()
   endif()
+endif()
+
+CHECK_INCLUDE_FILE_CXX("cstdio" HAVE_CSTDIO LANGUAGE CXX)
+if (NOT HAVE_CSTDIO)
+	message(FATAL_ERROR "missing cstdio header")
+endif()
+
+check_cxx_symbol_exists("snprintf" "cstdio" HAVE_SNPRINTF)
+if (NOT HAVE_SNPRINTF)
+	message(FATAL_ERROR "missing snprintf function")
 endif()
 
 if (MSVC)
@@ -288,49 +288,49 @@ if (USE_GIT AND GIT)
 	execute_process(
 		COMMAND git branch --show-current HEAD
 		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-		OUTPUT_VARIABLE PATATA_GIT_BRANCH
+		OUTPUT_VARIABLE PATACHE_GIT_BRANCH
 		OUTPUT_STRIP_TRAILING_WHITESPACE)
 
 	execute_process(
 		COMMAND git rev-parse HEAD
 		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-		OUTPUT_VARIABLE PATATA_GIT_HASH_LONG
+		OUTPUT_VARIABLE PATACHE_GIT_HASH_LONG
 		OUTPUT_STRIP_TRAILING_WHITESPACE)
 
 	execute_process(
 		COMMAND git rev-parse --short HEAD
 		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-		OUTPUT_VARIABLE PATATA_GIT_HASH_SHORT
+		OUTPUT_VARIABLE PATACHE_GIT_HASH_SHORT
 		OUTPUT_STRIP_TRAILING_WHITESPACE)
 
 	execute_process(
 		COMMAND git diff HEAD --shortstat
 		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-		OUTPUT_VARIABLE PATATA_GIT_WORK_DIR_TEXT
+		OUTPUT_VARIABLE PATACHE_GIT_WORK_DIR_TEXT
 		OUTPUT_STRIP_TRAILING_WHITESPACE)
 
 	execute_process(
 		COMMAND git diff HEAD --shortstat --staged
 		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-		OUTPUT_VARIABLE PATATA_GIT_COMMIT_STAGE_TEXT
+		OUTPUT_VARIABLE PATACHE_GIT_COMMIT_STAGE_TEXT
 		OUTPUT_STRIP_TRAILING_WHITESPACE)
 
 	# The commit is Dirty?
-	if ("${PATATA_GIT_WORK_DIR_TEXT}" STREQUAL "")
-		set (PATATA_GIT_WORK_DIR_IS_CLEAN "Clean")
-		set (PATATA_GIT_WORK_DIR_IS_CLEAN_BOOL 1)
+	if ("${PATACHE_GIT_WORK_DIR_TEXT}" STREQUAL "")
+		set (PATACHE_GIT_WORK_DIR_IS_CLEAN "Clean")
+		set (PATACHE_GIT_WORK_DIR_IS_CLEAN_BOOL 1)
 	else()
-		set (PATATA_GIT_WORK_DIR_IS_CLEAN "Dirty")
-		set (PATATA_GIT_WORK_DIR_IS_CLEAN_BOOL 0)
+		set (PATACHE_GIT_WORK_DIR_IS_CLEAN "Dirty")
+		set (PATACHE_GIT_WORK_DIR_IS_CLEAN_BOOL 0)
 	endif()
 
 	# The Changes are in the stage?
-	if (NOT "${PATATA_GIT_COMMIT_STAGE_TEXT}" STREQUAL "")
-		set (PATATA_GIT_WORK_DIR_IS_STAGED "Staged")
-		set (PATATA_GIT_WORK_DIR_IS_STAGED_BOOL 1)
+	if (NOT "${PATACHE_GIT_COMMIT_STAGE_TEXT}" STREQUAL "")
+		set (PATACHE_GIT_WORK_DIR_IS_STAGED "Staged")
+		set (PATACHE_GIT_WORK_DIR_IS_STAGED_BOOL 1)
 	else()
-		set (PATATA_GIT_WORK_DIR_IS_STAGED "Not Staged")
-		set (PATATA_GIT_WORK_DIR_IS_STAGED_BOOL 0)
+		set (PATACHE_GIT_WORK_DIR_IS_STAGED "Not Staged")
+		set (PATACHE_GIT_WORK_DIR_IS_STAGED_BOOL 0)
 	endif()
 endif()
 
@@ -385,7 +385,7 @@ if (CMAKE_SYSTEM_NAME STREQUAL "Windows" AND (CMAKE_CXX_COMPILER_ID STREQUAL "GN
 endif()
 
 message("")
-message(" - Patata Engine Configuration -")
+message(" - Patache Engine Configuration -")
 message(STATUS "BUILD_SHARED_LIBS : ${BUILD_SHARED_LIBS}")
 message(STATUS "USE_GIT : ${USE_GIT}")
 message(STATUS "USE_BIN_DIR : ${USE_BIN_DIR}")
@@ -399,8 +399,8 @@ else()
 	message(STATUS "Library Type : Static")
 endif()
 if (USE_GIT AND GIT)
-	message(STATUS "Git Branch : ${PATATA_GIT_BRANCH}")
-	message(STATUS "Git Commit : ${PATATA_GIT_HASH_LONG}")
-	message(STATUS "Version : ${PATATA_ENGINE_VERSION}")
+	message(STATUS "Git Branch : ${PATACHE_GIT_BRANCH}")
+	message(STATUS "Git Commit : ${PATACHE_GIT_HASH_LONG}")
+	message(STATUS "Version : ${PATACHE_ENGINE_VERSION}")
 endif()
 message("")

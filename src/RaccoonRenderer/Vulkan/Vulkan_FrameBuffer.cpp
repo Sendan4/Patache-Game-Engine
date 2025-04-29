@@ -1,7 +1,7 @@
 #include "Vulkan_FrameBuffer.hpp"
 
 bool
-Patata::Engine::CreateFrameBuffer (void)
+Patache::Engine::CreateFrameBuffer (void)
 {
   if (Vulkan.SwapChainFrameBuffer == VK_NULL_HANDLE)
     Vulkan.SwapChainFrameBuffer
@@ -25,13 +25,13 @@ Patata::Engine::CreateFrameBuffer (void)
 
       if (Result != vk::Result::eSuccess)
         {
-          char ErrorText[PATATA_ERROR_TEXT_SIZE]{ 0 };
+          char ErrorText[PATACHE_ERROR_TEXT_SIZE]{ 0 };
 
-          std::snprintf (ErrorText, PATATA_ERROR_TEXT_SIZE - 1,
+          std::snprintf (ErrorText, PATACHE_ERROR_TEXT_SIZE - 1,
                          "Frame Buffer #%.3u", i + 1);
 
           std::future<void> ReturnVulkanCheck = std::async (
-              std::launch::async, Patata::Log::VulkanCheck, ErrorText, Result);
+              std::launch::async, Patache::Log::VulkanCheck, ErrorText, Result);
 
           return false;
         }

@@ -6,14 +6,8 @@
 #include <ryml.hpp>
 #include <SDL3/SDL.h>
 
-// Patata Engine
-#include "PatataEngine/PatataEngine.hpp"
+// Patache Engine
+#include "PatacheEngine/PatacheEngine.hpp"
 #include "Log.hpp"
 
-#if PATATA_GAME_NAME != 0
-#define GAME_CONFIG_FILE_NAME PATATA_GAME_NAME ".yaml"
-#else
-#define GAME_CONFIG_FILE_NAME "patata.yaml"
-#endif
-
-#define PATATA_ERROR_TEXT_SIZE 1024
+#define PATACHE_ERROR_TEXT_SIZE 1024

@@ -1,35 +1,37 @@
 // Vulkan Vendor
-#define PATATA_IMGUI_INTEL_COLOR          0.314f, 0.759f, 0.950f, 1.0f
-#define PATATA_IMGUI_AMD_COLOR            0.909f, 0.180f, 0.180f, 1.0f
-#define PATATA_IMGUI_NVIDIA_COLOR         0.463f, 0.725f, 0.0f, 1.0f
-#define PATATA_IMGUI_MESA_COLOR           0.844f, 0.867f, 0.870f, 1.0f
-#define PATATA_IMGUI_UNKNOWN_VENDOR_COLOR 0.640f, 0.646f, 0.646f, 1.0f
+#define PATACHE_IMGUI_INTEL_COLOR          0.314f, 0.759f, 0.950f, 1.0f
+#define PATACHE_IMGUI_AMD_COLOR            0.909f, 0.180f, 0.180f, 1.0f
+#define PATACHE_IMGUI_NVIDIA_COLOR         0.463f, 0.725f, 0.0f, 1.0f
+#define PATACHE_IMGUI_MESA_COLOR           0.844f, 0.867f, 0.870f, 1.0f
+#define PATACHE_IMGUI_UNKNOWN_VENDOR_COLOR 0.640f, 0.646f, 0.646f, 1.0f
 
 // ImGui styles
 // table
-#define PATATA_IMGUI_TABLE_PADDING     10, 4
-#define PATATA_IMGUI_TITLE_TABLE_COLOR 0.930f, 0.718f, 0.223f, 1.0f
-#define PATATA_IMGUI_TABLE_FLAGS                                              \
+#define PATACHE_IMGUI_TABLE_PADDING     10, 4
+#define PATACHE_IMGUI_TITLE_TABLE_COLOR 0.930f, 0.718f, 0.223f, 1.0f
+#define PATACHE_IMGUI_TABLE_FLAGS                                             \
   ImGuiTableFlags_RowBg | ImGuiTableFlags_BordersOuterH                       \
       | ImGuiTableFlags_BordersOuterV | ImGuiTableFlags_NoHostExtendX
-// Error, Warning and positive values
-#define PATATA_IMGUI_POSITIVE_VALUE 0.634f, 0.990f, 0.657f, 1.0f
-#define PATATA_IMGUI_WARNING_VALUE  0.984f, 0.990f, 0.634f, 1.0f
-#define PATATA_IMGUI_ERROR_VALUE    0.990f, 0.669f, 0.634f, 1.0f
-// Custom Styles
-#define PATATA_IMGUI_PATATA_COLOR               0.596f, 0.463f, 0.278f, 1.0f
-#define PATATA_IMGUI_PATATA_SELECTED_COLOR      0.868f, 0.663f, 0.380f, 1.0f
-#define PATATA_IMGUI_PATATA_DARKER_COLOR        0.353f, 0.267f, 0.153f, 1.0f
-#define PATATA_IMGUI_PATATA_INFO_COLOR          0.341f, 0.341f, 0.341f, 1.0f
-#define PATATA_IMGUI_PATATA_INFO_DARKER_COLOR   0.200f, 0.200f, 0.200f, 1.0f
-#define PATATA_IMGUI_PATATA_INFO_SELECTED_COLOR 0.404f, 0.404f, 0.404f, 1.0f
-#define PATATA_IMGUI_PATATA_BORDER_WINDOW_COLOR 1.0f, 1.0f, 1.0f, 1.0f
-#define PATATA_IMGUI_PATATA_NONE                0.0f, 0.0f, 0.0f, 1.0f
 
-namespace Patata
+// Error, Warning and positive values
+#define PATACHE_IMGUI_POSITIVE_VALUE 0.634f, 0.990f, 0.657f, 1.0f
+#define PATACHE_IMGUI_WARNING_VALUE  0.984f, 0.990f, 0.634f, 1.0f
+#define PATACHE_IMGUI_ERROR_VALUE    0.990f, 0.669f, 0.634f, 1.0f
+
+// Custom Styles
+#define PATACHE_IMGUI_PATACHE_COLOR               0.596f, 0.463f, 0.278f, 1.0f
+#define PATACHE_IMGUI_PATACHE_SELECTED_COLOR      0.868f, 0.663f, 0.380f, 1.0f
+#define PATACHE_IMGUI_PATACHE_DARKER_COLOR        0.353f, 0.267f, 0.153f, 1.0f
+#define PATACHE_IMGUI_PATACHE_INFO_COLOR          0.341f, 0.341f, 0.341f, 1.0f
+#define PATACHE_IMGUI_PATACHE_INFO_DARKER_COLOR   0.200f, 0.200f, 0.200f, 1.0f
+#define PATACHE_IMGUI_PATACHE_INFO_SELECTED_COLOR 0.404f, 0.404f, 0.404f, 1.0f
+#define PATACHE_IMGUI_PATACHE_BORDER_WINDOW_COLOR 1.0f, 1.0f, 1.0f, 1.0f
+#define PATACHE_IMGUI_PATACHE_NONE                0.0f, 0.0f, 0.0f, 1.0f
+
+namespace Patache
 {
 static inline void
-DrawDebugUI (Patata::EngineInfo * engineInfo, Patata::Config & configuration,
+DrawDebugUI (Patache::EngineInfo * engineInfo, Patache::Config & configuration,
              const std::uint32_t & SwapChainImageCount,
              const vk::Extent2D &  SwapChainExtent)
 {
@@ -51,46 +53,46 @@ DrawDebugUI (Patata::EngineInfo * engineInfo, Patata::Config & configuration,
                   ImGui::GetStyle ().Colors[ImGuiCol_ButtonHovered],
                   ImGui::GetStyle ().Colors[ImGuiCol_ButtonActive] };
 
-  // Patata Style
+  // Patache Style
   ImGui::GetStyle ().Colors[ImGuiCol_TitleBgActive]
-      = ImVec4 (PATATA_IMGUI_PATATA_COLOR);
+      = ImVec4 (PATACHE_IMGUI_PATACHE_COLOR);
 
   ImGui::GetStyle ().Colors[ImGuiCol_ResizeGrip]
-      = ImVec4 (PATATA_IMGUI_PATATA_COLOR);
+      = ImVec4 (PATACHE_IMGUI_PATACHE_COLOR);
   ImGui::GetStyle ().Colors[ImGuiCol_ResizeGripActive]
-      = ImVec4 (PATATA_IMGUI_PATATA_COLOR);
+      = ImVec4 (PATACHE_IMGUI_PATACHE_COLOR);
   ImGui::GetStyle ().Colors[ImGuiCol_ResizeGripHovered]
-      = ImVec4 (PATATA_IMGUI_PATATA_SELECTED_COLOR);
+      = ImVec4 (PATACHE_IMGUI_PATACHE_SELECTED_COLOR);
 
   ImGui::GetStyle ().Colors[ImGuiCol_SeparatorHovered]
-      = ImVec4 (PATATA_IMGUI_PATATA_BORDER_WINDOW_COLOR);
+      = ImVec4 (PATACHE_IMGUI_PATACHE_BORDER_WINDOW_COLOR);
   ImGui::GetStyle ().Colors[ImGuiCol_SeparatorActive]
-      = ImVec4 (PATATA_IMGUI_PATATA_BORDER_WINDOW_COLOR);
+      = ImVec4 (PATACHE_IMGUI_PATACHE_BORDER_WINDOW_COLOR);
 
   ImGui::GetStyle ().Colors[ImGuiCol_Tab]
-      = ImVec4 (PATATA_IMGUI_PATATA_DARKER_COLOR);
+      = ImVec4 (PATACHE_IMGUI_PATACHE_DARKER_COLOR);
   ImGui::GetStyle ().Colors[ImGuiCol_TabSelected]
-      = ImVec4 (PATATA_IMGUI_PATATA_COLOR);
+      = ImVec4 (PATACHE_IMGUI_PATACHE_COLOR);
   ImGui::GetStyle ().Colors[ImGuiCol_TabHovered]
-      = ImVec4 (PATATA_IMGUI_PATATA_SELECTED_COLOR);
+      = ImVec4 (PATACHE_IMGUI_PATACHE_SELECTED_COLOR);
 
   ImGui::GetStyle ().Colors[ImGuiCol_Button]
-      = ImVec4 (PATATA_IMGUI_PATATA_COLOR);
+      = ImVec4 (PATACHE_IMGUI_PATACHE_COLOR);
   ImGui::GetStyle ().Colors[ImGuiCol_ButtonHovered]
-      = ImVec4 (PATATA_IMGUI_PATATA_SELECTED_COLOR);
+      = ImVec4 (PATACHE_IMGUI_PATACHE_SELECTED_COLOR);
   ImGui::GetStyle ().Colors[ImGuiCol_ButtonActive]
-      = ImVec4 (PATATA_IMGUI_PATATA_DARKER_COLOR);
+      = ImVec4 (PATACHE_IMGUI_PATACHE_DARKER_COLOR);
 
   ImGui::GetStyle ().Colors[ImGuiCol_Header]
-      = ImVec4 (PATATA_IMGUI_PATATA_INFO_DARKER_COLOR);
+      = ImVec4 (PATACHE_IMGUI_PATACHE_INFO_DARKER_COLOR);
   ImGui::GetStyle ().Colors[ImGuiCol_HeaderActive]
-      = ImVec4 (PATATA_IMGUI_PATATA_INFO_COLOR);
+      = ImVec4 (PATACHE_IMGUI_PATACHE_INFO_COLOR);
   ImGui::GetStyle ().Colors[ImGuiCol_HeaderHovered]
-      = ImVec4 (PATATA_IMGUI_PATATA_INFO_SELECTED_COLOR);
+      = ImVec4 (PATACHE_IMGUI_PATACHE_INFO_SELECTED_COLOR);
 
   ImGui::GetStyle ().FrameBorderSize  = 0.0f;
   ImGui::GetStyle ().WindowBorderSize = 0.0f;
-  // End Patata Style
+  // End Patache Style
 
   // Menu Bar
   if (engineInfo->ShowMainMenuBar)
@@ -98,13 +100,13 @@ DrawDebugUI (Patata::EngineInfo * engineInfo, Patata::Config & configuration,
       ImGui::GetStyle ().Colors[ImGuiCol_Button]
           = ImVec4 (0.0f, 0.0f, 0.0f, 0.0f);
       ImGui::GetStyle ().Colors[ImGuiCol_ButtonHovered]
-          = ImVec4 (PATATA_IMGUI_PATATA_SELECTED_COLOR);
+          = ImVec4 (PATACHE_IMGUI_PATACHE_SELECTED_COLOR);
       ImGui::GetStyle ().Colors[ImGuiCol_ButtonActive]
-          = ImVec4 (PATATA_IMGUI_PATATA_DARKER_COLOR);
+          = ImVec4 (PATACHE_IMGUI_PATACHE_DARKER_COLOR);
 
       if (ImGui::BeginMainMenuBar ())
         {
-          if (ImGui::Button ("(Patata Icon)"))
+          if (ImGui::Button ("(Patache Icon)"))
             // Cambiar bits
             engineInfo->ShowMainMenuBar ^= 0b00000001;
 
@@ -112,7 +114,7 @@ DrawDebugUI (Patata::EngineInfo * engineInfo, Patata::Config & configuration,
             {
               if (ImGui::MenuItem ("Renderer", ""))
                 // Cambiar bits
-                engineInfo->PatataRaccoonRendererInfoWindow ^= 0b00000001;
+                engineInfo->PatacheRaccoonRendererInfoWindow ^= 0b00000001;
 
               // No implementado aun
               // ImGui::MenuItem ("Audio", "");
@@ -130,44 +132,44 @@ DrawDebugUI (Patata::EngineInfo * engineInfo, Patata::Config & configuration,
 
           if (ImGui::Button ("Configuration"))
             // Cambiar bits
-            engineInfo->PatataConfigWindow ^= 0b00000001;
+            engineInfo->PatacheConfigWindow ^= 0b00000001;
 
           if (ImGui::Button ("About"))
             // Cambiar bits
-            engineInfo->PatataInfoWindow ^= 0b00000001;
+            engineInfo->PatacheInfoWindow ^= 0b00000001;
 
           ImGui::EndMainMenuBar ();
         }
 
       ImGui::GetStyle ().Colors[ImGuiCol_Button]
-          = ImVec4 (PATATA_IMGUI_PATATA_COLOR);
+          = ImVec4 (PATACHE_IMGUI_PATACHE_COLOR);
     }
   // End Menu Bar
 
-  // Patata Window Info
-  if (engineInfo->PatataInfoWindow)
+  // Patache Window Info
+  if (engineInfo->PatacheInfoWindow)
     {
       ImGui::SetNextWindowSize (ImVec2 (570, 550), ImGuiCond_FirstUseEver);
 
-      ImGui::Begin ("About the patata engine", &engineInfo->PatataInfoWindow);
+      ImGui::Begin ("About the Patache Engine", &engineInfo->PatacheInfoWindow);
 
       ImGui::PushStyleVar (ImGuiStyleVar_CellPadding,
-                           ImVec2 (PATATA_IMGUI_TABLE_PADDING));
+                           ImVec2 (PATACHE_IMGUI_TABLE_PADDING));
 
       ImGui::Spacing ();
-      ImGui::SeparatorText ("Patata Engine");
+      ImGui::SeparatorText (PATACHE_ENGINE_NAME);
 
-      if (ImGui::BeginTable ("##AboutBasicInfo", 3, PATATA_IMGUI_TABLE_FLAGS))
+      if (ImGui::BeginTable ("##AboutBasicInfo", 3, PATACHE_IMGUI_TABLE_FLAGS))
         {
           ImGui::TableSetupColumn ("", ImGuiTableColumnFlags_WidthFixed);
           ImGui::TableSetupColumn ("", ImGuiTableColumnFlags_WidthFixed);
 
-#if defined(PATATA_ENGINE_VERSION)
+#if defined(PATACHE_ENGINE_VERSION)
           ImGui::TableNextRow ();
           ImGui::TableSetColumnIndex (0);
           ImGui::Text ("Version");
           ImGui::TableSetColumnIndex (1);
-          ImGui::Text (PATATA_ENGINE_VERSION);
+          ImGui::Text (PATACHE_ENGINE_VERSION);
 #endif
 #if defined(__DATE__) && defined(__TIME__)
           ImGui::TableNextRow ();
@@ -177,19 +179,19 @@ DrawDebugUI (Patata::EngineInfo * engineInfo, Patata::Config & configuration,
           ImGui::Text ("%s %s", __DATE__, __TIME__);
 #endif
 
-#if defined(PATATA_ARCH)
+#if defined(PATACHE_ARCH)
           ImGui::TableNextRow ();
           ImGui::TableSetColumnIndex (0);
           ImGui::Text ("CPU Architecture Target");
 
           ImGui::TableSetColumnIndex (1);
-          ImGui::Text (PATATA_ARCH);
+          ImGui::Text (PATACHE_ARCH);
 #endif
           ImGui::EndTable ();
         }
 
       ImGui::Text ("Simple and free Game Engine");
-      ImGui::Text ("Patata Engine is under the MIT License.");
+      ImGui::Text ("%s is under the MIT License.", PATACHE_ENGINE_NAME);
       ImGui::Spacing ();
 
       // General Engine Info
@@ -199,7 +201,7 @@ DrawDebugUI (Patata::EngineInfo * engineInfo, Patata::Config & configuration,
           if (ImGui::TreeNode ("Git##AdvancedInfoGit"))
             {
 
-              if (ImGui::BeginTable ("Git", 3, PATATA_IMGUI_TABLE_FLAGS))
+              if (ImGui::BeginTable ("Git", 3, PATACHE_IMGUI_TABLE_FLAGS))
                 {
                   ImGui::TableSetupColumn ("",
                                            ImGuiTableColumnFlags_WidthFixed);
@@ -209,52 +211,52 @@ DrawDebugUI (Patata::EngineInfo * engineInfo, Patata::Config & configuration,
                                            ImGuiTableColumnFlags_WidthFixed);
 
                   // Git Branch
-#if defined(PATATA_GIT_BRANCH)
+#if defined(PATACHE_GIT_BRANCH)
                   ImGui::TableNextRow ();
 
                   ImGui::TableSetColumnIndex (0);
                   ImGui::Text ("Branch");
 
                   ImGui::TableSetColumnIndex (1);
-                  ImGui::Text (PATATA_GIT_BRANCH);
+                  ImGui::Text (PATACHE_GIT_BRANCH);
 #endif
 
                   // Git Commit - Short And Long
-#if defined(PATATA_GIT_HASH_SHORT) || defined(PATATA_GIT_HASH_LONG)
+#if defined(PATACHE_GIT_HASH_SHORT) || defined(PATACHE_GIT_HASH_LONG)
                   ImGui::TableNextRow ();
                   ImGui::TableSetColumnIndex (0);
                   ImGui::Text ("Commit Hash");
                   ImGui::TableSetColumnIndex (1);
 #endif
-#if defined(PATATA_GIT_HASH_LONG)
-                  ImGui::Text (PATATA_GIT_HASH_LONG);
+#if defined(PATACHE_GIT_HASH_LONG)
+                  ImGui::Text (PATACHE_GIT_HASH_LONG);
 #endif
-#if defined(PATATA_GIT_HASH_SHORT)
-                  ImGui::Text (PATATA_GIT_HASH_SHORT);
+#if defined(PATACHE_GIT_HASH_SHORT)
+                  ImGui::Text (PATACHE_GIT_HASH_SHORT);
 #endif
 
                   // Git Stage
-#if defined(PATATA_GIT_WORK_DIR_IS_CLEAN)                                     \
-    && defined(PATATA_GIT_WORK_DIR_IS_CLEAN_BOOL)                             \
-    && defined(PATATA_GIT_WORK_DIR_IS_STAGED_BOOL)
+#if defined(PATACHE_GIT_WORK_DIR_IS_CLEAN)                                    \
+    && defined(PATACHE_GIT_WORK_DIR_IS_CLEAN_BOOL)                            \
+    && defined(PATACHE_GIT_WORK_DIR_IS_STAGED_BOOL)
                   ImGui::TableNextRow ();
                   ImGui::TableSetColumnIndex (0);
                   ImGui::Text ("Source State");
 
                   ImGui::TableSetColumnIndex (1);
-#if PATATA_GIT_WORK_DIR_IS_CLEAN_BOOL == 1
-                  ImGui::TextColored (ImVec4 (PATATA_IMGUI_POSITIVE_VALUE),
+#if PATACHE_GIT_WORK_DIR_IS_CLEAN_BOOL == 1
+                  ImGui::TextColored (ImVec4 (PATACHE_IMGUI_POSITIVE_VALUE),
                                       "Clean");
 #else
-                  ImGui::TextColored (ImVec4 (PATATA_IMGUI_WARNING_VALUE),
+                  ImGui::TextColored (ImVec4 (PATACHE_IMGUI_WARNING_VALUE),
                                       "Dirty");
 #endif
 
-#if PATATA_GIT_WORK_DIR_IS_STAGED_BOOL == 1
-                  ImGui::TextColored (ImVec4 (PATATA_IMGUI_POSITIVE_VALUE),
+#if PATACHE_GIT_WORK_DIR_IS_STAGED_BOOL == 1
+                  ImGui::TextColored (ImVec4 (PATACHE_IMGUI_POSITIVE_VALUE),
                                       "In Stage Area");
 #else
-                  ImGui::TextColored (ImVec4 (PATATA_IMGUI_WARNING_VALUE),
+                  ImGui::TextColored (ImVec4 (PATACHE_IMGUI_WARNING_VALUE),
                                       "Not Staged");
 #endif
 #endif
@@ -266,7 +268,7 @@ DrawDebugUI (Patata::EngineInfo * engineInfo, Patata::Config & configuration,
           // Tabla General
           if (ImGui::TreeNode ("Engine"))
             {
-              if (ImGui::BeginTable ("Engine", 3, PATATA_IMGUI_TABLE_FLAGS))
+              if (ImGui::BeginTable ("Engine", 3, PATACHE_IMGUI_TABLE_FLAGS))
                 {
                   ImGui::TableSetupColumn ("",
                                            ImGuiTableColumnFlags_WidthFixed);
@@ -276,60 +278,60 @@ DrawDebugUI (Patata::EngineInfo * engineInfo, Patata::Config & configuration,
                                            ImGuiTableColumnFlags_WidthFixed);
 
                   // Compiler
-#if defined(PATATA_COMPILER_PROGRAM) && defined(PATATA_COMPILER)
+#if defined(PATACHE_COMPILER_PROGRAM) && defined(PATACHE_COMPILER)
                   ImGui::TableNextRow ();
                   ImGui::TableSetColumnIndex (0);
                   ImGui::Text ("Compiler");
 
                   ImGui::TableSetColumnIndex (1);
-                  ImGui::Text (PATATA_COMPILER_PROGRAM);
+                  ImGui::Text (PATACHE_COMPILER_PROGRAM);
 
                   ImGui::TableSetColumnIndex (2);
-                  ImGui::Text (PATATA_COMPILER);
-#if defined(PATATA_COMPILER_VERSION)
-                  ImGui::Text (PATATA_COMPILER_VERSION);
+                  ImGui::Text (PATACHE_COMPILER);
+#if defined(PATACHE_COMPILER_VERSION)
+                  ImGui::Text (PATACHE_COMPILER_VERSION);
 #endif
 #endif
 
                   // Build System
-#if defined(PATATA_BUILD_SYSTEM) && defined(PATATA_BUILD_SYSTEM_GENERATOR)
+#if defined(PATACHE_BUILD_SYSTEM) && defined(PATACHE_BUILD_SYSTEM_GENERATOR)
                   ImGui::TableNextRow ();
                   ImGui::TableSetColumnIndex (0);
                   ImGui::Text ("Build System");
 
                   // Build System And Version
                   ImGui::TableSetColumnIndex (1);
-                  ImGui::Text (PATATA_BUILD_SYSTEM);
-#if defined(PATATA_BUILD_SYSTEM_VERSION)
-                  ImGui::Text (PATATA_BUILD_SYSTEM_VERSION);
+                  ImGui::Text (PATACHE_BUILD_SYSTEM);
+#if defined(PATACHE_BUILD_SYSTEM_VERSION)
+                  ImGui::Text (PATACHE_BUILD_SYSTEM_VERSION);
 #endif
 
                   // Generator And Version
                   ImGui::TableSetColumnIndex (2);
-                  ImGui::Text (PATATA_BUILD_SYSTEM_GENERATOR);
-#if defined(PATATA_BUILD_SYSTEM_GENERATOR_VERSION)
-                  ImGui::Text (PATATA_BUILD_SYSTEM_GENERATOR_VERSION);
+                  ImGui::Text (PATACHE_BUILD_SYSTEM_GENERATOR);
+#if defined(PATACHE_BUILD_SYSTEM_GENERATOR_VERSION)
+                  ImGui::Text (PATACHE_BUILD_SYSTEM_GENERATOR_VERSION);
 #endif
 #endif
 
                   // Build Type
-#if defined(PATATA_BUILD_TYPE)
+#if defined(PATACHE_BUILD_TYPE)
                   ImGui::TableNextRow ();
                   ImGui::TableSetColumnIndex (0);
                   ImGui::Text ("Build Type");
 
                   ImGui::TableSetColumnIndex (1);
-                  ImGui::Text (PATATA_BUILD_TYPE);
+                  ImGui::Text (PATACHE_BUILD_TYPE);
 #endif
 
                   // Operating System
-#if defined(PATATA_OS)
+#if defined(PATACHE_OS)
                   ImGui::TableNextRow ();
                   ImGui::TableSetColumnIndex (0);
                   ImGui::Text ("Operating System");
 
                   ImGui::TableSetColumnIndex (1);
-                  ImGui::Text (PATATA_OS);
+                  ImGui::Text (PATACHE_OS);
 #endif
                   ImGui::EndTable ();
                 }
@@ -340,7 +342,8 @@ DrawDebugUI (Patata::EngineInfo * engineInfo, Patata::Config & configuration,
           // Tabla para ver las versiones de las librerias
           if (ImGui::TreeNode ("Libraries used"))
             {
-              if (ImGui::BeginTable ("Libraries", 3, PATATA_IMGUI_TABLE_FLAGS))
+              if (ImGui::BeginTable ("Libraries", 3,
+                                     PATACHE_IMGUI_TABLE_FLAGS))
                 {
                   ImGui::TableSetupColumn ("Library",
                                            ImGuiTableColumnFlags_WidthFixed);
@@ -501,18 +504,18 @@ DrawDebugUI (Patata::EngineInfo * engineInfo, Patata::Config & configuration,
       ImGui::PopStyleVar ();
       ImGui::End ();
     }
-  // End Patata Window Info
+  // End Patache Window Info
 
   // Raccoon Renderer Info
-  if (engineInfo->PatataRaccoonRendererInfoWindow)
+  if (engineInfo->PatacheRaccoonRendererInfoWindow)
     {
       ImGui::SetNextWindowSize (ImVec2 (570, 550), ImGuiCond_FirstUseEver);
 
       ImGui::Begin ("Raccoon Renderer Info",
-                    &engineInfo->PatataRaccoonRendererInfoWindow);
+                    &engineInfo->PatacheRaccoonRendererInfoWindow);
 
       ImGui::PushStyleVar (ImGuiStyleVar_CellPadding,
-                           ImVec2 (PATATA_IMGUI_TABLE_PADDING));
+                           ImVec2 (PATACHE_IMGUI_TABLE_PADDING));
 
       ImGui::Spacing ();
 
@@ -521,15 +524,15 @@ DrawDebugUI (Patata::EngineInfo * engineInfo, Patata::Config & configuration,
 
       if (ImGui::CollapsingHeader ("Extensions and layers##RRI2"))
         {
-#if defined(PATATA_USE_VVL)
+#if defined(PATACHE_USE_VVL)
           if (ImGui::BeginTable ("Layers##VkLayerList", 1,
-                                 PATATA_IMGUI_TABLE_FLAGS))
+                                 PATACHE_IMGUI_TABLE_FLAGS))
             {
               ImGui::TableSetupColumn ("Layer",
                                        ImGuiTableColumnFlags_WidthFixed);
               ImGui::TableHeadersRow ();
 
-              for (std::uint16_t i = 0; i < PATATA_VK_LAYER_COUNT; ++i)
+              for (std::uint16_t i = 0; i < PATACHE_VK_LAYER_COUNT; ++i)
                 {
                   ImGui::TableNextRow ();
 
@@ -542,7 +545,7 @@ DrawDebugUI (Patata::EngineInfo * engineInfo, Patata::Config & configuration,
 #endif
 
           if (ImGui::BeginTable ("Instance##VkInstanceList", 1,
-                                 PATATA_IMGUI_TABLE_FLAGS))
+                                 PATACHE_IMGUI_TABLE_FLAGS))
             {
               ImGui::TableSetupColumn ("Instance",
                                        ImGuiTableColumnFlags_WidthFixed);
@@ -560,7 +563,7 @@ DrawDebugUI (Patata::EngineInfo * engineInfo, Patata::Config & configuration,
             }
 
           if (ImGui::BeginTable ("Device##VkDeviceList", 1,
-                                 PATATA_IMGUI_TABLE_FLAGS))
+                                 PATACHE_IMGUI_TABLE_FLAGS))
             {
               ImGui::TableSetupColumn ("Device",
                                        ImGuiTableColumnFlags_WidthFixed);
@@ -587,19 +590,19 @@ DrawDebugUI (Patata::EngineInfo * engineInfo, Patata::Config & configuration,
               switch (engineInfo->VkDeviceVendorId)
                 {
                 case 32902:
-                  ImGui::TextColored (ImVec4 (PATATA_IMGUI_INTEL_COLOR), "%s",
+                  ImGui::TextColored (ImVec4 (PATACHE_IMGUI_INTEL_COLOR), "%s",
                                       engineInfo->VkDeviceName);
                   break;
                 case 4098:
-                  ImGui::TextColored (ImVec4 (PATATA_IMGUI_AMD_COLOR), "%s",
+                  ImGui::TextColored (ImVec4 (PATACHE_IMGUI_AMD_COLOR), "%s",
                                       engineInfo->VkDeviceName);
                   break;
                 case 4318:
-                  ImGui::TextColored (ImVec4 (PATATA_IMGUI_NVIDIA_COLOR), "%s",
-                                      engineInfo->VkDeviceName);
+                  ImGui::TextColored (ImVec4 (PATACHE_IMGUI_NVIDIA_COLOR),
+                                      "%s", engineInfo->VkDeviceName);
                   break;
                 case 65541:
-                  ImGui::TextColored (ImVec4 (PATATA_IMGUI_MESA_COLOR),
+                  ImGui::TextColored (ImVec4 (PATACHE_IMGUI_MESA_COLOR),
                                       "Mesa %s", engineInfo->VkDeviceName);
                   break;
                 default:
@@ -609,7 +612,7 @@ DrawDebugUI (Patata::EngineInfo * engineInfo, Patata::Config & configuration,
             }
 
           if (ImGui::BeginTable ("DeviceInfo##AboutDevice", 2,
-                                 PATATA_IMGUI_TABLE_FLAGS))
+                                 PATACHE_IMGUI_TABLE_FLAGS))
             {
               ImGui::TableSetupColumn ("", ImGuiTableColumnFlags_WidthFixed);
               ImGui::TableSetupColumn ("", ImGuiTableColumnFlags_WidthFixed);
@@ -633,24 +636,24 @@ DrawDebugUI (Patata::EngineInfo * engineInfo, Patata::Config & configuration,
                   switch (engineInfo->VkDeviceVendorId)
                     {
                     case 32902:
-                      ImGui::TextColored (ImVec4 (PATATA_IMGUI_INTEL_COLOR),
+                      ImGui::TextColored (ImVec4 (PATACHE_IMGUI_INTEL_COLOR),
                                           "Intel");
                       break;
                     case 4098:
-                      ImGui::TextColored (ImVec4 (PATATA_IMGUI_AMD_COLOR),
+                      ImGui::TextColored (ImVec4 (PATACHE_IMGUI_AMD_COLOR),
                                           "AMD");
                       break;
                     case 4318:
-                      ImGui::TextColored (ImVec4 (PATATA_IMGUI_NVIDIA_COLOR),
+                      ImGui::TextColored (ImVec4 (PATACHE_IMGUI_NVIDIA_COLOR),
                                           "Nvidia");
                       break;
                     case 65541:
-                      ImGui::TextColored (ImVec4 (PATATA_IMGUI_MESA_COLOR),
+                      ImGui::TextColored (ImVec4 (PATACHE_IMGUI_MESA_COLOR),
                                           "Mesa");
                       break;
                     default:
                       ImGui::TextColored (
-                          ImVec4 (PATATA_IMGUI_UNKNOWN_VENDOR_COLOR),
+                          ImVec4 (PATACHE_IMGUI_UNKNOWN_VENDOR_COLOR),
                           "Unknown");
                       break;
                     }
@@ -665,7 +668,7 @@ DrawDebugUI (Patata::EngineInfo * engineInfo, Patata::Config & configuration,
           // Queues
           ImGui::Text ("Queues");
           if (ImGui::BeginTable ("Queues##AboutQueues", 3,
-                                 PATATA_IMGUI_TABLE_FLAGS))
+                                 PATACHE_IMGUI_TABLE_FLAGS))
             {
               ImGui::TableSetupColumn ("Index",
                                        ImGuiTableColumnFlags_WidthFixed);
@@ -679,7 +682,7 @@ DrawDebugUI (Patata::EngineInfo * engineInfo, Patata::Config & configuration,
               // Queue Index
               ImGui::TableNextRow ();
               ImGui::TableSetColumnIndex (0);
-              ImGui::Text ("%d", engineInfo->VkQueueIndex);
+              ImGui::Text ("%u", engineInfo->VkQueueIndex);
 
               // Queue Family Properties
               ImGui::TableSetColumnIndex (1);
@@ -734,7 +737,7 @@ DrawDebugUI (Patata::EngineInfo * engineInfo, Patata::Config & configuration,
             }
 
           if (ImGui::BeginTable ("Vulkan Driver Info##1", 2,
-                                 PATATA_IMGUI_TABLE_FLAGS))
+                                 PATACHE_IMGUI_TABLE_FLAGS))
             {
               ImGui::TableSetupColumn ("", ImGuiTableColumnFlags_WidthFixed);
               ImGui::TableSetupColumn ("", ImGuiTableColumnFlags_WidthFixed);
@@ -781,7 +784,7 @@ DrawDebugUI (Patata::EngineInfo * engineInfo, Patata::Config & configuration,
       if (ImGui::CollapsingHeader ("SwapChain##RRI5"))
         {
           if (ImGui::BeginTable ("Vulkan SwapChain Info##1", 2,
-                                 PATATA_IMGUI_TABLE_FLAGS))
+                                 PATACHE_IMGUI_TABLE_FLAGS))
             {
               ImGui::TableSetupColumn ("", ImGuiTableColumnFlags_WidthFixed);
               ImGui::TableSetupColumn ("", ImGuiTableColumnFlags_WidthFixed);
@@ -803,7 +806,7 @@ DrawDebugUI (Patata::EngineInfo * engineInfo, Patata::Config & configuration,
                    || engineInfo->VkSwapchainPresentMode
                           == vk::PresentModeKHR::eSharedContinuousRefresh)
                   && (configuration.Vsync))
-                ImGui::TextColored (ImVec4 (PATATA_IMGUI_POSITIVE_VALUE),
+                ImGui::TextColored (ImVec4 (PATACHE_IMGUI_POSITIVE_VALUE),
                                     "Vertical Sync");
               else if ((engineInfo->VkSwapchainPresentMode
                             == vk::PresentModeKHR::eMailbox
@@ -812,7 +815,7 @@ DrawDebugUI (Patata::EngineInfo * engineInfo, Patata::Config & configuration,
                         || engineInfo->VkSwapchainPresentMode
                                == vk::PresentModeKHR::eSharedDemandRefresh)
                        && (!configuration.Vsync))
-                ImGui::TextColored (ImVec4 (PATATA_IMGUI_WARNING_VALUE),
+                ImGui::TextColored (ImVec4 (PATACHE_IMGUI_WARNING_VALUE),
                                     "Not synchronized with the refresh rate");
 
               // Images
@@ -862,28 +865,28 @@ DrawDebugUI (Patata::EngineInfo * engineInfo, Patata::Config & configuration,
     }
   // End Raccoon Renderer Info
 
-  // Patata Window configuration
-  if (engineInfo->PatataConfigWindow)
+  // Patache Window configuration
+  if (engineInfo->PatacheConfigWindow)
     {
       ImGui::Begin ("Configuration##ConfigView",
-                    &engineInfo->PatataConfigWindow);
+                    &engineInfo->PatacheConfigWindow);
 
       // Show Fatal Error MessageBox
       if (ImGui::Checkbox ("Show Fatal Error "
                            "Messagebox##ConfigView_ShowFatalErrorMessagebox",
                            &configuration.ShowFatalErrorMessagebox))
         configuration.TriggeredChange
-            |= Patata::ChangeConfigFlagBits::ShowFatalErrorMessagebox;
+            |= Patache::ChangeConfigFlagBits::ShowFatalErrorMessagebox;
 
       // Vsync
       if (ImGui::Checkbox ("Vsync##ConfigView_Vsync", &configuration.Vsync))
-        configuration.TriggeredChange |= Patata::ChangeConfigFlagBits::Vsync;
+        configuration.TriggeredChange |= Patache::ChangeConfigFlagBits::Vsync;
 
       // 10 Bit Depth
       if (ImGui::Checkbox ("10 Bit Depth##ConfigView_BitDepth",
                            &configuration.BitDepth10))
         configuration.TriggeredChange
-            |= Patata::ChangeConfigFlagBits::BitDepth10;
+            |= Patache::ChangeConfigFlagBits::BitDepth10;
 
       // Add Image Count
       ImGui::Spacing ();
@@ -896,11 +899,11 @@ DrawDebugUI (Patata::EngineInfo * engineInfo, Patata::Config & configuration,
               "##ConfigView_AddImageCount", &ActualCount, 0,
               static_cast<int> (engineInfo->VkMinImageCount + 4)))
         configuration.TriggeredChange
-            |= Patata::ChangeConfigFlagBits::AddImageCount;
+            |= Patache::ChangeConfigFlagBits::AddImageCount;
 
       ImGui::End ();
     }
-  // End Patata Window configuration
+  // End Patache Window configuration
 
   // Reset Style
   ImGui::GetStyle ().Colors[ImGuiCol_TitleBgActive]     = tmp[0];
