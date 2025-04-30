@@ -145,9 +145,8 @@ if (WIN32 OR CMAKE_SYSTEM_NAME STREQUAL "Windows")
 endif()
 
 # Check Headers
+include(CheckCXXSymbolExists)
 if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo")
-	include(CheckCXXSymbolExists)
-
   if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 	  CHECK_INCLUDE_FILE_CXX("cxxabi.h" HAVE_CXXABI_H LANGUAGE CXX)
 
