@@ -9,7 +9,7 @@ _Motor tonto y simple de videojuegos hecho en C++._
 
 <p><strong>Es un motor 2D sencillo y ligero</strong> con el enfoque en el desarrollo de videojuegos utilizando C++.</p>
 
-<p>Este motor esta hecho para ser utilizado junto con <a href = "http://www.libsdl.org/">SDL3</a>. Se abstrae la creacion de la ventana, el renderizado de graficos, el sonido y la configuración en una API sencilla de utilizar.</p>
+<p>Este motor esta hecho para ser utilizado junto con <a href = "http://www.libsdl.org/">SDL3</a>. Se abstrae la creación de la ventana, el renderizado de graficos, el sonido y la configuración en una API sencilla de utilizar.</p>
 
 <p><strong>Es portable</strong>, funciona en varios sistemas operativos.</p>
 
