@@ -41,5 +41,5 @@ _Motor tonto y simple de videojuegos hecho en C++._
 ### Patache esta bajo la licencia [MIT](LICENSE.txt)
 
 ## Espejos Oficiales
-- [Github](https://github.com/Sendan4/Patache-Game-Engine.git)
+- [Github](https://gitlab.com/PatacheEngine/Patache.git)
 - [Codeberg](https://codeberg.org/PatacheEngine/Patache.git)
