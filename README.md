@@ -36,9 +36,9 @@ _Motor tonto y simple de videojuegos hecho en C++._
   <li><a href = "https://github.com/recp/cglm.git">cglm</a></li>
 </ul>
 
-## [Documentacion](#)
+### [Documentacion](#)
 
-## Patache esta bajo la licencia [MIT](LICENSE.txt)
+### Patache esta bajo la licencia [MIT](LICENSE.txt)
 
 ## Espejos Oficiales
 - [Github](https://gitlab.com/PatacheEngine/Patache.git)
