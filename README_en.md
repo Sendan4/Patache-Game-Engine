@@ -36,10 +36,12 @@ _Dumb and simple game engine made in C++._
   <li><a href = "https://github.com/recp/cglm.git">cglm</a></li>
 </ul>
 
-### [Documentation](#)
-
-### Patache is under [MIT](LICENSE.txt) license
-
-## Official Mirrors
-- [Github](https://github.com/Sendan4/Patache-Game-Engine.git)
+## Links
+- [Documentation](#)
+#### Official Mirrors
+- [Github](https://github.com/Sendan4/Patache-Game-Engine)
 - [Codeberg](https://codeberg.org/PatacheEngine/Patache.git)
+
+<hr>
+
+Patache is under the [MIT](LICENSE.txt) license
