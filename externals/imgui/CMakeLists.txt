@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.18)
 
 project("Imgui" LANGUAGES CXX C VERSION 1.91.7)
 
-set(Imgui_VERSION "v1.91.9d" CACHE INTERNAL "Imgui version")
+set(Imgui_VERSION "1.91.9" CACHE INTERNAL "Imgui version")
 
 message("")
 message("  - Imgui -")
@@ -20,11 +20,11 @@ CHECK_INCLUDE_FILE("stdlib.h" HAVE_STDLIB_H)
 CHECK_INCLUDE_FILE("limits.h" HAVE_LIMITS_H)
 CHECK_INCLUDE_FILE("math.h" HAVE_MATH_H)
 
-if (LIBS_SHARED_BUILD AND NOT MSVC)
+if (BUILD_SHARED_LIBS AND NOT MSVC)
 	message(STATUS "Library Type : Shared")
 	add_library(${PROJECT_NAME} SHARED)
 
-    if (SHARED_BUILD AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 		target_compile_options(${PROJECT_NAME} PRIVATE "-fPIC")
 		message(STATUS "Build With Position Independent Code")
 	endif()
@@ -67,8 +67,8 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
 endif()
 
 if (TARGET asm_offset)
-	set_target_properties(asm_offset
-		PROPERTIES
+    set_target_properties(asm_offset
+	    PROPERTIES
 		ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}
 		LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}
 		RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})

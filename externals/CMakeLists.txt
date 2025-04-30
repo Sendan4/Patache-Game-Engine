@@ -129,7 +129,7 @@ if (MSVC OR LINUX)
   # Vulkan Validation Layer
 	if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo" AND USE_VVL)
     message("")
-	  message("  - Vulkan ValidationLayers -")
+	  message("  - Vulkan Validation Layers -")
 
     FetchContent_Declare(
       Vulkan-ValidationLayers

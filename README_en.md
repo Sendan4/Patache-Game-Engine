@@ -38,9 +38,8 @@ _Dumb and simple game engine made in C++._
 
 ### [Documentation](#)
 
-## Licencia
-- [Engine](LICENSE.txt)
+## Patache is under [MIT](LICENSE.txt) license
 
 ## Official Mirrors
-- [Github](https://github.com/Sendan4/Patache-Game-Engine.git)
-- [Codeberg](https://codeberg.org/Patache/Game-Engine.git)
+- [Github](https://gitlab.com/PatacheEngine/Patache.git)
+- [Codeberg](https://codeberg.org/PatacheEngine/Patache.git)
