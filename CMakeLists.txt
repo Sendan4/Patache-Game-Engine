@@ -378,10 +378,7 @@ add_subdirectory(src)
 add_subdirectory(data)
 add_subdirectory(data/assets)
 
-target_compile_definitions(${PROJECT_NAME} PUBLIC SDL_MAIN_HANDLED)
-if (CMAKE_SYSTEM_NAME STREQUAL "Windows" AND (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang"))
-	target_compile_definitions(${PROJECT_NAME} PUBLIC main=SDL_main)
-endif()
+#target_compile_definitions(${PROJECT_NAME} PUBLIC )
 
 message("")
 message(" - Patache Engine Configuration -")

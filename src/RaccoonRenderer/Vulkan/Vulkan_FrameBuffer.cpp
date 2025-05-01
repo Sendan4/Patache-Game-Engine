@@ -30,8 +30,9 @@ Patache::Engine::CreateFrameBuffer (void)
           std::snprintf (ErrorText, PATACHE_ERROR_TEXT_SIZE - 1,
                          "Frame Buffer #%.3u", i + 1);
 
-          std::future<void> ReturnVulkanCheck = std::async (
-              std::launch::async, Patache::Log::VulkanCheck, ErrorText, Result);
+          std::future<void> ReturnVulkanCheck
+              = std::async (std::launch::async, Patache::Log::VulkanCheck,
+                            ErrorText, Result);
 
           return false;
         }

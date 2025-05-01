@@ -9,11 +9,11 @@ Patache::Engine::CreateInstance (const Patache::EngineCreateInfo & Info)
   std::uint32_t GameVersion = Info.gameVersion;
 
   vk::ApplicationInfo PatacheEngineInfo{ .pApplicationName   = ApplicationName,
-                                        .applicationVersion = GameVersion,
-                                        .pEngineName = PATACHE_ENGINE_NAME,
-                                        .engineVersion
-                                        = PATACHE_ENGINE_VERSION_VK,
-                                        .apiVersion = VK_API_VERSION_1_3 };
+                                         .applicationVersion = GameVersion,
+                                         .pEngineName = PATACHE_ENGINE_NAME,
+                                         .engineVersion
+                                         = PATACHE_ENGINE_VERSION_VK,
+                                         .apiVersion = VK_API_VERSION_1_3 };
 
 // The validation layers are activated with USE_VVL=ON.
 // They are for the development and testing of this backend.

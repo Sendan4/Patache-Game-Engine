@@ -90,8 +90,8 @@ Patache::Engine::RaccoonRendererInit (const Patache::EngineCreateInfo & Info)
   std::future<bool> CreateSemaphores_Async = std::async (
       std::launch::async, &Patache::Engine::CreateSemaphores, this);
 
-  std::future<bool> CreatePipeline_Async
-      = std::async (std::launch::async, &Patache::Engine::CreatePipeline, this);
+  std::future<bool> CreatePipeline_Async = std::async (
+      std::launch::async, &Patache::Engine::CreatePipeline, this);
 
   std::future<void> VulkanInfo_Async = std::async (
       std::launch::async, &Patache::Engine::VulkanInfo, this, SwapChainInfo);

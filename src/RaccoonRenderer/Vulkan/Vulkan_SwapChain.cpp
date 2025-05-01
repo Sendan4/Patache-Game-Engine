@@ -26,7 +26,7 @@ Patache::Engine::CreateSwapChain (Patache::SwapChainInfo & SwapChainInfo)
                       "Get Surface Present Modes", Result);
 
   // Search for window surface formats
-  uint32_t               SurfaceFormatsCount = 0;
+  std::uint32_t          SurfaceFormatsCount = 0;
   vk::SurfaceFormatKHR * SurfaceFormats      = nullptr;
 
   Result = Vulkan.PhysicalDevice.getSurfaceFormatsKHR (
@@ -170,15 +170,6 @@ Patache::Engine::CreateSwapChain (Patache::SwapChainInfo & SwapChainInfo)
 
   Result = Vulkan.PhysicalDevice.getSurfaceCapabilitiesKHR (
       Vulkan.Surface, &SurfaceCapabilities);
-  //
-
-#if PATACHE_DEBUG == 1
-  // saving the data for display in imgui
-  engineInfo.VkSwapchainPresentMode      = SelectedPresentMode;
-  engineInfo.VkSwapchainImageColorFormat = SelectedSurfaceFormat.format;
-  engineInfo.VkSwapchainImageColorSpace  = vk::ColorSpaceKHR::eSrgbNonlinear;
-  engineInfo.VkMinImageCount             = SurfaceCapabilities.minImageCount;
-#endif
 
   if (Result != vk::Result::eSuccess)
     {
@@ -198,8 +189,16 @@ Patache::Engine::CreateSwapChain (Patache::SwapChainInfo & SwapChainInfo)
 
   SDL_Vulkan_GetDrawableSize_Async.wait ();
 
+#if PATACHE_DEBUG == 1
+  // saving the data for display in imgui
+  engineInfo.VkSwapchainPresentMode      = SelectedPresentMode;
+  engineInfo.VkSwapchainImageColorFormat = SelectedSurfaceFormat.format;
+  engineInfo.VkSwapchainImageColorSpace  = vk::ColorSpaceKHR::eSrgbNonlinear;
+  engineInfo.VkMinImageCount             = SurfaceCapabilities.minImageCount;
+#endif
+
   // Create SwapChain
-  vk::SwapchainCreateInfoKHR SwapChainCreateInfo{
+  const vk::SwapchainCreateInfoKHR SwapChainCreateInfo{
     .surface = Vulkan.Surface,
     .minImageCount
     = SurfaceCapabilities.minImageCount + configuration.AddImageCount,
@@ -235,6 +234,14 @@ Patache::Engine::CreateSwapChain (Patache::SwapChainInfo & SwapChainInfo)
       return false;
     }
 
+  std::future<void> StoreSwapChainInfo_Async
+      = std::async (std::launch::async, [&SwapChainInfo, &SelectedPresentMode,
+                                         &SelectedSurfaceFormat] (void) {
+          SwapChainInfo.PresentMode      = SelectedPresentMode;
+          SwapChainInfo.ImageColorFormat = SelectedSurfaceFormat.format;
+          SwapChainInfo.ImageColorSpace  = vk::ColorSpaceKHR::eSrgbNonlinear;
+        });
+
   // SwapChain Images
   Result = Vulkan.Device.getSwapchainImagesKHR (
       Vulkan.SwapChain, &Vulkan.SwapChainImageCount, nullptr);
@@ -254,9 +261,7 @@ Patache::Engine::CreateSwapChain (Patache::SwapChainInfo & SwapChainInfo)
         = std::async (std::launch::async, Patache::Log::VulkanCheck,
                       "Get SwapChain Images KHR", Result);
 
-  SwapChainInfo.PresentMode      = SelectedPresentMode;
-  SwapChainInfo.ImageColorFormat = SelectedSurfaceFormat.format;
-  SwapChainInfo.ImageColorSpace  = vk::ColorSpaceKHR::eSrgbNonlinear;
+  StoreSwapChainInfo_Async.wait ();
 
   return true;
 }
@@ -315,7 +320,7 @@ Patache::Engine::RecreateSwapChain (SDL_Event & Event)
 
   std::future<void> DestroyObjects_Async = std::async (
       std::launch::async, [this] (void) {
-        for (uint8_t i = 0; i < Vulkan.SwapChainImageCount; ++i)
+        for (std::uint8_t i = 0; i < Vulkan.SwapChainImageCount; ++i)
           {
             Vulkan.Device.destroyFramebuffer (Vulkan.SwapChainFrameBuffer[i]);
             Vulkan.Device.destroyImageView (Vulkan.SwapChainColorImageView[i]);
@@ -324,17 +329,11 @@ Patache::Engine::RecreateSwapChain (SDL_Event & Event)
           }
       });
 
-  /*Vulkan.Device.resetCommandPool (
-      Vulkan.CommandPool, vk::CommandPoolResetFlagBits::eReleaseResources);*/
-
   Vulkan.OldSwapChain = Vulkan.SwapChain;
 
   Patache::SwapChainInfo SwapChainInfo;
-  CreateSwapChain (SwapChainInfo);
 
-  // the new swapchain is ready, I don't need the old swapchain.
-  Vulkan.Device.destroySwapchainKHR (Vulkan.OldSwapChain);
-  Vulkan.OldSwapChain = VK_NULL_HANDLE;
+  CreateSwapChain (SwapChainInfo);
 
   DestroyObjects_Async.wait ();
 
@@ -353,6 +352,9 @@ Patache::Engine::RecreateSwapChain (SDL_Event & Event)
 
   std::future<bool> CreateSemaphores_Async = std::async (
       std::launch::async, &Patache::Engine::CreateSemaphores, this);
+
+  Vulkan.Device.destroySwapchainKHR (Vulkan.OldSwapChain);
+  Vulkan.OldSwapChain = VK_NULL_HANDLE;
 
   CreateFrameBuffer_Async.wait ();
   if (!CreateFrameBuffer_Async.get ())

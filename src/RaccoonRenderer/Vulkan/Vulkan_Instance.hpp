@@ -42,9 +42,9 @@ debugMessageFunc (vk::DebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
                   vk::DebugUtilsMessengerCallbackDataEXT const * pCallbackData,
                   void * /*pUserData*/)
 {
-  fast_io::io::println (
-      PATACHE_FAST_IO_BUFF_OUT, PATACHE_TERM_BOLD, PATACHE_TERM_COLOR_RED,
-      "Vulkan Validation Layers :", PATACHE_TERM_RESET);
+  fast_io::io::println (PATACHE_FAST_IO_BUFF_OUT, PATACHE_TERM_BOLD,
+                        PATACHE_TERM_COLOR_RED,
+                        "Vulkan Validation Layers :", PATACHE_TERM_RESET);
 
   // Message Severity
   switch (messageSeverity)

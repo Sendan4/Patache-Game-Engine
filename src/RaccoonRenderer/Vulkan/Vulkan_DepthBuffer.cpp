@@ -70,8 +70,9 @@ Patache::Engine::CreateDepthBuffer (void)
       = Vulkan.Device.createImage (&ImageInfo, nullptr, &Vulkan.DepthImage);
   if (Result != vk::Result::eSuccess)
     {
-      std::future<void> ReturnVulkanCheck = std::async (
-          std::launch::async, Patache::Log::VulkanCheck, "Depth Image", Result);
+      std::future<void> ReturnVulkanCheck
+          = std::async (std::launch::async, Patache::Log::VulkanCheck,
+                        "Depth Image", Result);
 
       return false;
     }

@@ -151,7 +151,8 @@ DrawDebugUI (Patache::EngineInfo * engineInfo, Patache::Config & configuration,
     {
       ImGui::SetNextWindowSize (ImVec2 (570, 550), ImGuiCond_FirstUseEver);
 
-      ImGui::Begin ("About the Patache Engine", &engineInfo->PatacheInfoWindow);
+      ImGui::Begin ("About the Patache Engine",
+                    &engineInfo->PatacheInfoWindow);
 
       ImGui::PushStyleVar (ImGuiStyleVar_CellPadding,
                            ImVec2 (PATACHE_IMGUI_TABLE_PADDING));

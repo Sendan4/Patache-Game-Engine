@@ -1,9 +1,9 @@
 #include "Messages.hpp"
 
 void
-Patache::Log::FatalErrorMessage (const char * const     Title,
-                                const char * const     Message,
-                                const Patache::Config & Config)
+Patache::Log::FatalErrorMessage (const char * const      Title,
+                                 const char * const      Message,
+                                 const Patache::Config & Config)
 {
   char ErrorTitle[1024] = "Patache Engine - ";
 

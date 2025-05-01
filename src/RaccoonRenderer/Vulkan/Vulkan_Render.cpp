@@ -40,8 +40,7 @@ Patache::Engine::BeginRender (SDL_Event & Event)
 #endif
 
   // Resize
-  if (WindowResized || Result == vk::Result::eErrorOutOfDateKHR
-      || Result == vk::Result::eSuboptimalKHR)
+  if (Result == vk::Result::eErrorOutOfDateKHR || WindowResized)
     {
       RecreateSwapChain (Event);
       WindowResized = false;
@@ -64,10 +63,6 @@ Patache::Engine::BeginRender (SDL_Event & Event)
           std::launch::async, Patache::Log::VulkanCheck, ErrorText, Result);
     }
 #endif
-
-  // Reset Command Buffer
-  Vulkan.Cmd[Vulkan.CurrentFrame].reset (
-      vk::CommandBufferResetFlagBits::eReleaseResources);
 
   static constexpr vk::CommandBufferBeginInfo cmdBufferBeginInfo{
     .flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit
@@ -151,7 +146,7 @@ Patache::Engine::EndRender (SDL_Event & Event)
   // Imgui New Frame
   // ImGui::ShowDemoWindow ();
   Patache::DrawDebugUI (&engineInfo, configuration, Vulkan.SwapChainImageCount,
-                       Vulkan.SwapChainExtent);
+                        Vulkan.SwapChainExtent);
 
   ImGui::Render ();
 
@@ -227,25 +222,11 @@ Patache::Engine::EndRender (SDL_Event & Event)
 #endif
 
   // Resize
-  if (WindowResized || Result == vk::Result::eErrorOutOfDateKHR)
+  if (Result == vk::Result::eErrorOutOfDateKHR
+      || Result == vk::Result::eSuboptimalKHR || WindowResized)
     {
       RecreateSwapChain (Event);
       WindowResized = false;
-    }
-  else if (Result == vk::Result::eSuboptimalKHR)
-    {
-      vk::SurfaceCapabilitiesKHR Sc;
-      Result = Vulkan.PhysicalDevice.getSurfaceCapabilitiesKHR (Vulkan.Surface,
-                                                                &Sc);
-
-      if (Result != vk::Result::eSuccess)
-        std::future<void> ReturnVulkanCheck
-            = std::async (std::launch::async, Patache::Log::VulkanCheck,
-                          "Get Surface Capabilities KHR", Result);
-
-      if (Sc.currentExtent.width != Vulkan.SwapChainExtent.width
-          || Sc.currentExtent.height != Vulkan.SwapChainExtent.height)
-        RecreateSwapChain (Event);
     }
 
   Vulkan.CurrentFrame = (Vulkan.CurrentFrame + 1) % Vulkan.SwapChainImageCount;

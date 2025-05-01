@@ -11,3 +11,5 @@
 #include "PatacheEngine/PatacheEngine.hpp"
 #include "ColorTerminal.hpp"
 #include "Log.hpp"
+
+bool SDLCALL HandleResize (void * userdata, SDL_Event * event);

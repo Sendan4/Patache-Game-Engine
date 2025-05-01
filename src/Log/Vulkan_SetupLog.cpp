@@ -2,7 +2,7 @@
 
 void
 Patache::Log::VulkanList (const char * const List[], const uint32_t & Size,
-                         const char * const Message)
+                          const char * const Message)
 {
   fast_io::io::println (
       PATACHE_FAST_IO_BUFF_OUT,
@@ -34,7 +34,7 @@ Patache::Log::VulkanList (const char * const List[], const uint32_t & Size,
 
 void
 Patache::Log::VulkanCheck (const char * const Message,
-                          const vk::Result & Result)
+                           const vk::Result & Result)
 {
   if (Result != vk::Result::eSuccess && Result != vk::Result::eSuboptimalKHR)
     {

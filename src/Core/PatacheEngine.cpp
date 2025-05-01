@@ -26,6 +26,9 @@
 #define PATACHE_VVL_PATH PATACHE_VVL_SDK_PATH
 #endif
 
+// Event Filter for Window Resize
+bool SDLCALL HandleResize (void * userdata, SDL_Event * event);
+
 bool
 Patache::Engine::Init (const Patache::EngineCreateInfo & Info)
 {
@@ -146,8 +149,9 @@ Patache::Engine::Init (const Patache::EngineCreateInfo & Info)
       }
     else
       WindowIcon = SDL_CreateSurfaceFrom (
-          Patache::Icon::Width, Patache::Icon::Height, SDL_PIXELFORMAT_BGRA8888,
-          (void *)Patache::Icon::Data, Patache::Icon::Pitch);
+          Patache::Icon::Width, Patache::Icon::Height,
+          SDL_PIXELFORMAT_BGRA8888, (void *)Patache::Icon::Data,
+          Patache::Icon::Pitch);
 
     if (WindowIcon == nullptr)
       std::future<void> Err
@@ -162,6 +166,8 @@ Patache::Engine::Init (const Patache::EngineCreateInfo & Info)
 
   if (!RaccoonRendererInit (Info))
     return false;
+
+  SDL_SetEventFilter (HandleResize, &WindowResized);
 
   return true;
 }

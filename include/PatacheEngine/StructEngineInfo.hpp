@@ -52,11 +52,11 @@ struct EngineInfo
   // RaccoonSound
 
   // ImGui
-  bool ShowMainMenuBar                 = true;
+  bool ShowMainMenuBar                  = true;
   bool PatacheInfoWindow                = false;
   bool PatacheConfigWindow              = false;
   bool PatacheRaccoonRendererInfoWindow = false;
-  bool ConfigBooleansTmp               = false;
+  bool ConfigBooleansTmp                = false;
 };
 }
 #endif

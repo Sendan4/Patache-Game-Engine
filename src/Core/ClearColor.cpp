@@ -4,7 +4,7 @@
 
 void
 Patache::Engine::ClearColorRGBA (const float & R, const float & G,
-                                const float & B, const float & A)
+                                 const float & B, const float & A)
 {
   clearColor.r = R;
   clearColor.g = G;
@@ -14,7 +14,7 @@ Patache::Engine::ClearColorRGBA (const float & R, const float & G,
 
 void
 Patache::Engine::ClearColorRGBA (const float & R, const float & G,
-                                const float & B)
+                                 const float & B)
 {
   clearColor.r = R;
   clearColor.g = G;

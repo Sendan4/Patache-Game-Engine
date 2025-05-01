@@ -66,14 +66,20 @@ Patache::Engine::HandleEvent (const SDL_Event & Event)
       break;
     }
 
-  // resize event
-  if (Event.window.type == SDL_EVENT_WINDOW_RESIZED
-      || Event.window.type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED
-      || Event.window.type == SDL_EVENT_WINDOW_ENTER_FULLSCREEN
-      || Event.window.type == SDL_EVENT_WINDOW_LEAVE_FULLSCREEN)
-    WindowResized = true;
-
 #if PATACHE_DEBUG == 1
   ImGui_ImplSDL3_ProcessEvent (&Event);
 #endif
+}
+
+// Event Filter for Window Resize
+bool SDLCALL
+HandleResize (void * userdata, SDL_Event * event)
+{
+  // resize event
+  if (event->window.type == SDL_EVENT_WINDOW_RESIZED
+      || event->window.type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED
+      || event->window.type == SDL_EVENT_WINDOW_ENTER_FULLSCREEN
+      || event->window.type == SDL_EVENT_WINDOW_LEAVE_FULLSCREEN)
+    *reinterpret_cast<bool *> (userdata) = true;
+  return true;
 }
