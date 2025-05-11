@@ -16,4 +16,6 @@
 #include "StartLogInfo.hpp"
 #include "Log.hpp"
 
+void RecreateSwapChain (Patache::Engine * const, SDL_Event &);
+
 #define PATACHE_ERROR_TEXT_SIZE 128

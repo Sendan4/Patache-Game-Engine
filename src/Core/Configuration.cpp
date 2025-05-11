@@ -1,7 +1,7 @@
 #include "Configuration.hpp"
 
 bool
-Patache::Engine::LoadConfiguration (void)
+LoadConfiguration (Patache::Config & configuration)
 {
   fast_io::dir_file ExecutableDirectory (
       fast_io::mnp::os_c_str (SDL_GetBasePath ()));
@@ -15,9 +15,13 @@ Patache::Engine::LoadConfiguration (void)
   // Invalid or unreadable Yaml file
   if (YamlConfig.invalid () || !YamlConfig.readable ())
     {
-      std::future<void> Err
-          = std::async (std::launch::async, Patache::Log::ErrorMessage,
-                        "Yaml Config File is invalid or inreadable");
+      std::future<void> Err = std::async (
+          std::launch::async, Patache::Log::FatalErrorMessage,
+          "Patache Engine - Yaml",
+          "Yaml Config File is invalid or inreadable",
+          configuration);
+
+      return false;
     }
   else
     {
@@ -47,7 +51,8 @@ Patache::Engine::LoadConfiguration (void)
               SDL_GetBasePath ());
 
           std::future<void> Err = std::async (
-              std::launch::async, Patache::Log::ErrorMessage, ErrorText);
+              std::launch::async, Patache::Log::ErrorMessage,
+              ErrorText);
         }
 
       // Raccoon Renderer
@@ -77,7 +82,8 @@ Patache::Engine::LoadConfiguration (void)
               SDL_GetBasePath ());
 
           std::future<void> Err = std::async (
-              std::launch::async, Patache::Log::ErrorMessage, ErrorText);
+              std::launch::async, Patache::Log::ErrorMessage,
+              ErrorText);
         }
 
       // Bool Type
@@ -110,7 +116,8 @@ Patache::Engine::LoadConfiguration (void)
               SDL_GetBasePath ());
 
           std::future<void> Err = std::async (
-              std::launch::async, Patache::Log::ErrorMessage, ErrorText);
+              std::launch::async, Patache::Log::ErrorMessage,
+              ErrorText);
         }
 
       // std::uint8_t type
@@ -139,7 +146,8 @@ Patache::Engine::LoadConfiguration (void)
               SDL_GetBasePath ());
 
           std::future<void> Err = std::async (
-              std::launch::async, Patache::Log::ErrorMessage, ErrorText);
+              std::launch::async, Patache::Log::ErrorMessage,
+              ErrorText);
         }
 
       if (configuration.AddImageCount > 4)
@@ -154,7 +162,8 @@ Patache::Engine::LoadConfiguration (void)
               SDL_GetBasePath ());
 
           std::future<void> Err = std::async (
-              std::launch::async, Patache::Log::ErrorMessage, ErrorText);
+              std::launch::async, Patache::Log::ErrorMessage,
+              ErrorText);
 
           configuration.AddImageCount = 0;
         }

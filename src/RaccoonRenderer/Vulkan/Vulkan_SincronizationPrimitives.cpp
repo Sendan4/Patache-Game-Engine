@@ -1,7 +1,7 @@
 #include "Vulkan_SincronizationPrimitives.hpp"
 
 bool
-Patache::Engine::CreateSemaphores (void)
+CreateSemaphores (Patache::VulkanBackend & Vulkan)
 {
   static constexpr const vk::SemaphoreCreateInfo SemaphoreInfo{};
 
@@ -28,9 +28,9 @@ Patache::Engine::CreateSemaphores (void)
           std::snprintf (ErrorText, PATACHE_ERROR_TEXT_SIZE - 1,
                          "Image Available Semaphore #%.3u", i + 1);
 
-          std::future<void> ReturnVulkanCheck
-              = std::async (std::launch::async, Patache::Log::VulkanCheck,
-                            ErrorText, Result);
+          std::future<void> ReturnVulkanCheck = std::async (
+              std::launch::async, Patache::Log::VulkanCheck,
+              ErrorText, Result);
 
           return false;
         }
@@ -46,9 +46,9 @@ Patache::Engine::CreateSemaphores (void)
           std::snprintf (ErrorText, PATACHE_ERROR_TEXT_SIZE - 1,
                          "Image Finished Semaphore #%.3u", i + 1);
 
-          std::future<void> ReturnVulkanCheck
-              = std::async (std::launch::async, Patache::Log::VulkanCheck,
-                            ErrorText, Result);
+          std::future<void> ReturnVulkanCheck = std::async (
+              std::launch::async, Patache::Log::VulkanCheck,
+              ErrorText, Result);
 
           return false;
         }
@@ -58,9 +58,9 @@ Patache::Engine::CreateSemaphores (void)
 }
 
 bool
-Patache::Engine::CreateFence (void)
+CreateFence (Patache::VulkanBackend & Vulkan)
 {
-  static constexpr const vk::FenceCreateInfo FenceInfo{
+  static constexpr vk::FenceCreateInfo FenceInfo{
     .flags = vk::FenceCreateFlagBits::eSignaled
   };
 
@@ -81,9 +81,9 @@ Patache::Engine::CreateFence (void)
           std::snprintf (ErrorText, PATACHE_ERROR_TEXT_SIZE - 1,
                          "In Flight Fence #%.3u", i + 1);
 
-          std::future<void> ReturnVulkanCheck
-              = std::async (std::launch::async, Patache::Log::VulkanCheck,
-                            ErrorText, Result);
+          std::future<void> ReturnVulkanCheck = std::async (
+              std::launch::async, Patache::Log::VulkanCheck,
+              ErrorText, Result);
 
           return false;
         }

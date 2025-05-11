@@ -3,13 +3,20 @@ message("  - Patache Engine -")
 
 cmake_minimum_required(VERSION 3.18)
 
-option(BUILD_SHARED_LIBS "Build static or shared library" OFF)
-option(USE_GIT "Grab git information" ON)
-option(USE_BIN_DIR "use the bin directory as output" ON)
-
 if (NOT CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE Release)
 endif()
+
+if (${CMAKE_BUILD_TYPE} STREQUAL "Release")
+  set(DEFAULT_USE_LTO_OPT ON)
+else()
+  set(DEFAULT_USE_LTO_OPT OFF)
+endif()
+
+option(BUILD_SHARED_LIBS "Build static or shared library" OFF)
+option(USE_LTO "Use Link Time Optimization" ${DEFAULT_USE_LTO_OPT})
+option(USE_GIT "Grab git information" ON)
+option(USE_BIN_DIR "use the bin directory as output" ON)
 
 if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo")
 	option(USE_VVL "VVL is used to develop and test functions in the raccoon renderer" OFF)
@@ -26,7 +33,7 @@ set (CMAKE_EXPORT_COMPILE_COMMANDS ON)
 project("PatacheEngine"
   LANGUAGES CXX
   VERSION 1 
-  HOMEPAGE_URL "https://gitlab.com/Sendan/patata-engine.git")
+  HOMEPAGE_URL "https://gitlab.com/PatacheEngine/Patache.git")
 
 set (PATACHE_ENGINE_VERSION_MAYOR 1)
 set (PATACHE_ENGINE_VERSION_MINOR 0)
@@ -259,6 +266,11 @@ if (NOT HAVE_FUTURE)
 	message(FATAL_ERROR "missing future header")
 endif()
 
+CHECK_INCLUDE_FILE_CXX("functional" HAVE_FUNCTIONAL LANGUAGE CXX)
+if (NOT HAVE_FUNCTIONAL)
+	message(FATAL_ERROR "missing functional header")
+endif()
+
 # Check std::async
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     string(APPEND CMAKE_REQUIRED_FLAGS "-std=c++20")
@@ -378,11 +390,12 @@ add_subdirectory(src)
 add_subdirectory(data)
 add_subdirectory(data/assets)
 
-#target_compile_definitions(${PROJECT_NAME} PUBLIC )
-
 message("")
 message(" - Patache Engine Configuration -")
 message(STATUS "BUILD_SHARED_LIBS : ${BUILD_SHARED_LIBS}")
+if (DEFINED USE_LTO)
+  message(STATUS "LTO (Link Time Optimization) : ${USE_LTO}")
+endif()
 message(STATUS "USE_GIT : ${USE_GIT}")
 message(STATUS "USE_BIN_DIR : ${USE_BIN_DIR}")
 if (DEFINED USE_VVL)

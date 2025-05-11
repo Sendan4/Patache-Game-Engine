@@ -1,4 +1,5 @@
 #include <future>
+#include <functional>
 
 #include <fast_io.h>
 #if PATACHE_DEBUG == 1
@@ -12,3 +13,8 @@
 #include "ColorTerminal.hpp"
 #include "Log.hpp"
 #include "fast_io_buff.hpp"
+
+void InitImgui (const Patache::Config &);
+bool InitImguiVulkan (Patache::Engine * const);
+bool CreateImguiDescriptorPool (Patache::VulkanBackend &);
+bool CreateImguiPipelineCache (Patache::VulkanBackend &);

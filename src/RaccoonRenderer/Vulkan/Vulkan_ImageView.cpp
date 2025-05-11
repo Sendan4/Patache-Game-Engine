@@ -1,7 +1,8 @@
 #include "Vulkan_ImageView.hpp"
 
 bool
-Patache::Engine::CreateImageView (const Patache::SwapChainInfo & SwapChainInfo)
+CreateImageView (Patache::VulkanBackend &       Vulkan,
+                 const Patache::SwapChainInfo & SwapChainInfo)
 {
   if (Vulkan.SwapChainColorImageView == VK_NULL_HANDLE)
     Vulkan.SwapChainColorImageView
@@ -26,7 +27,7 @@ Patache::Engine::CreateImageView (const Patache::SwapChainInfo & SwapChainInfo)
 
   for (std::uint8_t i = 0; i < Vulkan.SwapChainImageCount; ++i)
     {
-      vk::ImageViewCreateInfo ColorImageViewInfo{
+      const vk::ImageViewCreateInfo ColorImageViewInfo{
         .image            = Vulkan.SwapChainImages[i],
         .viewType         = vk::ImageViewType::e2D,
         .format           = SwapChainInfo.ImageColorFormat,
@@ -44,9 +45,9 @@ Patache::Engine::CreateImageView (const Patache::SwapChainInfo & SwapChainInfo)
           std::snprintf (ErrorText, PATACHE_ERROR_TEXT_SIZE - 1,
                          "Color Image View #%.3u", i + 1);
 
-          std::future<void> ReturnVulkanCheck
-              = std::async (std::launch::async, Patache::Log::VulkanCheck,
-                            ErrorText, Result);
+          std::future<void> ReturnVulkanCheck = std::async (
+              std::launch::async, Patache::Log::VulkanCheck,
+              ErrorText, Result);
 
           return false;
         }

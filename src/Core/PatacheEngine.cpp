@@ -8,6 +8,7 @@
 #include <windows.h>
 #endif
 #include <SDL3/SDL.h>
+#include <fast_io.h>
 
 // Patache Engine
 #include "PatacheEngine/PatacheEngine.hpp"
@@ -16,7 +17,12 @@
 #include "CstdlibWrapped.hpp"
 #endif
 #include "Log.hpp"
-#include "PatacheIcon.hpp"
+// Icon
+#if PATACHE_DEBUG == 1
+#include "PatacheDebugIcon.hpp"
+#else
+#include "PatacheReleaseIcon.hpp" 
+#endif
 
 // VVL Path macros
 #if defined(PATACHE_FIND_VVL_IN_THE_CURRENT_PATH)
@@ -26,39 +32,51 @@
 #define PATACHE_VVL_PATH PATACHE_VVL_SDK_PATH
 #endif
 
+// Function Prototipes
 // Event Filter for Window Resize
 bool SDLCALL HandleResize (void * userdata, SDL_Event * event);
+
+bool LoadConfiguration (Patache::Config &);
+
+#if defined(__linux__)
+bool CreateWaylandWindow (SDL_Window *);
+#endif
+
+bool RaccoonRendererInit (Patache::Engine *,
+                          const Patache::EngineCreateInfo &);
+
+void RaccoonRendererClose (Patache::VulkanBackend &);
 
 bool
 Patache::Engine::Init (const Patache::EngineCreateInfo & Info)
 {
   {
-    std::future<void> PatacheStartLogInfo
-        = std::async (std::launch::async, Patache::Log::StartPatacheLogInfo);
+    std::future<void> PatacheStartLogInfo = std::async (
+        std::launch::async, Patache::Log::StartPatacheLogInfo);
   }
 
-  if (!LoadConfiguration ())
+  if (!LoadConfiguration (configuration))
     return false;
 
 #if defined(PATACHE_VVL_PATH)
   if (PATACHE_SETENV ("VK_LAYER_PATH", PATACHE_VVL_PATH)
       != PATACHE_SETENV_SUCCESS)
-    std::future<void> Err
-        = std::async (std::launch::async, Patache::Log::ErrorMessage,
-                      "Cannot set enviroment varible VK_LAYER_PATH");
+    std::future<void> Err = std::async (
+        std::launch::async, Patache::Log::ErrorMessage,
+        "Cannot set enviroment varible VK_LAYER_PATH");
 #endif // PATACHE_VVL_PATH
 
   // SDL Subsystems
   if (!SDL_Init (SDL_INIT_VIDEO | SDL_INIT_EVENTS))
     {
-      std::future<void> Err = std::async (
-          std::launch::async, Patache::Log::FatalErrorMessage,
-          "Patache Engine - SDL2", SDL_GetError (), configuration);
+      std::future<void> Err
+          = std::async (std::launch::async, Patache::Log::FatalErrorMessage,
+                        "Patache Engine - SDL2", SDL_GetError (),
+                        configuration);
 
       return false;
     }
 
-  // Create Window
   {
     // Window Title
 #if PATACHE_DEBUG == 1
@@ -107,7 +125,7 @@ Patache::Engine::Init (const Patache::EngineCreateInfo & Info)
         std::future<void> Err = std::async (
             std::launch::async, Patache::Log::ErrorMessage,
             "can't get the current resolution. starting with 480p "
-            "(1.78)");
+                       "(1.78)");
 
         w = 854;
         h = 480;
@@ -118,11 +136,12 @@ Patache::Engine::Init (const Patache::EngineCreateInfo & Info)
                                    SDL_WINDOW_RESIZABLE | SDL_WINDOW_VULKAN
                                        | SDL_WINDOW_HIGH_PIXEL_DENSITY);
 
-    if (!GameWindow)
+    if (GameWindow == nullptr)
       {
         std::future<void> Err = std::async (
             std::launch::async, Patache::Log::FatalErrorMessage,
-            "Window cannot be created", SDL_GetError (), configuration);
+            "Window cannot be created", SDL_GetError (),
+            configuration);
 
         return false;
       }
@@ -154,9 +173,9 @@ Patache::Engine::Init (const Patache::EngineCreateInfo & Info)
           Patache::Icon::Pitch);
 
     if (WindowIcon == nullptr)
-      std::future<void> Err
-          = std::async (std::launch::async, Patache::Log::ErrorMessage,
-                        "Icon cannot be loaded");
+      std::future<void> Err = std::async (
+          std::launch::async, Patache::Log::ErrorMessage,
+          "Icon cannot be loaded");
     else
       SDL_SetWindowIcon (GameWindow, WindowIcon);
 
@@ -164,10 +183,10 @@ Patache::Engine::Init (const Patache::EngineCreateInfo & Info)
     WindowIcon = nullptr;
   }
 
-  if (!RaccoonRendererInit (Info))
-    return false;
-
   SDL_SetEventFilter (HandleResize, &WindowResized);
+
+  if (!RaccoonRendererInit (this, Info))
+    return false;
 
   return true;
 }
@@ -187,7 +206,7 @@ Patache::Engine::Engine (const Patache::EngineCreateInfo & Info, bool * Err)
 
 Patache::Engine::~Engine (void)
 {
-  RaccoonRendererClose ();
+  RaccoonRendererClose (Vulkan);
 
 #if PATACHE_DEBUG == 1
   // Imgui

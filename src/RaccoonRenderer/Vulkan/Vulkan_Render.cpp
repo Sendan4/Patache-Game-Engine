@@ -16,12 +16,13 @@ Patache::Engine::BeginRender (SDL_Event & Event)
                      "Wait For Fence #%.3u", Vulkan.CurrentFrame);
 
       std::future<void> ReturnVulkanCheck = std::async (
-          std::launch::async, Patache::Log::VulkanCheck, ErrorText, Result);
+          std::launch::async, Patache::Log::VulkanCheck,
+          ErrorText, Result);
     }
 #endif
 
   // Acquire Next Image
-  vk::AcquireNextImageInfoKHR NextImageInfo{
+  const vk::AcquireNextImageInfoKHR NextImageInfo{
     .swapchain  = Vulkan.SwapChain,
     .timeout    = UINT64_MAX,
     .semaphore  = Vulkan.ImageAvailableSemaphore[Vulkan.CurrentFrame],
@@ -34,15 +35,15 @@ Patache::Engine::BeginRender (SDL_Event & Event)
 
 #if PATACHE_DEBUG == 1
   if (Result != vk::Result::eSuccess)
-    std::future<void> ReturnVulkanCheck
-        = std::async (std::launch::async, Patache::Log::VulkanCheck,
-                      "Acquire Next Image 2 KHR", Result);
+    std::future<void> ReturnVulkanCheck = std::async (
+        std::launch::async, Patache::Log::VulkanCheck,
+        "Acquire Next Image 2 KHR", Result);
 #endif
 
   // Resize
   if (Result == vk::Result::eErrorOutOfDateKHR || WindowResized)
     {
-      RecreateSwapChain (Event);
+      RecreateSwapChain (this, Event);
       WindowResized = false;
       return false;
     }
@@ -60,7 +61,8 @@ Patache::Engine::BeginRender (SDL_Event & Event)
                      "Reset Fence #%.3u", Vulkan.CurrentFrame);
 
       std::future<void> ReturnVulkanCheck = std::async (
-          std::launch::async, Patache::Log::VulkanCheck, ErrorText, Result);
+          std::launch::async, Patache::Log::VulkanCheck,
+          ErrorText, Result);
     }
 #endif
 
@@ -90,7 +92,7 @@ Patache::Engine::BeginRender (SDL_Event & Event)
     Vulkan.RenderArea.offset.x = 0;
     Vulkan.RenderArea.offset.y = 0;
 
-    vk::RenderPassBeginInfo Info{
+    const vk::RenderPassBeginInfo Info{
       .renderPass      = Vulkan.RenderPass,
       .framebuffer     = Vulkan.SwapChainFrameBuffer[Vulkan.ImageIndex],
       .renderArea      = Vulkan.RenderArea,
@@ -173,7 +175,8 @@ Patache::Engine::EndRender (SDL_Event & Event)
                      "End Command Buffer #%.3u", Vulkan.CurrentFrame);
 
       std::future<void> ReturnVulkanCheck = std::async (
-          std::launch::async, Patache::Log::VulkanCheck, ErrorText, Result);
+          std::launch::async, Patache::Log::VulkanCheck,
+          ErrorText, Result);
     }
 #endif
 
@@ -183,7 +186,7 @@ Patache::Engine::EndRender (SDL_Event & Event)
         = vk::PipelineStageFlagBits::eTopOfPipe
           | vk::PipelineStageFlagBits::eColorAttachmentOutput;
 
-    vk::SubmitInfo SubmitInfo{
+    const vk::SubmitInfo SubmitInfo{
       .waitSemaphoreCount = 1,
       .pWaitSemaphores = &Vulkan.ImageAvailableSemaphore[Vulkan.CurrentFrame],
       .pWaitDstStageMask    = &WaitStages,
@@ -205,7 +208,7 @@ Patache::Engine::EndRender (SDL_Event & Event)
 #endif
 
   // Present to surface
-  vk::PresentInfoKHR PresentInfo{
+  const vk::PresentInfoKHR PresentInfo{
     .waitSemaphoreCount = 1,
     .pWaitSemaphores    = &Vulkan.ImageFinishedSemaphore[Vulkan.CurrentFrame],
     .swapchainCount     = 1,
@@ -217,15 +220,16 @@ Patache::Engine::EndRender (SDL_Event & Event)
 
 #if PATACHE_DEBUG == 1
   if (Result != vk::Result::eSuccess)
-    std::future<void> ReturnVulkanCheck = std::async (
-        std::launch::async, Patache::Log::VulkanCheck, "Present KHR", Result);
+    std::future<void> ReturnVulkanCheck
+        = std::async (std::launch::async, Patache::Log::VulkanCheck,
+                      "Present KHR", Result);
 #endif
 
   // Resize
   if (Result == vk::Result::eErrorOutOfDateKHR
       || Result == vk::Result::eSuboptimalKHR || WindowResized)
     {
-      RecreateSwapChain (Event);
+      RecreateSwapChain (this, Event);
       WindowResized = false;
     }
 

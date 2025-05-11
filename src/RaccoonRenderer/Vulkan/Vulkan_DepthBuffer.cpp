@@ -1,7 +1,8 @@
 #include "Vulkan_DepthBuffer.hpp"
 
 bool
-Patache::Engine::CreateDepthBuffer (void)
+CreateDepthBuffer (Patache::VulkanBackend & Vulkan,
+                   Patache::Config &        configuration)
 {
   vk::ImageTiling Tiling = vk::ImageTiling::eOptimal;
 
@@ -43,7 +44,8 @@ Patache::Engine::CreateDepthBuffer (void)
       std::future<void> Err = std::async (
           std::launch::async, Patache::Log::FatalErrorMessage,
           "Patache - Raccoon Renderer",
-          "A ImageTiling or Depth Format was not found", configuration);
+          "A ImageTiling or Depth Format was not found",
+          configuration);
 
       return false;
     }
@@ -70,9 +72,9 @@ Patache::Engine::CreateDepthBuffer (void)
       = Vulkan.Device.createImage (&ImageInfo, nullptr, &Vulkan.DepthImage);
   if (Result != vk::Result::eSuccess)
     {
-      std::future<void> ReturnVulkanCheck
-          = std::async (std::launch::async, Patache::Log::VulkanCheck,
-                        "Depth Image", Result);
+      std::future<void> ReturnVulkanCheck = std::async (
+          std::launch::async, Patache::Log::VulkanCheck,
+          "Depth Image", Result);
 
       return false;
     }
@@ -93,8 +95,8 @@ Patache::Engine::CreateDepthBuffer (void)
 
   std::uint32_t TypeIndex = 0;
 
-  for (uint32_t i = 0; i < MemoryProperties.memoryProperties.memoryTypeCount;
-       ++i)
+  for (std::uint32_t i = 0;
+       i < MemoryProperties.memoryProperties.memoryTypeCount; ++i)
     {
       if ((MemoryRequirements.memoryRequirements.memoryTypeBits & 1)
           && (MemoryProperties.memoryProperties.memoryTypes[i].propertyFlags
@@ -114,9 +116,9 @@ Patache::Engine::CreateDepthBuffer (void)
                                          &Vulkan.DepthMemory);
   if (Result != vk::Result::eSuccess)
     {
-      std::future<void> ReturnVulkanCheck
-          = std::async (std::launch::async, Patache::Log::VulkanCheck,
-                        "Allocate Depth Memory", Result);
+      std::future<void> ReturnVulkanCheck = std::async (
+          std::launch::async, Patache::Log::VulkanCheck,
+          "Allocate Depth Memory", Result);
 
       return false;
     }
@@ -125,9 +127,9 @@ Patache::Engine::CreateDepthBuffer (void)
                                           Vulkan.DepthMemory, 0);
   if (Result != vk::Result::eSuccess)
     {
-      std::future<void> ReturnVulkanCheck
-          = std::async (std::launch::async, Patache::Log::VulkanCheck,
-                        "Bind Image Depth Memory", Result);
+      std::future<void> ReturnVulkanCheck = std::async (
+          std::launch::async, Patache::Log::VulkanCheck,
+          "Bind Image Depth Memory", Result);
 
       return false;
     }
@@ -150,9 +152,9 @@ Patache::Engine::CreateDepthBuffer (void)
                                           &Vulkan.DepthView);
   if (Result != vk::Result::eSuccess)
     {
-      std::future<void> ReturnVulkanCheck
-          = std::async (std::launch::async, Patache::Log::VulkanCheck,
-                        "Depth Image View", Result);
+      std::future<void> ReturnVulkanCheck = std::async (
+          std::launch::async, Patache::Log::VulkanCheck,
+          "Depth Image View", Result);
 
       return false;
     }

@@ -1,7 +1,7 @@
 #include "Vulkan_FrameBuffer.hpp"
 
 bool
-Patache::Engine::CreateFrameBuffer (void)
+CreateFrameBuffer (Patache::VulkanBackend & Vulkan)
 {
   if (Vulkan.SwapChainFrameBuffer == VK_NULL_HANDLE)
     Vulkan.SwapChainFrameBuffer
@@ -11,7 +11,7 @@ Patache::Engine::CreateFrameBuffer (void)
 
   for (std::uint8_t i = 0; i < Vulkan.SwapChainImageCount; ++i)
     {
-      vk::FramebufferCreateInfo FrameBufferInfo{
+      const vk::FramebufferCreateInfo FrameBufferInfo{
         .renderPass      = Vulkan.RenderPass,
         .attachmentCount = 1,
         .pAttachments    = &Vulkan.SwapChainColorImageView[i],
@@ -30,9 +30,9 @@ Patache::Engine::CreateFrameBuffer (void)
           std::snprintf (ErrorText, PATACHE_ERROR_TEXT_SIZE - 1,
                          "Frame Buffer #%.3u", i + 1);
 
-          std::future<void> ReturnVulkanCheck
-              = std::async (std::launch::async, Patache::Log::VulkanCheck,
-                            ErrorText, Result);
+          std::future<void> ReturnVulkanCheck = std::async (
+              std::launch::async, Patache::Log::VulkanCheck,
+              ErrorText, Result);
 
           return false;
         }

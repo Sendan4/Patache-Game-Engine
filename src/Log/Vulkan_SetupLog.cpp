@@ -1,8 +1,9 @@
 #include "Vulkan_SetupLog.hpp"
 
 void
-Patache::Log::VulkanList (const char * const List[], const uint32_t & Size,
-                          const char * const Message)
+Patache::Log::VulkanList (const char * const    List[],
+                          const std::uint32_t & Size,
+                          const char * const    Message)
 {
   fast_io::io::println (
       PATACHE_FAST_IO_BUFF_OUT,

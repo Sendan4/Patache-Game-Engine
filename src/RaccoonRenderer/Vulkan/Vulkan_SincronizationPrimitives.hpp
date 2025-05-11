@@ -1,5 +1,6 @@
 #include <cstdio>
 #include <future>
+#include <functional>
 
 #include <SDL3/SDL.h>
 
@@ -7,4 +8,7 @@
 #include "PatacheEngine/PatacheEngine.hpp"
 #include "Log.hpp"
 
-#define PATACHE_ERROR_TEXT_SIZE 240
+bool CreateSemaphore (Patache::VulkanBackend &);
+bool CreateFence (Patache::VulkanBackend &);
+
+#define PATACHE_ERROR_TEXT_SIZE 64

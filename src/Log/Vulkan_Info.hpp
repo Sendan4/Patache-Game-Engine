@@ -22,3 +22,5 @@
 #include "Log.hpp"
 #include "fast_io_buff.hpp"
 #include "CstringWrapped.hpp"
+
+void VulkanInfo (Patache::Engine * const, const Patache::SwapChainInfo &);

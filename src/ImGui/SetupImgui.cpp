@@ -1,17 +1,18 @@
 #include "SetupImgui.hpp"
 
 void
-Patache::Engine::InitImgui (void)
+InitImgui (const Patache::Config & configuration)
 {
   IMGUI_CHECKVERSION ();
   ImGui::CreateContext ();
 
   if (ImGui::GetCurrentContext () == nullptr)
     {
-      fast_io::io::println (
-          PATACHE_FAST_IO_BUFF_OUT, PATACHE_TERM_BOLD,
-          "Initialize Global ImGui Context : ", PATACHE_TERM_RESET,
-          PATACHE_TERM_COLOR_YELLOW, "Fail\n", PATACHE_TERM_RESET);
+      std::future<void> FatalErr = std::async (
+          std::launch::async, Patache::Log::FatalErrorMessage,
+          "Patache Engine - ImGui",
+          "Fail to initialize global ImGui Context",
+          configuration);
 
       return;
     }
@@ -55,14 +56,14 @@ Patache::Engine::InitImgui (void)
 }
 
 bool
-Patache::Engine::CreateImguiDescriptorPool (void)
+CreateImguiDescriptorPool (Patache::VulkanBackend & Vulkan)
 {
   if (ImGui::GetCurrentContext () == nullptr)
     {
-      std::future<void> Err
-          = std::async (std::launch::async, Patache::Log::ErrorMessage,
-                        "You cannot initialize the descriptor pool for imgui "
-                        "without having initialized the ImGui context first");
+      std::future<void> Err = std::async (
+          std::launch::async, Patache::Log::ErrorMessage,
+          "You cannot initialize the descriptor pool for imgui "
+                     "without having initialized the ImGui context first");
 
       return false;
     }
@@ -70,7 +71,7 @@ Patache::Engine::CreateImguiDescriptorPool (void)
   constexpr vk::DescriptorPoolSize PoolSize
       = { vk::DescriptorType::eCombinedImageSampler, 1 };
 
-  vk::DescriptorPoolCreateInfo Info{
+  const vk::DescriptorPoolCreateInfo Info{
     .flags         = vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet,
     .maxSets       = 1,
     .poolSizeCount = 1,
@@ -82,9 +83,9 @@ Patache::Engine::CreateImguiDescriptorPool (void)
 
   if (Result != vk::Result::eSuccess)
     {
-      std::future<void> ReturnVulkanCheck
-          = std::async (std::launch::async, Patache::Log::VulkanCheck,
-                        "Imgui Descriptor Pool", Result);
+      std::future<void> ReturnVulkanCheck = std::async (
+          std::launch::async, Patache::Log::VulkanCheck,
+          "Imgui Descriptor Pool", Result);
 
       return false;
     }
@@ -93,27 +94,27 @@ Patache::Engine::CreateImguiDescriptorPool (void)
 }
 
 bool
-Patache::Engine::CreateImguiPipelineCache (void)
+CreateImguiPipelineCache (Patache::VulkanBackend & Vulkan)
 {
   if (ImGui::GetCurrentContext () == nullptr)
     {
-      std::future<void> Err
-          = std::async (std::launch::async, Patache::Log::ErrorMessage,
-                        "You cannot initialize the pipeline cache for imgui "
-                        "without having initialized the ImGui context first");
+      std::future<void> Err = std::async (
+          std::launch::async, Patache::Log::ErrorMessage,
+          "You cannot initialize the pipeline cache for imgui "
+                     "without having initialized the ImGui context first");
 
       return false;
     }
 
-  vk::PipelineCacheCreateInfo Info{};
+  const vk::PipelineCacheCreateInfo Info{};
 
   vk::Result Result = Vulkan.Device.createPipelineCache (
       &Info, nullptr, &Vulkan.ImguiPipelineCache);
   if (Result != vk::Result::eSuccess)
     {
-      std::future<void> ReturnVulkanCheck
-          = std::async (std::launch::async, Patache::Log::VulkanCheck,
-                        "Imgui PipeLine Cache", Result);
+      std::future<void> ReturnVulkanCheck = std::async (
+          std::launch::async, Patache::Log::VulkanCheck,
+          "Imgui PipeLine Cache", Result);
       return false;
     }
   else
@@ -121,48 +122,50 @@ Patache::Engine::CreateImguiPipelineCache (void)
 }
 
 bool
-Patache::Engine::InitImguiVulkan (void)
+InitImguiVulkan (Patache::Engine * const Engine)
 {
   if (ImGui::GetCurrentContext () == nullptr)
     {
-      std::future<void> Err
-          = std::async (std::launch::async, Patache::Log::ErrorMessage,
-                        "You cannot initialize the implementation without "
-                        "having initialized the ImGui context first");
+      std::future<void> Err = std::async (
+          std::launch::async, Patache::Log::ErrorMessage,
+          "You cannot initialize the implementation without "
+                     "having initialized the ImGui context first");
 
       return false;
     }
 
-  ImGui_ImplSDL3_InitForVulkan (GameWindow);
+  ImGui_ImplSDL3_InitForVulkan (Engine->GameWindow);
 
   vk::SurfaceCapabilitiesKHR SurfaceCapabilities;
 
-  vk::Result Result = Vulkan.PhysicalDevice.getSurfaceCapabilitiesKHR (
-      Vulkan.Surface, &SurfaceCapabilities);
+  vk::Result Result = Engine->Vulkan.PhysicalDevice.getSurfaceCapabilitiesKHR (
+      Engine->Vulkan.Surface, &SurfaceCapabilities);
   if (Result != vk::Result::eSuccess)
     {
-      std::future<void> ReturnVulkanCheck
-          = std::async (std::launch::async, Patache::Log::VulkanCheck,
-                        "Get Surface Capabilities KHR", Result);
+      std::future<void> ReturnVulkanCheck = std::async (
+          std::launch::async, Patache::Log::VulkanCheck,
+          "Get Surface Capabilities KHR", Result);
 
       return false;
     }
 
   ImGui_ImplVulkan_InitInfo ImGuiImplInitInfo{
-    .ApiVersion     = VK_API_VERSION_1_3,
-    .Instance       = static_cast<VkInstance> (Vulkan.Instance),
-    .PhysicalDevice = static_cast<VkPhysicalDevice> (Vulkan.PhysicalDevice),
-    .Device         = static_cast<VkDevice> (Vulkan.Device),
-    .QueueFamily    = Vulkan.GraphicsQueueFamilyIndex,
-    .Queue          = static_cast<VkQueue> (Vulkan.Queue),
+    .ApiVersion = VK_API_VERSION_1_3,
+    .Instance   = static_cast<VkInstance> (Engine->Vulkan.Instance),
+    .PhysicalDevice
+    = static_cast<VkPhysicalDevice> (Engine->Vulkan.PhysicalDevice),
+    .Device      = static_cast<VkDevice> (Engine->Vulkan.Device),
+    .QueueFamily = Engine->Vulkan.GraphicsQueueFamilyIndex,
+    .Queue       = static_cast<VkQueue> (Engine->Vulkan.Queue),
     .DescriptorPool
-    = static_cast<VkDescriptorPool> (Vulkan.ImguiDescriptorPool),
-    .RenderPass    = static_cast<VkRenderPass> (Vulkan.RenderPass),
+    = static_cast<VkDescriptorPool> (Engine->Vulkan.ImguiDescriptorPool),
+    .RenderPass    = static_cast<VkRenderPass> (Engine->Vulkan.RenderPass),
     .MinImageCount = SurfaceCapabilities.minImageCount,
-    .ImageCount    = Vulkan.SwapChainImageCount,
+    .ImageCount    = Engine->Vulkan.SwapChainImageCount,
     .MSAASamples   = VK_SAMPLE_COUNT_1_BIT,
-    .PipelineCache = static_cast<VkPipelineCache> (Vulkan.ImguiPipelineCache),
-    .Subpass       = 0,
+    .PipelineCache
+    = static_cast<VkPipelineCache> (Engine->Vulkan.ImguiPipelineCache),
+    .Subpass                     = 0,
     .DescriptorPoolSize          = 0,
     .UseDynamicRendering         = false,
     .PipelineRenderingCreateInfo = {},
@@ -173,10 +176,11 @@ Patache::Engine::InitImguiVulkan (void)
 
   if (!ImGui_ImplVulkan_Init (&ImGuiImplInitInfo))
     {
-      fast_io::io::print (
-          PATACHE_FAST_IO_BUFF_OUT, PATACHE_TERM_BOLD,
-          "ImGui Vulkan Implementation Initialization : ", PATACHE_TERM_RESET,
-          PATACHE_TERM_COLOR_YELLOW, "Fail", PATACHE_TERM_RESET);
+      std::future<void> FatalErr = std::async (
+          std::launch::async, Patache::Log::FatalErrorMessage,
+          "Patache Engine - ImGui",
+          "Fail to initialize ImGui Vulkan Implementation Context",
+          Engine->configuration);
 
       return false;
     }

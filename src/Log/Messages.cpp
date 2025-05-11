@@ -7,7 +7,7 @@ Patache::Log::FatalErrorMessage (const char * const      Title,
 {
   char ErrorTitle[1024] = "Patache Engine - ";
 
-  PATACHE_STRNCPY (ErrorTitle, Title, 1024);
+  PATACHE_STRNCPY (ErrorTitle, Title, 1023);
 
   if (Config.ShowFatalErrorMessagebox)
     SDL_ShowSimpleMessageBox (SDL_MESSAGEBOX_ERROR, ErrorTitle, Message,

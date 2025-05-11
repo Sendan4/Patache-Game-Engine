@@ -11,3 +11,5 @@
 #include "Log.hpp"
 
 #define PATACHE_ERROR_TEXT_SIZE 1024
+
+bool LoadConfiguration (Patache::Config &);

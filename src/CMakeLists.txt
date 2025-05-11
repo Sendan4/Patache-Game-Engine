@@ -14,18 +14,13 @@ target_sources (${PROJECT_NAME} PRIVATE
  "Core/Input.cpp"
  "Core/ClearColor.cpp"
  "RaccoonRenderer/Vulkan/Vulkan_SetupRenderer.cpp"
- "RaccoonRenderer/Vulkan/Vulkan_Instance.cpp"
- "RaccoonRenderer/Vulkan/Vulkan_Select_Device.cpp"
- "RaccoonRenderer/Vulkan/Vulkan_LogicalDevice_And_GrahicsQueue.cpp"
  "RaccoonRenderer/Vulkan/Vulkan_SwapChain.cpp"
  "RaccoonRenderer/Vulkan/Vulkan_ImageView.cpp"
- "RaccoonRenderer/Vulkan/Vulkan_CommandPoolAndBuffer.cpp"
+ "RaccoonRenderer/Vulkan/Vulkan_CommandBuffer.cpp"
  "RaccoonRenderer/Vulkan/Vulkan_FrameBuffer.cpp"
  "RaccoonRenderer/Vulkan/Vulkan_DepthBuffer.cpp"
  "RaccoonRenderer/Vulkan/Vulkan_SincronizationPrimitives.cpp"
  "RaccoonRenderer/Vulkan/Vulkan_Render.cpp"
- "RaccoonRenderer/Vulkan/Vulkan_PipeLine.cpp"
- "RaccoonRenderer/Vulkan/Vulkan_RenderPass.cpp"
  "Log/Messages.cpp"
  "Log/StartLogInfo.cpp"
  "Log/Vulkan_SetupLog.cpp"
@@ -43,6 +38,10 @@ if (CMAKE_SYSTEM_NAME STREQUAL "Windows" OR WIN32)
     enable_language(RC)
 
     target_sources (${PROJECT_NAME} PRIVATE "PatacheEngine.rc")
+endif()
+
+if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+	target_sources (${PROJECT_NAME} PRIVATE "Core/WaylandWindow.hpp")
 endif()
 
 if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo")
@@ -189,14 +188,21 @@ if (USE_VVL)
 endif()
 
 # Link Libraries
+# Wayland
+if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+	target_link_libraries(${PROJECT_NAME} PRIVATE ${WAYLAND_LIBRARIES})
+	target_include_directories(${PROJECT_NAME} PRIVATE ${WAYLAND_INCLUDE_DIRS})
+endif()
+
 if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" OR (CMAKE_SYSTEM_NAME STREQUAL "Linux" AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU"))
     # Using VVL
     if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo" AND USE_VVL)
         target_compile_definitions(${PROJECT_NAME} PRIVATE PATACHE_FIND_VVL_IN_THE_CURRENT_PATH)
     endif()
 
-    # build Vulkan
-    target_link_libraries(${PROJECT_NAME} PUBLIC vulkan Vulkan::Headers)
+    target_link_libraries(${PROJECT_NAME} PUBLIC
+			vulkan
+			Vulkan::Headers)
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
     # Link Vulkan from SDK
     message("")
@@ -354,7 +360,13 @@ if (MSVC)
     endif()
 endif()
 
+if (USE_LTO)
+  set_target_properties(${PROJECT_NAME}
+    PROPERTIES
+    INTERPROCEDURAL_OPTIMIZATION ${USE_LTO})
+endif()
+
 set_target_properties(${PROJECT_NAME}
     PROPERTIES
     VERSION "${PATACHE_ENGINE_VERSION}"
-    INTERPROCEDURAL_OPTIMIZATION TRUE)
+    CXX_EXTENSIONS OFF)

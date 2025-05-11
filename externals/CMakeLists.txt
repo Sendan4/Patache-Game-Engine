@@ -200,6 +200,15 @@ else()
   FetchContent_MakeAvailable(cglm)
 endif()
 
+# Wayland Client
+if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+  message("")
+  message("  - Wayland -")
+
+	find_package(PkgConfig REQUIRED)
+	pkg_check_modules(WAYLAND wayland-client)
+endif()
+
 # SDL2
 message("")
 message("  - SDL3 -")
@@ -269,7 +278,7 @@ set (SDL_GPU_DXVK OFF CACHE INTERNAL "..." FORCE)
 set (SDL_TEST_LIBRARY OFF CACHE INTERNAL "..." FORCE)
 set (SDL_WAYLAND_LIBDECOR OFF CACHE INTERNAL "..." FORCE)
 set (SDL_WAYLAND_LIBDECOR_SHARED OFF CACHE INTERNAL "..." FORCE)
-set (SDL_VENDOR_INFO "Patata Engine" CACHE STRING "Vendor name and/or version to add to SDL_REVISION")
+set (SDL_VENDOR_INFO ${PROJECT_NAME} CACHE STRING "Vendor name and/or version to add to SDL_REVISION")
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
 	set (SDL_X11 OFF CACHE INTERNAL "..." FORCE)

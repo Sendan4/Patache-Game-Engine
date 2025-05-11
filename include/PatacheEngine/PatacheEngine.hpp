@@ -60,21 +60,21 @@ enum class ViewMode : bool
 // you can use nullptr to not use the options or not assign them at all.
 struct EngineCreateInfo
 {
-  const char *   gameName    = nullptr; // Name of the game // It is optional.
-  const uint32_t gameVersion = 0;
+  const char * const gameName = nullptr; // Name of the game // It is optional.
+  const uint32_t     gameVersion = 0;
   // Vulkan version style: major.minor.patch.variant // It is
   // optional.
-  const char * windowTitle = nullptr;
+  const char * const windowTitle = nullptr;
   // Initial title of the window. // It is optional.
   const Patache::ViewMode viewMode = Patache::ViewMode::TwoDimensions;
   // Determines whether the project uses 2D or 3D graphics.
   // It is mandatory.
-  const char * windowIconPath = nullptr;
+  const char * const windowIconPath = nullptr;
   // Initial icon of the window. // It is optional.
   // Use bitmap (.bmp) format/codec. // It is optional.
 };
 
-// Float format
+// Float32 format
 struct ClearColor
 {
   float r = 0.0f; // Red
@@ -83,10 +83,8 @@ struct ClearColor
   float a = 1.0f; // Alpha
 };
 
-class Engine
+struct Engine
 {
-public:
-  // Public API
   PATACHE_API Engine (void) = default;
 
   PATACHE_API Engine (const Patache::EngineCreateInfo &, bool *);
@@ -121,44 +119,18 @@ public:
   PATACHE_API void ClearColorRGBA (const float &, const float &,
                                    const float &);
 
-private:
   // Window
   SDL_Window * GameWindow    = nullptr;
   bool         WindowResized = false;
 
-  bool LoadConfiguration (void);
-
-  // Raccoon Renderer
-  // Vulkan Backend
-  Patache::VulkanBackend Vulkan;
-
-  bool     RaccoonRendererInit (const Patache::EngineCreateInfo &);
-  void     RaccoonRendererClose (void);
-  bool     CreateInstance (const Patache::EngineCreateInfo &);
-  bool     SelectDevice (void);
-  uint32_t CreateLogicalDeviceAndCreateQueue (void);
-  bool     CreateSwapChain (SwapChainInfo &);
-  bool     CreateImageView (const SwapChainInfo &);
-  bool     CreateCommandPool (void);
-  bool     CreateCommandBuffer (void);
-  bool     CreateFrameBuffer (void);
-  bool     CreateDepthBuffer (void);
-  bool     CreateRenderPass (const SwapChainInfo &);
-  bool     CreatePipeline (void);
-  bool     CreateSemaphores (void);
-  bool     CreateFence (void);
-  void     RecreateSwapChain (SDL_Event &);
-
-#if PATACHE_DEBUG == 1
-  // Imgui
-  void InitImgui (void);
-  bool InitImguiVulkan (void);
-  bool CreateImguiDescriptorPool (void);
-  bool CreateImguiPipelineCache (void);
-
-  Patache::EngineInfo engineInfo;
+#if defined(__linux__)
+// Wayland Window
 #endif
 
-  void VulkanInfo (const SwapChainInfo &);
-}; // End Engine Namespace
-} // End Patache Namespace
+  Patache::VulkanBackend Vulkan;
+
+#if PATACHE_DEBUG == 1
+  Patache::EngineInfo engineInfo;
+#endif
+};
+}

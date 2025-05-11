@@ -1,7 +1,8 @@
 #include "Vulkan_Info.hpp"
 
 void
-Patache::Engine::VulkanInfo (const Patache::SwapChainInfo & SwapChainInfo)
+VulkanInfo (Patache::Engine * const        Engine,
+            const Patache::SwapChainInfo & SwapChainInfo)
 {
   fast_io::io::println (PATACHE_FAST_IO_BUFF_OUT, PATACHE_TERM_BOLD,
                         PATACHE_TERM_COLOR_PATACHE, "Raccoon Renderer ",
@@ -11,17 +12,17 @@ Patache::Engine::VulkanInfo (const Patache::SwapChainInfo & SwapChainInfo)
 
   vk::PhysicalDeviceProperties2 PhysicalDeviceProperties;
   PhysicalDeviceProperties.pNext = &Driver;
-  Vulkan.PhysicalDevice.getProperties2 (&PhysicalDeviceProperties);
+  Engine->Vulkan.PhysicalDevice.getProperties2 (&PhysicalDeviceProperties);
 
 #if PATACHE_DEBUG == 1
   /*
-   * Storing information about Vulkan to display it through ImGui.
+   * Storing information about Engine->Vulkan to display it through ImGui.
    * Only on debug builds
    */
 
   // Vulkan Version
   std::snprintf (
-      engineInfo.VkVersion, PATACHE_VK_VERSION_SIZE, "%u.%u.%u.%u",
+      Engine->engineInfo.VkVersion, PATACHE_VK_VERSION_SIZE, "%u.%u.%u.%u",
       VK_VERSION_MAJOR (PhysicalDeviceProperties.properties.apiVersion),
       VK_VERSION_MINOR (PhysicalDeviceProperties.properties.apiVersion),
       VK_VERSION_PATCH (PhysicalDeviceProperties.properties.apiVersion),
@@ -29,35 +30,35 @@ Patache::Engine::VulkanInfo (const Patache::SwapChainInfo & SwapChainInfo)
 
   // Vulkan Device Name
   for (std::uint16_t i = 0; i < VK_MAX_PHYSICAL_DEVICE_NAME_SIZE; ++i)
-    engineInfo.VkDeviceName[i]
+    Engine->engineInfo.VkDeviceName[i]
         = *(PhysicalDeviceProperties.properties.deviceName.data () + i);
 
   // Vulkan Device Vendor ID
-  engineInfo.VkDeviceVendorId
+  Engine->engineInfo.VkDeviceVendorId
       = static_cast<uint32_t> (PhysicalDeviceProperties.properties.vendorID);
 
   // Vulkan Device Type
   PATACHE_STRNCPY (
-      engineInfo.VkDeviceType,
+      Engine->engineInfo.VkDeviceType,
       vk::to_string (PhysicalDeviceProperties.properties.deviceType).c_str (),
       PATACHE_VK_DEVICE_TYPE_SIZE);
 
   // Vulkan Driver Name
   for (std::uint16_t i = 0; i < VK_MAX_DRIVER_NAME_SIZE; ++i)
-    engineInfo.VkDriverName[i] = *(Driver.driverName.data () + i);
+    Engine->engineInfo.VkDriverName[i] = *(Driver.driverName.data () + i);
 
   // Vulkan Driver ID
-  PATACHE_STRNCPY (engineInfo.VkDriverId,
+  PATACHE_STRNCPY (Engine->engineInfo.VkDriverId,
                    vk::to_string (Driver.driverID).c_str (),
                    PATACHE_VK_DRIVER_ID_SIZE);
 
   // Vulkan Driver Info
   for (std::uint16_t i = 0; i < VK_MAX_DRIVER_INFO_SIZE; ++i)
-    engineInfo.VkDriverInfo[i] = *(Driver.driverInfo.data () + i);
+    Engine->engineInfo.VkDriverInfo[i] = *(Driver.driverInfo.data () + i);
 
   // Vulkan Driver Version
   std::snprintf (
-      engineInfo.VkDriverVersion, PATACHE_VK_DRIVER_VERSION_SIZE,
+      Engine->engineInfo.VkDriverVersion, PATACHE_VK_DRIVER_VERSION_SIZE,
       "%u.%u.%u.%u",
       VK_VERSION_MAJOR (PhysicalDeviceProperties.properties.driverVersion),
       VK_VERSION_MINOR (PhysicalDeviceProperties.properties.driverVersion),
@@ -402,10 +403,11 @@ Patache::Engine::VulkanInfo (const Patache::SwapChainInfo & SwapChainInfo)
 #if PATACHE_DEBUG == 1
       PATACHE_TERM_DIM, PATACHE_TERM_COLOR_GRAY0, fast_io::mnp::right ("[", 3),
 #if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
-      fast_io::mnp::os_c_str (abi::__cxa_demangle (
-          typeid (Vulkan.SwapChain).name (), nullptr, nullptr, nullptr)),
+      fast_io::mnp::os_c_str (
+          abi::__cxa_demangle (typeid (Engine->Vulkan.SwapChain).name (),
+                               nullptr, nullptr, nullptr)),
 #else
-      fast_io::mnp::os_c_str (typeid (Vulkan.SwapChain).name ()),
+      fast_io::mnp::os_c_str (typeid (Engine->Vulkan.SwapChain).name ()),
 #endif
       fast_io::mnp::left ("]", 2),
 #else  // PATACHE_DEBUG
@@ -437,7 +439,7 @@ Patache::Engine::VulkanInfo (const Patache::SwapChainInfo & SwapChainInfo)
   // Vulkan Vsync
   if ((SwapChainInfo.PresentMode == vk::PresentModeKHR::eFifo
        || SwapChainInfo.PresentMode == vk::PresentModeKHR::eFifoRelaxed)
-      && configuration.Vsync)
+      && Engine->configuration.Vsync)
     fast_io::io::println (PATACHE_FAST_IO_BUFF_OUT, PATACHE_TERM_COLOR_GREEN,
                           "Vertical Sync", PATACHE_TERM_RESET);
   else
@@ -449,17 +451,18 @@ Patache::Engine::VulkanInfo (const Patache::SwapChainInfo & SwapChainInfo)
 #if PATACHE_DEBUG == 1
       PATACHE_TERM_DIM, PATACHE_TERM_COLOR_GRAY0, fast_io::mnp::right ("[", 5),
 #if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
-      fast_io::mnp::os_c_str (abi::__cxa_demangle (
-          typeid (Vulkan.SwapChainImages).name (), nullptr, nullptr, nullptr)),
+      fast_io::mnp::os_c_str (
+          abi::__cxa_demangle (typeid (Engine->Vulkan.SwapChainImages).name (),
+                               nullptr, nullptr, nullptr)),
 #else
-      fast_io::mnp::os_c_str (typeid (Vulkan.SwapChainImages).name ()),
+      fast_io::mnp::os_c_str (typeid (Engine->Vulkan.SwapChainImages).name ()),
 #endif
       fast_io::mnp::left ("]", 2),
 #else  // PATACHE_DEBUG
       "    ",
 #endif // PATACHE_DEBUG
       PATACHE_TERM_RESET, PATACHE_TERM_BOLD, "Images : ", PATACHE_TERM_RESET,
-      Vulkan.SwapChainImageCount, "\n",
+      Engine->Vulkan.SwapChainImageCount, "\n",
 // End SwapChain Image Count
 // SwapChain Image Color Format
 #if PATACHE_DEBUG == 1
@@ -508,12 +511,6 @@ Patache::Engine::VulkanInfo (const Patache::SwapChainInfo & SwapChainInfo)
                         "    Validation Layers : ", PATACHE_TERM_RESET,
                         PATACHE_TERM_COLOR_GREEN, "Enabled",
                         PATACHE_TERM_RESET);
-#endif
-
-#if defined(PATACHE_VULKAN_VALIDATION_LAYERS_VERSION)
-  fast_io::io::println (PATACHE_FAST_IO_BUFF_OUT, PATACHE_TERM_BOLD,
-                        "    Validation Layers Version : ", PATACHE_TERM_RESET,
-                        PATACHE_VULKAN_VALIDATION_LAYERS_VERSION);
 #endif
 
 #if defined(PATACHE_IMGUI_VERSION)
