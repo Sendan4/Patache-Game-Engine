@@ -20,24 +20,21 @@ _Motor tonto y simple de videojuegos hecho en C++._
 <p>⚠️ <strong>Advertencia</strong>: Esta en un estado muy temprano de desarrollo y no es estable.</p>
 
 ## Dependencias usadas en este proyecto
-<ul>
-	<li><a href = "http://www.libsdl.org/">SDL3</a></li>
-	<li><a href = "https://www.vulkan.org/">Vulkan</a></li>
-	<ul>
-		<li><a href = "https://github.com/KhronosGroup/Vulkan-Headers.git">Vulkan-Headers</a></li>
-		<li><a href = "https://github.com/KhronosGroup/Vulkan-ValidationLayers.git">Vulkan-ValidationLayers</a></li>
-		<li><a href = "https://github.com/KhronosGroup/Vulkan-Loader.git">Vulkan-Loader</a></li>
-		<li><a href = "https://github.com/KhronosGroup/glslang.git">Glslang</a></li>
-	</ul>
-	<li><a href = "https://github.com/cppfastio/fast_io.git">fast_io</a></li>
-	<li><a href = "https://github.com/biojppm/rapidyaml.git">RapidYaml</a></li>
-	<li><a href = "https://gitlab.freedesktop.org/freetype/freetype.git">FreeType</a></li>
-  <li><a href = "https://github.com/ocornut/imgui.git">Imgui</a></li>
-  <li><a href = "https://github.com/recp/cglm.git">cglm</a></li>
-</ul>
+- [SDL3](http://www.libsdl.org/)
+- [Vulkan](https://www.vulkan.org/)
+	- [Vulkan-Headers](https://github.com/KhronosGroup/Vulkan-Headers.git)
+	- [Vulkan-Loader](https://github.com/KhronosGroup/Vulkan-Loader.git)
+	- [Vulkan-Validation-Layers](https://github.com/KhronosGroup/Vulkan-ValidationLayers.git)
+	- [Glslang](https://github.com/KhronosGroup/glslang.git)
+- [fast_io](https://github.com/cppfastio/fast_io.git)
+- [RapidYaml](https://github.com/biojppm/rapidyaml.git)
+- [FreeType](https://gitlab.freedesktop.org/freetype/freetype.git)
+- [ImGui](https://github.com/ocornut/imgui.git)
+- [cglm](https://github.com/recp/cglm.git)
 
 #### Linux
-    - [Wayland](https://wayland.freedesktop.org/) Wayland-Client
+ - [Wayland](https://wayland.freedesktop.org/)
+	- [Wayland-Client](https://gitlab.freedesktop.org/wayland/wayland)
 
 ## Enlaces
 - [Documentación](#)
