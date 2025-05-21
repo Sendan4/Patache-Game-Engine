@@ -34,7 +34,8 @@ _Dumb and simple game engine made in C++._
 
 #### Linux
  - [Wayland](https://wayland.freedesktop.org/)
-	- [Wayland-Client](https://gitlab.freedesktop.org/wayland/wayland)
+	- [Wayland Client](https://gitlab.freedesktop.org/wayland/wayland)
+	- [Wayland Protocols](https://gitlab.freedesktop.org/wayland/wayland-protocols.git)
 
 ## Links
 - [Documentation](#)
