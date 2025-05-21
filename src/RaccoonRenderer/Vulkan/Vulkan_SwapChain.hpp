@@ -13,7 +13,7 @@
 #include "Log.hpp"
 
 bool CreateSwapChain (Patache::Engine * const, Patache::SwapChainInfo &);
-void RecreateSwapChain (Patache::Engine * const, SDL_Event &);
+void RecreateSwapChain (Patache::Engine * const);
 
 bool CreateImageView (Patache::VulkanBackend &,
                       const Patache::SwapChainInfo &);

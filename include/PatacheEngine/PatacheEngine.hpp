@@ -3,6 +3,13 @@
 #include <cstdint>
 
 #include <vulkan/vulkan.hpp>
+#if defined(__linux__)
+#include <wayland-client.h>
+
+// Wayland Protocols
+#include <xdg-shell.h>
+#include <xdg-decoration-unstable-v1.h>
+#endif
 
 #include "PatacheEngine/Libexport.h"
 #include "PatacheEngine/Color.hpp"
@@ -83,6 +90,23 @@ struct ClearColor
   float a = 1.0f; // Alpha
 };
 
+#if defined(__linux__)
+struct WaylandWindow
+{
+  // Globals
+  wl_display *    Display    = nullptr;
+  wl_compositor * Compositor = nullptr;
+  wl_seat *       Input      = nullptr;
+  // Objects
+  xdg_wm_base *                 WindowManangerBase        = nullptr;
+  wl_surface *                  Surface                   = nullptr;
+  xdg_surface *                 DesktopStyleUserInterface = nullptr;
+  xdg_toplevel *                DesktopWindow             = nullptr;
+  zxdg_decoration_manager_v1 *  DecorationMananger        = nullptr;
+  zxdg_toplevel_decoration_v1 * Decoration                = nullptr;
+};
+#endif
+
 struct Engine
 {
   PATACHE_API Engine (void) = default;
@@ -104,7 +128,7 @@ struct Engine
 
   PATACHE_API ~Engine (void);
 
-  Patache::Config configuration;
+  Patache::Config configuration{};
 
   PATACHE_API void HandleEvent (const SDL_Event &); // Patache Events
   PATACHE_API bool BeginRender (SDL_Event &);
@@ -120,17 +144,21 @@ struct Engine
                                    const float &);
 
   // Window
-  SDL_Window * GameWindow    = nullptr;
-  bool         WindowResized = false;
+  SDL_Window * GameWindow = nullptr;
 
 #if defined(__linux__)
-// Wayland Window
+  bool ResizingPending = false;
+#endif
+  bool Resize = false;
+
+#if defined(__linux__)
+  Patache::WaylandWindow WaylandWindow{};
 #endif
 
-  Patache::VulkanBackend Vulkan;
+  Patache::VulkanBackend Vulkan{};
 
 #if PATACHE_DEBUG == 1
-  Patache::EngineInfo engineInfo;
+  Patache::EngineInfo engineInfo{};
 #endif
 };
 }

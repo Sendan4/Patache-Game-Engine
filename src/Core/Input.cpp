@@ -19,6 +19,10 @@ Patache::Engine::HandleEvent (const SDL_Event & Event)
                 {
                   FullScreen = true;
 
+#if defined(__linux__)
+                  xdg_toplevel_set_fullscreen (WaylandWindow.DesktopWindow,
+                                               nullptr);
+#else
                   int             DisplaysCount = 0;
                   SDL_DisplayID * DID = SDL_GetDisplays (&DisplaysCount);
                   const SDL_DisplayMode * const DesktopMode
@@ -29,32 +33,33 @@ Patache::Engine::HandleEvent (const SDL_Event & Event)
                       if (!SDL_SetWindowFullscreenMode (GameWindow,
                                                         DesktopMode))
                         std::future<void> Err = std::async (
-                            std::launch::async,
-                            Patache::Log::ErrorMessage,
-                                "Unable to apply full screen resolution");
+                            std::launch::async, Patache::Log::ErrorMessage,
+                            "Unable to apply full screen resolution");
                     }
                   else
                     std::future<void> Err = std::async (
-                        std::launch::async,
-                        Patache::Log::ErrorMessage,
-                            "Could not obtain Desktop Display Mode mode or "
-                            "Display ID");
+                        std::launch::async, Patache::Log::ErrorMessage,
+                        "Could not obtain Desktop Display Mode mode or "
+                        "Display ID");
 
                   if (!SDL_SetWindowFullscreen (GameWindow, FullScreen))
                     std::future<void> Err = std::async (
-                        std::launch::async,
-                        Patache::Log::ErrorMessage,
+                        std::launch::async, Patache::Log::ErrorMessage,
                         "Could not switch to full screen mode");
+#endif
                 }
               else
                 {
                   FullScreen = false;
 
+#if defined(__linux__)
+                  xdg_toplevel_unset_fullscreen (WaylandWindow.DesktopWindow);
+#else
                   if (!SDL_SetWindowFullscreen (GameWindow, FullScreen))
                     std::future<void> Err = std::async (
-                        std::launch::async,
-                        Patache::Log::ErrorMessage,
+                        std::launch::async, Patache::Log::ErrorMessage,
                         "could not switch to window mode");
+#endif
                 }
             }
         }
@@ -75,6 +80,7 @@ Patache::Engine::HandleEvent (const SDL_Event & Event)
 #endif
 }
 
+#if !defined(__linux__)
 // Event Filter for Window Resize
 bool SDLCALL
 HandleResize (void * userdata, SDL_Event * event)
@@ -84,6 +90,7 @@ HandleResize (void * userdata, SDL_Event * event)
       || event->window.type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED
       || event->window.type == SDL_EVENT_WINDOW_ENTER_FULLSCREEN
       || event->window.type == SDL_EVENT_WINDOW_LEAVE_FULLSCREEN)
-    *reinterpret_cast<bool *> (userdata) = true;
+    *static_cast<bool *> (userdata) = true;
   return true;
 }
+#endif

@@ -26,7 +26,6 @@ struct EngineInfo
 
   // Queue
   // uint8_t VkQueuesCount = 0
-  std::uint32_t                VkQueueIndex    = 0;
   float                        VkQueuePriority = 0.0f;
   vk::Flags<vk::QueueFlagBits> VkQueueFlags;
 

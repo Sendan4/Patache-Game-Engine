@@ -34,14 +34,23 @@ if (MSVC)
     target_sources(${PROJECT_NAME} PRIVATE ${Include} ${IncludeInternal})
 endif()
 
-if (CMAKE_SYSTEM_NAME STREQUAL "Windows" OR WIN32)
+if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows" OR WIN32)
     enable_language(RC)
 
     target_sources (${PROJECT_NAME} PRIVATE "PatacheEngine.rc")
 endif()
 
-if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
-	target_sources (${PROJECT_NAME} PRIVATE "Core/WaylandWindow.hpp")
+if (${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+	enable_language(C)
+
+	target_sources (${PROJECT_NAME} PRIVATE
+		"Core/WaylandWindow.cpp"
+		${CMAKE_BINARY_DIR}/WaylandProtocols/xdg-shell.h
+		${CMAKE_BINARY_DIR}/WaylandProtocols/xdg-shell.c
+		${CMAKE_BINARY_DIR}/WaylandProtocols/xdg-decoration-unstable-v1.h
+		${CMAKE_BINARY_DIR}/WaylandProtocols/xdg-decoration-unstable-v1.c)
+
+	target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_BINARY_DIR}/WaylandProtocols/)
 endif()
 
 if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo")
@@ -62,9 +71,6 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clan
         # Mingw specific function conversion in vulkan
         target_compile_options(${PROJECT_NAME} PRIVATE "-fpermissive")
     endif()
-    if (COMPILER_SUPPORTS_C++20)
-        target_compile_options(${PROJECT_NAME} PRIVATE "-std=c++20")
-    endif ()
     if (COMPILER_SUPPORTS_WALL)
         target_compile_options(${PROJECT_NAME} PRIVATE "-Wall")
     endif ()
@@ -99,9 +105,6 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clan
     endif()
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     # MSVC
-    if (COMPILER_SUPPORTS_C++20)
-        target_compile_options(${PROJECT_NAME} PRIVATE "/std:c++20")
-    endif()
     if (COMPILER_SUPPORTS_W4)
         target_compile_options(${PROJECT_NAME} PRIVATE "/W4")
     endif ()
@@ -369,4 +372,5 @@ endif()
 set_target_properties(${PROJECT_NAME}
     PROPERTIES
     VERSION "${PATACHE_ENGINE_VERSION}"
-    CXX_EXTENSIONS OFF)
+    CXX_EXTENSIONS OFF
+	CXX_STANDARD 20)

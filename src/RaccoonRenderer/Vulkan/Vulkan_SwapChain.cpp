@@ -14,8 +14,7 @@ CreateSwapChain (Patache::Engine * const  Engine,
   if (Result != vk::Result::eSuccess)
     std::future<void> ReturnVulkanCheck = std::async (
         std::launch::async, Patache::Log::VulkanCheck,
-        "Get Surface Present Modes - Obtaining the count",
-        Result);
+        "Get Surface Present Modes - Obtaining the count", Result);
 
   PresentModes = new vk::PresentModeKHR[PresentModesCount];
 
@@ -23,9 +22,9 @@ CreateSwapChain (Patache::Engine * const  Engine,
       Engine->Vulkan.Surface, &PresentModesCount, PresentModes);
 
   if (Result != vk::Result::eSuccess)
-    std::future<void> ReturnVulkanCheck = std::async (
-        std::launch::async, Patache::Log::VulkanCheck,
-        "Get Surface Present Modes", Result);
+    std::future<void> ReturnVulkanCheck
+        = std::async (std::launch::async, Patache::Log::VulkanCheck,
+                      "Get Surface Present Modes", Result);
 
   // Search for window surface formats
   std::uint32_t          SurfaceFormatsCount = 0;
@@ -37,8 +36,7 @@ CreateSwapChain (Patache::Engine * const  Engine,
   if (Result != vk::Result::eSuccess)
     std::future<void> ReturnVulkanCheck
         = std::async (std::launch::async, Patache::Log::VulkanCheck,
-                      "Get Surface Formats - Obtaining the count",
-                      Result);
+                      "Get Surface Formats - Obtaining the count", Result);
 
   SurfaceFormats = new vk::SurfaceFormatKHR[SurfaceFormatsCount];
 
@@ -54,6 +52,8 @@ CreateSwapChain (Patache::Engine * const  Engine,
   Obtain the size of the drawable surface at this time.
   Extent2D
   */
+
+#if !defined(__linux__)
   std::future<void> SDL_Vulkan_GetDrawableSize_Async
       = std::async (std::launch::async, [&Engine] (void) {
           int w = 1, h = 1;
@@ -62,7 +62,7 @@ CreateSwapChain (Patache::Engine * const  Engine,
           Engine->Vulkan.SwapChainExtent.width  = w;
           Engine->Vulkan.SwapChainExtent.height = h;
         });
-
+#endif
   /*
   Two presentation modes are discarded depending on the configuration.
   If you use Vsync, the Immediate and Mailbox modes are discarded, and
@@ -118,11 +118,10 @@ CreateSwapChain (Patache::Engine * const  Engine,
 
   if (!Found)
     {
-      std::future<void> Err = std::async (
-          std::launch::async, Patache::Log::FatalErrorMessage,
-          "Patache engine - Raccoon Renderer",
-          "No presentation modes found",
-          Engine->configuration);
+      std::future<void> Err
+          = std::async (std::launch::async, Patache::Log::FatalErrorMessage,
+                        "Patache engine - Raccoon Renderer",
+                        "No presentation modes found", Engine->configuration);
 
       return false;
     }
@@ -162,11 +161,10 @@ CreateSwapChain (Patache::Engine * const  Engine,
 
   if (!Found)
     {
-      std::future<void> Err = std::async (
-          std::launch::async, Patache::Log::FatalErrorMessage,
-          "Patache engine - Raccoon Renderer",
-          "No surface formats found",
-          Engine->configuration);
+      std::future<void> Err
+          = std::async (std::launch::async, Patache::Log::FatalErrorMessage,
+                        "Patache engine - Raccoon Renderer",
+                        "No surface formats found", Engine->configuration);
 
       return false;
     }
@@ -178,21 +176,23 @@ CreateSwapChain (Patache::Engine * const  Engine,
 
   if (Result != vk::Result::eSuccess)
     {
-      std::future<void> ReturnVulkanCheck = std::async (
-          std::launch::async, Patache::Log::VulkanCheck,
-          "Get Surface Capabilities KHR", Result);
+      std::future<void> ReturnVulkanCheck
+          = std::async (std::launch::async, Patache::Log::VulkanCheck,
+                        "Get Surface Capabilities KHR", Result);
 
-      std::future<void> ReturnVulkanErr = std::async (
-          std::launch::async, Patache::Log::FatalErrorMessage,
-          "Patache Engine - Raccoon Renderer",
-          "The surface area capabilities of this device could "
-                     "not be obtained.",
-          Engine->configuration);
+      std::future<void> ReturnVulkanErr
+          = std::async (std::launch::async, Patache::Log::FatalErrorMessage,
+                        "Patache Engine - Raccoon Renderer",
+                        "The surface area capabilities of this device could "
+                        "not be obtained.",
+                        std::cref (Engine->configuration));
 
       return false;
     }
 
+#if !defined(__linux__)
   SDL_Vulkan_GetDrawableSize_Async.wait ();
+#endif
 
   // Create SwapChain
   const vk::SwapchainCreateInfoKHR SwapChainCreateInfo{
@@ -221,14 +221,12 @@ CreateSwapChain (Patache::Engine * const  Engine,
   if (Result != vk::Result::eSuccess)
     {
       std::future<void> ReturnVulkanCheck = std::async (
-          std::launch::async, Patache::Log::VulkanCheck,
-          "SwapChain", Result);
+          std::launch::async, Patache::Log::VulkanCheck, "SwapChain", Result);
 
-      std::future<void> ReturnVulkanErr = std::async (
-          std::launch::async, Patache::Log::FatalErrorMessage,
-          "Patache Engine - Raccoon Renderer",
-          "Swapchain creation failure",
-          Engine->configuration);
+      std::future<void> ReturnVulkanErr
+          = std::async (std::launch::async, Patache::Log::FatalErrorMessage,
+                        "Patache Engine - Raccoon Renderer",
+                        "Swapchain creation failure", Engine->configuration);
 
       return false;
     }
@@ -248,8 +246,7 @@ CreateSwapChain (Patache::Engine * const  Engine,
   if (Result != vk::Result::eSuccess)
     std::future<void> ReturnVulkanCheck = std::async (
         std::launch::async, Patache::Log::VulkanCheck,
-        "Get SwapChain Images KHR - Obtaining the count",
-        Result);
+        "Get SwapChain Images KHR - Obtaining the count", Result);
 
   Engine->Vulkan.SwapChainImages
       = new vk::Image[Engine->Vulkan.SwapChainImageCount];
@@ -259,9 +256,9 @@ CreateSwapChain (Patache::Engine * const  Engine,
       Engine->Vulkan.SwapChainImages);
 
   if (Result != vk::Result::eSuccess)
-    std::future<void> ReturnVulkanCheck = std::async (
-        std::launch::async, Patache::Log::VulkanCheck,
-        "Get SwapChain Images KHR", Result);
+    std::future<void> ReturnVulkanCheck
+        = std::async (std::launch::async, Patache::Log::VulkanCheck,
+                      "Get SwapChain Images KHR", Result);
 
   StoreSwapChainInfo_Async.wait ();
 
@@ -270,52 +267,19 @@ CreateSwapChain (Patache::Engine * const  Engine,
 
 // Recreate SwapChain
 void
-RecreateSwapChain (Patache::Engine * const Engine, SDL_Event & Event)
+RecreateSwapChain (Patache::Engine * const Engine)
 {
-  // Minimization
-  vk::SurfaceCapabilitiesKHR Sc;
-  vk::Result Result = Engine->Vulkan.PhysicalDevice.getSurfaceCapabilitiesKHR (
-      Engine->Vulkan.Surface, &Sc);
+  vk::Result Result = Engine->Vulkan.Device.waitIdle ();
 
   if (Result != vk::Result::eSuccess)
     {
-      std::future<void> ReturnVulkanCheck = std::async (
-          std::launch::async, Patache::Log::VulkanCheck,
-          "Get Surface Capabilities KHR", Result);
-
-      return;
-    }
-
-  while (Sc.currentExtent.width <= 0 && Sc.currentExtent.height <= 0)
-    {
-      Result = Engine->Vulkan.PhysicalDevice.getSurfaceCapabilitiesKHR (
-          Engine->Vulkan.Surface, &Sc);
-
-      if (Result != vk::Result::eSuccess)
-        {
-          std::future<void> ReturnVulkanCheck = std::async (
-              std::launch::async, Patache::Log::VulkanCheck,
-              "Get Surface Capabilities KHR", Result);
-
-          return;
-        }
-
-      SDL_WaitEvent (&Event);
-    }
-
-  // Begin Resize SwapChain
-  Result = Engine->Vulkan.Device.waitIdle ();
-
-  if (Result != vk::Result::eSuccess)
-    {
-      std::future<void> ReturnVulkanCheck = std::async (
-          std::launch::async, Patache::Log::VulkanCheck,
-          "Device Wait Idle", Result);
+      std::future<void> ReturnVulkanCheck
+          = std::async (std::launch::async, Patache::Log::VulkanCheck,
+                        "Device Wait Idle", Result);
 
       std::future<void> ReturnVulkanErr = std::async (
           std::launch::async, Patache::Log::FatalErrorMessage,
-          "Patache Engine - Raccoon Renderer",
-          "Could not wait for the device",
+          "Patache Engine - Raccoon Renderer", "Could not wait for the device",
           Engine->configuration);
 
       return;
@@ -346,22 +310,20 @@ RecreateSwapChain (Patache::Engine * const Engine, SDL_Event & Event)
 
   if (!CreateImageView (Engine->Vulkan, SwapChainInfo))
     {
-      std::future<void> Err = std::async (
-          std::launch::async, Patache::Log::FatalErrorMessage,
-          "Patache Engine - Raccoon Renderer",
-          "Color image view recreation failed",
-          Engine->configuration);
+      std::future<void> Err
+          = std::async (std::launch::async, Patache::Log::FatalErrorMessage,
+                        "Patache Engine - Raccoon Renderer",
+                        "Color image view recreation failed",
+                        std::cref (Engine->configuration));
 
       return;
     }
 
-  std::future<bool> CreateFrameBuffer_Async
-      = std::async (std::launch::async, CreateFrameBuffer,
-                    std::ref (Engine->Vulkan));
+  std::future<bool> CreateFrameBuffer_Async = std::async (
+      std::launch::async, CreateFrameBuffer, std::ref (Engine->Vulkan));
 
-  std::future<bool> CreateSemaphores_Async
-      = std::async (std::launch::async, CreateSemaphores,
-                    std::ref (Engine->Vulkan));
+  std::future<bool> CreateSemaphores_Async = std::async (
+      std::launch::async, CreateSemaphores, std::ref (Engine->Vulkan));
 
   Engine->Vulkan.Device.destroySwapchainKHR (Engine->Vulkan.OldSwapChain);
   Engine->Vulkan.OldSwapChain = VK_NULL_HANDLE;
@@ -372,8 +334,7 @@ RecreateSwapChain (Patache::Engine * const Engine, SDL_Event & Event)
       std::future<void> Err = std::async (
           std::launch::async, Patache::Log::FatalErrorMessage,
           "Patache Engine - Raccoon Renderer",
-          "Frame buffer recreation failed",
-          Engine->configuration);
+          "Frame buffer recreation failed", Engine->configuration);
 
       return;
     }
@@ -381,11 +342,10 @@ RecreateSwapChain (Patache::Engine * const Engine, SDL_Event & Event)
   CreateSemaphores_Async.wait ();
   if (!CreateSemaphores_Async.get ())
     {
-      std::future<void> Err = std::async (
-          std::launch::async, Patache::Log::FatalErrorMessage,
-          "Patache Engine - Raccoon Renderer",
-          "Semaphore recreation failed",
-          Engine->configuration);
+      std::future<void> Err
+          = std::async (std::launch::async, Patache::Log::FatalErrorMessage,
+                        "Patache Engine - Raccoon Renderer",
+                        "Semaphore recreation failed", Engine->configuration);
 
       return;
     }

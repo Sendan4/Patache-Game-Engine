@@ -23,8 +23,7 @@ CreateCommandBuffer (Patache::VulkanBackend & Vulkan)
                      "Allocate Command Buffer #%.3u", Vulkan.CurrentFrame);
 
       std::future<void> ReturnVulkanCheck = std::async (
-          std::launch::async, Patache::Log::VulkanCheck,
-          ErrorText, Result);
+          std::launch::async, Patache::Log::VulkanCheck, ErrorText, Result);
 
       return false;
     }

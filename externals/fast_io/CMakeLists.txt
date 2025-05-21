@@ -12,18 +12,39 @@ message(STATUS "Header-Only Library")
 
 target_include_directories(${PROJECT_NAME} INTERFACE "include/")
 
-target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_20)
+target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_23)
 
 include(CheckCXXCompilerFlag)
 
-if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    check_cxx_compiler_flag("-std=c++23" COMPILER_SUPPORTS_C++23)
-    if (COMPILER_SUPPORTS_C++23)
-        target_compile_options(${PROJECT_NAME} INTERFACE "-std=c++23")
-    endif()
+if (NOT MSVC)
+check_cxx_compiler_flag("-std=c++23" COMPILER_SUPPORTS_C++23)
+else()
+check_cxx_compiler_flag("/std:c++23" COMPILER_SUPPORTS_C++23)
+endif()
+
+if (COMPILER_SUPPORTS_C++23)
+	set (DEFINED_CXX_STANDARD 23)
+else()
+	if (NOT MSVC)
+		check_cxx_compiler_flag("-std=c++20" COMPILER_SUPPORTS_C++20)
+	else()
+		check_cxx_compiler_flag("/std:c++20" COMPILER_SUPPORTS_C++20)
+	endif()
+
+	if (COMPILER_SUPPORTS_C++20)
+		set (DEFINED_CXX_STANDARD 20)
+	else()
+		message(ERROR "fast_io requires C++20")
+	endif()
+
 endif()
 
 # Mingw in Msys2
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_SYSTEM_NAME STREQUAL "Windows")
 	target_link_libraries(${PROJECT_NAME} INTERFACE "-lntdll")
 endif()
+
+set_target_properties(${PROJECT_NAME}
+    PROPERTIES
+    CXX_EXTENSIONS OFF
+		CXX_STANDARD ${DEFINED_CXX_STANDARD})

@@ -33,7 +33,8 @@ namespace Patache
 static inline void
 DrawDebugUI (Patache::EngineInfo * engineInfo, Patache::Config & configuration,
              const std::uint32_t & SwapChainImageCount,
-             const vk::Extent2D &  SwapChainExtent)
+             const vk::Extent2D &  SwapChainExtent,
+             const std::uint32_t & GraphicsQueueFamilyIndex)
 {
   // Guardando los estilos predeterminados para revertir los cambios
   ImVec4 tmp[16]{ ImGui::GetStyle ().Colors[ImGuiCol_TitleBgActive],
@@ -683,7 +684,7 @@ DrawDebugUI (Patache::EngineInfo * engineInfo, Patache::Config & configuration,
               // Queue Index
               ImGui::TableNextRow ();
               ImGui::TableSetColumnIndex (0);
-              ImGui::Text ("%u", engineInfo->VkQueueIndex);
+              ImGui::Text ("%u", GraphicsQueueFamilyIndex);
 
               // Queue Family Properties
               ImGui::TableSetColumnIndex (1);

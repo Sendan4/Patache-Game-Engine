@@ -45,9 +45,9 @@ CreateImageView (Patache::VulkanBackend &       Vulkan,
           std::snprintf (ErrorText, PATACHE_ERROR_TEXT_SIZE - 1,
                          "Color Image View #%.3u", i + 1);
 
-          std::future<void> ReturnVulkanCheck = std::async (
-              std::launch::async, Patache::Log::VulkanCheck,
-              ErrorText, Result);
+          std::future<void> ReturnVulkanCheck
+              = std::async (std::launch::async, Patache::Log::VulkanCheck,
+                            ErrorText, Result);
 
           return false;
         }

@@ -17,8 +17,7 @@ LoadConfiguration (Patache::Config & configuration)
     {
       std::future<void> Err = std::async (
           std::launch::async, Patache::Log::FatalErrorMessage,
-          "Patache Engine - Yaml",
-          "Yaml Config File is invalid or inreadable",
+          "Patache Engine - Yaml", "Yaml Config File is invalid or inreadable",
           configuration);
 
       return false;
@@ -51,8 +50,7 @@ LoadConfiguration (Patache::Config & configuration)
               SDL_GetBasePath ());
 
           std::future<void> Err = std::async (
-              std::launch::async, Patache::Log::ErrorMessage,
-              ErrorText);
+              std::launch::async, Patache::Log::ErrorMessage, ErrorText);
         }
 
       // Raccoon Renderer
@@ -82,8 +80,7 @@ LoadConfiguration (Patache::Config & configuration)
               SDL_GetBasePath ());
 
           std::future<void> Err = std::async (
-              std::launch::async, Patache::Log::ErrorMessage,
-              ErrorText);
+              std::launch::async, Patache::Log::ErrorMessage, ErrorText);
         }
 
       // Bool Type
@@ -116,8 +113,7 @@ LoadConfiguration (Patache::Config & configuration)
               SDL_GetBasePath ());
 
           std::future<void> Err = std::async (
-              std::launch::async, Patache::Log::ErrorMessage,
-              ErrorText);
+              std::launch::async, Patache::Log::ErrorMessage, ErrorText);
         }
 
       // std::uint8_t type
@@ -146,8 +142,7 @@ LoadConfiguration (Patache::Config & configuration)
               SDL_GetBasePath ());
 
           std::future<void> Err = std::async (
-              std::launch::async, Patache::Log::ErrorMessage,
-              ErrorText);
+              std::launch::async, Patache::Log::ErrorMessage, ErrorText);
         }
 
       if (configuration.AddImageCount > 4)
@@ -162,8 +157,7 @@ LoadConfiguration (Patache::Config & configuration)
               SDL_GetBasePath ());
 
           std::future<void> Err = std::async (
-              std::launch::async, Patache::Log::ErrorMessage,
-              ErrorText);
+              std::launch::async, Patache::Log::ErrorMessage, ErrorText);
 
           configuration.AddImageCount = 0;
         }

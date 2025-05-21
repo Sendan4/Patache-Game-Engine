@@ -28,9 +28,9 @@ CreateSemaphores (Patache::VulkanBackend & Vulkan)
           std::snprintf (ErrorText, PATACHE_ERROR_TEXT_SIZE - 1,
                          "Image Available Semaphore #%.3u", i + 1);
 
-          std::future<void> ReturnVulkanCheck = std::async (
-              std::launch::async, Patache::Log::VulkanCheck,
-              ErrorText, Result);
+          std::future<void> ReturnVulkanCheck
+              = std::async (std::launch::async, Patache::Log::VulkanCheck,
+                            ErrorText, Result);
 
           return false;
         }
@@ -46,9 +46,9 @@ CreateSemaphores (Patache::VulkanBackend & Vulkan)
           std::snprintf (ErrorText, PATACHE_ERROR_TEXT_SIZE - 1,
                          "Image Finished Semaphore #%.3u", i + 1);
 
-          std::future<void> ReturnVulkanCheck = std::async (
-              std::launch::async, Patache::Log::VulkanCheck,
-              ErrorText, Result);
+          std::future<void> ReturnVulkanCheck
+              = std::async (std::launch::async, Patache::Log::VulkanCheck,
+                            ErrorText, Result);
 
           return false;
         }
@@ -81,9 +81,9 @@ CreateFence (Patache::VulkanBackend & Vulkan)
           std::snprintf (ErrorText, PATACHE_ERROR_TEXT_SIZE - 1,
                          "In Flight Fence #%.3u", i + 1);
 
-          std::future<void> ReturnVulkanCheck = std::async (
-              std::launch::async, Patache::Log::VulkanCheck,
-              ErrorText, Result);
+          std::future<void> ReturnVulkanCheck
+              = std::async (std::launch::async, Patache::Log::VulkanCheck,
+                            ErrorText, Result);
 
           return false;
         }

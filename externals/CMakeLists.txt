@@ -207,6 +207,44 @@ if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
 
 	find_package(PkgConfig REQUIRED)
 	pkg_check_modules(WAYLAND wayland-client)
+	find_program(WaylandScanner
+		wayland-scanner
+		REQUIRED)
+
+	message(STATUS "Wayland Scanner : ${WaylandScanner}")
+
+	execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory WaylandProtocols
+		WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+
+	if (EXISTS ${CMAKE_BINARY_DIR}/WaylandProtocols)
+		# xdg-shell protocol
+		message(STATUS "Protocol : xdg_shell")
+
+		file(DOWNLOAD
+			https://gitlab.freedesktop.org/wayland/wayland-protocols/-/raw/810f1adaf33521cc55fc510566efba2a1418174f/stable/xdg-shell/xdg-shell.xml?inline=false
+			${CMAKE_BINARY_DIR}/WaylandProtocols/xdg-shell.xml
+			SHOW_PROGRESS
+		)
+
+		execute_process(
+			WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/WaylandProtocols/
+			COMMAND wayland-scanner client-header xdg-shell.xml xdg-shell.h
+			COMMAND wayland-scanner private-code xdg-shell.xml xdg-shell.c)
+
+		# xdg-decoration-unstable-v1.xml protocol
+		message(STATUS "Protocol : xdg-decoration-unstable-v1.xml")
+
+		file(DOWNLOAD
+			https://gitlab.freedesktop.org/wayland/wayland-protocols/-/raw/main/unstable/xdg-decoration/xdg-decoration-unstable-v1.xml?ref_type=heads&inline=false
+			${CMAKE_BINARY_DIR}/WaylandProtocols/xdg-decoration-unstable-v1.xml
+			SHOW_PROGRESS
+		)
+
+		execute_process(
+			WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/WaylandProtocols/
+			COMMAND wayland-scanner client-header xdg-decoration-unstable-v1.xml xdg-decoration-unstable-v1.h
+			COMMAND wayland-scanner private-code xdg-decoration-unstable-v1.xml xdg-decoration-unstable-v1.c)
+	endif()
 endif()
 
 # SDL2
@@ -278,6 +316,8 @@ set (SDL_GPU_DXVK OFF CACHE INTERNAL "..." FORCE)
 set (SDL_TEST_LIBRARY OFF CACHE INTERNAL "..." FORCE)
 set (SDL_WAYLAND_LIBDECOR OFF CACHE INTERNAL "..." FORCE)
 set (SDL_WAYLAND_LIBDECOR_SHARED OFF CACHE INTERNAL "..." FORCE)
+set (SDL_DBUS OFF CACHE INTERNAL "..." FORCE)
+set (SDL_IBUS OFF CACHE INTERNAL "..." FORCE)
 set (SDL_VENDOR_INFO ${PROJECT_NAME} CACHE STRING "Vendor name and/or version to add to SDL_REVISION")
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
