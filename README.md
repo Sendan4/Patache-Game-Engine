@@ -32,7 +32,7 @@ _Motor tonto y simple de videojuegos hecho en C++._
 - [ImGui](https://github.com/ocornut/imgui.git)
 - [cglm](https://github.com/recp/cglm.git)
 
-#### Linux
+#### GNU/Linux
  - [Wayland](https://wayland.freedesktop.org/)
 	- [Wayland Client](https://gitlab.freedesktop.org/wayland/wayland)
 	- [Wayland Protocols](https://gitlab.freedesktop.org/wayland/wayland-protocols.git)

@@ -108,7 +108,7 @@ if (MSVC OR LINUX)
     FetchContent_Declare(
       Vulkan-Headers
       GIT_REPOSITORY https://github.com/KhronosGroup/Vulkan-Headers.git
-      GIT_TAG v1.4.313
+      GIT_TAG v1.4.315
     )
     FetchContent_MakeAvailable(Vulkan-Headers)
   endif()
@@ -121,7 +121,7 @@ if (MSVC OR LINUX)
     FetchContent_Declare(
       Vulkan-Loader
       GIT_REPOSITORY https://github.com/KhronosGroup/Vulkan-Loader.git
-      GIT_TAG v1.4.313
+      GIT_TAG v1.4.315
     )
     FetchContent_MakeAvailable(Vulkan-Loader)
   endif()
@@ -134,7 +134,7 @@ if (MSVC OR LINUX)
     FetchContent_Declare(
       Vulkan-ValidationLayers
       GIT_REPOSITORY https://github.com/KhronosGroup/Vulkan-ValidationLayers.git
-      GIT_TAG v1.4.313
+      GIT_TAG v1.4.315
     )
 
 	  FetchContent_MakeAvailable(Vulkan-ValidationLayers)
@@ -168,7 +168,7 @@ else()
   FetchContent_Declare(
     Glslang
     GIT_REPOSITORY https://github.com/KhronosGroup/glslang.git
-    GIT_TAG vulkan-sdk-1.4.309.0
+    GIT_TAG 15.3.0
   )
 
   FetchContent_MakeAvailable(Glslang)
@@ -264,13 +264,13 @@ set(SDL_STATIC_PIC ON CACHE INTERNAL "..." FORCE)
 set(SDL_UNUSED_SUBSYSTEMS
   File
   Locale
-	Power
-	Render
+  Power
+  Render
   Gpu
-	Sensor
-	Timers
-	Atomic
-	Audio
+  Sensor
+  Timers
+  Atomic
+  Audio
   Camera)
 foreach(_SUB ${SDL_UNUSED_SUBSYSTEMS})
 	string(TOUPPER ${_SUB} _OPT)
@@ -331,7 +331,7 @@ else()
   FetchContent_Declare(
     SDL
     GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
-    GIT_TAG release-3.2.10
+    GIT_TAG release-3.2.14
   )
   FetchContent_MakeAvailable(SDL)
 endif()
