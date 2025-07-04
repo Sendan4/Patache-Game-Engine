@@ -40,6 +40,7 @@ bool CreateWaylandWindow (const std::uint32_t &, const std::uint32_t &,
 #else
 // Event Filter for Window Resize
 bool SDLCALL HandleResize (void * userdata, SDL_Event * event);
+extern bool  Resize;
 #endif
 
 bool RaccoonRendererInit (Patache::Engine *,
@@ -68,7 +69,7 @@ Patache::Engine::Init (const Patache::EngineCreateInfo & Info)
     }
 #endif
 
-    // Window Title
+  // Make a window title
 #if PATACHE_DEBUG == 1
   // Debug
   char WindowTitle[64]{ 0 };
@@ -96,12 +97,13 @@ Patache::Engine::Init (const Patache::EngineCreateInfo & Info)
     WindowTitle = PATACHE_ENGINE_NAME;
 #endif
 
+  // Init Window for linux wayland
 #if defined(__linux__)
   if (!CreateWaylandWindow (854, 480, WindowTitle, this))
     return false;
 #endif
 
-  // SDL Subsystems
+  // Init SDL Subsystems
   if (!SDL_Init (SDL_INIT_VIDEO | SDL_INIT_EVENTS))
     {
       std::future<void> Err = std::async (
@@ -111,6 +113,7 @@ Patache::Engine::Init (const Patache::EngineCreateInfo & Info)
       return false;
     }
 
+  // Init Window for other Systems
 #if !defined(__linux__)
   {
     // Window Initial Size

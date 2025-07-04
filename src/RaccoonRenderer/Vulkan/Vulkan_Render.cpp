@@ -315,6 +315,6 @@ Patache::Engine::EndRender (SDL_Event & Event)
   Vulkan.CurrentFrame = (Vulkan.CurrentFrame + 1) % Vulkan.SwapChainImageCount;
 
 #if defined(__linux__)
-  wl_display_roundtrip (WaylandWindow.Display);
+  // wl_display_roundtrip (WaylandWindow.Display);
 #endif
 }

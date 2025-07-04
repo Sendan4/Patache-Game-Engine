@@ -11,7 +11,7 @@ namespace Icon
   static constexpr uint16_t Pitch         = 256;
 
   // array size is 16384
-  static constexpr const uint32_t Data[] = {
+  static constexpr std::uint32_t Data[] = {
     0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
     0x00000000, 0x00000000, 0xffffff01, 0xffffff01, 0xffffff01, 0xffffff01,
     0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,

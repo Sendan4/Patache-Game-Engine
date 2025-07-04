@@ -355,7 +355,7 @@ EXIT_CREATE_DEBUG_UTILS_MESSENGER:
                           GpuCount, " vulkan compatible devices",
                           PATACHE_TERM_RESET);
 
-    std::uint32_t * GpuScore = new std::uint32_t[GpuCount];
+    std::uint32_t * GpuScore = new std::uint32_t[GpuCount - 1];
 
     vk::PhysicalDeviceProperties2 DeviceProperties;
     vk::PhysicalDeviceFeatures2   DeviceFeatures;

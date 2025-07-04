@@ -80,71 +80,72 @@ if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/rapidyaml/)
   add_subdirectory(rapidyaml)
 else()
   FetchContent_Declare(
-    RapidYaml
-    GIT_REPOSITORY https://github.com/biojppm/rapidyaml.git
-    GIT_TAG v0.9.0
-  )
-  FetchContent_MakeAvailable(RapidYaml)
+  	RapidYaml
+    	GIT_REPOSITORY https://github.com/biojppm/rapidyaml.git
+    	GIT_TAG v0.9.0
+   )
+   FetchContent_MakeAvailable(RapidYaml)
 endif()
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
-	# Linux Wayland / Xorg
-	# Wayland Enable by default
-	set (BUILD_WSI_WAYLAND_SUPPORT ON CACHE INTERNAL "..." FORCE)
-	set (BUILD_WSI_XCB_SUPPORT OFF CACHE BOOL "..." FORCE)
-	set (BUILD_WSI_XLIB_SUPPORT OFF CACHE BOOL "..." FORCE)
+    # Linux Wayland / Xorg
+    # Wayland Enable by default
+    set (BUILD_WSI_WAYLAND_SUPPORT ON CACHE INTERNAL "..." FORCE)
+    set (BUILD_WSI_XCB_SUPPORT OFF CACHE BOOL "..." FORCE)
+    set (BUILD_WSI_XLIB_SUPPORT OFF CACHE BOOL "..." FORCE)
 endif()
 
 if (MSVC OR LINUX)
-	set (BUILD_TESTS OFF CACHE INTERNAL "..." FORCE)
-  set (UPDATE_DEPS ON CACHE INTERNAL "..." FORCE)
-  set (VULKAN_HEADERS_ENABLE_MODULE OFF CACHE INTERNAL "..." FORCE)
+    set (BUILD_TESTS OFF CACHE INTERNAL "..." FORCE)
+    set (UPDATE_DEPS ON CACHE INTERNAL "..." FORCE)
+    set (VULKAN_HEADERS_ENABLE_MODULE OFF CACHE INTERNAL "..." FORCE)
 
-	message("")
-	message("  - Vulkan Headers -")
-  if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/Vulkan-Headers/)
-    add_subdirectory(Vulkan-Headers)
-  else()
-    FetchContent_Declare(
-      Vulkan-Headers
-      GIT_REPOSITORY https://github.com/KhronosGroup/Vulkan-Headers.git
-      GIT_TAG v1.4.315
-    )
-    FetchContent_MakeAvailable(Vulkan-Headers)
-  endif()
-
-	message("")
-	message("  - Vulkan Loader -")
-  if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/Vulkan-Loader/)
-    add_subdirectory(Vulkan-Loader)
-  else()
-    FetchContent_Declare(
-      Vulkan-Loader
-      GIT_REPOSITORY https://github.com/KhronosGroup/Vulkan-Loader.git
-      GIT_TAG v1.4.315
-    )
-    FetchContent_MakeAvailable(Vulkan-Loader)
-  endif()
-
-  # Vulkan Validation Layer
-	if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo" AND USE_VVL)
     message("")
-	  message("  - Vulkan Validation Layers -")
+    message("  - Vulkan Headers -")
+    if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/Vulkan-Headers/)
+    	add_subdirectory(Vulkan-Headers)
+    else()
+    	FetchContent_Declare(
+      		Vulkan-Headers
+      		GIT_REPOSITORY https://github.com/KhronosGroup/Vulkan-Headers.git
+      		GIT_TAG v1.4.315
+    	)
+    	FetchContent_MakeAvailable(Vulkan-Headers)
+    endif()
+
+    message("")
+    message("  - Vulkan Loader -")
+   
+    if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/Vulkan-Loader/)
+    	add_subdirectory(Vulkan-Loader)
+    else()
+    	FetchContent_Declare(
+      		Vulkan-Loader
+      		GIT_REPOSITORY https://github.com/KhronosGroup/Vulkan-Loader.git
+      		GIT_TAG v1.4.315
+    	)
+    	FetchContent_MakeAvailable(Vulkan-Loader)
+    endif()
+
+    # Vulkan Validation Layer
+    if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo" AND USE_VVL)
+    message("")
+    message("  - Vulkan Validation Layers -")
 
     FetchContent_Declare(
       Vulkan-ValidationLayers
       GIT_REPOSITORY https://github.com/KhronosGroup/Vulkan-ValidationLayers.git
       GIT_TAG v1.4.315
     )
-
-	  FetchContent_MakeAvailable(Vulkan-ValidationLayers)
-	endif()
+    
+    FetchContent_MakeAvailable(Vulkan-ValidationLayers)
+    endif()
 endif()
 
 message("")
 message("  - Glslang -")
-set	(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
-set	(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+set (CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 set (ENABLE_RTTI OFF CACHE INTERNAL "..." FORCE)
 set (ENABLE_EXCEPTIONS OFF CACHE INTERNAL "..." FORCE)
 set (GLSLANG_TESTS OFF CACHE INTERNAL "..." FORCE)
@@ -157,8 +158,8 @@ set (BUILD_EXTERNAL ON CACHE INTERNAL "..." FORCE)
 
 if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/glslang)
   execute_process(
-	  COMMAND python3 update_glslang_sources.py
-	  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/glslang)
+  	COMMAND python3 update_glslang_sources.py
+  	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/glslang)
 
   add_subdirectory(glslang)
 else() 
@@ -173,8 +174,9 @@ else()
 
   FetchContent_MakeAvailable(Glslang)
 endif()
-set	(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
-set	(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
+
+set (CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
+set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 
 #cglm
 message("")
@@ -204,47 +206,47 @@ endif()
 if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
   message("")
   message("  - Wayland -")
+  
+  find_package(PkgConfig REQUIRED)
+  pkg_check_modules(WAYLAND wayland-client)
+  pkg_check_modules(WAYLAND_CURSOR wayland-cursor)
+  find_program(WaylandScanner
+     wayland-scanner
+     REQUIRED)
+	
+  message(STATUS "Wayland Scanner : ${WaylandScanner}")
+  execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory WaylandProtocols
+     WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
 
-	find_package(PkgConfig REQUIRED)
-	pkg_check_modules(WAYLAND wayland-client)
-	find_program(WaylandScanner
-		wayland-scanner
-		REQUIRED)
+  if (EXISTS ${CMAKE_BINARY_DIR}/WaylandProtocols)
+     # xdg-shell protocol
+     message(STATUS "Protocol : xdg_shell")
 
-	message(STATUS "Wayland Scanner : ${WaylandScanner}")
+     file(DOWNLOAD
+	https://gitlab.freedesktop.org/wayland/wayland-protocols/-/raw/810f1adaf33521cc55fc510566efba2a1418174f/stable/xdg-shell/xdg-shell.xml?inline=false
+	${CMAKE_BINARY_DIR}/WaylandProtocols/xdg-shell.xml
+	SHOW_PROGRESS
+     )
 
-	execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory WaylandProtocols
-		WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+     execute_process(
+	WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/WaylandProtocols/
+	COMMAND wayland-scanner client-header xdg-shell.xml xdg-shell.h
+	COMMAND wayland-scanner private-code xdg-shell.xml xdg-shell.c)
 
-	if (EXISTS ${CMAKE_BINARY_DIR}/WaylandProtocols)
-		# xdg-shell protocol
-		message(STATUS "Protocol : xdg_shell")
+     # xdg-decoration-unstable-v1.xml protocol
+     message(STATUS "Protocol : xdg-decoration-unstable-v1.xml")
 
-		file(DOWNLOAD
-			https://gitlab.freedesktop.org/wayland/wayland-protocols/-/raw/810f1adaf33521cc55fc510566efba2a1418174f/stable/xdg-shell/xdg-shell.xml?inline=false
-			${CMAKE_BINARY_DIR}/WaylandProtocols/xdg-shell.xml
-			SHOW_PROGRESS
-		)
+     file(DOWNLOAD
+	https://gitlab.freedesktop.org/wayland/wayland-protocols/-/raw/main/unstable/xdg-decoration/xdg-decoration-unstable-v1.xml?ref_type=heads&inline=false
+	${CMAKE_BINARY_DIR}/WaylandProtocols/xdg-decoration-unstable-v1.xml
+	SHOW_PROGRESS
+     )
 
-		execute_process(
-			WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/WaylandProtocols/
-			COMMAND wayland-scanner client-header xdg-shell.xml xdg-shell.h
-			COMMAND wayland-scanner private-code xdg-shell.xml xdg-shell.c)
-
-		# xdg-decoration-unstable-v1.xml protocol
-		message(STATUS "Protocol : xdg-decoration-unstable-v1.xml")
-
-		file(DOWNLOAD
-			https://gitlab.freedesktop.org/wayland/wayland-protocols/-/raw/main/unstable/xdg-decoration/xdg-decoration-unstable-v1.xml?ref_type=heads&inline=false
-			${CMAKE_BINARY_DIR}/WaylandProtocols/xdg-decoration-unstable-v1.xml
-			SHOW_PROGRESS
-		)
-
-		execute_process(
-			WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/WaylandProtocols/
-			COMMAND wayland-scanner client-header xdg-decoration-unstable-v1.xml xdg-decoration-unstable-v1.h
-			COMMAND wayland-scanner private-code xdg-decoration-unstable-v1.xml xdg-decoration-unstable-v1.c)
-	endif()
+     execute_process(
+	WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/WaylandProtocols/
+	COMMAND wayland-scanner client-header xdg-decoration-unstable-v1.xml xdg-decoration-unstable-v1.h
+	COMMAND wayland-scanner private-code xdg-decoration-unstable-v1.xml xdg-decoration-unstable-v1.c)
+  endif()
 endif()
 
 # SDL2
@@ -273,17 +275,17 @@ set(SDL_UNUSED_SUBSYSTEMS
   Audio
   Camera)
 foreach(_SUB ${SDL_UNUSED_SUBSYSTEMS})
-	string(TOUPPER ${_SUB} _OPT)
-	set(SDL_${_OPT} OFF CACHE INTERNAL "..." FORCE)
+  string(TOUPPER ${_SUB} _OPT)
+  set(SDL_${_OPT} OFF CACHE INTERNAL "..." FORCE)
 endforeach()
 
 set (SDL_INSTALL OFF CACHE INTERNAL "..." FORCE)
 set (SDL_INSTALL_CPACK OFF CACHE INTERNAL "..." FORCE)
 set (SDL_ASSERTIONS ON CACHE INTERNAL "..." FORCE)
 if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo")
-set (SDL_ASSERTIONS "paranoid" CACHE INTERNAL "..." FORCE)
+  set (SDL_ASSERTIONS "paranoid" CACHE INTERNAL "..." FORCE)
 else()
-set (SDL_ASSERTIONS "release" CACHE INTERNAL "..." FORCE)
+  set (SDL_ASSERTIONS "release" CACHE INTERNAL "..." FORCE)
 endif()
 set (SDL_TEST OFF CACHE INTERNAL "..." FORCE)
 set (SDL_DIRECTX OFF CACHE INTERNAL "..." FORCE)
@@ -321,8 +323,8 @@ set (SDL_IBUS OFF CACHE INTERNAL "..." FORCE)
 set (SDL_VENDOR_INFO ${PROJECT_NAME} CACHE STRING "Vendor name and/or version to add to SDL_REVISION")
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
-	set (SDL_X11 OFF CACHE INTERNAL "..." FORCE)
-	set (SDL_X11_SHARED OFF CACHE INTERNAL "..." FORCE)
+  set (SDL_X11 OFF CACHE INTERNAL "..." FORCE)
+  set (SDL_X11_SHARED OFF CACHE INTERNAL "..." FORCE)
 endif ()
 
 if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/SDL/)
@@ -331,7 +333,7 @@ else()
   FetchContent_Declare(
     SDL
     GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
-    GIT_TAG release-3.2.14
+    GIT_TAG release-3.2.16
   )
   FetchContent_MakeAvailable(SDL)
 endif()
@@ -357,5 +359,5 @@ else()
 endif()
 
 if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo")
-	add_subdirectory(imgui)
+  add_subdirectory(imgui)
 endif()

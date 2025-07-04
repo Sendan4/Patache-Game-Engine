@@ -19,6 +19,9 @@ _Motor tonto y simple de videojuegos hecho en C++._
 
 <p>⚠️ <strong>Advertencia</strong>: Esta en un estado muy temprano de desarrollo y no es estable.</p>
 
+## Gamescope
+If the engine or game does not run inside gamescope try with ```--expose-wayland```.
+
 ## Dependencias usadas en este proyecto
 - [SDL3](http://www.libsdl.org/)
 - [Vulkan](https://www.vulkan.org/)

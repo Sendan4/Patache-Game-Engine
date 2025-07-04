@@ -1,7 +1,7 @@
 if (BUILD_SHARED_LIBS)
-  add_library(${PROJECT_NAME} SHARED)
+    add_library(${PROJECT_NAME} SHARED)
 else()
-  add_library(${PROJECT_NAME} STATIC)
+    add_library(${PROJECT_NAME} STATIC)
 endif()
 
 add_subdirectory(RaccoonRenderer/Shaders)
@@ -9,22 +9,22 @@ add_subdirectory(RaccoonRenderer/Shaders)
 add_dependencies(${PROJECT_NAME} PatacheFiles PatacheCompileShaders)
 
 target_sources (${PROJECT_NAME} PRIVATE
- "Core/PatacheEngine.cpp"
- "Core/Configuration.cpp"
- "Core/Input.cpp"
- "Core/ClearColor.cpp"
- "RaccoonRenderer/Vulkan/Vulkan_SetupRenderer.cpp"
- "RaccoonRenderer/Vulkan/Vulkan_SwapChain.cpp"
- "RaccoonRenderer/Vulkan/Vulkan_ImageView.cpp"
- "RaccoonRenderer/Vulkan/Vulkan_CommandBuffer.cpp"
- "RaccoonRenderer/Vulkan/Vulkan_FrameBuffer.cpp"
- "RaccoonRenderer/Vulkan/Vulkan_DepthBuffer.cpp"
- "RaccoonRenderer/Vulkan/Vulkan_SincronizationPrimitives.cpp"
- "RaccoonRenderer/Vulkan/Vulkan_Render.cpp"
- "Log/Messages.cpp"
- "Log/StartLogInfo.cpp"
- "Log/Vulkan_SetupLog.cpp"
- "Log/Vulkan_Info.cpp")
+    "Core/PatacheEngine.cpp"
+    "Core/Configuration.cpp"
+    "Core/Input.cpp"
+    "Core/ClearColor.cpp"
+    "RaccoonRenderer/Vulkan/Vulkan_SetupRenderer.cpp"
+    "RaccoonRenderer/Vulkan/Vulkan_SwapChain.cpp"
+    "RaccoonRenderer/Vulkan/Vulkan_ImageView.cpp"
+    "RaccoonRenderer/Vulkan/Vulkan_CommandBuffer.cpp"
+    "RaccoonRenderer/Vulkan/Vulkan_FrameBuffer.cpp"
+    "RaccoonRenderer/Vulkan/Vulkan_DepthBuffer.cpp"
+    "RaccoonRenderer/Vulkan/Vulkan_SincronizationPrimitives.cpp"
+    "RaccoonRenderer/Vulkan/Vulkan_Render.cpp"
+    "Log/Messages.cpp"
+    "Log/StartLogInfo.cpp"
+    "Log/Vulkan_SetupLog.cpp"
+    "Log/Vulkan_Info.cpp")
 
 if (MSVC)
     # List Headers Files in Visual Studio
@@ -41,16 +41,19 @@ if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows" OR WIN32)
 endif()
 
 if (${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
-	enable_language(C)
+    enable_language(C)
 
-	target_sources (${PROJECT_NAME} PRIVATE
-		"Core/WaylandWindow.cpp"
-		${CMAKE_BINARY_DIR}/WaylandProtocols/xdg-shell.h
-		${CMAKE_BINARY_DIR}/WaylandProtocols/xdg-shell.c
-		${CMAKE_BINARY_DIR}/WaylandProtocols/xdg-decoration-unstable-v1.h
-		${CMAKE_BINARY_DIR}/WaylandProtocols/xdg-decoration-unstable-v1.c)
+    target_sources (${PROJECT_NAME} PRIVATE
+	"Core/WaylandWindow.cpp"
+	${CMAKE_BINARY_DIR}/WaylandProtocols/xdg-shell.h
+	${CMAKE_BINARY_DIR}/WaylandProtocols/xdg-shell.c
+	${CMAKE_BINARY_DIR}/WaylandProtocols/xdg-decoration-unstable-v1.h
+	${CMAKE_BINARY_DIR}/WaylandProtocols/xdg-decoration-unstable-v1.c)
+		
+    target_include_directories(${PROJECT_NAME} PRIVATE
+	"Core/WaylandCSD/")
 
-	target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_BINARY_DIR}/WaylandProtocols/)
+    target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_BINARY_DIR}/WaylandProtocols/)
 endif()
 
 if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo")
@@ -59,10 +62,10 @@ endif()
 
 target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../include/")
 target_include_directories(${PROJECT_NAME} PRIVATE
-  "${CMAKE_CURRENT_SOURCE_DIR}/Core/"
-  "${CMAKE_CURRENT_SOURCE_DIR}/ImGui/"
-  "${CMAKE_CURRENT_SOURCE_DIR}/Log/"
-  "${CMAKE_CURRENT_SOURCE_DIR}/RaccoonRenderer/")
+    "${CMAKE_CURRENT_SOURCE_DIR}/Core/"
+    "${CMAKE_CURRENT_SOURCE_DIR}/ImGui/"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Log/"
+    "${CMAKE_CURRENT_SOURCE_DIR}/RaccoonRenderer/")
 
 # Compiler Flags
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
@@ -93,15 +96,15 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clan
         target_compile_options(${PROJECT_NAME} PRIVATE "-ffast-math")
     endif()
     if (CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64" OR CMAKE_SYSTEM_PROCESSOR STREQUAL "AMD64")
-      if (COMPILER_SUPPORTS_SSE4.2)
-        target_compile_options(${PROJECT_NAME} PRIVATE "-msse4.2")
-      endif()
-      if (COMPILER_SUPPORTS_MMX)
-        target_compile_options(${PROJECT_NAME} PRIVATE "-mmmx")
-      endif()
-      if (COMPILER_SUPPORTS_AVX)
-        target_compile_options(${PROJECT_NAME} PRIVATE "-mavx")
-      endif()
+        if (COMPILER_SUPPORTS_SSE4.2)
+            target_compile_options(${PROJECT_NAME} PRIVATE "-msse4.2")
+        endif()
+        if (COMPILER_SUPPORTS_MMX)
+            target_compile_options(${PROJECT_NAME} PRIVATE "-mmmx")
+        endif()
+        if (COMPILER_SUPPORTS_AVX)
+            target_compile_options(${PROJECT_NAME} PRIVATE "-mavx")
+        endif()
     endif()
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     # MSVC
@@ -118,12 +121,12 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
         target_compile_options(${PROJECT_NAME} PRIVATE "/fp:except-")
     endif()
     if (CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64" OR CMAKE_SYSTEM_PROCESSOR STREQUAL "AMD64")
-      if (COMPILER_SUPPORTS_SSE4.2)
-        target_compile_options(${PROJECT_NAME} PRIVATE "/arch:SSE4.2")
-      endif()
-      if (COMPILER_SUPPORTS_AVX)
-        target_compile_options(${PROJECT_NAME} PRIVATE "/arch:AVX")
-      endif()
+        if (COMPILER_SUPPORTS_SSE4.2)
+            target_compile_options(${PROJECT_NAME} PRIVATE "/arch:SSE4.2")
+        endif()
+        if (COMPILER_SUPPORTS_AVX)
+            target_compile_options(${PROJECT_NAME} PRIVATE "/arch:AVX")
+        endif()
     endif()
 
     target_compile_definitions(${PROJECT_NAME} PRIVATE _HAS_EXCEPTIONS=0)
@@ -131,40 +134,40 @@ endif()
 
 # Macros
 if (${CMAKE_BUILD_TYPE} STREQUAL "Release")
-  target_compile_definitions(${PROJECT_NAME} PRIVATE PATACHE_BUILD_TYPE="Release")
-  target_compile_definitions(${PROJECT_NAME} PUBLIC PATACHE_DEBUG=0)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE PATACHE_BUILD_TYPE="Release")
+    target_compile_definitions(${PROJECT_NAME} PUBLIC PATACHE_DEBUG=0)
 elseif(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
-  target_compile_definitions(${PROJECT_NAME} PRIVATE PATACHE_BUILD_TYPE="Debug")
-  target_compile_definitions(${PROJECT_NAME} PUBLIC PATACHE_DEBUG=1)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE PATACHE_BUILD_TYPE="Debug")
+    target_compile_definitions(${PROJECT_NAME} PUBLIC PATACHE_DEBUG=1)
 elseif(${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo")
-  target_compile_definitions(${PROJECT_NAME} PRIVATE PATACHE_BUILD_TYPE="Debug Optimized")
-  target_compile_definitions(${PROJECT_NAME} PUBLIC PATACHE_DEBUG=1)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE PATACHE_BUILD_TYPE="Debug Optimized")
+    target_compile_definitions(${PROJECT_NAME} PUBLIC PATACHE_DEBUG=1)
 elseif(${CMAKE_BUILD_TYPE} STREQUAL "MinSizeRel")
-  target_compile_definitions(${PROJECT_NAME} PRIVATE PATACHE_BUILD_TYPE="Minimal Size Release")
-  target_compile_definitions(${PROJECT_NAME} PUBLIC PATACHE_DEBUG=0)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE PATACHE_BUILD_TYPE="Minimal Size Release")
+    target_compile_definitions(${PROJECT_NAME} PUBLIC PATACHE_DEBUG=0)
 endif()
 
 if (NOT "${CMAKE_GENERATOR_VERSION}" STREQUAL "")
-  target_compile_definitions(${PROJECT_NAME} PRIVATE
-    PATACHE_BUILD_SYSTEM_GENERATOR_VERSION="${CMAKE_GENERATOR_VERSION}")
+    target_compile_definitions(${PROJECT_NAME} PRIVATE
+        PATACHE_BUILD_SYSTEM_GENERATOR_VERSION="${CMAKE_GENERATOR_VERSION}")
 endif()
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE
- PATACHE_BUILD_SYSTEM="CMake"
- PATACHE_BUILD_SYSTEM_VERSION="${CMAKE_VERSION}"
- PATACHE_BUILD_SYSTEM_GENERATOR="${CMAKE_GENERATOR}"
- PATACHE_ENGINE_VERSION="${PATACHE_ENGINE_VERSION}"
- PATACHE_ENGINE_VERSION_MAYOR=${PATACHE_ENGINE_VERSION_MAYOR}
- PATACHE_ENGINE_VERSION_MINOR=${PATACHE_ENGINE_VERSION_MINOR}
- PATACHE_ENGINE_VERSION_PATCH=${PATACHE_ENGINE_VERSION_PATCH}
- PATACHE_ENGINE_NAME="Patache Engine"
- PATACHE_COMPILER_PROGRAM="${compiler_program}"
- PATACHE_COMPILER_VERSION="${CMAKE_CXX_COMPILER_VERSION}"
- PATACHE_ARCH="${CMAKE_SYSTEM_PROCESSOR}"
- PATACHE_FAST_IO_GIT_COMMIT_HASH_SHORT="${Fast_io_COMMIT_SHORT_HASH}"
- VULKAN_HPP_NO_EXCEPTIONS
- VULKAN_HPP_NO_SMART_HANDLE
- VULKAN_HPP_NO_CONSTRUCTORS)
+    PATACHE_BUILD_SYSTEM="CMake"
+    PATACHE_BUILD_SYSTEM_VERSION="${CMAKE_VERSION}"
+    PATACHE_BUILD_SYSTEM_GENERATOR="${CMAKE_GENERATOR}"
+    PATACHE_ENGINE_VERSION="${PATACHE_ENGINE_VERSION}"
+    PATACHE_ENGINE_VERSION_MAYOR=${PATACHE_ENGINE_VERSION_MAYOR}
+    PATACHE_ENGINE_VERSION_MINOR=${PATACHE_ENGINE_VERSION_MINOR}
+    PATACHE_ENGINE_VERSION_PATCH=${PATACHE_ENGINE_VERSION_PATCH}
+    PATACHE_ENGINE_NAME="Patache Engine"
+    PATACHE_COMPILER_PROGRAM="${compiler_program}"
+    PATACHE_COMPILER_VERSION="${CMAKE_CXX_COMPILER_VERSION}"
+    PATACHE_ARCH="${CMAKE_SYSTEM_PROCESSOR}"
+    PATACHE_FAST_IO_GIT_COMMIT_HASH_SHORT="${Fast_io_COMMIT_SHORT_HASH}"
+    VULKAN_HPP_NO_EXCEPTIONS
+    VULKAN_HPP_NO_SMART_HANDLE
+    VULKAN_HPP_NO_CONSTRUCTORS)
 
 if (MSVC OR CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     target_compile_definitions(${PROJECT_NAME} PRIVATE _HAS_EXCEPTIONS=0)
@@ -193,8 +196,8 @@ endif()
 # Link Libraries
 # Wayland
 if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
-	target_link_libraries(${PROJECT_NAME} PRIVATE ${WAYLAND_LIBRARIES})
-	target_include_directories(${PROJECT_NAME} PRIVATE ${WAYLAND_INCLUDE_DIRS})
+    target_link_libraries(${PROJECT_NAME} PRIVATE ${WAYLAND_LIBRARIES} ${WAYLAND_CURSOR_LIBRARIES})
+    target_include_directories(${PROJECT_NAME} PRIVATE ${WAYLAND_INCLUDE_DIRS} ${WAYLAND_CURSOR_INCLUDE_DIRS})
 endif()
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" OR (CMAKE_SYSTEM_NAME STREQUAL "Linux" AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU"))
@@ -204,8 +207,8 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" OR (CMAKE_SYSTEM_NAME STREQUAL "Linux"
     endif()
 
     target_link_libraries(${PROJECT_NAME} PUBLIC
-			vulkan
-			Vulkan::Headers)
+        vulkan
+	Vulkan::Headers)
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
     # Link Vulkan from SDK
     message("")
@@ -232,7 +235,7 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
         message(STATUS "Validation Layer Path : ${VULKANSDK_VVL_PATH}")
 
         target_compile_definitions(${PROJECT_NAME} PRIVATE
-          PATACHE_FIND_VVL_FROM_SDK PATACHE_VVL_SDK_PATH="${VULKANSDK_VVL_PATH}")
+            PATACHE_FIND_VVL_FROM_SDK PATACHE_VVL_SDK_PATH="${VULKANSDK_VVL_PATH}")
     endif()
 endif()
 
@@ -265,69 +268,69 @@ if (MSVC)
     set_target_properties(PatacheCompileShaders PROPERTIES FOLDER "Engine")
 
     if (TARGET cglm)
-      set_target_properties(cglm PROPERTIES FOLDER "Engine/Dependencies/")
+        set_target_properties(cglm PROPERTIES FOLDER "Engine/Dependencies/")
     endif()
 
     # RapidYaml
     if (TARGET ryml)
-      set_target_properties(ryml PROPERTIES FOLDER "Engine/Dependencies/RapidYaml")
+        set_target_properties(ryml PROPERTIES FOLDER "Engine/Dependencies/RapidYaml")
     endif()
     if (TARGET ryml-uninstall)
-      set_target_properties(ryml-uninstall PROPERTIES FOLDER "Engine/Dependencies/RapidYaml")
+        set_target_properties(ryml-uninstall PROPERTIES FOLDER "Engine/Dependencies/RapidYaml")
     endif()
     if (TARGET c4core-amalgamate)
-      set_target_properties(c4core-amalgamate PROPERTIES FOLDER "Engine/Dependencies/RapidYaml")
+        set_target_properties(c4core-amalgamate PROPERTIES FOLDER "Engine/Dependencies/RapidYaml")
     endif()
     if (TARGET c4core)
-      set_target_properties(c4core PROPERTIES FOLDER "Engine/Dependencies/RapidYaml")
+        set_target_properties(c4core PROPERTIES FOLDER "Engine/Dependencies/RapidYaml")
     endif()
 
     #SDL2
     if (TARGET SDL_uclibc)
-      set_target_properties(SDL_uclibc PROPERTIES FOLDER "Engine/Dependencies/SDL3")
+        set_target_properties(SDL_uclibc PROPERTIES FOLDER "Engine/Dependencies/SDL3")
     endif()
     if(TARGET SDL3-static)
-      set_target_properties(SDL3-static PROPERTIES FOLDER "Engine/Dependencies/SDL3")
+        set_target_properties(SDL3-static PROPERTIES FOLDER "Engine/Dependencies/SDL3")
     endif()
     if(TARGET SDL3-shared)
-      set_target_properties(SDL3-shared PROPERTIES FOLDER "Engine/Dependencies/SDL3")
+        set_target_properties(SDL3-shared PROPERTIES FOLDER "Engine/Dependencies/SDL3")
     endif()
     if (TARGET sdl_headers_copy)
-      set_target_properties(sdl_headers_copy PROPERTIES FOLDER "Engine/Dependencies/SDL2")
+        set_target_properties(sdl_headers_copy PROPERTIES FOLDER "Engine/Dependencies/SDL2")
     endif()
     if (TARGET uninstall)
-      set_target_properties(uninstall PROPERTIES FOLDER "Engine/Dependencies/SDL2")
+        set_target_properties(uninstall PROPERTIES FOLDER "Engine/Dependencies/SDL2")
     endif()
 
     #Vulkan
     if (TARGET asm_offset)
-      set_target_properties(asm_offset PROPERTIES FOLDER "Engine/Dependencies/Vulkan")
+        set_target_properties(asm_offset PROPERTIES FOLDER "Engine/Dependencies/Vulkan")
     endif()
     if (TARGET loader_specific_options)
-      set_target_properties(loader_specific_options PROPERTIES FOLDER "Engine/Dependencies/Vulkan")
+        set_target_properties(loader_specific_options PROPERTIES FOLDER "Engine/Dependencies/Vulkan")
     endif()
     if (TARGET loader-unknown-chain)
-      set_target_properties(loader-unknown-chain PROPERTIES FOLDER "Engine/Dependencies/Vulkan")
+        set_target_properties(loader-unknown-chain PROPERTIES FOLDER "Engine/Dependencies/Vulkan")
     endif()
     if (TARGET loader-opt)
-            set_target_properties(loader-opt PROPERTIES FOLDER "Engine/Dependencies/Vulkan")
+        set_target_properties(loader-opt PROPERTIES FOLDER "Engine/Dependencies/Vulkan")
     endif()
     if (TARGET Vulkan-Module)
-            set_target_properties(Vulkan-Module PROPERTIES FOLDER "Engine/Dependencies/Vulkan")
+        set_target_properties(Vulkan-Module PROPERTIES FOLDER "Engine/Dependencies/Vulkan")
     endif()
     if (TARGET gpu_av_spirv)
-            set_target_properties(gpu_av_spirv PROPERTIES FOLDER "Engine/Dependencies/Vulkan")
+        set_target_properties(gpu_av_spirv PROPERTIES FOLDER "Engine/Dependencies/Vulkan")
     endif()
     if (TARGET loader_asm_gen_files)
-            set_target_properties(loader_asm_gen_files PROPERTIES FOLDER "Engine/Dependencies/Vulkan")
+        set_target_properties(loader_asm_gen_files PROPERTIES FOLDER "Engine/Dependencies/Vulkan")
     endif()
     if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo" OR USE_VVL)
-      if (TARGET vvl)
-        set_target_properties(vvl PROPERTIES FOLDER "Engine/Dependencies/Vulkan")
-      endif()
-      if (TARGET VkLayer_utils)
-        set_target_properties(VkLayer_utils PROPERTIES FOLDER "Engine/Dependencies/Vulkan")
-      endif()
+        if (TARGET vvl)
+            set_target_properties(vvl PROPERTIES FOLDER "Engine/Dependencies/Vulkan")
+        endif()
+        if (TARGET VkLayer_utils)
+            set_target_properties(VkLayer_utils PROPERTIES FOLDER "Engine/Dependencies/Vulkan")
+        endif()
     endif()
     set_target_properties(vulkan PROPERTIES FOLDER "Engine/Dependencies/Vulkan")
 
@@ -356,6 +359,114 @@ if (MSVC)
     if (TARGET SPIRV)
         set_target_properties(SPIRV PROPERTIES FOLDER "Engine/Dependencies/Glslang")
     endif()
+    if (TARGET spirv-tools-build-version)
+        set_target_properties(spirv-tools-build-version PROPERTIES FOLDER "Engine/Dependencies/Glslang")
+    endif()
+    if (TARGET spirv-tools-header-DebugInfo)
+        set_target_properties(spirv-tools-header-DebugInfo PROPERTIES FOLDER "Engine/Dependencies/Glslang")
+    endif()
+    if (TARGET spirv-tools-header-NonSemanticShaderDebugInfo100)
+        set_target_properties(spirv-tools-header-NonSemanticShaderDebugInfo100 PROPERTIES FOLDER "Engine/Dependencies/Glslang")
+    endif()
+    if (TARGET spirv-tools-header-OpenCLDebugInfo100)
+        set_target_properties(spirv-tools-header-OpenCLDebugInfo100 PROPERTIES FOLDER "Engine/Dependencies/Glslang")
+    endif()
+    if (TARGET spv-tools-cldi100)
+        set_target_properties(spv-tools-cldi100 PROPERTIES FOLDER "Engine/Dependencies/Glslang")
+    endif()
+    if (TARGET spv-tools-clspvreflection)
+        set_target_properties(spv-tools-clspvreflection PROPERTIES FOLDER "Engine/Dependencies/Glslang")
+    endif()
+    if (TARGET spv-tools-debuginfo)
+        set_target_properties(spv-tools-debuginfo PROPERTIES FOLDER "Engine/Dependencies/Glslang")
+    endif()
+    if (TARGET spv-tools-shdi100)
+        set_target_properties(spv-tools-shdi100 PROPERTIES FOLDER "Engine/Dependencies/Glslang")
+    endif()
+    if (TARGET spv-tools-spv-amd-gs)
+        set_target_properties(spv-tools-spv-amd-gs PROPERTIES FOLDER "Engine/Dependencies/Glslang")
+    endif()
+    if (TARGET spv-tools-spv-amd-sb)
+        set_target_properties(spv-tools-spv-amd-sb PROPERTIES FOLDER "Engine/Dependencies/Glslang")
+    endif()
+    if (TARGET spv-tools-spv-amd-sevp)
+        set_target_properties(spv-tools-spv-amd-sevp PROPERTIES FOLDER "Engine/Dependencies/Glslang")
+    endif()
+    if (TARGET spv-tools-spv-amd-stm)
+        set_target_properties(spv-tools-spv-amd-stm PROPERTIES FOLDER "Engine/Dependencies/Glslang")
+    endif()
+    if (TARGET spv-tools-vkspreflection)
+        set_target_properties(spv-tools-vkspreflection PROPERTIES FOLDER "Engine/Dependencies/Glslang")
+    endif()
+    if (TARGET spirv-tools-cpp-example)
+        set_target_properties(spirv-tools-cpp-example PROPERTIES FOLDER "Engine/Dependencies/Glslang")
+    endif()
+    if (TARGET spirv-as)
+        set_target_properties(spirv-as PROPERTIES FOLDER "Engine/Dependencies/Glslang")
+    endif()
+    if (TARGET spirv-cfg)
+        set_target_properties(spirv-cfg PROPERTIES FOLDER "Engine/Dependencies/Glslang")
+    endif()
+    if (TARGET spirv-diff)
+        set_target_properties(spirv-diff PROPERTIES FOLDER "Engine/Dependencies/Glslang")
+    endif()
+    if (TARGET spirv-dis)
+        set_target_properties(spirv-dis PROPERTIES FOLDER "Engine/Dependencies/Glslang")
+    endif()
+    if (TARGET spirv-link)
+        set_target_properties(spirv-link PROPERTIES FOLDER "Engine/Dependencies/Glslang")
+    endif()
+    if (TARGET spirv-lint)
+        set_target_properties(spirv-lint PROPERTIES FOLDER "Engine/Dependencies/Glslang")
+    endif()
+    if (TARGET spirv-objdump)
+        set_target_properties(spirv-objdump PROPERTIES FOLDER "Engine/Dependencies/Glslang")
+    endif()
+    if (TARGET spirv-opt)
+        set_target_properties(spirv-opt PROPERTIES FOLDER "Engine/Dependencies/Glslang")
+    endif()
+    if (TARGET spirv-reduce)
+        set_target_properties(spirv-reduce PROPERTIES FOLDER "Engine/Dependencies/Glslang")
+    endif()
+    if (TARGET spirv-val)
+        set_target_properties(spirv-val PROPERTIES FOLDER "Engine/Dependencies/Glslang")
+    endif()
+    if (TARGET SPIRV-Tools-diff)
+        set_target_properties(SPIRV-Tools-diff PROPERTIES FOLDER "Engine/Dependencies/Glslang")
+    endif()
+    if (TARGET SPIRV-Tools-link)
+        set_target_properties(SPIRV-Tools-link PROPERTIES FOLDER "Engine/Dependencies/Glslang")
+    endif()
+    if (TARGET SPIRV-Tools-lint)
+        set_target_properties(SPIRV-Tools-lint PROPERTIES FOLDER "Engine/Dependencies/Glslang")
+    endif()
+    if (TARGET SPIRV-Tools-opt)
+        set_target_properties(SPIRV-Tools-opt PROPERTIES FOLDER "Engine/Dependencies/Glslang")
+    endif()
+    if (TARGET SPIRV-Tools-reduce)
+        set_target_properties(SPIRV-Tools-reduce PROPERTIES FOLDER "Engine/Dependencies/Glslang")
+    endif()
+    if (TARGET SPIRV-Tools-shared)
+        set_target_properties(SPIRV-Tools-shared PROPERTIES FOLDER "Engine/Dependencies/Glslang")
+    endif()
+    if (TARGET SPIRV-Tools-static)
+        set_target_properties(SPIRV-Tools-static PROPERTIES FOLDER "Engine/Dependencies/Glslang")
+    endif()
+    if (TARGET spirv-tools-pkg-config)
+        set_target_properties(spirv-tools-pkg-config PROPERTIES FOLDER "Engine/Dependencies/Glslang")
+    endif()
+    if (TARGET spirv-tools-vimsyntax)
+        set_target_properties(spirv-tools-vimsyntax PROPERTIES FOLDER "Engine/Dependencies/Glslang")
+    endif()
+    if (TARGET core_tables)
+        set_target_properties(core_tables PROPERTIES FOLDER "Engine/Dependencies/Glslang")
+    endif()
+    if (TARGET enum_string_mapping)
+        set_target_properties(enum_string_mapping PROPERTIES FOLDER "Engine/Dependencies/Glslang")
+    endif()
+    if (TARGET extinst_tables)
+        set_target_properties(extinst_tables PROPERTIES FOLDER "Engine/Dependencies/Glslang")
+    endif()
 
     #Imgui
     if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo")
@@ -364,13 +475,13 @@ if (MSVC)
 endif()
 
 if (USE_LTO)
-  set_target_properties(${PROJECT_NAME}
-    PROPERTIES
-    INTERPROCEDURAL_OPTIMIZATION ${USE_LTO})
+    set_target_properties(${PROJECT_NAME}
+        PROPERTIES
+        INTERPROCEDURAL_OPTIMIZATION ${USE_LTO})
 endif()
 
 set_target_properties(${PROJECT_NAME}
     PROPERTIES
     VERSION "${PATACHE_ENGINE_VERSION}"
     CXX_EXTENSIONS OFF
-	CXX_STANDARD 20)
+    CXX_STANDARD 20)

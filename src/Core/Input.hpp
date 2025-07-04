@@ -18,6 +18,11 @@
 #include "ColorTerminal.hpp"
 #include "Log.hpp"
 
-#if !defined(__linux__)
+#if defined(__linux__)
+extern bool IsMaximized;
+#else
 bool SDLCALL HandleResize (void * userdata, SDL_Event * event);
 #endif
+
+bool IsFullScreen = false;
+bool Resize       = false;

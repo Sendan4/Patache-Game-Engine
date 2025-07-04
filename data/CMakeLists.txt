@@ -1,15 +1,15 @@
 add_custom_target(PatacheFiles
-  COMMENT "Copying engine files")
+    COMMENT "Copying engine files")
 
 if (MSVC)
-  if (TARGET PatacheFiles)
-		set_target_properties(PatacheFiles PROPERTIES FOLDER "Engine")
-	endif()
+    if (TARGET PatacheFiles)
+        set_target_properties(PatacheFiles PROPERTIES FOLDER "Engine")
+    endif()
 endif()
 
 # Copy Files
 if (MSVC)
-	add_custom_command(
+    add_custom_command(
         POST_BUILD
         TARGET PatacheFiles
         COMMAND ${CMAKE_COMMAND} -E copy

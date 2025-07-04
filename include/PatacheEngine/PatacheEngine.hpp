@@ -5,6 +5,7 @@
 #include <vulkan/vulkan.hpp>
 #if defined(__linux__)
 #include <wayland-client.h>
+#include <wayland-cursor.h>
 
 // Wayland Protocols
 #include <xdg-shell.h>
@@ -97,14 +98,74 @@ struct WaylandWindow
   wl_display *    Display    = nullptr;
   wl_compositor * Compositor = nullptr;
   wl_seat *       Input      = nullptr;
-  // Objects
-  xdg_wm_base *                 WindowManangerBase        = nullptr;
-  wl_surface *                  Surface                   = nullptr;
-  xdg_surface *                 DesktopStyleUserInterface = nullptr;
-  xdg_toplevel *                DesktopWindow             = nullptr;
-  zxdg_decoration_manager_v1 *  DecorationMananger        = nullptr;
-  zxdg_toplevel_decoration_v1 * Decoration                = nullptr;
+  // Main Surface for graphics
+  wl_surface *   Surface                   = nullptr; // Used by Vulkan
+  xdg_wm_base *  WindowManangerBase        = nullptr;
+  xdg_surface *  DesktopStyleUserInterface = nullptr;
+  xdg_toplevel * DesktopWindow             = nullptr;
+  // Server side decoration (SSD)
+  zxdg_decoration_manager_v1 *  DecorationMananger = nullptr;
+  zxdg_toplevel_decoration_v1 * Decoration         = nullptr;
+  // Client side decoration (CSD)
+  wl_shm *           DecorationSharedMemory = nullptr;
+  wl_subcompositor * SubCompositor          = nullptr;
+  // Main Bar
+  wl_surface *    MainBarSurface    = nullptr;
+  wl_subsurface * MainBarSubSurface = nullptr;
+  std::uint32_t * MainBarPixels     = nullptr;
+  wl_buffer *     MainBarBuffer     = nullptr;
+  // Border
+  wl_surface *    BorderSurface[8]    = { nullptr, nullptr, nullptr, nullptr,
+                                          nullptr, nullptr, nullptr, nullptr };
+  wl_subsurface * BorderSubSurface[8] = { nullptr, nullptr, nullptr, nullptr,
+                                          nullptr, nullptr, nullptr, nullptr };
+  std::uint32_t * BorderPixels[8]     = { nullptr, nullptr, nullptr, nullptr,
+                                          nullptr, nullptr, nullptr, nullptr };
+  wl_buffer *     BorderBuffer[8]     = { nullptr, nullptr, nullptr, nullptr,
+                                          nullptr, nullptr, nullptr, nullptr };
+  // Buttons
+  wl_surface *    ButtonSurface[3]          = { nullptr, nullptr, nullptr };
+  wl_subsurface * ButtonSubSurface[3]       = { nullptr, nullptr, nullptr };
+  std::uint32_t * DecorationButtonPixels[3] = { nullptr, nullptr, nullptr };
+  wl_buffer *     DecorationButtonBuffer[3] = { nullptr, nullptr, nullptr };
+  // Cursor
+  wl_surface *      CursorSurface = nullptr;
+  wl_cursor_theme * CursorTheme   = nullptr;
 };
+
+/*
+ * CSD Buttons Layout
+ * [MINIMIZE | MAXIMIZE | CLOSE]
+ */
+#define PATACHE_CSD_MINIMIZE_BUTTON_INDEX 0
+#define PATACHE_CSD_MAXIMIZE_BUTTON_INDEX 1
+#define PATACHE_CSD_CLOSE_BUTTON_INDEX    2
+#define PATACHE_CSD_BUTTON_SIZE           3
+
+/*
+ * CSD Borders Layout
+ * TOP
+ * BOTTOM
+ * LEFT
+ * RIGHT
+ * TOP LEFT
+ * TOP RIGHT
+ * BOTTOM LEFT
+ * BOTTOM RIGHT
+ * */
+#define PATACHE_CSD_TOP_BORDER_INDEX       0
+#define PATACHE_CSD_BOTTOM_BORDER_INDEX    1
+#define PATACHE_CSD_BORDER_HORIZONTAL_SIZE 2
+
+#define PATACHE_CSD_LEFT_BORDER_INDEX    2
+#define PATACHE_CSD_RIGHT_BORDER_INDEX   3
+#define PATACHE_CSD_BORDER_VERTICAL_SIZE 4
+
+#define PATACHE_CSD_TOPLEFT_BORDER_INDEX     4
+#define PATACHE_CSD_TOPRIGHT_BORDER_INDEX    5
+#define PATACHE_CSD_BOTTOMLEFT_BORDER_INDEX  6
+#define PATACHE_CSD_BOTTOMRIGHT_BORDER_INDEX 7
+#define PATACHE_CSD_BORDER_SIZE              8
 #endif
 
 struct Engine
@@ -145,11 +206,6 @@ struct Engine
 
   // Window
   SDL_Window * GameWindow = nullptr;
-
-#if defined(__linux__)
-  bool ResizingPending = false;
-#endif
-  bool Resize = false;
 
 #if defined(__linux__)
   Patache::WaylandWindow WaylandWindow{};

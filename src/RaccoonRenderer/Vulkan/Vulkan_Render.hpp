@@ -21,3 +21,8 @@
 void RecreateSwapChain (Patache::Engine * const);
 
 #define PATACHE_ERROR_TEXT_SIZE 128
+
+#if defined(__linux__)
+extern bool Resize;
+extern bool ResizingPending;
+#endif

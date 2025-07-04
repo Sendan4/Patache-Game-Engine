@@ -1,4 +1,5 @@
 clang-format -i src/Core/*
+clang-format -i src/Core/WaylandCSD/*
 clang-format -i src/ImGui/*
 clang-format -i src/Log/*
 clang-format -i src/RaccoonRenderer/Vulkan/*
