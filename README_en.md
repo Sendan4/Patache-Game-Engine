@@ -20,7 +20,7 @@ _Dumb and simple game engine made in C++._
 <p>⚠️ <strong>WARNING</strong>: It is at a very early stage of development and is not stable.</p>
 
 ## Gamescope
-If the engine or game does not run inside gamescope try with ```--expose-wayland```.
+If the engine or game does not run inside gamescope, try with ```--expose-wayland```.
 
 ## Dependencies used in this project
 - [SDL3](http://www.libsdl.org/)
