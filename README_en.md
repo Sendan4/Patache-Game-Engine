@@ -1,43 +1,51 @@
-| [Español](../README.md) | English |
+| [Español](README.md) | English |
 | :--: | :--: |
 
-<p align = "center"><img draggable = false src = "data/assets/icon/patata_icon.svg?ref_type=heads&inline=false" width=64></p>
+<p align = "center"><img draggable = false src = "data/assets/patache.svg?ref_type=heads&inline=false" width=64></p>
 
-<h1 align = "center">Potato Engine</h1>
+<h1 align = "center">Patache Engine</h1>
 
 _Dumb and simple game engine made in C++._
 
-<p>Potato is a 2D engine, simple and lightweight, focused on game development using C++ directly. This engine abstracts tasks such as window creation, rendering, sound, input, and its configuration into an easy-to-use API.</p>
+<p><strong>Is a 2D engine, simple and lightweight</strong> with a focus on game development using C++.</p>
 
-⚠️ Not ready for use yet
+<p>This engine is intended to be used in conjunction with <a href = "http://www.libsdl.org/">SDL3</a>. Abstracts window creation, graphics rendering, sound and configuration into one easy-to-use API.</p>
 
-# Available Operating Systems
+<p><strong>It is portable</strong>, works on various operating systems.</p>
 
 | Windows | GNU/Linux |
 | :-----: | :-----: |
 |<b>x86_64</b> | <b>x86_64</b> |
 
+<p>⚠️ <strong>WARNING</strong>: It is at a very early stage of development and is not stable.</p>
+
+## Gamescope
+If the engine or game does not run inside gamescope, try with ```--expose-wayland```.
+
 ## Dependencies used in this project
-<ul>
-	<li><a href = "http://www.libsdl.org/">SDL2</a></li>
-	<li><a href = "https://www.vulkan.org/">Vulkan</a></li>
-	<ul>
-		(<a href = "https://github.com/KhronosGroup/Vulkan-Headers.git">Vulkan-Headers</a>)
-		(<a href = "https://github.com/KhronosGroup/Vulkan-ValidationLayers.git">Vulkan-ValidationLayers</a>)
-		(<a href = "https://github.com/KhronosGroup/Vulkan-Loader.git">Vulkan-Loader</a>)
-	</ul>
-	<li><a href = "https://github.com/cppfastio/fast_io.git">fast_io</a></li>
-	<li><a href = "https://github.com/jbeder/yaml-cpp.git">yaml-cpp</a></li>
-    <li><a href = "https://github.com/ocornut/imgui.git">Imgui</a></li>
-</ul>
+- [SDL3](http://www.libsdl.org/)
+- [Vulkan](https://www.vulkan.org/)
+	- [Vulkan-Headers](https://github.com/KhronosGroup/Vulkan-Headers.git)
+	- [Vulkan-Loader](https://github.com/KhronosGroup/Vulkan-Loader.git)
+	- [Vulkan-Validation-Layers](https://github.com/KhronosGroup/Vulkan-ValidationLayers.git)
+	- [Glslang](https://github.com/KhronosGroup/glslang.git)
+- [fast_io](https://github.com/cppfastio/fast_io.git)
+- [RapidYaml](https://github.com/biojppm/rapidyaml.git)
+- [FreeType](https://gitlab.freedesktop.org/freetype/freetype.git)
+- [ImGui](https://github.com/ocornut/imgui.git)
+- [cglm](https://github.com/recp/cglm.git)
+
+#### GNU/Linux
+ - [Wayland](https://wayland.freedesktop.org/)
+	- [Wayland Client](https://gitlab.freedesktop.org/wayland/wayland)
+	- [Wayland Protocols](https://gitlab.freedesktop.org/wayland/wayland-protocols.git)
+
+## Links
+- [Documentation](#)
+#### Official Mirrors
+- [Github](https://github.com/Sendan4/Patache-Game-Engine)
+- [Codeberg](https://codeberg.org/PatacheEngine/Patache.git)
 
 <hr>
 
-
-### [Wiki](#)
-
-<hr>
-
-## Official Mirrors
-- [Github](https://github.com/Sendan4/Patata-Engine.git)
-- [Codeberg](https://codeberg.org/Sendan/patata-engine.git)
+Patache is under the [MIT](LICENSE.txt) license

@@ -1,30 +1,20 @@
 #pragma once
 
-#ifndef YAML_CPP_API
-#define YAML_CPP_API
-#endif
-#include <SDL.h>
-#include <vulkan/vulkan.hpp>
-#include <yaml-cpp/yaml.h>
-
-namespace Patata
+namespace Patache
 {
 namespace Log
 {
-void StartMapache (void);
-void StartPatataLogInfo (void);
-void OpenGLInfo (const YAML::Node &);
-void WindowLog (SDL_Window *);
+void StartPatacheLogInfo (void);
 
 // Vulkan Setup
-void VulkanCheck (const std::string &, const vk::Result &);
-void VulkanList (const char * List[], const size_t &, const std::string &);
+void VulkanCheck (const char * const, const vk::Result &);
+void VulkanList (const char * const List[], const uint32_t &,
+                 const char * const);
 
 // Errors
-void YamlFileErrorMessage (void);
-void FatalErrorMessage (const std::string &, const std::string &,
-                        const YAML::Node &);
-void ErrorMessage (const std::string &);
-void WarningMessage (const std::string &);
+void FatalErrorMessage (const char * const, const char * const,
+                        const Patache::Config &);
+void ErrorMessage (const char * const);
+void WarningMessage (const char * const);
 }
 }

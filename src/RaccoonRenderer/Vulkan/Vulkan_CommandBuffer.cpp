@@ -1,24 +1,32 @@
 #include "Vulkan_CommandBuffer.hpp"
 
-void
-Patata::Graphics::RaccoonRenderer::VulkanBackend::CreateCommandBuffer (
-    uint32_t & GraphicsQueueFamilyIndex)
+bool
+CreateCommandBuffer (Patache::VulkanBackend & Vulkan)
 {
-  vk::CommandPoolCreateInfo CreateCommandPoolInfo{};
-  CreateCommandPoolInfo.flags = vk::CommandPoolCreateFlagBits::eTransient;
-  CreateCommandPoolInfo.queueFamilyIndex = GraphicsQueueFamilyIndex;
+  const vk::CommandBufferAllocateInfo cmdAllocateInfo{
+    .commandPool        = Vulkan.CommandPool,
+    .level              = vk::CommandBufferLevel::ePrimary,
+    .commandBufferCount = Vulkan.SwapChainImageCount,
+  };
 
-  vk::Result Result = Device.createCommandPool (&CreateCommandPoolInfo,
-                                                nullptr, &CommandPool);
-  Patata::Log::VulkanCheck ("CommandPool", Result);
+  if (Vulkan.Cmd == VK_NULL_HANDLE)
+    Vulkan.Cmd = new vk::CommandBuffer[Vulkan.SwapChainImageCount];
 
-  std::vector<vk::Image> SwapChainImages
-      = Device.getSwapchainImagesKHR (SwapChain);
+  vk::Result Result
+      = Vulkan.Device.allocateCommandBuffers (&cmdAllocateInfo, Vulkan.Cmd);
 
-  vk::CommandBufferAllocateInfo CreateCommandBufferInfo{};
-  CreateCommandBufferInfo.commandPool = CommandPool;
-  CreateCommandBufferInfo.level       = vk::CommandBufferLevel::ePrimary;
-  CreateCommandBufferInfo.commandBufferCount = SwapChainImages.size ();
+  if (Result != vk::Result::eSuccess)
+    {
+      char ErrorText[PATACHE_ERROR_TEXT_SIZE]{ 0 };
 
-  CommandBuffers = Device.allocateCommandBuffers (CreateCommandBufferInfo);
+      std::snprintf (ErrorText, PATACHE_ERROR_TEXT_SIZE - 1,
+                     "Allocate Command Buffer #%.3u", Vulkan.CurrentFrame);
+
+      std::future<void> ReturnVulkanCheck = std::async (
+          std::launch::async, Patache::Log::VulkanCheck, ErrorText, Result);
+
+      return false;
+    }
+
+  return true;
 }

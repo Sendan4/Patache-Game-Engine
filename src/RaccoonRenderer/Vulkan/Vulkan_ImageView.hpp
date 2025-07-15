@@ -1,4 +1,13 @@
-#include <fast_io.h>
+#include <cstdio>
+#include <future>
 
-#include "RaccoonRenderer.hpp"
-#include "TerminalColors.hpp"
+#include <SDL3/SDL.h>
+
+// Patache Engine
+#include "PatacheEngine/PatacheEngine.hpp"
+#include "Log.hpp"
+
+bool CreateImageView (Patache::VulkanBackend &,
+                      const Patache::SwapChainInfo &);
+
+#define PATACHE_ERROR_TEXT_SIZE 64

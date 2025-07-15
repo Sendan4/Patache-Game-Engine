@@ -1,20 +1,28 @@
 [submodule "externals/Vulkan-Headers"]
 	path = externals/Vulkan-Headers
 	url = https://github.com/KhronosGroup/Vulkan-Headers.git
-	branch = vulkan-sdk-1.3.268
+	branch = vulkan-sdk-1.4.309
 [submodule "externals/Vulkan-Loader"]
 	path = externals/Vulkan-Loader
 	url = https://github.com/KhronosGroup/Vulkan-Loader.git
-	branch = vulkan-sdk-1.3.268
-[submodule "externals/Vulkan-ValidationLayers"]
-	path = externals/Vulkan-ValidationLayers
-	url = https://github.com/KhronosGroup/Vulkan-ValidationLayers
-	branch = vulkan-sdk-1.3.268
+	branch = vulkan-sdk-1.4.309
+[submodule "externals/rapidyaml"]
+	path = externals/rapidyaml
+	url = https://github.com/biojppm/rapidyaml.git
+	branch = v0.7.2
 [submodule "externals/SDL"]
 	path = externals/SDL
 	url = https://github.com/libsdl-org/SDL.git
 	branch = release-2.30.x
-[submodule "externals/yaml-cpp"]
-	path = externals/yaml-cpp
-	url = https://github.com/jbeder/yaml-cpp.git
-	branch = master
+[submodule "externals/freetype"]
+	path = externals/freetype
+  url = https://gitlab.freedesktop.org/freetype/freetype.git
+  branch = VER-2-13-3
+[submodule "externals/glslang"]
+	path = externals/glslang
+	url = https://github.com/KhronosGroup/glslang.git
+	branch = vulkan-sdk-1.4.309
+[submodule "externals/cglm"]
+	path = externals/cglm
+	url = https://github.com/recp/cglm.git
+	branch = v0.9.6

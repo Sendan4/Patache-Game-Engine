@@ -1,4 +1,10 @@
-#include <fast_io.h>
+#include <future>
+#include <cstdio>
 
+#include <SDL3/SDL.h>
+
+// Patache Engine
+#include "PatacheEngine/PatacheEngine.hpp"
 #include "Log.hpp"
-#include "RaccoonRenderer.hpp"
+
+#define PATACHE_ERROR_TEXT_SIZE 64

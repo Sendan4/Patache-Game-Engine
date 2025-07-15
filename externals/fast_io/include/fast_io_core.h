@@ -39,8 +39,12 @@
 #endif
 
 #include"fast_io_core_impl/empty.h"
+#if defined(_MSC_VER) && !defined(__clang__)
+#include "fast_io_core_impl/intrinsics/msvc/impl.h"
+#endif
 #include"fast_io_core_impl/freestanding/impl.h"
 #include"fast_io_core_impl/terminate.h"
+#include"fast_io_dsal/impl/freestanding.h"
 #include"fast_io_core_impl/allocation/impl.h"
 
 #include"fast_io_core_impl/error.h"

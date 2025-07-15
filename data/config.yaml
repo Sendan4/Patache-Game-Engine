@@ -1,0 +1,20 @@
+# Patache Engine Configuration File
+# uppercase and lowcase are valid
+
+patache-engine :
+  show-fatal-error-messagebox : false
+
+  raccoon-renderer :
+    vsync : true
+    # true enables the Vertical Sync, false disables the Vertical Sync
+
+    10bit-depth : false
+    # true to use a pixel format for 10-bit displays, if you have a
+    # monitor with a 10-bit depth you must enable this option.
+    # false to use a pixel format for 8-bit displays.
+
+    add-image-count : 0
+    # Add more images to draw and exchange during the flight.
+    # This option doesn't start from 0, it always starts from the
+    # minimum amount given by the controller, up to 4 more images.
+    # Min - 4
