@@ -248,8 +248,9 @@ CreateSwapChain (Patache::Engine * const  Engine,
         std::launch::async, Patache::Log::VulkanCheck,
         "Get SwapChain Images KHR - Obtaining the count", Result);
 
-  Engine->Vulkan.SwapChainImages
-      = new vk::Image[Engine->Vulkan.SwapChainImageCount];
+  if (Engine->Vulkan.SwapChainImages == nullptr)
+    Engine->Vulkan.SwapChainImages
+        = new vk::Image[Engine->Vulkan.SwapChainImageCount](VK_NULL_HANDLE);
 
   Result = Engine->Vulkan.Device.getSwapchainImagesKHR (
       Engine->Vulkan.SwapChain, &Engine->Vulkan.SwapChainImageCount,

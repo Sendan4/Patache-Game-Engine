@@ -69,7 +69,7 @@ Patache::Engine::Init (const Patache::EngineCreateInfo & Info)
     }
 #endif
 
-  // Make a window title
+    // Make a window title
 #if PATACHE_DEBUG == 1
   // Debug
   char WindowTitle[64]{ 0 };
@@ -113,7 +113,7 @@ Patache::Engine::Init (const Patache::EngineCreateInfo & Info)
       return false;
     }
 
-  // Init Window for other Systems
+    // Init Window for other Systems
 #if !defined(__linux__)
   {
     // Window Initial Size
@@ -263,6 +263,16 @@ Patache::Engine::~Engine (void)
   // SDL
   SDL_DestroyWindow (GameWindow);
 
+  // Wayland
+#if defined(__linux__)
+  if (WaylandWindow.CursorTheme != nullptr)
+    {
+      wl_cursor_theme_destroy (WaylandWindow.CursorTheme);
+      WaylandWindow.CursorTheme = nullptr;
+    }
+#endif
+
+  // SDL
   SDL_QuitSubSystem (SDL_INIT_VIDEO | SDL_INIT_EVENTS);
   SDL_Quit ();
 }

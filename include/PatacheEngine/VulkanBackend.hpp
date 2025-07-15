@@ -21,8 +21,8 @@ struct VulkanBackend
 
   // Color
   std::uint32_t   SwapChainImageCount     = 0;
-  vk::Image *     SwapChainImages         = VK_NULL_HANDLE;
-  vk::ImageView * SwapChainColorImageView = VK_NULL_HANDLE;
+  vk::Image *     SwapChainImages         = nullptr;
+  vk::ImageView * SwapChainColorImageView = nullptr;
 
   /*
   Depth buffer will not be useful for now.
@@ -36,11 +36,11 @@ struct VulkanBackend
   vk::ImageView    DepthView   = VK_NULL_HANDLE;
   vk::DeviceMemory DepthMemory = VK_NULL_HANDLE;
 
+  vk::Framebuffer * SwapChainFrameBuffer = nullptr;
+
   // Commands
   vk::CommandPool     CommandPool = VK_NULL_HANDLE;
   vk::CommandBuffer * Cmd         = VK_NULL_HANDLE;
-
-  vk::Framebuffer * SwapChainFrameBuffer = VK_NULL_HANDLE;
 
   vk::RenderPass RenderPass = VK_NULL_HANDLE;
 
@@ -61,9 +61,9 @@ struct VulkanBackend
 #endif
 
   // Synchronization Primitives
-  vk::Semaphore * ImageAvailableSemaphore = VK_NULL_HANDLE;
-  vk::Semaphore * ImageFinishedSemaphore  = VK_NULL_HANDLE;
-  vk::Fence *     InFlightFences          = VK_NULL_HANDLE;
+  vk::Semaphore * ImageAvailableSemaphore = nullptr;
+  vk::Semaphore * ImageFinishedSemaphore  = nullptr;
+  vk::Fence *     InFlightFences          = nullptr;
 
   std::uint8_t CurrentFrame = 0;
 

@@ -28,7 +28,9 @@ RaccoonRendererInit (Patache::Engine *                 Engine,
     // They are for the development and testing of this backend.
     // Layers
 #if PATACHE_DEBUG == 1 && defined(PATACHE_USE_VVL)
-    Engine->engineInfo.ppVkLayers = new const char *[PATACHE_VK_LAYER_COUNT];
+    Engine->engineInfo.ppVkLayers
+        = new const char *[PATACHE_VK_LAYER_COUNT](nullptr);
+
     Engine->engineInfo.ppVkLayers[0] = "VK_LAYER_KHRONOS_validation";
 
     // List Layers
@@ -68,7 +70,7 @@ RaccoonRendererInit (Patache::Engine *                 Engine,
 
     if (pSDLArrayInstanceExtensions != nullptr)
       {
-        ppAllExtensionInstance = new const char *[EXTENSION_COUNT];
+        ppAllExtensionInstance = new const char *[EXTENSION_COUNT](nullptr);
 
         PATACHE_MEMCPY (ppAllExtensionInstance, pSDLArrayInstanceExtensions,
                         SDLExtensionCount * sizeof (const char *));
@@ -83,7 +85,7 @@ RaccoonRendererInit (Patache::Engine *                 Engine,
 
         // Struct Patache EngineInfo
         Engine->engineInfo.ppVkInstanceExtensions
-            = new const char *[EXTENSION_COUNT];
+            = new const char *[EXTENSION_COUNT](nullptr);
 
         for (std::uint8_t i = 0; i < EXTENSION_COUNT; ++i)
           Engine->engineInfo.ppVkInstanceExtensions[i]
@@ -275,7 +277,11 @@ EXIT_CREATE_DEBUG_UTILS_MESSENGER:
         return false;
       }
 
-    vk::PhysicalDevice * TmpPhysicalDevices = VK_NULL_HANDLE;
+    vk::PhysicalDevice * TmpPhysicalDevices
+        = new vk::PhysicalDevice[GpuCount](VK_NULL_HANDLE);
+
+    Result = Engine->Vulkan.Instance.enumeratePhysicalDevices (
+        &GpuCount, TmpPhysicalDevices);
 
     if (GpuCount == 1)
       {
@@ -286,10 +292,6 @@ EXIT_CREATE_DEBUG_UTILS_MESSENGER:
                               " : Only one vulkan compatible device found",
                               PATACHE_TERM_RESET);
 
-        TmpPhysicalDevices = new vk::PhysicalDevice[GpuCount];
-
-        Result = Engine->Vulkan.Instance.enumeratePhysicalDevices (
-            &GpuCount, TmpPhysicalDevices);
         if (Result != vk::Result::eSuccess)
           {
             std::future<void> ReturnVulkanCheck
@@ -331,22 +333,6 @@ EXIT_CREATE_DEBUG_UTILS_MESSENGER:
 
         goto EXIT_CREATE_DEVICE;
       }
-    else
-      {
-        // Get multiple devices
-        TmpPhysicalDevices = new vk::PhysicalDevice[GpuCount];
-        Result             = Engine->Vulkan.Instance.enumeratePhysicalDevices (
-            &GpuCount, TmpPhysicalDevices);
-
-        if (Result != vk::Result::eSuccess)
-          {
-            std::future<void> ReturnVulkanCheck
-                = std::async (std::launch::async, Patache::Log::VulkanCheck,
-                              "Enumerate Physical Devices", Result);
-
-            return false;
-          }
-      }
 
     // Search one device from multiple devices
     fast_io::io::println (PATACHE_FAST_IO_BUFF_OUT, PATACHE_TERM_BOLD,
@@ -355,7 +341,7 @@ EXIT_CREATE_DEBUG_UTILS_MESSENGER:
                           GpuCount, " vulkan compatible devices",
                           PATACHE_TERM_RESET);
 
-    std::uint32_t * GpuScore = new std::uint32_t[GpuCount - 1];
+    std::uint32_t * GpuScore = new std::uint32_t[GpuCount](0);
 
     vk::PhysicalDeviceProperties2 DeviceProperties;
     vk::PhysicalDeviceFeatures2   DeviceFeatures;
@@ -423,6 +409,7 @@ EXIT_CREATE_DEBUG_UTILS_MESSENGER:
     delete[] TmpPhysicalDevices;
     TmpPhysicalDevices = nullptr;
     delete[] GpuScore;
+    GpuScore = nullptr;
   }
 EXIT_CREATE_DEVICE:
 
@@ -452,32 +439,37 @@ EXIT_CREATE_DEVICE:
           &QueueCount, QueueFamilyProperties);
 
       for (std::uint32_t i = 0; i < QueueCount; ++i)
-        fast_io::io::println (
-            PATACHE_FAST_IO_BUFF_OUT,
+        {
 #if PATACHE_DEBUG == 1
-#if !defined(_WIN64)
-            PATACHE_TERM_DIM,
-#endif
-            PATACHE_TERM_COLOR_GRAY0,
 #if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
-            "  [",
-            fast_io::mnp::os_c_str (abi::__cxa_demangle (
-                typeid (QueueFamilyProperties[i].queueFlags).name (), nullptr,
-                nullptr, nullptr)),
-            "] ",
+          char * VarTypeRealName = abi::__cxa_demangle (
+              typeid (QueueFamilyProperties[i].queueFlags).name (), nullptr,
+              nullptr, nullptr);
 #else
-            "  [",
-            fast_io::mnp::os_c_str (
-                typeid (QueueFamilyProperties[i].queueFlags).name ()),
-            "] ",
+          const char * VarTypeRealName
+              = typeid (QueueFamilyProperties[i].queueFlags).name ();
 #endif
-            PATACHE_TERM_RESET,
+#endif
+
+          fast_io::io::println (
+              PATACHE_FAST_IO_BUFF_OUT,
+#if PATACHE_DEBUG == 1
+              PATACHE_TERM_DIM, PATACHE_TERM_COLOR_GRAY0, "  [",
+              fast_io::mnp::os_c_str (VarTypeRealName), "] ",
+              PATACHE_TERM_RESET,
 #else  // PATACHE_DEBUG
-            "  ",
+              "  ",
 #endif // PATACHE_DEBUG
-            PATACHE_TERM_BOLD, "Index [", PATACHE_TERM_RESET, i,
-            PATACHE_TERM_BOLD, "] : ", PATACHE_TERM_RESET,
-            vk::to_string (QueueFamilyProperties[i].queueFlags));
+              PATACHE_TERM_BOLD, "Index [", PATACHE_TERM_RESET, i,
+              PATACHE_TERM_BOLD, "] : ", PATACHE_TERM_RESET,
+              vk::to_string (QueueFamilyProperties[i].queueFlags));
+
+#if PATACHE_DEBUG == 1
+#if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
+          std::free (VarTypeRealName);
+#endif
+#endif
+        }
 
       for (std::uint32_t index = 0; index < QueueCount; ++index)
         if (QueueFamilyProperties[index].queueFlags
@@ -1018,6 +1010,7 @@ RaccoonRendererClose (Patache::VulkanBackend & Vulkan)
         = std::async (std::launch::async, Patache::Log::VulkanCheck,
                       "Queue Wait Idle", Result);
 
+  // Swapchain
   // Color
   for (std::uint8_t i = 0; i < Vulkan.SwapChainImageCount; ++i)
     {
@@ -1026,16 +1019,13 @@ RaccoonRendererClose (Patache::VulkanBackend & Vulkan)
     }
 
   delete[] Vulkan.SwapChainFrameBuffer;
+  Vulkan.SwapChainFrameBuffer = nullptr;
   delete[] Vulkan.SwapChainColorImageView;
-  Vulkan.SwapChainFrameBuffer    = VK_NULL_HANDLE;
-  Vulkan.SwapChainColorImageView = VK_NULL_HANDLE;
+  Vulkan.SwapChainColorImageView = nullptr;
+  delete[] Vulkan.SwapChainImages;
+  Vulkan.SwapChainImages = nullptr;
 
   Vulkan.Device.destroySwapchainKHR (Vulkan.SwapChain);
-  delete[] Vulkan.SwapChainImages;
-  Vulkan.SwapChainImages = VK_NULL_HANDLE;
-
-  // Vulkan.Device.destroyBuffer (Vulkan.VertexBuffer);
-  // Vulkan.Device.freeMemory (Vulkan.VertexBufferMemory);
 
 // Imgui
 #if PATACHE_DEBUG == 1
@@ -1053,6 +1043,7 @@ RaccoonRendererClose (Patache::VulkanBackend & Vulkan)
   Vulkan.Device.destroyPipelineCache (Vulkan.ImguiPipelineCache);
 #endif
 
+  // Pipeline
   Vulkan.Device.destroyPipelineCache (Vulkan.GraphicsPipelineCache);
   Vulkan.Device.destroyPipelineLayout (Vulkan.PipelineLayout);
   Vulkan.Device.destroyPipeline (Vulkan.GraphicsPipeline);
@@ -1066,17 +1057,17 @@ RaccoonRendererClose (Patache::VulkanBackend & Vulkan)
       Vulkan.Device.destroySemaphore (Vulkan.ImageFinishedSemaphore[i]);
       Vulkan.Device.destroyFence (Vulkan.InFlightFences[i]);
     }
-  delete[] Vulkan.ImageAvailableSemaphore;
-  delete[] Vulkan.ImageFinishedSemaphore;
-  delete[] Vulkan.InFlightFences;
 
-  Vulkan.ImageAvailableSemaphore = VK_NULL_HANDLE;
-  Vulkan.ImageFinishedSemaphore  = VK_NULL_HANDLE;
-  Vulkan.InFlightFences          = VK_NULL_HANDLE;
+  delete[] Vulkan.ImageAvailableSemaphore;
+  Vulkan.ImageAvailableSemaphore = nullptr;
+  delete[] Vulkan.ImageFinishedSemaphore;
+  Vulkan.ImageFinishedSemaphore = nullptr;
+  delete[] Vulkan.InFlightFences;
+  Vulkan.InFlightFences = nullptr;
 
   Vulkan.Device.destroyCommandPool (Vulkan.CommandPool);
   delete[] Vulkan.Cmd;
-  Vulkan.Cmd = VK_NULL_HANDLE;
+  Vulkan.Cmd = nullptr;
 
   Vulkan.Device.destroy ();
 

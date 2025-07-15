@@ -38,7 +38,9 @@ CreateWaylandWindow (const std::uint32_t & width, const std::uint32_t & height,
   wl_registry_add_listener (Registry, &RegistryListener, Engine);
 
   wl_display_roundtrip (Engine->WaylandWindow.Display);
+
   wl_registry_destroy (Registry);
+  Registry = nullptr;
 
   // Errors
   if (Engine->WaylandWindow.Compositor == nullptr)
