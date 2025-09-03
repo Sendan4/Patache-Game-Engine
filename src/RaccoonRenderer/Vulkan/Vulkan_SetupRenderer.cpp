@@ -6,7 +6,8 @@ RaccoonRendererInit (Patache::Engine *                 Engine,
 {
 #if PATACHE_DEBUG == 1
   std::future<void> InitImgui_Async = std::async (
-      std::launch::async, InitImgui, std::cref (Engine->configuration));
+      std::launch::async, InitImgui, std::cref (Engine->configuration),
+      std::ref (Engine->engineInfo));
 #endif
 
   vk::Result Result;
@@ -473,7 +474,7 @@ EXIT_CREATE_DEVICE:
 
       for (std::uint32_t index = 0; index < QueueCount; ++index)
         if (QueueFamilyProperties[index].queueFlags
-            & vk::QueueFlagBits::eGraphics)
+            & (vk::QueueFlagBits::eGraphics | vk::QueueFlagBits::eTransfer))
           {
             Engine->Vulkan.GraphicsQueueFamilyIndex = index;
 
@@ -482,7 +483,8 @@ EXIT_CREATE_DEVICE:
                 PATACHE_TERM_COLOR_PATACHE, "Raccoon Renderer",
                 PATACHE_TERM_RESET, PATACHE_TERM_BOLD, " : Found index ",
                 Engine->Vulkan.GraphicsQueueFamilyIndex,
-                " that contains a graphics queue", PATACHE_TERM_RESET);
+                " that contains a (graphics and transfer) queue",
+                PATACHE_TERM_RESET);
 
             break;
           }
@@ -779,32 +781,30 @@ EXIT_CREATE_DEVICE:
           };
 
           // Vertex Input & Input Assembly
-          /*Vertex Triangle{};
-
-          vk::VertexInputBindingDescription BindingDescription{
+          const vk::VertexInputBindingDescription BindingDescription{
             .binding   = 0,
-            .stride    = static_cast<std::uint32_t> (sizeof (Vertex)),
+            .stride    = sizeof (Patache::Vertex2D),
             .inputRate = vk::VertexInputRate::eVertex
           };
 
-          vk::VertexInputAttributeDescription VertexInputAttrib[2]{
+          const vk::VertexInputAttributeDescription VertexInputAttrib[2]{
             // Position
             { .location = 0,
               .binding  = 0,
               .format   = vk::Format::eR32G32Sfloat,
-              .offset   = offsetof (Vertex, pos) },
+              .offset   = offsetof (Patache::Vertex2D, pos) },
             // Color
             { .location = 1,
               .binding  = 0,
               .format   = vk::Format::eR32G32B32Sfloat,
-              .offset   = offsetof (Vertex, color) }
-          };*/
+              .offset   = offsetof (Patache::Vertex2D, color) }
+          };
 
           const vk::PipelineVertexInputStateCreateInfo VertexInputStateInfo{
-            .vertexBindingDescriptionCount   = 0,
-            .pVertexBindingDescriptions      = nullptr,
-            .vertexAttributeDescriptionCount = 0,
-            .pVertexAttributeDescriptions    = nullptr
+            .vertexBindingDescriptionCount   = 1,
+            .pVertexBindingDescriptions      = &BindingDescription,
+            .vertexAttributeDescriptionCount = 2,
+            .pVertexAttributeDescriptions    = VertexInputAttrib
           };
 
           constexpr const vk::PipelineInputAssemblyStateCreateInfo
@@ -926,6 +926,7 @@ EXIT_CREATE_DEVICE:
           Result = Engine->Vulkan.Device.createGraphicsPipelines (
               VK_NULL_HANDLE, 1, &GraphicsPipelineInfo, nullptr,
               &Engine->Vulkan.GraphicsPipeline);
+
           if (Result != vk::Result::eSuccess)
             {
               std::future<void> ReturnVulkanCheck
@@ -970,6 +971,9 @@ EXIT_CREATE_DEVICE:
   if (!CreateCommandBuffer_Async.get ())
     return false;
 
+  std::future<bool> CreateBuffer_Async = std::async (
+      std::launch::async, [&Engine, &Info] (void) -> bool { return true; });
+
   CreateFence_Async.wait ();
   if (!CreateFence_Async.get ())
     return false;
@@ -980,6 +984,10 @@ EXIT_CREATE_DEVICE:
 
   CreatePipeline_Async.wait ();
   if (!CreatePipeline_Async.get ())
+    return false;
+
+  CreateBuffer_Async.wait ();
+  if (!CreateBuffer_Async.get ())
     return false;
 
   return true;
@@ -1026,6 +1034,31 @@ RaccoonRendererClose (Patache::VulkanBackend & Vulkan)
   Vulkan.SwapChainImages = nullptr;
 
   Vulkan.Device.destroySwapchainKHR (Vulkan.SwapChain);
+
+  // Buffer
+  if (Vulkan.renderBuffer != nullptr)
+    {
+      for (std::uint8_t i = 0; i < Vulkan.SwapChainImageCount; ++i)
+        Vulkan.Device.destroyBuffer (Vulkan.renderBuffer[i], nullptr);
+
+      delete[] Vulkan.renderBuffer;
+      Vulkan.renderBuffer = nullptr;
+    }
+
+  if (Vulkan.renderBufferMemory != nullptr)
+    {
+      for (std::uint8_t i = 0; i < Vulkan.SwapChainImageCount; ++i)
+        Vulkan.Device.freeMemory (Vulkan.renderBufferMemory[i], nullptr);
+
+      delete[] Vulkan.renderBufferMemory;
+      Vulkan.renderBufferMemory = nullptr;
+    }
+
+  if (Vulkan.stagingBuffer != VK_NULL_HANDLE)
+    {
+      Vulkan.Device.destroyBuffer (Vulkan.stagingBuffer, nullptr);
+      Vulkan.Device.freeMemory (Vulkan.stagingBufferMemory, nullptr);
+    }
 
 // Imgui
 #if PATACHE_DEBUG == 1

@@ -1,7 +1,8 @@
 #include "SetupImgui.hpp"
 
 void
-InitImgui (const Patache::Config & configuration)
+InitImgui (const Patache::Config & configuration,
+           Patache::EngineInfo &   engineInfo)
 {
   IMGUI_CHECKVERSION ();
   ImGui::CreateContext ();
@@ -21,24 +22,30 @@ InitImgui (const Patache::Config & configuration)
   io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard
                     | ImGuiConfigFlags_NavEnableGamepad
                     | ImGuiConfigFlags_DockingEnable;
-  io.IniSavingRate = 0;
-  io.IniFilename   = nullptr;
-  io.LogFilename   = nullptr;
+  io.IniSavingRate   = 0;
+  io.IniFilename     = nullptr;
+  io.LogFilename     = nullptr;
+  io.FontGlobalScale = 1.0f;
 
   ImFontConfig FontConfig;
   FontConfig.RasterizerDensity = 4.0f;
-  FontConfig.OversampleH       = 4;
-  FontConfig.OversampleV       = 4;
-  // FontConfig.GlyphExtraSpacing.x = 1.008f;
-  io.Fonts->AddFontDefault ();
-  io.FontGlobalScale = 1.0f;
+  FontConfig.OversampleH       = 1;
+  FontConfig.OversampleV       = 1;
+
+  io.Fonts->AddFontFromMemoryCompressedTTF (
+      InterDisplay_Medium_compressed_data, InterDisplay_Medium_compressed_size,
+      16.0f, &FontConfig, nullptr);
+
+  // static constexpr ImWchar ranges[] = { 0x1, 0x1FFFF, 0 };
+  //  FontConfig.FontBuilderFlags |= ImGuiFreeTypeBuilderFlags_LoadColor;
+  //  FontConfig.MergeMode = true;
+
   io.Fonts->Build ();
 
+  // General styles
   ImGui::StyleColorsDark ();
-  ImGui::GetStyle ().FrameBorderSize             = 0.0f;
   ImGui::GetStyle ().FrameRounding               = 0.0f;
   ImGui::GetStyle ().GrabRounding                = 0.0f;
-  ImGui::GetStyle ().WindowBorderSize            = 0.0f;
   ImGui::GetStyle ().PopupBorderSize             = 0.0f;
   ImGui::GetStyle ().ChildBorderSize             = 1.0f;
   ImGui::GetStyle ().TabRounding                 = 0.0f;
@@ -47,11 +54,46 @@ InitImgui (const Patache::Config & configuration)
   ImGui::GetStyle ().ScrollbarRounding           = 0.0f;
   ImGui::GetStyle ().ItemSpacing                 = ImVec2 (8.0f, 12.0f);
   ImGui::GetStyle ().WindowPadding               = ImVec2 (20, 6);
-  ImGui::GetStyle ().Colors[ImGuiCol_WindowBg].w = 0.82f;
+  ImGui::GetStyle ().Colors[ImGuiCol_WindowBg].w = 0.90f;
   ImGui::GetStyle ().Colors[ImGuiCol_TitleBg]
       = ImGui::GetStyle ().Colors[ImGuiCol_WindowBg];
   ImGui::GetStyle ().Colors[ImGuiCol_DockingEmptyBg]
       = ImVec4 (0.0f, 0.0f, 0.0f, 0.0f);
+
+  // specific window engine styles
+  engineInfo.engineStyles[0]
+      = ImGui::GetStyle ().Colors[ImGuiCol_TitleBgActive];
+  engineInfo.engineStyles[1] = ImGui::GetStyle ().Colors[ImGuiCol_ResizeGrip];
+  engineInfo.engineStyles[2]
+      = ImGui::GetStyle ().Colors[ImGuiCol_ResizeGripActive];
+  engineInfo.engineStyles[3]
+      = ImGui::GetStyle ().Colors[ImGuiCol_ResizeGripHovered];
+  engineInfo.engineStyles[4]
+      = ImGui::GetStyle ().Colors[ImGuiCol_SeparatorHovered];
+  engineInfo.engineStyles[5]
+      = ImGui::GetStyle ().Colors[ImGuiCol_SeparatorActive];
+  engineInfo.engineStyles[6] = ImGui::GetStyle ().Colors[ImGuiCol_Tab];
+  engineInfo.engineStyles[7] = ImGui::GetStyle ().Colors[ImGuiCol_TabSelected];
+  engineInfo.engineStyles[8] = ImGui::GetStyle ().Colors[ImGuiCol_TabHovered];
+  engineInfo.engineStyles[9] = ImGui::GetStyle ().Colors[ImGuiCol_Header];
+  engineInfo.engineStyles[10]
+      = ImGui::GetStyle ().Colors[ImGuiCol_HeaderActive];
+  engineInfo.engineStyles[11]
+      = ImGui::GetStyle ().Colors[ImGuiCol_HeaderHovered];
+  engineInfo.engineStyles[12] = ImGui::GetStyle ().Colors[ImGuiCol_Button];
+  engineInfo.engineStyles[13]
+      = ImGui::GetStyle ().Colors[ImGuiCol_ButtonHovered];
+  engineInfo.engineStyles[14]
+      = ImGui::GetStyle ().Colors[ImGuiCol_ButtonActive];
+  engineInfo.engineStyles[15] = ImGui::GetStyle ().Colors[ImGuiCol_FrameBg];
+  engineInfo.engineStyles[16]
+      = ImGui::GetStyle ().Colors[ImGuiCol_FrameBgHovered];
+  engineInfo.engineStyles[17]
+      = ImGui::GetStyle ().Colors[ImGuiCol_FrameBgActive];
+  engineInfo.engineStyles[18] = ImGui::GetStyle ().Colors[ImGuiCol_CheckMark];
+  engineInfo.engineStyles[19] = ImGui::GetStyle ().Colors[ImGuiCol_SliderGrab];
+  engineInfo.engineStyles[20]
+      = ImGui::GetStyle ().Colors[ImGuiCol_SliderGrabActive];
 }
 
 bool
@@ -67,7 +109,7 @@ CreateImguiDescriptorPool (Patache::VulkanBackend & Vulkan)
       return false;
     }
 
-  constexpr vk::DescriptorPoolSize PoolSize
+  static constexpr vk::DescriptorPoolSize PoolSize
       = { vk::DescriptorType::eCombinedImageSampler, 1 };
 
   const vk::DescriptorPoolCreateInfo Info{
@@ -105,7 +147,7 @@ CreateImguiPipelineCache (Patache::VulkanBackend & Vulkan)
       return false;
     }
 
-  const vk::PipelineCacheCreateInfo Info{};
+  constexpr vk::PipelineCacheCreateInfo Info{};
 
   vk::Result Result = Vulkan.Device.createPipelineCache (
       &Info, nullptr, &Vulkan.ImguiPipelineCache);
@@ -139,6 +181,7 @@ InitImguiVulkan (Patache::Engine * const Engine)
 
   vk::Result Result = Engine->Vulkan.PhysicalDevice.getSurfaceCapabilitiesKHR (
       Engine->Vulkan.Surface, &SurfaceCapabilities);
+
   if (Result != vk::Result::eSuccess)
     {
       std::future<void> ReturnVulkanCheck
@@ -183,6 +226,6 @@ InitImguiVulkan (Patache::Engine * const Engine)
 
       return false;
     }
-  else
-    return true;
+
+  return true;
 }

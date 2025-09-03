@@ -137,7 +137,7 @@ bool CreateFence (Patache::VulkanBackend &);
 void VulkanInfo (Patache::Engine * const, const Patache::SwapChainInfo &);
 
 #if PATACHE_DEBUG == 1
-void InitImgui (const Patache::Config &);
+void InitImgui (const Patache::Config &, Patache::EngineInfo &);
 bool InitImguiVulkan (Patache::Engine * const);
 bool CreateImguiDescriptorPool (Patache::VulkanBackend &);
 bool CreateImguiPipelineCache (Patache::VulkanBackend &);

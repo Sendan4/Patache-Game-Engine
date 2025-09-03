@@ -1,6 +1,8 @@
 #if PATACHE_DEBUG == 1
 #pragma once
 
+#include <imgui.h>
+
 #define PATACHE_VK_LAYER_COUNT             1
 #define PATACHE_VK_VERSION_SIZE            20
 #define PATACHE_VK_DRIVER_VERSION_SIZE     100
@@ -10,10 +12,23 @@
 
 namespace Patache
 {
+#if defined(__linux__)
+enum class WindowDecorationType : std::uint8_t
+{
+  None,
+  ClientSideDecoration,
+  ServerSideDecoration
+};
+#endif
+
 struct EngineInfo
 {
   // Window
   std::uint64_t WindowCreationFlags = 0;
+#if defined(__linux__)
+  Patache::WindowDecorationType windowDecorationType
+      = Patache::WindowDecorationType::None;
+#endif
 
   // RaccoonRenderer
   // Vulkan
@@ -39,7 +54,7 @@ struct EngineInfo
   vk::PresentModeKHR VkSwapchainPresentMode;
   vk::Format         VkSwapchainImageColorFormat;
   vk::ColorSpaceKHR  VkSwapchainImageColorSpace;
-  std::uint32_t      VkMinImageCount = 0;
+  std::uint32_t      VkMinImageCount = 0; // Also the actual number of images
 
   // Extensions
   const char ** ppVkLayers                = nullptr;
@@ -47,6 +62,10 @@ struct EngineInfo
   std::uint32_t VkInstanceExtensionsCount = 0;
   const char ** ppVkDeviceExtensions      = nullptr;
   std::uint32_t VkDeviceExtensionsCount   = 0;
+
+  // Memory
+  double       VkVramSize     = 0;
+  const char * VkVramSizeUnit = "Byte";
 
   // RaccoonSound
 
@@ -56,6 +75,8 @@ struct EngineInfo
   bool PatacheConfigWindow              = false;
   bool PatacheRaccoonRendererInfoWindow = false;
   bool ConfigBooleansTmp                = false;
+
+  ImVec4 engineStyles[21];
 };
 }
 #endif

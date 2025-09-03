@@ -48,10 +48,10 @@ Patache::Log::VulkanCheck (const char * const Message,
 {
 #if PATACHE_DEBUG == 1
 #if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
-  char * VarTypeRealName = abi::__cxa_demangle (typeid (*Message).name (),
+  char * VarTypeRealName = abi::__cxa_demangle (typeid (Result).name (),
                                                 nullptr, nullptr, nullptr);
 #else
-  const char * VarTypeRealName = typeid (*Message).name ();
+  const char * VarTypeRealName = typeid (Result).name ();
 #endif
 #endif
 

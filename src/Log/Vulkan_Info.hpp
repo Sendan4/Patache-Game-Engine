@@ -24,3 +24,13 @@
 #include "CstringWrapped.hpp"
 
 void VulkanInfo (Patache::Engine * const, const Patache::SwapChainInfo &);
+
+#if PATACHE_DEBUG == 1
+#if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__) // Is GCC
+#define PATACHE_GET_VARTYPE_STRING(STR_SRC)
+#define PATACHE_FREE_VARTYPE_STRING(STR_DST)
+#else
+#define PATACHE_GET_VARTYPE_STRING(STR_SRC)
+#define PATACHE_FREE_VARTYPE_STRING(STR_DST)
+#endif
+#endif

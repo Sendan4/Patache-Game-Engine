@@ -21,6 +21,8 @@ target_sources (${PROJECT_NAME} PRIVATE
     "RaccoonRenderer/Vulkan/Vulkan_DepthBuffer.cpp"
     "RaccoonRenderer/Vulkan/Vulkan_SincronizationPrimitives.cpp"
     "RaccoonRenderer/Vulkan/Vulkan_Render.cpp"
+    "RaccoonRenderer/Vulkan/Vulkan_Buffer.cpp"
+    "Core/Triangle.cpp"
     "Log/Messages.cpp"
     "Log/StartLogInfo.cpp"
     "Log/Vulkan_SetupLog.cpp"
@@ -44,26 +46,29 @@ if (${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
     enable_language(C)
 
     target_sources (${PROJECT_NAME} PRIVATE
-	"Core/WaylandWindow.cpp"
+        "Core/WaylandWindow.cpp"
 	${CMAKE_BINARY_DIR}/WaylandProtocols/xdg-shell.h
 	${CMAKE_BINARY_DIR}/WaylandProtocols/xdg-shell.c
 	${CMAKE_BINARY_DIR}/WaylandProtocols/xdg-decoration-unstable-v1.h
 	${CMAKE_BINARY_DIR}/WaylandProtocols/xdg-decoration-unstable-v1.c)
 		
-    target_include_directories(${PROJECT_NAME} PRIVATE
-	"Core/WaylandCSD/")
+    target_include_directories(${PROJECT_NAME} PRIVATE "Core/WaylandCSD/")
 
     target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_BINARY_DIR}/WaylandProtocols/)
 endif()
 
 if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo")
-    target_sources(${PROJECT_NAME} PRIVATE "ImGui/SetupImgui.cpp")
+    target_sources(${PROJECT_NAME} PRIVATE
+        "ImGui/SetupImgui.cpp"
+        "ImGui/DebugUI.cpp")
+
+    target_include_directories(${PROJECT_NAME} PRIVATE
+        "${CMAKE_CURRENT_SOURCE_DIR}/ImGui/")
 endif()
 
 target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../include/")
 target_include_directories(${PROJECT_NAME} PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/Core/"
-    "${CMAKE_CURRENT_SOURCE_DIR}/ImGui/"
     "${CMAKE_CURRENT_SOURCE_DIR}/Log/"
     "${CMAKE_CURRENT_SOURCE_DIR}/RaccoonRenderer/")
 
@@ -150,6 +155,9 @@ endif()
 if (NOT "${CMAKE_GENERATOR_VERSION}" STREQUAL "")
     target_compile_definitions(${PROJECT_NAME} PRIVATE
         PATACHE_BUILD_SYSTEM_GENERATOR_VERSION="${CMAKE_GENERATOR_VERSION}")
+else()
+    target_compile_definitions(${PROJECT_NAME} PRIVATE
+        PATACHE_BUILD_SYSTEM_GENERATOR_VERSION="0")
 endif()
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE
@@ -174,16 +182,15 @@ if (MSVC OR CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 endif()
 
 # Git
-if (USE_GIT AND GIT)
-    target_compile_definitions(${PROJECT_NAME} PRIVATE
-        PATACHE_GIT_BRANCH="${PATACHE_GIT_BRANCH}"
-        PATACHE_GIT_HASH_LONG="${PATACHE_GIT_HASH_LONG}"
-        PATACHE_GIT_HASH_SHORT="${PATACHE_GIT_HASH_SHORT}"
-        PATACHE_GIT_WORK_DIR_IS_CLEAN="${PATACHE_GIT_WORK_DIR_IS_CLEAN}"
-        PATACHE_GIT_WORK_DIR_IS_CLEAN_BOOL=${PATACHE_GIT_WORK_DIR_IS_CLEAN_BOOL}
-        PATACHE_GIT_WORK_DIR_IS_STAGED="${PATACHE_GIT_WORK_DIR_IS_STAGED}"
-        PATACHE_GIT_WORK_DIR_IS_STAGED_BOOL=${PATACHE_GIT_WORK_DIR_IS_STAGED_BOOL})
-endif()
+target_compile_definitions(${PROJECT_NAME} PRIVATE
+    PATACHE_GIT_BRANCH="${PATACHE_GIT_BRANCH}"
+    PATACHE_GIT_HASH_LONG="${PATACHE_GIT_HASH_LONG}"
+    PATACHE_GIT_HASH_SHORT="${PATACHE_GIT_HASH_SHORT}"
+    PATACHE_GIT_WORK_DIR_IS_CLEAN="${PATACHE_GIT_WORK_DIR_IS_CLEAN}"
+    PATACHE_GIT_WORK_DIR_IS_CLEAN_BOOL=${PATACHE_GIT_WORK_DIR_IS_CLEAN_BOOL}
+    PATACHE_GIT_WORK_DIR_IS_STAGED="${PATACHE_GIT_WORK_DIR_IS_STAGED}"
+    PATACHE_GIT_WORK_DIR_IS_STAGED_BOOL=${PATACHE_GIT_WORK_DIR_IS_STAGED_BOOL})
+
 
 if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo")
     target_compile_definitions(${PROJECT_NAME} PRIVATE PATACHE_IMGUI_VERSION="${Imgui_VERSION}")
@@ -208,7 +215,7 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" OR (CMAKE_SYSTEM_NAME STREQUAL "Linux"
 
     target_link_libraries(${PROJECT_NAME} PUBLIC
         vulkan
-	Vulkan::Headers)
+        Vulkan::Headers)
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
     # Link Vulkan from SDK
     message("")
@@ -241,9 +248,6 @@ endif()
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
     target_compile_definitions(${PROJECT_NAME} PRIVATE SDL_VIDEO_DRIVER_WAYLAND)
-    if (XORG_SUPPORT)
-        target_compile_definitions(${PROJECT_NAME} PRIVATE SDL_VIDEO_DRIVER_X11)
-    endif()
 endif()
 
 if (TARGET asm_offset)
@@ -254,8 +258,8 @@ if (TARGET asm_offset)
         RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 endif()
 
-target_link_libraries(${PROJECT_NAME} PUBLIC Fast_io SDL3::SDL3)
-target_link_libraries(${PROJECT_NAME} PRIVATE ryml::ryml freetype cglm)
+target_link_libraries(${PROJECT_NAME} PUBLIC Fast_io SDL3::SDL3 cglm)
+target_link_libraries(${PROJECT_NAME} PRIVATE ryml::ryml freetype)
 target_include_directories(${PROJECT_NAME} PRIVATE ${FREETYPE_INCLUDE_DIRS} ${SDL2_INCLUDE_DIRS})
 
 if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo")

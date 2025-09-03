@@ -125,6 +125,11 @@ CreateWaylandWindow (const std::uint32_t & width, const std::uint32_t & height,
 
           return false;
         }
+        // Store info for debug
+#if PATACHE_DEBUG == 1
+      Engine->engineInfo.windowDecorationType
+          = Patache::WindowDecorationType::ClientSideDecoration;
+#endif
 
       // Decoration
       /*
@@ -527,6 +532,12 @@ CreateWaylandWindow (const std::uint32_t & width, const std::uint32_t & height,
     }
   else
     {
+      // Store info for debug
+#if PATACHE_DEBUG == 1
+      Engine->engineInfo.windowDecorationType
+          = Patache::WindowDecorationType::ServerSideDecoration;
+#endif
+
       // Has server side decoration
       Engine->WaylandWindow.Decoration
           = zxdg_decoration_manager_v1_get_toplevel_decoration (

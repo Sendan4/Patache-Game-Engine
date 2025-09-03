@@ -55,6 +55,7 @@ if (MINGW AND (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQ
 endif()
 
 if (NOT MSVC)
+		# GCC
     check_cxx_compiler_flag("-std=c++20" COMPILER_SUPPORTS_C++20) # Obligatory
     check_cxx_compiler_flag("-Wextra" COMPILER_SUPPORTS_WEXTRA)
     check_cxx_compiler_flag("-Wall" COMPILER_SUPPORTS_WALL)
@@ -70,67 +71,68 @@ if (NOT MSVC)
     endif()
 
     if (CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "MinSizeRel")
-	check_cxx_compiler_flag("-fno-rtti" COMPILER_SUPPORTS_NO_RTTI) # Obligatory
+				check_cxx_compiler_flag("-fno-rtti" COMPILER_SUPPORTS_NO_RTTI) # Obligatory
 
-	if (NOT COMPILER_SUPPORTS_NO_RTTI) # Obligatory
-    	    message(FATAL_ERROR "The compiler does not support -fno-rtti")
-	endif()
+				if (NOT COMPILER_SUPPORTS_NO_RTTI) # Obligatory
+    	  		message(FATAL_ERROR "The compiler does not support -fno-rtti")
+				endif()
     endif()
 
     if (NOT COMPILER_SUPPORTS_C++20) # Obligatory
-    	message(FATAL_ERROR "The compiler does not support the C++20 standard")
+    		message(FATAL_ERROR "The compiler does not support the C++20 standard")
     endif()
 
     if (NOT COMPILER_SUPPORTS_NO_EXCEPTIONS) # Obligatory
-    	message(FATAL_ERROR "Exceptions cannot be disabled in this compiler")
+    		message(FATAL_ERROR "Exceptions cannot be disabled in this compiler")
     endif()
 
     if (NOT COMPILER_SUPPORTS_FAST_MATH) # Obligatory
-    	message(FATAL_ERROR "The compiler does not support -ffast-math")
+    		message(FATAL_ERROR "The compiler does not support -ffast-math")
     endif()
 
     if (CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64" OR CMAKE_SYSTEM_PROCESSOR STREQUAL "AMD64")
         if (NOT COMPILER_SUPPORTS_SSE4.2) # Obligatory
-    	    message(FATAL_ERROR "The compiler does not support -msse4.2")
-	endif()
+    	  		message(FATAL_ERROR "The compiler does not support -msse4.2")
+				endif()
 
-	if (NOT COMPILER_SUPPORTS_MMX) # Obligatory
-    	    message(FATAL_ERROR "The compiler does not support -mmmx")
+				if (NOT COMPILER_SUPPORTS_MMX) # Obligatory
+    	    	message(FATAL_ERROR "The compiler does not support -mmmx")
         endif()
 
         if (NOT COMPILER_SUPPORTS_AVX) # Obligatory
-    	    message(FATAL_ERROR "The compiler does not support -mavx")
+    	    	message(FATAL_ERROR "The compiler does not support -mavx")
         endif()
     endif()
 else()
+		# MSVC
     check_cxx_compiler_flag("/std:c++20" COMPILER_SUPPORTS_C++20) # Obligatory
     check_cxx_compiler_flag("/W4" COMPILER_SUPPORTS_W4)
     check_cxx_compiler_flag("/fp:fast" COMPILER_SUPPORTS_FLOATING_POINT_FAST) # Obligatory
     check_cxx_compiler_flag("/fp:except-" COMPILER_SUPPORTS_NO_EXCEPCTION_FLOATING_POINT) # Obligatory
 
     if (CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64" OR CMAKE_SYSTEM_PROCESSOR STREQUAL "AMD64")
-	check_cxx_compiler_flag("/arch:SSE4.2" COMPILER_SUPPORTS_SSE4.2) # Obligatory
+				check_cxx_compiler_flag("/arch:SSE4.2" COMPILER_SUPPORTS_SSE4.2) # Obligatory
         check_cxx_compiler_flag("/arch:AVX" COMPILER_SUPPORTS_AVX) # Obligatory
     endif()
 
     if (CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "MinSizeRel")
-	check_cxx_compiler_flag("/GR-" COMPILER_SUPPORTS_NO_RTTI) # Obligatory
+				check_cxx_compiler_flag("/GR-" COMPILER_SUPPORTS_NO_RTTI) # Obligatory
 
-	if (NOT COMPILER_SUPPORTS_NO_RTTI) # Obligatory
-    	    message(FATAL_ERROR "The compiler does not support /GR-")
+				if (NOT COMPILER_SUPPORTS_NO_RTTI) # Obligatory
+    	  		message(FATAL_ERROR "The compiler does not support /GR-")
         endif()
     endif()
 
     if (NOT COMPILER_SUPPORTS_C++20) # Obligatory
-    	message(FATAL_ERROR "The compiler does not support the C++20 standard")
+    		message(FATAL_ERROR "The compiler does not support the C++20 standard")
     endif()
 
     if (NOT COMPILER_SUPPORTS_FLOATING_POINT_FAST) # Obligatory
-    	message(FATAL_ERROR "The compiler does not support /fp:fast")
+    		message(FATAL_ERROR "The compiler does not support /fp:fast")
     endif()
 
     if (NOT COMPILER_SUPPORTS_NO_EXCEPCTION_FLOATING_POINT) # Obligatory
-    	message(FATAL_ERROR "The compiler cannot disable excepctions for floating point")
+    		message(FATAL_ERROR "The compiler cannot disable excepctions for floating point")
     endif()
 
     if (CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64" OR CMAKE_SYSTEM_PROCESSOR STREQUAL "AMD64")

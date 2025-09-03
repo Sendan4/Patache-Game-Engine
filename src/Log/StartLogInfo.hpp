@@ -3,6 +3,8 @@
 #define PATACHE_OS "Linux"
 #elif _WIN64 || _WIN32
 #define PATACHE_OS "Windows"
+#else
+#define PATACHE_OS ""
 #endif
 
 // Compiler
@@ -18,6 +20,8 @@
 #define PATACHE_COMPILER "Old Microsoft Visual C++ (MSVC)"
 #elif _MSC_VER >= 1930
 #define PATACHE_COMPILER "Microsoft Visual C++ (MSVC)"
+#else
+#define PATACHE_COMPILER ""
 #endif
 
 #include <fast_io.h>

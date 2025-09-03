@@ -14,6 +14,21 @@ VulkanInfo (Patache::Engine * const        Engine,
   PhysicalDeviceProperties.pNext = &Driver;
   Engine->Vulkan.PhysicalDevice.getProperties2 (&PhysicalDeviceProperties);
 
+  std::uint64_t vramSizeTmp  = 0;
+  double        vramSize     = 0;
+  const char *  vramSizeUnit = "Byte";
+
+  vk::PhysicalDeviceMemoryProperties MemProperties;
+  Engine->Vulkan.PhysicalDevice.getMemoryProperties (&MemProperties);
+
+  for (std::uint32_t i = 0; i < MemProperties.memoryHeapCount; ++i)
+    {
+      if (MemProperties.memoryHeaps[i].flags
+          & vk::MemoryHeapFlagBits::eDeviceLocal)
+        vramSizeTmp
+            += static_cast<std::uint64_t> (MemProperties.memoryHeaps[i].size);
+    }
+
 #if PATACHE_DEBUG == 1
   /*
    * Storing information about Engine->Vulkan to display it through ImGui.
@@ -67,13 +82,46 @@ VulkanInfo (Patache::Engine * const        Engine,
           PhysicalDeviceProperties.properties.driverVersion));
 #endif
 
+  // VRAM HEAP size
+  if (vramSizeTmp >= 1024U)
+    {
+#if PATACHE_DEBUG == 1
+      Engine->engineInfo.VkVramSizeUnit = "KiB";
+      Engine->engineInfo.VkVramSize     = vramSizeTmp / 1024.0f;
+#endif
+      vramSizeUnit = "KiB";
+      vramSize     = vramSizeTmp / 1024.0f;
+    }
+
+  if (vramSizeTmp >= 1024U)
+    {
+#if PATACHE_DEBUG == 1
+      Engine->engineInfo.VkVramSizeUnit = "MiB";
+      Engine->engineInfo.VkVramSize     = vramSizeTmp / 1048576.0f;
+#endif
+      vramSizeUnit = "MiB";
+      vramSize     = vramSizeTmp / 1048576.0f;
+    }
+
+  if (vramSizeTmp >= 1073741824U)
+    {
+#if PATACHE_DEBUG == 1
+      Engine->engineInfo.VkVramSizeUnit = "GiB";
+      Engine->engineInfo.VkVramSize     = vramSizeTmp / 1073741824.0f;
+#endif
+      vramSizeUnit = "GiB";
+      vramSize     = vramSizeTmp / 1073741824.0f;
+    }
+
   // =================== Vulkan Version ===========================
   // =================== __cxa_demangle alloc =====================
+  // TODO: hacer una macro que chekee y obtenga la string y otra que desasigne
+  // la memoria de __cxa_demangle()
   fast_io::io::println (PATACHE_FAST_IO_BUFF_OUT, PATACHE_TERM_BOLD,
                         "  Version", PATACHE_TERM_RESET);
 
 #if PATACHE_DEBUG == 1
-#if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
+#if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__) // Is GCC
   // __cxa_demangle alloc
   char * VarTypeRealName = abi::__cxa_demangle (
       typeid (PhysicalDeviceProperties.properties.apiVersion).name (), nullptr,
@@ -151,15 +199,17 @@ VulkanInfo (Patache::Engine * const        Engine,
 #endif
 #endif
 
-    fast_io::io::print (
-        PATACHE_FAST_IO_BUFF_OUT,
+    fast_io::io::print (PATACHE_FAST_IO_BUFF_OUT,
 #if PATACHE_DEBUG == 1
-        PATACHE_TERM_DIM, PATACHE_TERM_COLOR_GRAY0,
-        fast_io::mnp::right ("[", 5), fast_io::mnp::os_c_str (VarTypeRealName),
+                        PATACHE_TERM_DIM, PATACHE_TERM_COLOR_GRAY0,
+                        fast_io::mnp::right ("[", 5),
+                        fast_io::mnp::os_c_str (VarTypeRealName),
+                        "] "
 #else  // PATACHE_DEBUG
-        "    ",
+                        "    ",
 #endif // PATACHE_DEBUG
-        PATACHE_TERM_RESET, PATACHE_TERM_BOLD, "Name : ", PATACHE_TERM_RESET);
+                        PATACHE_TERM_RESET,
+                        PATACHE_TERM_BOLD, "Name : ", PATACHE_TERM_RESET);
 
 #if PATACHE_DEBUG == 1
 #if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
@@ -357,7 +407,7 @@ VulkanInfo (Patache::Engine * const        Engine,
       "    ",
 #endif // PATACHE_DEBUG
       PATACHE_TERM_RESET, PATACHE_TERM_BOLD, "Type : ", PATACHE_TERM_RESET,
-      vk::to_string (PhysicalDeviceProperties.properties.deviceType), "\n");
+      vk::to_string (PhysicalDeviceProperties.properties.deviceType));
 
 #if PATACHE_DEBUG == 1
 #if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
@@ -365,6 +415,12 @@ VulkanInfo (Patache::Engine * const        Engine,
   std::free (VarTypeRealName);
 #endif
 #endif
+
+  // =================== Device Vram Size =========================
+  fast_io::io::println (
+      PATACHE_FAST_IO_BUFF_OUT, PATACHE_TERM_RESET, PATACHE_TERM_BOLD,
+      fast_io::mnp::right ("Vram Size : ", 16), PATACHE_TERM_RESET, vramSize,
+      " ", fast_io::mnp::os_c_str (vramSizeUnit), "\n");
 
   // =================== Driver ===================================
   // =================== __cxa_demangle alloc =====================

@@ -3,6 +3,24 @@
 #include <cstdint>
 
 #include <vulkan/vulkan.hpp>
+
+// cglm warnings
+#if defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+#include <cglm/cglm.h>
+#include <cglm/call.h>
+#pragma GCC diagnostic pop
+#endif
+
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable : 4100)
+#include <cglm/cglm.h>
+#include <cglm/call.h>
+#pragma warning(pop)
+#endif
+
 #if defined(__linux__)
 #include <wayland-client.h>
 #include <wayland-cursor.h>
@@ -16,70 +34,36 @@
 #include "PatacheEngine/Color.hpp"
 #include "PatacheEngine/VulkanBackend.hpp"
 #include "PatacheEngine/StructConfig.hpp"
+#if PATACHE_DEBUG == 1
 #include "PatacheEngine/StructEngineInfo.hpp"
+#endif
 
 namespace Patache
 {
-// Versioning management in the style of Vulkan. // major.minor.patch.variant
-constexpr uint32_t
-MakeVersion (const uint8_t & Major, const uint16_t & Minor,
-             const uint16_t & Patch, const uint8_t & Variant)
+enum class ProjectGraphics : bool
 {
-  return ((static_cast<uint32_t> (Variant)) << 29U
-          | (static_cast<uint32_t> (Major)) << 22U
-          | (static_cast<uint32_t> (Minor)) << 12U
-          | static_cast<uint32_t> (Patch));
-}
-
-constexpr uint8_t
-GetVersionMajor (const uint32_t & Major)
-{
-  // 6 bits
-  return Major >> 22U & 0b1111111;
-}
-
-constexpr uint16_t
-GetVersionMinor (const uint32_t & Minor)
-{
-  // 9 bits
-  return Minor >> 12U & 0b1111111111;
-}
-
-constexpr uint16_t
-GetVersionPatch (const uint32_t & Patch)
-{
-  // 11 bits
-  return Patch & 0b111111111111;
-}
-
-constexpr uint8_t
-GetVersionVariant (const uint32_t & Variant)
-{
-  // 5 bits
-  return Variant >> 29U & 0b111111;
-}
-
-enum class ViewMode : bool
-{
-  TwoDimensions, // 2D
-  TreeDimensions // 3D
+  Mode2D, // 2D
+  Mode3D  // 3D
 };
 
 // you can use nullptr to not use the options or not assign them at all.
 struct EngineCreateInfo
 {
   const char * const gameName = nullptr; // Name of the game // It is optional.
-  const uint32_t     gameVersion = 0;
+  const std::uint32_t gameVersion = 0;
   // Vulkan version style: major.minor.patch.variant // It is
   // optional.
   const char * const windowTitle = nullptr;
   // Initial title of the window. // It is optional.
-  const Patache::ViewMode viewMode = Patache::ViewMode::TwoDimensions;
+  const Patache::ProjectGraphics projectGraphicsMode
+      = Patache::ProjectGraphics::Mode2D;
   // Determines whether the project uses 2D or 3D graphics.
   // It is mandatory.
   const char * const windowIconPath = nullptr;
   // Initial icon of the window. // It is optional.
   // Use bitmap (.bmp) format/codec. // It is optional.
+  const std::uint32_t bufferRenderSize  = 262144;
+  const std::uint32_t bufferStagingSize = 262144;
 };
 
 // Float32 format
@@ -89,6 +73,37 @@ struct ClearColor
   float g = 0.0f; // Green
   float b = 0.0f; // Blue
   float a = 1.0f; // Alpha
+};
+
+struct Vertex2D
+{
+  vec2 pos   = { 0.0f, 0.0f };
+  vec3 color = { 1.0f, 1.0f, 1.0f };
+  // Default color white
+};
+
+struct Engine;
+
+// Triangle
+struct Triangle
+{
+  Vertex2D vertex[3] = { { { 0.0f, -0.5f }, { 1.0f, 1.0f, 1.0f } },
+                         { { 0.5f, 0.5f }, { 1.0f, 1.0f, 1.0f } },
+                         { { -0.5f, 0.5f }, { 1.0f, 1.0f, 1.0f } } };
+
+  vk::Device *   pDevice = nullptr;
+  vk::DeviceSize offset  = 0;
+
+  PATACHE_API constexpr void
+  SetColorRGB (const std::uint8_t & side, const float & Red,
+               const float & Blue, const float & Green)
+  {
+    assert ("A triangle only have 3 sides (0 - 3)" && (side <= 2));
+
+    vertex[side].color[0] = Red;
+    vertex[side].color[1] = Blue;
+    vertex[side].color[2] = Green;
+  }
 };
 
 #if defined(__linux__)
@@ -216,5 +231,51 @@ struct Engine
 #if PATACHE_DEBUG == 1
   Patache::EngineInfo engineInfo{};
 #endif
+
+  PATACHE_API bool BeginCopyBuffer (void);
+  PATACHE_API void CopyTriangle (Patache::Triangle &);
+  PATACHE_API void EndCopyBuffer (void);
+
+  // Draw
+  PATACHE_API void DrawTriangle (const Patache::Triangle &);
 };
+
+// Versioning management in the style of Vulkan. // major.minor.patch.variant
+constexpr std::uint32_t
+          MakeVersion (const std::uint8_t & Major, const std::uint16_t & Minor,
+                       const std::uint16_t & Patch, const std::uint8_t & Variant)
+{
+  return ((static_cast<std::uint32_t> (Variant)) << 29U
+          | (static_cast<std::uint32_t> (Major)) << 22U
+          | (static_cast<std::uint32_t> (Minor)) << 12U
+          | static_cast<std::uint32_t> (Patch));
+}
+
+constexpr std::uint8_t
+          GetVersionMajor (const std::uint32_t & Major)
+{
+  // 6 bits
+  return Major >> 22U & 0b1111111;
+}
+
+constexpr std::uint16_t
+          GetVersionMinor (const std::uint32_t & Minor)
+{
+  // 9 bits
+  return Minor >> 12U & 0b1111111111;
+}
+
+constexpr std::uint16_t
+          GetVersionPatch (const std::uint32_t & Patch)
+{
+  // 11 bits
+  return Patch & 0b111111111111;
+}
+
+constexpr std::uint8_t
+          GetVersionVariant (const std::uint32_t & Variant)
+{
+  // 5 bits
+  return Variant >> 29U & 0b111111;
+}
 }

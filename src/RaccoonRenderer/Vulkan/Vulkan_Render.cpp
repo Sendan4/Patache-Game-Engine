@@ -5,6 +5,10 @@ Patache::Engine::BeginRender (SDL_Event & Event)
 {
   vk::Result Result;
 
+  // Wait Fences
+  Result = Vulkan.Device.waitForFences (
+      1, &Vulkan.InFlightFences[Vulkan.CurrentFrame], VK_FALSE, UINT64_MAX);
+
   /*
    * Resizing Window is diferent in Linux with wayland
    * Wayland dont send vk::Result::eErrorOutOfDateKHR
@@ -25,10 +29,6 @@ Patache::Engine::BeginRender (SDL_Event & Event)
       wl_surface_commit (WaylandWindow.Surface);
     }
 #endif
-
-  // Wait Fences
-  Result = Vulkan.Device.waitForFences (
-      1, &Vulkan.InFlightFences[Vulkan.CurrentFrame], VK_TRUE, UINT64_MAX);
 
 #if PATACHE_DEBUG == 1
   if (Result != vk::Result::eSuccess)
@@ -67,24 +67,24 @@ Patache::Engine::BeginRender (SDL_Event & Event)
     {
       // Minimization
       vk::SurfaceCapabilitiesKHR Sc;
-      vk::Result Result = Vulkan.PhysicalDevice.getSurfaceCapabilitiesKHR (
+      vk::Result Result4 = Vulkan.PhysicalDevice.getSurfaceCapabilitiesKHR (
           Vulkan.Surface, &Sc);
 
-      if (Result != vk::Result::eSuccess)
+      if (Result4 != vk::Result::eSuccess)
         {
           std::future<void> ReturnVulkanCheck
               = std::async (std::launch::async, Patache::Log::VulkanCheck,
-                            "Get Surface Capabilities KHR", Result);
+                            "Get Surface Capabilities KHR", Result4);
 
           return false;
         }
 
       while (Sc.currentExtent.width <= 0 && Sc.currentExtent.height <= 0)
         {
-          Result = Vulkan.PhysicalDevice.getSurfaceCapabilitiesKHR (
+          Result4 = Vulkan.PhysicalDevice.getSurfaceCapabilitiesKHR (
               Vulkan.Surface, &Sc);
 
-          if (Result != vk::Result::eSuccess)
+          if (Result4 != vk::Result::eSuccess)
             {
               std::future<void> ReturnVulkanCheck
                   = std::async (std::launch::async, Patache::Log::VulkanCheck,
@@ -157,10 +157,6 @@ Patache::Engine::BeginRender (SDL_Event & Event)
   Vulkan.Cmd[Vulkan.CurrentFrame].bindPipeline (
       vk::PipelineBindPoint::eGraphics, Vulkan.GraphicsPipeline);
 
-  /*vk::DeviceSize offsets[] = { 0 };
-  Vulkan.Cmd[Vulkan.CurrentFrame].bindVertexBuffers (
-      0, 1, &Vulkan.VertexBuffer, offsets);*/
-
   Vulkan.Viewport.x      = 0;
   Vulkan.Viewport.y      = 0;
   Vulkan.Viewport.width  = static_cast<float> (Vulkan.SwapChainExtent.width);
@@ -172,8 +168,6 @@ Patache::Engine::BeginRender (SDL_Event & Event)
   Vulkan.Scissor.offset = vk::Offset2D (0, 0);
   Vulkan.Scissor.extent = Vulkan.SwapChainExtent;
   Vulkan.Cmd[Vulkan.CurrentFrame].setScissor (0, 1, &Vulkan.Scissor);
-
-  Vulkan.Cmd[Vulkan.CurrentFrame].draw (3, 1, 0, 0);
 
 // Imgui New Frame
 #if PATACHE_DEBUG == 1
@@ -188,7 +182,7 @@ Patache::Engine::BeginRender (SDL_Event & Event)
 }
 
 #if PATACHE_DEBUG == 1
-#include "DrawDebugUI.hpp"
+#include "DebugUI.hpp"
 #endif
 
 void
@@ -197,9 +191,7 @@ Patache::Engine::EndRender (SDL_Event & Event)
 #if PATACHE_DEBUG == 1
   // Imgui New Frame
   // ImGui::ShowDemoWindow ();
-  Patache::DrawDebugUI (&engineInfo, configuration, Vulkan.SwapChainImageCount,
-                        Vulkan.SwapChainExtent,
-                        Vulkan.GraphicsQueueFamilyIndex);
+  Patache::DrawDebugUI (this);
 
   ImGui::Render ();
 
@@ -215,10 +207,10 @@ Patache::Engine::EndRender (SDL_Event & Event)
   Vulkan.Cmd[Vulkan.CurrentFrame].endRenderPass ();
 
   // End Command Buffer
-  vk::Result Result = Vulkan.Cmd[Vulkan.CurrentFrame].end ();
+  vk::Result Result2 = Vulkan.Cmd[Vulkan.CurrentFrame].end ();
 
 #if PATACHE_DEBUG == 1
-  if (Result != vk::Result::eSuccess)
+  if (Result2 != vk::Result::eSuccess)
     {
       char ErrorText[PATACHE_ERROR_TEXT_SIZE]{ 0 };
 
@@ -226,7 +218,7 @@ Patache::Engine::EndRender (SDL_Event & Event)
                      "End Command Buffer #%.3u", Vulkan.CurrentFrame);
 
       std::future<void> ReturnVulkanCheck = std::async (
-          std::launch::async, Patache::Log::VulkanCheck, ErrorText, Result);
+          std::launch::async, Patache::Log::VulkanCheck, ErrorText, Result2);
     }
 #endif
 
@@ -246,15 +238,15 @@ Patache::Engine::EndRender (SDL_Event & Event)
       .pSignalSemaphores = &Vulkan.ImageFinishedSemaphore[Vulkan.CurrentFrame]
     };
 
-    Result = Vulkan.Queue.submit (1, &SubmitInfo,
-                                  Vulkan.InFlightFences[Vulkan.CurrentFrame]);
+    Result2 = Vulkan.Queue.submit (1, &SubmitInfo,
+                                   Vulkan.InFlightFences[Vulkan.CurrentFrame]);
   }
 
 #if PATACHE_DEBUG == 1
-  if (Result != vk::Result::eSuccess)
+  if (Result2 != vk::Result::eSuccess)
     std::future<void> ReturnVulkanCheck
         = std::async (std::launch::async, Patache::Log::VulkanCheck,
-                      "Queue Submit 2", Result);
+                      "Queue Submit 2", Result2);
 #endif
 
   // Present to surface
@@ -266,42 +258,42 @@ Patache::Engine::EndRender (SDL_Event & Event)
     .pImageIndices      = &Vulkan.ImageIndex,
   };
 
-  Result = Vulkan.Queue.presentKHR (&PresentInfo);
+  Result2 = Vulkan.Queue.presentKHR (&PresentInfo);
 
 #if PATACHE_DEBUG == 1
-  if (Result != vk::Result::eSuccess)
+  if (Result2 != vk::Result::eSuccess)
     std::future<void> ReturnVulkanCheck = std::async (
-        std::launch::async, Patache::Log::VulkanCheck, "Present KHR", Result);
+        std::launch::async, Patache::Log::VulkanCheck, "Present KHR", Result2);
 #endif
 
   // Resize
-  if (Result == vk::Result::eErrorOutOfDateKHR
-      || Result == vk::Result::eSuboptimalKHR)
+  if (Result2 == vk::Result::eErrorOutOfDateKHR
+      || Result2 == vk::Result::eSuboptimalKHR)
     {
       // Minimization
       vk::SurfaceCapabilitiesKHR Sc;
-      vk::Result Result = Vulkan.PhysicalDevice.getSurfaceCapabilitiesKHR (
+      vk::Result Result3 = Vulkan.PhysicalDevice.getSurfaceCapabilitiesKHR (
           Vulkan.Surface, &Sc);
 
-      if (Result != vk::Result::eSuccess)
+      if (Result3 != vk::Result::eSuccess)
         {
           std::future<void> ReturnVulkanCheck
               = std::async (std::launch::async, Patache::Log::VulkanCheck,
-                            "Get Surface Capabilities KHR", Result);
+                            "Get Surface Capabilities KHR", Result3);
 
           return;
         }
 
       while (Sc.currentExtent.width <= 0 && Sc.currentExtent.height <= 0)
         {
-          Result = Vulkan.PhysicalDevice.getSurfaceCapabilitiesKHR (
+          Result3 = Vulkan.PhysicalDevice.getSurfaceCapabilitiesKHR (
               Vulkan.Surface, &Sc);
 
-          if (Result != vk::Result::eSuccess)
+          if (Result3 != vk::Result::eSuccess)
             {
               std::future<void> ReturnVulkanCheck
                   = std::async (std::launch::async, Patache::Log::VulkanCheck,
-                                "Get Surface Capabilities KHR", Result);
+                                "Get Surface Capabilities KHR", Result3);
 
               return;
             }

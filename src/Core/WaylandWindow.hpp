@@ -29,7 +29,6 @@ bool                IsMaximized            = false;
 static std::uint8_t CSDResize              = XDG_TOPLEVEL_RESIZE_EDGE_NONE;
 static wl_surface * PointerSelectedSurface = nullptr;
 static SDL_Event    PushWaylandEvent{};
-;
 
 // CSD (Window Client Side Decoration) Pixel Data Buttons
 // Minimize

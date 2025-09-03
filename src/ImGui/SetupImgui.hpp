@@ -5,6 +5,7 @@
 #if PATACHE_DEBUG == 1
 #include <imgui_impl_sdl3.h>
 #include <imgui_impl_vulkan.h>
+#include <imgui_freetype.h>
 #endif
 #include <SDL3/SDL.h>
 
@@ -13,8 +14,9 @@
 #include "ColorTerminal.hpp"
 #include "Log.hpp"
 #include "fast_io_buff.hpp"
+#include "InterDisplay-Medium.hpp"
 
-void InitImgui (const Patache::Config &);
+void InitImgui (const Patache::Config &, Patache::EngineInfo &);
 bool InitImguiVulkan (Patache::Engine * const);
 bool CreateImguiDescriptorPool (Patache::VulkanBackend &);
 bool CreateImguiPipelineCache (Patache::VulkanBackend &);

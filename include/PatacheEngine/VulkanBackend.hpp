@@ -40,7 +40,8 @@ struct VulkanBackend
 
   // Commands
   vk::CommandPool     CommandPool = VK_NULL_HANDLE;
-  vk::CommandBuffer * Cmd         = VK_NULL_HANDLE;
+  vk::CommandBuffer * Cmd         = nullptr;
+  vk::CommandBuffer   CmdTransfer = VK_NULL_HANDLE;
 
   vk::RenderPass RenderPass = VK_NULL_HANDLE;
 
@@ -75,8 +76,14 @@ struct VulkanBackend
   vk::Viewport Viewport{};
   vk::Rect2D   Scissor{};
 
-  /*vk::Buffer       VertexBuffer       = VK_NULL_HANDLE;
-  vk::DeviceMemory VertexBufferMemory = VK_NULL_HANDLE;*/
+  // Buffer (GPU)
+  vk::Buffer *       renderBuffer       = nullptr;
+  vk::DeviceMemory * renderBufferMemory = nullptr;
+  // Buffer (CPU) CPU -> GPU
+  vk::Buffer       stagingBuffer       = VK_NULL_HANDLE;
+  vk::DeviceMemory stagingBufferMemory = VK_NULL_HANDLE;
+
+  void * renderData = nullptr;
 };
 
 struct SwapChainInfo

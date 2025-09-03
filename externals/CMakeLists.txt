@@ -155,10 +155,11 @@ set (GLSLANG_ENABLE_INSTALL OFF CACHE INTERNAL "..." FORCE)
 set (ENABLE_SPVREMAPPER OFF CACHE INTERNAL "..." FORCE)
 set (ALLOW_EXTERNAL_SPIRV_TOOLS OFF CACHE INTERNAL "..." FORCE)
 set (BUILD_EXTERNAL ON CACHE INTERNAL "..." FORCE)
+#set (BUILD_SHARED_LIBS ON CACHE INTERNAL "..." FORCE)
 
 if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/glslang)
   execute_process(
-  	COMMAND python3 update_glslang_sources.py
+  	COMMAND python update_glslang_sources.py
   	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/glslang)
 
   add_subdirectory(glslang)
