@@ -23,47 +23,41 @@ Patache::Engine::HandleEvent (const SDL_Event & Event)
                     {
                       for (std::uint8_t i = 0; i < 3; ++i)
                         {
-                          wl_subsurface_destroy (
-                              WaylandWindow.ButtonSubSurface[i]);
+                          wl_subsurface_destroy (WaylandWindow.ButtonSubSurface[i]);
                         }
 
                       wl_subsurface_destroy (WaylandWindow.MainBarSubSurface);
 
                       if (!IsMaximized)
                         {
-                          for (std::uint8_t i = 0; i < PATACHE_CSD_BORDER_SIZE;
-                               ++i)
-                            wl_subsurface_destroy (
-                                WaylandWindow.BorderSubSurface[i]);
+                          for (std::uint8_t i = 0; i < PATACHE_CSD_BORDER_SIZE; ++i)
+                            wl_subsurface_destroy (WaylandWindow.BorderSubSurface[i]);
                         }
                     }
 
-                  xdg_toplevel_set_fullscreen (WaylandWindow.DesktopWindow,
-                                               nullptr);
+                  xdg_toplevel_set_fullscreen (WaylandWindow.DesktopWindow, nullptr);
 #else
-                  int             DisplaysCount = 0;
-                  SDL_DisplayID * DID = SDL_GetDisplays (&DisplaysCount);
-                  const SDL_DisplayMode * const DesktopMode
-                      = SDL_GetDesktopDisplayMode (*DID);
+                  int                           DisplaysCount = 0;
+                  SDL_DisplayID *               DID           = SDL_GetDisplays (&DisplaysCount);
+                  const SDL_DisplayMode * const DesktopMode   = SDL_GetDesktopDisplayMode (*DID);
 
                   if (DesktopMode != nullptr)
                     {
-                      if (!SDL_SetWindowFullscreenMode (GameWindow,
-                                                        DesktopMode))
-                        std::future<void> Err = std::async (
-                            std::launch::async, Patache::Log::ErrorMessage,
-                            "Unable to apply full screen resolution");
+                      if (!SDL_SetWindowFullscreenMode (GameWindow, DesktopMode))
+                        std::future<void> Err
+                            = std::async (std::launch::async, Patache::Log::ErrorMessage,
+                                          "Unable to apply full screen resolution");
                     }
                   else
-                    std::future<void> Err = std::async (
-                        std::launch::async, Patache::Log::ErrorMessage,
-                        "Could not obtain Desktop Display Mode mode or "
-                        "Display ID");
+                    std::future<void> Err
+                        = std::async (std::launch::async, Patache::Log::ErrorMessage,
+                                      "Could not obtain Desktop Display Mode mode or "
+                                      "Display ID");
 
                   if (!SDL_SetWindowFullscreen (GameWindow, IsFullScreen))
-                    std::future<void> Err = std::async (
-                        std::launch::async, Patache::Log::ErrorMessage,
-                        "Could not switch to full screen mode");
+                    std::future<void> Err
+                        = std::async (std::launch::async, Patache::Log::ErrorMessage,
+                                      "Could not switch to full screen mode");
 #endif
                 }
               else
@@ -73,48 +67,39 @@ Patache::Engine::HandleEvent (const SDL_Event & Event)
 
                   if (WaylandWindow.DecorationMananger == nullptr)
                     {
-                      WaylandWindow.MainBarSubSurface
-                          = wl_subcompositor_get_subsurface (
-                              WaylandWindow.SubCompositor,
-                              WaylandWindow.MainBarSurface,
-                              WaylandWindow.Surface);
+                      WaylandWindow.MainBarSubSurface = wl_subcompositor_get_subsurface (
+                          WaylandWindow.SubCompositor, WaylandWindow.MainBarSurface,
+                          WaylandWindow.Surface);
 
                       // Buttons
                       for (std::uint8_t i = 0; i < 3; ++i)
                         {
-                          WaylandWindow.ButtonSubSurface[i]
-                              = wl_subcompositor_get_subsurface (
-                                  WaylandWindow.SubCompositor,
-                                  WaylandWindow
-                                      .ButtonSurface[i], // surface turned into
-                                                         // a sub-surface
-                                  WaylandWindow
-                                      .MainBarSurface); // the parent surface
+                          WaylandWindow.ButtonSubSurface[i] = wl_subcompositor_get_subsurface (
+                              WaylandWindow.SubCompositor,
+                              WaylandWindow.ButtonSurface[i], // surface turned into
+                                                              // a sub-surface
+                              WaylandWindow.MainBarSurface);  // the parent surface
                         }
 
                       // Border Window
                       if (!IsMaximized)
                         {
-                          for (std::uint8_t i = 0; i < PATACHE_CSD_BORDER_SIZE;
-                               ++i)
+                          for (std::uint8_t i = 0; i < PATACHE_CSD_BORDER_SIZE; ++i)
                             {
-                              WaylandWindow.BorderSubSurface[i]
-                                  = wl_subcompositor_get_subsurface (
-                                      WaylandWindow.SubCompositor,
-                                      WaylandWindow
-                                          .BorderSurface[i], // surface turned
-                                                             // into a
-                                                             // sub-surface
-                                      WaylandWindow
-                                          .Surface); // the parent surface
+                              WaylandWindow.BorderSubSurface[i] = wl_subcompositor_get_subsurface (
+                                  WaylandWindow.SubCompositor,
+                                  WaylandWindow.BorderSurface[i], // surface turned
+                                                                  // into a
+                                                                  // sub-surface
+                                  WaylandWindow.Surface);         // the parent surface
                             }
                         }
                     }
 #else
                   if (!SDL_SetWindowFullscreen (GameWindow, IsFullScreen))
-                    std::future<void> Err = std::async (
-                        std::launch::async, Patache::Log::ErrorMessage,
-                        "could not switch to window mode");
+                    std::future<void> Err
+                        = std::async (std::launch::async, Patache::Log::ErrorMessage,
+                                      "could not switch to window mode");
 #endif
                   IsFullScreen = false;
                 }

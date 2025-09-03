@@ -12,18 +12,17 @@ CreateCommandBuffer (Patache::VulkanBackend & Vulkan)
   if (Vulkan.Cmd == VK_NULL_HANDLE)
     Vulkan.Cmd = new vk::CommandBuffer[Vulkan.SwapChainImageCount];
 
-  vk::Result Result
-      = Vulkan.Device.allocateCommandBuffers (&cmdAllocateInfo, Vulkan.Cmd);
+  vk::Result Result = Vulkan.Device.allocateCommandBuffers (&cmdAllocateInfo, Vulkan.Cmd);
 
   if (Result != vk::Result::eSuccess)
     {
       char ErrorText[PATACHE_ERROR_TEXT_SIZE]{ 0 };
 
-      std::snprintf (ErrorText, PATACHE_ERROR_TEXT_SIZE - 1,
-                     "Allocate Command Buffer #%.3u", Vulkan.CurrentFrame);
+      std::snprintf (ErrorText, PATACHE_ERROR_TEXT_SIZE - 1, "Allocate Command Buffer #%.3u",
+                     Vulkan.CurrentFrame);
 
-      std::future<void> ReturnVulkanCheck = std::async (
-          std::launch::async, Patache::Log::VulkanCheck, ErrorText, Result);
+      std::future<void> ReturnVulkanCheck
+          = std::async (std::launch::async, Patache::Log::VulkanCheck, ErrorText, Result);
 
       return false;
     }

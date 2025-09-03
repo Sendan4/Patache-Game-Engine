@@ -15,7 +15,6 @@
 bool CreateSwapChain (Patache::Engine * const, Patache::SwapChainInfo &);
 void RecreateSwapChain (Patache::Engine * const);
 
-bool CreateImageView (Patache::VulkanBackend &,
-                      const Patache::SwapChainInfo &);
+bool CreateImageView (Patache::VulkanBackend &, const Patache::SwapChainInfo &);
 bool CreateFrameBuffer (Patache::VulkanBackend &);
 bool CreateSemaphores (Patache::VulkanBackend &);

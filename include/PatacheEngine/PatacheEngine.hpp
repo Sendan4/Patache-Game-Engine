@@ -49,14 +49,13 @@ enum class ProjectGraphics : bool
 // you can use nullptr to not use the options or not assign them at all.
 struct EngineCreateInfo
 {
-  const char * const gameName = nullptr; // Name of the game // It is optional.
+  const char * const  gameName    = nullptr; // Name of the game // It is optional.
   const std::uint32_t gameVersion = 0;
   // Vulkan version style: major.minor.patch.variant // It is
   // optional.
   const char * const windowTitle = nullptr;
   // Initial title of the window. // It is optional.
-  const Patache::ProjectGraphics projectGraphicsMode
-      = Patache::ProjectGraphics::Mode2D;
+  const Patache::ProjectGraphics projectGraphicsMode = Patache::ProjectGraphics::Mode2D;
   // Determines whether the project uses 2D or 3D graphics.
   // It is mandatory.
   const char * const windowIconPath = nullptr;
@@ -95,8 +94,8 @@ struct Triangle
   vk::DeviceSize offset  = 0;
 
   PATACHE_API constexpr void
-  SetColorRGB (const std::uint8_t & side, const float & Red,
-               const float & Blue, const float & Green)
+  SetColorRGB (const std::uint8_t & side, const float & Red, const float & Blue,
+               const float & Green)
   {
     assert ("A triangle only have 3 sides (0 - 3)" && (side <= 2));
 
@@ -130,14 +129,14 @@ struct WaylandWindow
   std::uint32_t * MainBarPixels     = nullptr;
   wl_buffer *     MainBarBuffer     = nullptr;
   // Border
-  wl_surface *    BorderSurface[8]    = { nullptr, nullptr, nullptr, nullptr,
-                                          nullptr, nullptr, nullptr, nullptr };
-  wl_subsurface * BorderSubSurface[8] = { nullptr, nullptr, nullptr, nullptr,
-                                          nullptr, nullptr, nullptr, nullptr };
-  std::uint32_t * BorderPixels[8]     = { nullptr, nullptr, nullptr, nullptr,
-                                          nullptr, nullptr, nullptr, nullptr };
-  wl_buffer *     BorderBuffer[8]     = { nullptr, nullptr, nullptr, nullptr,
-                                          nullptr, nullptr, nullptr, nullptr };
+  wl_surface * BorderSurface[8]
+      = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
+  wl_subsurface * BorderSubSurface[8]
+      = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
+  std::uint32_t * BorderPixels[8]
+      = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
+  wl_buffer * BorderBuffer[8]
+      = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
   // Buttons
   wl_surface *    ButtonSurface[3]          = { nullptr, nullptr, nullptr };
   wl_subsurface * ButtonSubSurface[3]       = { nullptr, nullptr, nullptr };
@@ -214,10 +213,8 @@ struct Engine
   Patache::ClearColor clearColor{};
 
   PATACHE_API void ClearColor (const Patache::Color &);
-  PATACHE_API void ClearColorRGBA (const float &, const float &, const float &,
-                                   const float &);
-  PATACHE_API void ClearColorRGBA (const float &, const float &,
-                                   const float &);
+  PATACHE_API void ClearColorRGBA (const float &, const float &, const float &, const float &);
+  PATACHE_API void ClearColorRGBA (const float &, const float &, const float &);
 
   // Window
   SDL_Window * GameWindow = nullptr;
@@ -242,13 +239,12 @@ struct Engine
 
 // Versioning management in the style of Vulkan. // major.minor.patch.variant
 constexpr std::uint32_t
-          MakeVersion (const std::uint8_t & Major, const std::uint16_t & Minor,
-                       const std::uint16_t & Patch, const std::uint8_t & Variant)
+MakeVersion (const std::uint8_t & Major, const std::uint16_t & Minor, const std::uint16_t & Patch,
+             const std::uint8_t & Variant)
 {
   return ((static_cast<std::uint32_t> (Variant)) << 29U
           | (static_cast<std::uint32_t> (Major)) << 22U
-          | (static_cast<std::uint32_t> (Minor)) << 12U
-          | static_cast<std::uint32_t> (Patch));
+          | (static_cast<std::uint32_t> (Minor)) << 12U | static_cast<std::uint32_t> (Patch));
 }
 
 constexpr std::uint8_t

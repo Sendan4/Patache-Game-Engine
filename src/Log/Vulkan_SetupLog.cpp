@@ -1,14 +1,12 @@
 #include "Vulkan_SetupLog.hpp"
 
 void
-Patache::Log::VulkanList (const char * const    List[],
-                          const std::uint32_t & Size,
-                          const char * const    Message)
+Patache::Log::VulkanList (const char * const List[], const std::uint32_t & Size,
+                          const char * const Message)
 {
 #if PATACHE_DEBUG == 1
 #if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
-  char * VarTypeRealName = abi::__cxa_demangle (typeid (*List).name (),
-                                                nullptr, nullptr, nullptr);
+  char * VarTypeRealName = abi::__cxa_demangle (typeid (*List).name (), nullptr, nullptr, nullptr);
 #else
   const char * VarTypeRealName = typeid (*List).name ();
 #endif
@@ -19,16 +17,14 @@ Patache::Log::VulkanList (const char * const    List[],
                         PATACHE_TERM_DIM, PATACHE_TERM_COLOR_GRAY0, "[",
                         fast_io::mnp::os_c_str (VarTypeRealName), "] ",
 #endif // PATACHE_DEBUG
-                        PATACHE_TERM_RESET, PATACHE_TERM_BOLD,
-                        fast_io::mnp::os_c_str (Message), " : ",
-                        PATACHE_TERM_RESET, Size);
+                        PATACHE_TERM_RESET, PATACHE_TERM_BOLD, fast_io::mnp::os_c_str (Message),
+                        " : ", PATACHE_TERM_RESET, Size);
 
   for (std::uint32_t i = 0; i < Size; ++i)
     {
       if (List[i] != nullptr)
         fast_io::io::println (PATACHE_FAST_IO_BUFF_OUT, "  ", PATACHE_TERM_DIM,
-                              fast_io::mnp::os_c_str (List[i]),
-                              PATACHE_TERM_RESET);
+                              fast_io::mnp::os_c_str (List[i]), PATACHE_TERM_RESET);
       else
         break;
     }
@@ -43,13 +39,11 @@ Patache::Log::VulkanList (const char * const    List[],
 }
 
 void
-Patache::Log::VulkanCheck (const char * const Message,
-                           const vk::Result & Result)
+Patache::Log::VulkanCheck (const char * const Message, const vk::Result & Result)
 {
 #if PATACHE_DEBUG == 1
 #if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
-  char * VarTypeRealName = abi::__cxa_demangle (typeid (Result).name (),
-                                                nullptr, nullptr, nullptr);
+  char * VarTypeRealName = abi::__cxa_demangle (typeid (Result).name (), nullptr, nullptr, nullptr);
 #else
   const char * VarTypeRealName = typeid (Result).name ();
 #endif
@@ -60,12 +54,10 @@ Patache::Log::VulkanCheck (const char * const Message,
       fast_io::io::println (PATACHE_FAST_IO_BUFF_OUT,
 #if PATACHE_DEBUG == 1
                             PATACHE_TERM_DIM, PATACHE_TERM_COLOR_GRAY0, "[",
-                            fast_io::mnp::os_c_str (typeid (Result).name ()),
-                            "] ",
+                            fast_io::mnp::os_c_str (typeid (Result).name ()), "] ",
 #endif // PATACHE_DEBUG
-                            PATACHE_TERM_RESET, PATACHE_TERM_BOLD,
-                            fast_io::mnp::os_c_str (Message), " : ",
-                            PATACHE_TERM_RESET, PATACHE_TERM_COLOR_YELLOW,
+                            PATACHE_TERM_RESET, PATACHE_TERM_BOLD, fast_io::mnp::os_c_str (Message),
+                            " : ", PATACHE_TERM_RESET, PATACHE_TERM_COLOR_YELLOW,
                             vk::to_string (Result), PATACHE_TERM_RESET);
     }
   else
@@ -74,9 +66,8 @@ Patache::Log::VulkanCheck (const char * const Message,
                           PATACHE_TERM_DIM, PATACHE_TERM_COLOR_GRAY0, "[",
                           fast_io::mnp::os_c_str (VarTypeRealName), "] ",
 #endif // PATACHE_DEBUG
-                          PATACHE_TERM_RESET, PATACHE_TERM_BOLD,
-                          fast_io::mnp::os_c_str (Message), " : ",
-                          PATACHE_TERM_RESET, PATACHE_TERM_COLOR_GREEN,
+                          PATACHE_TERM_RESET, PATACHE_TERM_BOLD, fast_io::mnp::os_c_str (Message),
+                          " : ", PATACHE_TERM_RESET, PATACHE_TERM_COLOR_GREEN,
                           vk::to_string (Result), PATACHE_TERM_RESET);
 
 #if PATACHE_DEBUG == 1

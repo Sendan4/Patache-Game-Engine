@@ -26,8 +26,7 @@ struct EngineInfo
   // Window
   std::uint64_t WindowCreationFlags = 0;
 #if defined(__linux__)
-  Patache::WindowDecorationType windowDecorationType
-      = Patache::WindowDecorationType::None;
+  Patache::WindowDecorationType windowDecorationType = Patache::WindowDecorationType::None;
 #endif
 
   // RaccoonRenderer

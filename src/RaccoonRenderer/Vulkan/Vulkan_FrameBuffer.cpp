@@ -4,8 +4,7 @@ bool
 CreateFrameBuffer (Patache::VulkanBackend & Vulkan)
 {
   if (Vulkan.SwapChainFrameBuffer == VK_NULL_HANDLE)
-    Vulkan.SwapChainFrameBuffer
-        = new vk::Framebuffer[Vulkan.SwapChainImageCount];
+    Vulkan.SwapChainFrameBuffer = new vk::Framebuffer[Vulkan.SwapChainImageCount];
 
   vk::Result Result;
 
@@ -20,19 +19,17 @@ CreateFrameBuffer (Patache::VulkanBackend & Vulkan)
         .layers          = 1,
       };
 
-      Result = Vulkan.Device.createFramebuffer (
-          &FrameBufferInfo, nullptr, &Vulkan.SwapChainFrameBuffer[i]);
+      Result = Vulkan.Device.createFramebuffer (&FrameBufferInfo, nullptr,
+                                                &Vulkan.SwapChainFrameBuffer[i]);
 
       if (Result != vk::Result::eSuccess)
         {
           char ErrorText[PATACHE_ERROR_TEXT_SIZE]{ 0 };
 
-          std::snprintf (ErrorText, PATACHE_ERROR_TEXT_SIZE - 1,
-                         "Frame Buffer #%.3u", i + 1);
+          std::snprintf (ErrorText, PATACHE_ERROR_TEXT_SIZE - 1, "Frame Buffer #%.3u", i + 1);
 
           std::future<void> ReturnVulkanCheck
-              = std::async (std::launch::async, Patache::Log::VulkanCheck,
-                            ErrorText, Result);
+              = std::async (std::launch::async, Patache::Log::VulkanCheck, ErrorText, Result);
 
           return false;
         }

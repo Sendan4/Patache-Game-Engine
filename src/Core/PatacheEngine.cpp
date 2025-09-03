@@ -35,16 +35,15 @@
 bool LoadConfiguration (Patache::Config &);
 
 #if defined(__linux__)
-bool CreateWaylandWindow (const std::uint32_t &, const std::uint32_t &,
-                          const char * const, Patache::Engine * const);
+bool CreateWaylandWindow (const std::uint32_t &, const std::uint32_t &, const char * const,
+                          Patache::Engine * const);
 #else
 // Event Filter for Window Resize
 bool SDLCALL HandleResize (void * userdata, SDL_Event * event);
 extern bool  Resize;
 #endif
 
-bool RaccoonRendererInit (Patache::Engine *,
-                          const Patache::EngineCreateInfo &);
+bool RaccoonRendererInit (Patache::Engine *, const Patache::EngineCreateInfo &);
 
 void RaccoonRendererClose (Patache::VulkanBackend &);
 
@@ -60,12 +59,10 @@ Patache::Engine::Init (const Patache::EngineCreateInfo & Info)
     return false;
 
 #if defined(PATACHE_VVL_PATH)
-  if (PATACHE_SETENV ("VK_LAYER_PATH", PATACHE_VVL_PATH)
-      != PATACHE_SETENV_SUCCESS)
+  if (PATACHE_SETENV ("VK_LAYER_PATH", PATACHE_VVL_PATH) != PATACHE_SETENV_SUCCESS)
     {
-      std::future<void> Err
-          = std::async (std::launch::async, Patache::Log::ErrorMessage,
-                        "Cannot set enviroment varible VK_LAYER_PATH");
+      std::future<void> Err = std::async (std::launch::async, Patache::Log::ErrorMessage,
+                                          "Cannot set enviroment varible VK_LAYER_PATH");
     }
 #endif
 
@@ -90,8 +87,7 @@ Patache::Engine::Init (const Patache::EngineCreateInfo & Info)
   PATACHE_STRNCAT (WindowTitle, " (Debug / Development)", 63);
 #else
   // Release
-  const char * WindowTitle
-      = (Info.windowTitle != nullptr) ? Info.windowTitle : Info.gameName;
+  const char * WindowTitle = (Info.windowTitle != nullptr) ? Info.windowTitle : Info.gameName;
 
   if (WindowTitle == nullptr)
     WindowTitle = PATACHE_ENGINE_NAME;
@@ -106,9 +102,8 @@ Patache::Engine::Init (const Patache::EngineCreateInfo & Info)
   // Init SDL Subsystems
   if (!SDL_Init (SDL_INIT_VIDEO | SDL_INIT_EVENTS))
     {
-      std::future<void> Err = std::async (
-          std::launch::async, Patache::Log::FatalErrorMessage,
-          "Patache Engine - SDL2", SDL_GetError (), configuration);
+      std::future<void> Err = std::async (std::launch::async, Patache::Log::FatalErrorMessage,
+                                          "Patache Engine - SDL2", SDL_GetError (), configuration);
 
       return false;
     }
@@ -121,9 +116,8 @@ Patache::Engine::Init (const Patache::EngineCreateInfo & Info)
 
     // Displays
     int                           DisplaysCount = 0;
-    SDL_DisplayID *               DID = SDL_GetDisplays (&DisplaysCount);
-    const SDL_DisplayMode * const CurrentMode
-        = SDL_GetCurrentDisplayMode (*DID);
+    SDL_DisplayID *               DID           = SDL_GetDisplays (&DisplaysCount);
+    const SDL_DisplayMode * const CurrentMode   = SDL_GetCurrentDisplayMode (*DID);
 
     // Initial Resolution
     if (CurrentMode != nullptr)
@@ -133,10 +127,9 @@ Patache::Engine::Init (const Patache::EngineCreateInfo & Info)
       }
     else
       {
-        std::future<void> Err = std::async (
-            std::launch::async, Patache::Log::ErrorMessage,
-            "can't get the current resolution. starting with 480p "
-            "(1.78)");
+        std::future<void> Err = std::async (std::launch::async, Patache::Log::ErrorMessage,
+                                            "can't get the current resolution. starting with 480p "
+                                            "(1.78)");
 
         w = 854;
         h = 480;
@@ -149,9 +142,9 @@ Patache::Engine::Init (const Patache::EngineCreateInfo & Info)
 
     if (GameWindow == nullptr)
       {
-        std::future<void> Err = std::async (
-            std::launch::async, Patache::Log::FatalErrorMessage,
-            "Window cannot be created", SDL_GetError (), configuration);
+        std::future<void> Err
+            = std::async (std::launch::async, Patache::Log::FatalErrorMessage,
+                          "Window cannot be created", SDL_GetError (), configuration);
 
         return false;
       }
@@ -173,16 +166,14 @@ Patache::Engine::Init (const Patache::EngineCreateInfo & Info)
         WindowIcon = SDL_LoadBMP (Path);
       }
     else
-      WindowIcon = SDL_CreateSurfaceFrom (
-          Patache::Icon::Width, Patache::Icon::Height,
-          SDL_PIXELFORMAT_BGRA8888, (void *)Patache::Icon::Data,
-          Patache::Icon::Pitch);
+      WindowIcon = SDL_CreateSurfaceFrom (Patache::Icon::Width, Patache::Icon::Height,
+                                          SDL_PIXELFORMAT_BGRA8888, (void *)Patache::Icon::Data,
+                                          Patache::Icon::Pitch);
 
     if (WindowIcon == nullptr)
       {
         std::future<void> Err
-            = std::async (std::launch::async, Patache::Log::ErrorMessage,
-                          "Icon cannot be loaded");
+            = std::async (std::launch::async, Patache::Log::ErrorMessage, "Icon cannot be loaded");
       }
     else
       SDL_SetWindowIcon (GameWindow, WindowIcon);

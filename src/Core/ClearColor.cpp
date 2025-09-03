@@ -3,8 +3,7 @@
 #include "PatacheEngine/PatacheEngine.hpp"
 
 void
-Patache::Engine::ClearColorRGBA (const float & R, const float & G,
-                                 const float & B, const float & A)
+Patache::Engine::ClearColorRGBA (const float & R, const float & G, const float & B, const float & A)
 {
   clearColor.r = R;
   clearColor.g = G;
@@ -13,8 +12,7 @@ Patache::Engine::ClearColorRGBA (const float & R, const float & G,
 }
 
 void
-Patache::Engine::ClearColorRGBA (const float & R, const float & G,
-                                 const float & B)
+Patache::Engine::ClearColorRGBA (const float & R, const float & G, const float & B)
 {
   clearColor.r = R;
   clearColor.g = G;
