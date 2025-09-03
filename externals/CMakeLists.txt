@@ -16,7 +16,7 @@ endif()
 check_cxx_source_compiles(
     "#include <fast_io.h>\n\
     int main() { fast_io::io::print(\"Hello, World!\"); return 0; }"
-	fast_io_io_print)
+    fast_io_io_print)
 if(NOT fast_io_io_print)
     message(FATAL_ERROR "fast_io::io::print not usable")
 endif()
@@ -77,14 +77,14 @@ set (RYML_DEFAULT_CALLBACK_USES_EXCEPTIONS OFF CACHE INTERNAL "..." FORCE)
 set (RYML_INSTALL OFF CACHE INTERNAL "..." FORCE)
 
 if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/rapidyaml/)
-  add_subdirectory(rapidyaml)
+    add_subdirectory(rapidyaml)
 else()
-  FetchContent_Declare(
-  	RapidYaml
+    FetchContent_Declare(
+        RapidYaml
     	GIT_REPOSITORY https://github.com/biojppm/rapidyaml.git
     	GIT_TAG v0.9.0
-   )
-   FetchContent_MakeAvailable(RapidYaml)
+    )
+    FetchContent_MakeAvailable(RapidYaml)
 endif()
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
@@ -133,9 +133,9 @@ if (MSVC OR LINUX)
     message("  - Vulkan Validation Layers -")
 
     FetchContent_Declare(
-      Vulkan-ValidationLayers
-      GIT_REPOSITORY https://github.com/KhronosGroup/Vulkan-ValidationLayers.git
-      GIT_TAG v1.4.315
+        Vulkan-ValidationLayers
+        GIT_REPOSITORY https://github.com/KhronosGroup/Vulkan-ValidationLayers.git
+        GIT_TAG v1.4.315
     )
     
     FetchContent_MakeAvailable(Vulkan-ValidationLayers)
@@ -158,22 +158,22 @@ set (BUILD_EXTERNAL ON CACHE INTERNAL "..." FORCE)
 #set (BUILD_SHARED_LIBS ON CACHE INTERNAL "..." FORCE)
 
 if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/glslang)
-  execute_process(
-  	COMMAND python update_glslang_sources.py
-  	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/glslang)
+    execute_process(
+        COMMAND python update_glslang_sources.py
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/glslang)
 
-  add_subdirectory(glslang)
+    add_subdirectory(glslang)
 else() 
-  set (BUILD_EXTERNAL OFF CACHE INTERNAL "..." FORCE)
-  set (ENABLE_OPT OFF CACHE INTERNAL "..." FORCE)
+    set (BUILD_EXTERNAL OFF CACHE INTERNAL "..." FORCE)
+    set (ENABLE_OPT OFF CACHE INTERNAL "..." FORCE)
 
-  FetchContent_Declare(
-    Glslang
-    GIT_REPOSITORY https://github.com/KhronosGroup/glslang.git
-    GIT_TAG 15.3.0
-  )
+    FetchContent_Declare(
+        Glslang
+        GIT_REPOSITORY https://github.com/KhronosGroup/glslang.git
+        GIT_TAG 15.3.0
+    )
 
-  FetchContent_MakeAvailable(Glslang)
+    FetchContent_MakeAvailable(Glslang)
 endif()
 
 set (CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
@@ -185,69 +185,69 @@ message("  - cglm -")
 set (CGLM_USE_C99 OFF CACHE INTERNAL "..." FORCE)
 set (CGLM_USE_TEST OFF CACHE INTERNAL "..." FORCE)
 if (BUILD_SHARED_LIBS)
-  set (CGLM_SHARED ON CACHE INTERNAL "..." FORCE)
-  set (CGLM_STATIC OFF CACHE INTERNAL "..." FORCE)
+    set (CGLM_SHARED ON CACHE INTERNAL "..." FORCE)
+    set (CGLM_STATIC OFF CACHE INTERNAL "..." FORCE)
 else()
-  set (CGLM_SHARED OFF CACHE INTERNAL "..." FORCE)
-  set (CGLM_STATIC ON CACHE INTERNAL "..." FORCE)
+    set (CGLM_SHARED OFF CACHE INTERNAL "..." FORCE)
+    set (CGLM_STATIC ON CACHE INTERNAL "..." FORCE)
 endif()
 
 if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/cglm/)
-  add_subdirectory(cglm)
+    add_subdirectory(cglm)
 else() 
-  FetchContent_Declare(
-    cglm
-    GIT_REPOSITORY https://github.com/recp/cglm.git
-    GIT_TAG v0.9.6
-  )
-  FetchContent_MakeAvailable(cglm)
+    FetchContent_Declare(
+        cglm
+        GIT_REPOSITORY https://github.com/recp/cglm.git
+        GIT_TAG v0.9.6
+    )
+    FetchContent_MakeAvailable(cglm)
 endif()
 
 # Wayland Client
 if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
-  message("")
-  message("  - Wayland -")
+    message("")
+    message("  - Wayland -")
   
-  find_package(PkgConfig REQUIRED)
-  pkg_check_modules(WAYLAND wayland-client)
-  pkg_check_modules(WAYLAND_CURSOR wayland-cursor)
-  find_program(WaylandScanner
-     wayland-scanner
-     REQUIRED)
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(WAYLAND wayland-client)
+    pkg_check_modules(WAYLAND_CURSOR wayland-cursor)
+    find_program(WaylandScanner
+        wayland-scanner
+        REQUIRED)
 	
-  message(STATUS "Wayland Scanner : ${WaylandScanner}")
-  execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory WaylandProtocols
-     WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+    message(STATUS "Wayland Scanner : ${WaylandScanner}")
+    execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory WaylandProtocols
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
 
-  if (EXISTS ${CMAKE_BINARY_DIR}/WaylandProtocols)
-     # xdg-shell protocol
-     message(STATUS "Protocol : xdg_shell")
+    if (EXISTS ${CMAKE_BINARY_DIR}/WaylandProtocols)
+        # xdg_shell protocol
+        message(STATUS "Protocol : xdg_shell")
 
-     file(DOWNLOAD
-	https://gitlab.freedesktop.org/wayland/wayland-protocols/-/raw/810f1adaf33521cc55fc510566efba2a1418174f/stable/xdg-shell/xdg-shell.xml?inline=false
-	${CMAKE_BINARY_DIR}/WaylandProtocols/xdg-shell.xml
-	SHOW_PROGRESS
-     )
+        file(DOWNLOAD
+	    https://gitlab.freedesktop.org/wayland/wayland-protocols/-/raw/810f1adaf33521cc55fc510566efba2a1418174f/stable/xdg-shell/xdg-shell.xml?inline=false
+	    ${CMAKE_BINARY_DIR}/WaylandProtocols/xdg-shell.xml
+	    SHOW_PROGRESS
+        )
 
-     execute_process(
-	WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/WaylandProtocols/
-	COMMAND wayland-scanner client-header xdg-shell.xml xdg-shell.h
-	COMMAND wayland-scanner private-code xdg-shell.xml xdg-shell.c)
+        execute_process(
+            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/WaylandProtocols/
+            COMMAND wayland-scanner client-header xdg-shell.xml xdg-shell.h
+            COMMAND wayland-scanner private-code xdg-shell.xml xdg-shell.c)
 
-     # xdg-decoration-unstable-v1.xml protocol
-     message(STATUS "Protocol : xdg-decoration-unstable-v1.xml")
+        # xdg-decoration-unstable-v1.xml protocol
+        message(STATUS "Protocol : xdg-decoration-unstable-v1.xml")
 
-     file(DOWNLOAD
-	https://gitlab.freedesktop.org/wayland/wayland-protocols/-/raw/main/unstable/xdg-decoration/xdg-decoration-unstable-v1.xml?ref_type=heads&inline=false
-	${CMAKE_BINARY_DIR}/WaylandProtocols/xdg-decoration-unstable-v1.xml
-	SHOW_PROGRESS
-     )
+        file(DOWNLOAD
+            https://gitlab.freedesktop.org/wayland/wayland-protocols/-/raw/main/unstable/xdg-decoration/xdg-decoration-unstable-v1.xml?ref_type=heads&inline=false
+	    ${CMAKE_BINARY_DIR}/WaylandProtocols/xdg-decoration-unstable-v1.xml
+	    SHOW_PROGRESS
+        )
 
-     execute_process(
-	WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/WaylandProtocols/
-	COMMAND wayland-scanner client-header xdg-decoration-unstable-v1.xml xdg-decoration-unstable-v1.h
-	COMMAND wayland-scanner private-code xdg-decoration-unstable-v1.xml xdg-decoration-unstable-v1.c)
-  endif()
+        execute_process(
+	    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/WaylandProtocols/
+            COMMAND wayland-scanner client-header xdg-decoration-unstable-v1.xml xdg-decoration-unstable-v1.h
+            COMMAND wayland-scanner private-code xdg-decoration-unstable-v1.xml xdg-decoration-unstable-v1.c)
+    endif()
 endif()
 
 # SDL2
@@ -255,38 +255,38 @@ message("")
 message("  - SDL3 -")
 
 if (BUILD_SHARED_LIBS)
-  set(SDL_SHARED ON CACHE INTERNAL "..." FORCE)
-  set(SDL_STATIC OFF CACHE INTERNAL "..." FORCE)
+    set(SDL_SHARED ON CACHE INTERNAL "..." FORCE)
+    set(SDL_STATIC OFF CACHE INTERNAL "..." FORCE)
 else ()
-  set(SDL_SHARED OFF CACHE INTERNAL "..." FORCE)
-  set(SDL_STATIC ON CACHE INTERNAL "..." FORCE)
+    set(SDL_SHARED OFF CACHE INTERNAL "..." FORCE)
+    set(SDL_STATIC ON CACHE INTERNAL "..." FORCE)
 endif ()
 
 set(SDL_STATIC_PIC ON CACHE INTERNAL "..." FORCE)
 
 set(SDL_UNUSED_SUBSYSTEMS
-  File
-  Locale
-  Power
-  Render
-  Gpu
-  Sensor
-  Timers
-  Atomic
-  Audio
-  Camera)
+    File
+    Locale
+    Power
+    Render
+    Gpu
+    Sensor
+    Timers
+    Atomic
+    Audio
+    Camera)
 foreach(_SUB ${SDL_UNUSED_SUBSYSTEMS})
-  string(TOUPPER ${_SUB} _OPT)
-  set(SDL_${_OPT} OFF CACHE INTERNAL "..." FORCE)
+    string(TOUPPER ${_SUB} _OPT)
+    set(SDL_${_OPT} OFF CACHE INTERNAL "..." FORCE)
 endforeach()
 
 set (SDL_INSTALL OFF CACHE INTERNAL "..." FORCE)
 set (SDL_INSTALL_CPACK OFF CACHE INTERNAL "..." FORCE)
 set (SDL_ASSERTIONS ON CACHE INTERNAL "..." FORCE)
 if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo")
-  set (SDL_ASSERTIONS "paranoid" CACHE INTERNAL "..." FORCE)
+    set (SDL_ASSERTIONS "paranoid" CACHE INTERNAL "..." FORCE)
 else()
-  set (SDL_ASSERTIONS "release" CACHE INTERNAL "..." FORCE)
+    set (SDL_ASSERTIONS "release" CACHE INTERNAL "..." FORCE)
 endif()
 set (SDL_TEST OFF CACHE INTERNAL "..." FORCE)
 set (SDL_DIRECTX OFF CACHE INTERNAL "..." FORCE)
@@ -324,19 +324,19 @@ set (SDL_IBUS OFF CACHE INTERNAL "..." FORCE)
 set (SDL_VENDOR_INFO ${PROJECT_NAME} CACHE STRING "Vendor name and/or version to add to SDL_REVISION")
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
-  set (SDL_X11 OFF CACHE INTERNAL "..." FORCE)
-  set (SDL_X11_SHARED OFF CACHE INTERNAL "..." FORCE)
+    set (SDL_X11 OFF CACHE INTERNAL "..." FORCE)
+    set (SDL_X11_SHARED OFF CACHE INTERNAL "..." FORCE)
 endif ()
 
 if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/SDL/)
-  add_subdirectory(SDL)
+    add_subdirectory(SDL)
 else() 
-  FetchContent_Declare(
-    SDL
-    GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
-    GIT_TAG release-3.2.16
-  )
-  FetchContent_MakeAvailable(SDL)
+    FetchContent_Declare(
+        SDL
+        GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
+        GIT_TAG release-3.2.16
+    )
+    FetchContent_MakeAvailable(SDL)
 endif()
 
 # FreeType
@@ -349,16 +349,16 @@ set (FT_DISABLE_HARFBUZZ ON CACHE INTERNAL "..." FORCE)
 set (FT_DISABLE_BROTLI ON CACHE INTERNAL "..." FORCE)
 
 if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/freetype/)
-  add_subdirectory(freetype)
+    add_subdirectory(freetype)
 else() 
-  FetchContent_Declare(
-    FreeType
-    GIT_REPOSITORY https://gitlab.freedesktop.org/freetype/freetype.git
-    GIT_TAG VER-2-13-3
-  )
-  FetchContent_MakeAvailable(FreeType)
+    FetchContent_Declare(
+        FreeType
+        GIT_REPOSITORY https://gitlab.freedesktop.org/freetype/freetype.git
+        GIT_TAG VER-2-13-3
+    )
+    FetchContent_MakeAvailable(FreeType)
 endif()
 
 if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo")
-  add_subdirectory(imgui)
+    add_subdirectory(imgui)
 endif()
