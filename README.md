@@ -23,7 +23,7 @@ _Motor de videojuegos 2D tonto y simple hecho con C++. El objetivo es hacerlo ra
 | x86_64/AMD64 | x86_64/AMD64 |
 
 ## Requerimentos de sistema
-- CPU multinucleo con extensiones de instrucciones x86_64 AVX y SSE (MMX si usas GCC).
+- CPU multinucleo x86_64 con las extensiones AVX y SSE (MMX si usas GCC).
 - GPU compatible con vulkan.
 - almenos 200 MiB de memoria RAM disponible.
 - almenos 14 GiB de espacio libre para los binarios y el codigo fuente (incluido todas las caracteristicas de depuracion)
