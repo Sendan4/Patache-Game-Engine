@@ -4,68 +4,6 @@ include(FetchContent)
 
 message("")
 message("  - Fast_io -")
-
-include(CheckIncludeFileCXX)
-string(APPEND CMAKE_REQUIRED_FLAGS "")
-string(APPEND CMAKE_REQUIRED_INCLUDES "${CMAKE_CURRENT_SOURCE_DIR}/fast_io/include")
-CHECK_INCLUDE_FILE_CXX("fast_io.h" HAVE_FAST_IO)
-if(NOT HAVE_FAST_IO)
-    message(FATAL_ERROR "fast_io.h not usable")
-endif()
-
-check_cxx_source_compiles(
-    "#include <fast_io.h>\n\
-    int main() { fast_io::io::print(\"Hello, World!\"); return 0; }"
-    fast_io_io_print)
-if(NOT fast_io_io_print)
-    message(FATAL_ERROR "fast_io::io::print not usable")
-endif()
-
-check_cxx_source_compiles(
-    "#include <fast_io.h>\n\
-    int main() { fast_io::io::println(\"Hello, World!\"); return 0; }"
-    fast_io_io_println)
-if(NOT fast_io_io_println)
-    message(FATAL_ERROR "fast_io::io::println not usable")
-endif()
-
-check_cxx_source_compiles(
-    "#include <fast_io.h>\n\
-    int main() { fast_io::io::perr(\"Hello, World!\"); return 0; }"
-    fast_io_io_perr)
-if(NOT fast_io_io_perr)
-    message(FATAL_ERROR "fast_io::io::perr not usable")
-endif()
-
-check_cxx_source_compiles(
-    "#include <fast_io.h>\n\
-    int main() { fast_io::io::perrln(\"Hello, World!\"); return 0; }"
-    fast_io_io_perrln)
-if(NOT fast_io_io_perrln)
-    message(FATAL_ERROR "fast_io::io::perrln not usable")
-endif()
-
-CHECK_INCLUDE_FILE_CXX("fast_io_device.h" HAVE_FAST_IO_DEVICE)
-if(NOT HAVE_FAST_IO_DEVICE)
-    message(FATAL_ERROR "fast_io_device.h not usable")
-endif()
-
-check_cxx_source_compiles(
-    "#include <fast_io_device.h>\n\
-    int main() { fast_io::dir_file Directory(\"Test/\"); return 0; }"
-    fast_io_dir_file)
-if(NOT fast_io_dir_file)
-    message(FATAL_ERROR "fast_io::dir_file not usable")
-endif()
-
-check_cxx_source_compiles(
-    "#include <fast_io_device.h>\n\
-    int main(void) { fast_io::native_file_loader loader(\"test.yaml\"); return 0; }"
-    fast_io_native_file_loader)
-if(NOT fast_io_native_file_loader)
-    message(FATAL_ERROR "fast_io::native_file_loader not usable")
-endif()
-
 add_subdirectory(fast_io)
 
 # RapidYaml

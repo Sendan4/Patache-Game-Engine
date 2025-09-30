@@ -1,35 +1,35 @@
 #include "Vulkan_FrameBuffer.hpp"
 
 bool
-CreateFrameBuffer (Patache::VulkanBackend & Vulkan)
+CreateFrameBuffer (Patache::VulkanBackend & rVulkan)
 {
-  if (Vulkan.SwapChainFrameBuffer == VK_NULL_HANDLE)
-    Vulkan.SwapChainFrameBuffer = new vk::Framebuffer[Vulkan.SwapChainImageCount];
+  if (rVulkan.pSwapchainFrameBuffers == nullptr)
+    rVulkan.pSwapchainFrameBuffers = new vk::Framebuffer[rVulkan.swapchainImageCount];
 
-  vk::Result Result;
+  vk::Result result;
 
-  for (std::uint8_t i = 0; i < Vulkan.SwapChainImageCount; ++i)
+  for (std::uint8_t i = 0; i < rVulkan.swapchainImageCount; ++i)
     {
-      const vk::FramebufferCreateInfo FrameBufferInfo{
-        .renderPass      = Vulkan.RenderPass,
+      const vk::FramebufferCreateInfo frameBufferInfo{
+        .renderPass      = rVulkan.renderPass,
         .attachmentCount = 1,
-        .pAttachments    = &Vulkan.SwapChainColorImageView[i],
-        .width           = Vulkan.SwapChainExtent.width,
-        .height          = Vulkan.SwapChainExtent.height,
+        .pAttachments    = &rVulkan.pSwapchainColorImageViews[i],
+        .width           = rVulkan.swapchainExtent.width,
+        .height          = rVulkan.swapchainExtent.height,
         .layers          = 1,
       };
 
-      Result = Vulkan.Device.createFramebuffer (&FrameBufferInfo, nullptr,
-                                                &Vulkan.SwapChainFrameBuffer[i]);
+      result = rVulkan.device.createFramebuffer (&frameBufferInfo, nullptr,
+                                                 &rVulkan.pSwapchainFrameBuffers[i]);
 
-      if (Result != vk::Result::eSuccess)
+      if (result != vk::Result::eSuccess)
         {
-          char ErrorText[PATACHE_ERROR_TEXT_SIZE]{ 0 };
+          char errorText[PATACHE_ERROR_TEXT_SIZE]{ 0 };
 
-          std::snprintf (ErrorText, PATACHE_ERROR_TEXT_SIZE - 1, "Frame Buffer #%.3u", i + 1);
+          std::snprintf (errorText, PATACHE_ERROR_TEXT_SIZE - 1, "Frame Buffer #%.3u", i + 1);
 
-          std::future<void> ReturnVulkanCheck
-              = std::async (std::launch::async, Patache::Log::VulkanCheck, ErrorText, Result);
+          std::future<void> returnVulkanCheck
+              = std::async (std::launch::async, Patache::VulkanCheck, errorText, result);
 
           return false;
         }

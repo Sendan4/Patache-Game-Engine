@@ -11,18 +11,18 @@
 #include <imgui_impl_sdl3.h>
 #include <imgui_impl_vulkan.h>
 #endif
-#include <fast_io.h>
 
 // Patache Engine
 #include "PatacheEngine/PatacheEngine.hpp"
-#include "StartLogInfo.hpp"
-#include "Log.hpp"
+#include "Vulkan_SetupLog.hpp"
 
-void RecreateSwapChain (Patache::Engine * const);
+// Vulkan_Swapchain.cpp
+void RecreateSwapchain (Patache::Engine * const);
 
 #define PATACHE_ERROR_TEXT_SIZE 128
 
 #if defined(__linux__)
-extern bool Resize;
-extern bool ResizingPending;
+// Input.hpp
+extern bool resize;
+extern bool resizingPending;
 #endif

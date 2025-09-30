@@ -14,7 +14,7 @@ target_sources (${PROJECT_NAME} PRIVATE
     "Core/Input.cpp"
     "Core/ClearColor.cpp"
     "RaccoonRenderer/Vulkan/Vulkan_SetupRenderer.cpp"
-    "RaccoonRenderer/Vulkan/Vulkan_SwapChain.cpp"
+    "RaccoonRenderer/Vulkan/Vulkan_Swapchain.cpp"
     "RaccoonRenderer/Vulkan/Vulkan_ImageView.cpp"
     "RaccoonRenderer/Vulkan/Vulkan_CommandBuffer.cpp"
     "RaccoonRenderer/Vulkan/Vulkan_FrameBuffer.cpp"
@@ -23,7 +23,7 @@ target_sources (${PROJECT_NAME} PRIVATE
     "RaccoonRenderer/Vulkan/Vulkan_Render.cpp"
     "RaccoonRenderer/Vulkan/Vulkan_Buffer.cpp"
     "Core/Triangle.cpp"
-    "Log/Messages.cpp"
+    "Log/Message.cpp"
     "Log/StartLogInfo.cpp"
     "Log/Vulkan_SetupLog.cpp"
     "Log/Vulkan_Info.cpp")
@@ -47,10 +47,10 @@ if (${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
 
     target_sources (${PROJECT_NAME} PRIVATE
         "Core/WaylandWindow.cpp"
-	${CMAKE_BINARY_DIR}/WaylandProtocols/xdg-shell.h
-	${CMAKE_BINARY_DIR}/WaylandProtocols/xdg-shell.c
-	${CMAKE_BINARY_DIR}/WaylandProtocols/xdg-decoration-unstable-v1.h
-	${CMAKE_BINARY_DIR}/WaylandProtocols/xdg-decoration-unstable-v1.c)
+				${CMAKE_BINARY_DIR}/WaylandProtocols/xdg-shell.h
+				${CMAKE_BINARY_DIR}/WaylandProtocols/xdg-shell.c
+				${CMAKE_BINARY_DIR}/WaylandProtocols/xdg-decoration-unstable-v1.h
+				${CMAKE_BINARY_DIR}/WaylandProtocols/xdg-decoration-unstable-v1.c)
 		
     target_include_directories(${PROJECT_NAME} PRIVATE "Core/WaylandCSD/")
 
@@ -70,7 +70,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/.
 target_include_directories(${PROJECT_NAME} PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/Core/"
     "${CMAKE_CURRENT_SOURCE_DIR}/Log/"
-    "${CMAKE_CURRENT_SOURCE_DIR}/RaccoonRenderer/")
+    "${CMAKE_CURRENT_SOURCE_DIR}/RaccoonRenderer/Vulkan/")
 
 # Compiler Flags
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
@@ -260,7 +260,7 @@ endif()
 
 target_link_libraries(${PROJECT_NAME} PUBLIC Fast_io SDL3::SDL3 cglm)
 target_link_libraries(${PROJECT_NAME} PRIVATE ryml::ryml freetype)
-target_include_directories(${PROJECT_NAME} PRIVATE ${FREETYPE_INCLUDE_DIRS} ${SDL2_INCLUDE_DIRS})
+target_include_directories(${PROJECT_NAME} PRIVATE ${FREETYPE_INCLUDE_DIRS} ${SDL3_INCLUDE_DIRS})
 
 if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo")
     target_link_libraries(${PROJECT_NAME} PUBLIC Imgui)

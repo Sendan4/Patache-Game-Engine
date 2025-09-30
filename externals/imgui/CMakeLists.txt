@@ -5,7 +5,7 @@ project("Imgui" LANGUAGES CXX C VERSION 1.91.7)
 set(Imgui_VERSION "1.91.9" CACHE INTERNAL "Imgui version")
 
 message("")
-message("  - Imgui -")
+message("  - ImGui -")
 
 include(CheckIncludeFile)
 
@@ -45,11 +45,6 @@ target_include_directories(${PROJECT_NAME} PUBLIC "misc/freetype")
 # Link Vulkan from SDK
 # Link Libraries
 if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" OR (CMAKE_SYSTEM_NAME STREQUAL "Linux" AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU"))
-	# Using VVL
-	if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo" AND USE_VVL)
-		target_compile_definitions(${PROJECT_NAME} PRIVATE PATATA_FIND_VVL_IN_THE_CURRENT_PATH)
-	endif()
-
 	# build Vulkan
 	target_link_libraries(${PROJECT_NAME} PRIVATE vulkan Vulkan::Headers)
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
@@ -75,7 +70,7 @@ if (TARGET asm_offset)
 endif()
 
 target_link_libraries(${PROJECT_NAME} PRIVATE freetype SDL3::SDL3)
-target_include_directories(${PROJECT_NAME} PRIVATE ${FREETYPE_INCLUDE_DIRS} ${SDL2_INCLUDE_DIRS})
+target_include_directories(${PROJECT_NAME} PRIVATE ${FREETYPE_INCLUDE_DIRS} ${SDL3_INCLUDE_DIRS})
 
 set_target_properties(${PROJECT_NAME}
 	PROPERTIES

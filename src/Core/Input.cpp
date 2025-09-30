@@ -1,138 +1,134 @@
 #include "Input.hpp"
 
 void
-Patache::Engine::HandleEvent (const SDL_Event & Event)
+Patache::Engine::HandleEvent (const SDL_Event & rEvent)
 {
-  const bool * const KeyState = SDL_GetKeyboardState (nullptr);
+  const bool * const pKeyState = SDL_GetKeyboardState (nullptr);
 
-  switch (Event.type)
+  switch (rEvent.type)
     {
     case SDL_EVENT_KEY_DOWN:
 
       // (begin) ALT + RETURN Hotkey for toggle full screen
-      if (KeyState[SDL_SCANCODE_RALT] || KeyState[SDL_SCANCODE_LALT])
+      if (pKeyState[SDL_SCANCODE_RALT] || pKeyState[SDL_SCANCODE_LALT])
         {
-          if (Event.key.key == SDLK_RETURN)
+          if (rEvent.key.key == SDLK_RETURN)
             {
-              if (!IsFullScreen)
+              if (!isFullScreen)
                 {
-                  IsFullScreen = true;
+                  isFullScreen = true;
 
 #if defined(__linux__)
-                  if (WaylandWindow.DecorationMananger == nullptr)
+                  // Wayland Client Side Decoration
+                  if (waylandWindow.pDecorationMananger == nullptr)
                     {
                       for (std::uint8_t i = 0; i < 3; ++i)
-                        {
-                          wl_subsurface_destroy (WaylandWindow.ButtonSubSurface[i]);
-                        }
+                        wl_subsurface_destroy (waylandWindow.pButtonSubSurface[i]);
 
-                      wl_subsurface_destroy (WaylandWindow.MainBarSubSurface);
+                      wl_subsurface_destroy (waylandWindow.pMainBarSubSurface);
 
-                      if (!IsMaximized)
+                      if (!isMaximized)
                         {
-                          for (std::uint8_t i = 0; i < PATACHE_CSD_BORDER_SIZE; ++i)
-                            wl_subsurface_destroy (WaylandWindow.BorderSubSurface[i]);
+                          for (std::uint8_t i = 0; i < PATACHE_BORDER_CSD_SIZE; ++i)
+                            wl_subsurface_destroy (waylandWindow.pBorderSubSurface[i]);
                         }
                     }
 
-                  xdg_toplevel_set_fullscreen (WaylandWindow.DesktopWindow, nullptr);
+                  xdg_toplevel_set_fullscreen (waylandWindow.pDesktopWindow, nullptr);
 #else
-                  int                           DisplaysCount = 0;
-                  SDL_DisplayID *               DID           = SDL_GetDisplays (&DisplaysCount);
-                  const SDL_DisplayMode * const DesktopMode   = SDL_GetDesktopDisplayMode (*DID);
+                  // SDL_Window
+                  int                           displaysCount = 0;
+                  SDL_DisplayID *               pDID          = SDL_GetDisplays (&displaysCount);
+                  const SDL_DisplayMode * const pDesktopMode  = SDL_GetDesktopDisplayMode (*pDID);
 
-                  if (DesktopMode != nullptr)
+                  if (pDesktopMode != nullptr)
                     {
-                      if (!SDL_SetWindowFullscreenMode (GameWindow, DesktopMode))
-                        std::future<void> Err
-                            = std::async (std::launch::async, Patache::Log::ErrorMessage,
+                      if (!SDL_SetWindowFullscreenMode (pGameWindow, pDesktopMode))
+                        std::future<void> err
+                            = std::async (std::launch::async, Patache::ErrorMessage,
                                           "Unable to apply full screen resolution");
                     }
                   else
-                    std::future<void> Err
-                        = std::async (std::launch::async, Patache::Log::ErrorMessage,
-                                      "Could not obtain Desktop Display Mode mode or "
-                                      "Display ID");
+                    {
+                      std::future<void> err
+                          = std::async (std::launch::async, Patache::ErrorMessage,
+                                        "Could not obtain Desktop Display Mode mode or "
+                                        "Display ID");
+                    }
 
-                  if (!SDL_SetWindowFullscreen (GameWindow, IsFullScreen))
-                    std::future<void> Err
-                        = std::async (std::launch::async, Patache::Log::ErrorMessage,
-                                      "Could not switch to full screen mode");
+                  if (!SDL_SetWindowFullscreen (pGameWindow, isFullScreen))
+                    std::future<void> err = std::async (std::launch::async, Patache::ErrorMessage,
+                                                        "Could not switch to full screen mode");
 #endif
                 }
               else
                 {
 #if defined(__linux__)
-                  xdg_toplevel_unset_fullscreen (WaylandWindow.DesktopWindow);
+                  // Wayland Client Side Decoration
+                  xdg_toplevel_unset_fullscreen (waylandWindow.pDesktopWindow);
 
-                  if (WaylandWindow.DecorationMananger == nullptr)
+                  if (waylandWindow.pDecorationMananger == nullptr)
                     {
-                      WaylandWindow.MainBarSubSurface = wl_subcompositor_get_subsurface (
-                          WaylandWindow.SubCompositor, WaylandWindow.MainBarSurface,
-                          WaylandWindow.Surface);
+                      waylandWindow.pMainBarSubSurface = wl_subcompositor_get_subsurface (
+                          waylandWindow.pSubCompositor, waylandWindow.pMainBarSurface,
+                          waylandWindow.pSurface);
 
                       // Buttons
                       for (std::uint8_t i = 0; i < 3; ++i)
                         {
-                          WaylandWindow.ButtonSubSurface[i] = wl_subcompositor_get_subsurface (
-                              WaylandWindow.SubCompositor,
-                              WaylandWindow.ButtonSurface[i], // surface turned into
-                                                              // a sub-surface
-                              WaylandWindow.MainBarSurface);  // the parent surface
+                          waylandWindow.pButtonSubSurface[i] = wl_subcompositor_get_subsurface (
+                              waylandWindow.pSubCompositor, waylandWindow.pButtonSurface[i],
+                              waylandWindow.pMainBarSurface);
                         }
 
                       // Border Window
-                      if (!IsMaximized)
+                      if (!isMaximized)
                         {
-                          for (std::uint8_t i = 0; i < PATACHE_CSD_BORDER_SIZE; ++i)
+                          for (std::uint8_t i = 0; i < PATACHE_BORDER_CSD_SIZE; ++i)
                             {
-                              WaylandWindow.BorderSubSurface[i] = wl_subcompositor_get_subsurface (
-                                  WaylandWindow.SubCompositor,
-                                  WaylandWindow.BorderSurface[i], // surface turned
-                                                                  // into a
-                                                                  // sub-surface
-                                  WaylandWindow.Surface);         // the parent surface
+                              waylandWindow.pBorderSubSurface[i] = wl_subcompositor_get_subsurface (
+                                  waylandWindow.pSubCompositor, waylandWindow.pBorderSurface[i],
+                                  waylandWindow.pSurface);
                             }
                         }
                     }
 #else
-                  if (!SDL_SetWindowFullscreen (GameWindow, IsFullScreen))
-                    std::future<void> Err
-                        = std::async (std::launch::async, Patache::Log::ErrorMessage,
-                                      "could not switch to window mode");
+                  // SDL_Window
+                  if (!SDL_SetWindowFullscreen (pGameWindow, isFullScreen))
+                    std::future<void> err = std::async (std::launch::async, Patache::ErrorMessage,
+                                                        "could not switch to window mode");
 #endif
-                  IsFullScreen = false;
+                  isFullScreen = false;
                 }
             }
         }
         // (end) ALT + RETURN Hotkey for toggle full screen
 
 #if PATACHE_DEBUG == 1
-      // (begin) ctrl + p hotkey for toggle the debug ui
-      if (KeyState[SDL_SCANCODE_LCTRL] || KeyState[SDL_SCANCODE_RCTRL])
-        if (Event.key.key == SDLK_P)
-          engineInfo.ShowMainMenuBar ^= true;
-      // (end) ctrl + p hotkey for toggle the debug ui
+      // (begin) CTRL + P hotkey for toggle the debug ui
+      if (pKeyState[SDL_SCANCODE_LCTRL] || pKeyState[SDL_SCANCODE_RCTRL])
+        if (rEvent.key.key == SDLK_P)
+          debugInfo.showMainMenuBar ^= true;
+      // (end) CTRL + P hotkey for toggle the debug ui
 #endif
       break;
     }
 
 #if PATACHE_DEBUG == 1
-  ImGui_ImplSDL3_ProcessEvent (&Event);
+  ImGui_ImplSDL3_ProcessEvent (&rEvent);
 #endif
 }
 
 #if !defined(__linux__)
-// Event Filter for Window Resize
+// SDL Event Filter for Window Resize
 bool SDLCALL
-HandleResize (void * userdata, SDL_Event * event)
+HandleResize (void * pUserdata, SDL_Event * pEvent)
 {
-  // resize event
-  if (event->window.type == SDL_EVENT_WINDOW_RESIZED
-      || event->window.type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED
-      || event->window.type == SDL_EVENT_WINDOW_ENTER_FULLSCREEN
-      || event->window.type == SDL_EVENT_WINDOW_LEAVE_FULLSCREEN)
-    *static_cast<bool *> (userdata) = true;
+  if (pEvent->window.type == SDL_EVENT_WINDOW_RESIZED
+      || pEvent->window.type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED
+      || pEvent->window.type == SDL_EVENT_WINDOW_ENTER_FULLSCREEN
+      || pEvent->window.type == SDL_EVENT_WINDOW_LEAVE_FULLSCREEN)
+    *static_cast<bool *> (pUserdata) = true;
 
   return true;
 }

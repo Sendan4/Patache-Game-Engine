@@ -1,15 +1,14 @@
 #include <cstdio>
 #include <future>
 
+#include <SDL3/SDL.h>
 #include <fast_io.h>
 #include <fast_io_device.h>
 #include <ryml.hpp>
-#include <SDL3/SDL.h>
 
 // Patache Engine
-#include "PatacheEngine/PatacheEngine.hpp"
-#include "Log.hpp"
+#include "PatacheEngine/StructConfig.hpp"
+#include "Message.hpp"
+#include "Configuration_Funcs.hpp"
 
 #define PATACHE_ERROR_TEXT_SIZE 1024
-
-bool LoadConfiguration (Patache::Config &);

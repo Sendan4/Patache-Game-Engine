@@ -15,14 +15,13 @@
 
 // Patache Engine
 #include "PatacheEngine/PatacheEngine.hpp"
-#include "ColorTerminal.hpp"
-#include "Log.hpp"
+#include "Message.hpp"
 
 #if defined(__linux__)
-extern bool IsMaximized;
+extern bool isMaximized;
 #else
-bool SDLCALL HandleResize (void * userdata, SDL_Event * event);
+bool SDLCALL HandleResize (void *, SDL_Event *);
 #endif
 
-bool IsFullScreen = false;
-bool Resize       = false;
+bool isFullScreen = false;
+bool resize       = false;

@@ -1,78 +1,66 @@
 #include "Vulkan_SetupLog.hpp"
 
 void
-Patache::Log::VulkanList (const char * const List[], const std::uint32_t & Size,
-                          const char * const Message)
+Patache::VulkanList (const char * const pList[], const std::uint32_t & rSize,
+                     const char * const pMessage)
 {
 #if PATACHE_DEBUG == 1
-#if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
-  char * VarTypeRealName = abi::__cxa_demangle (typeid (*List).name (), nullptr, nullptr, nullptr);
-#else
-  const char * VarTypeRealName = typeid (*List).name ();
-#endif
+  PATACHE_VARTYPE_STRING_PTR pVarTypeRealName = nullptr;
+
+  PATACHE_GET_VARTYPE_STRING (pVarTypeRealName, pList);
 #endif
 
-  fast_io::io::println (PATACHE_FAST_IO_BUFF_OUT,
+  fast_io::io::println (PATACHE_FASTIO_BUFFOUT,
 #if PATACHE_DEBUG == 1
-                        PATACHE_TERM_DIM, PATACHE_TERM_COLOR_GRAY0, "[",
-                        fast_io::mnp::os_c_str (VarTypeRealName), "] ",
-#endif // PATACHE_DEBUG
-                        PATACHE_TERM_RESET, PATACHE_TERM_BOLD, fast_io::mnp::os_c_str (Message),
-                        " : ", PATACHE_TERM_RESET, Size);
+                        PATACHE_FASTIO_SHOW_VARTYPE_STRING (pVarTypeRealName, 0, 2, 0),
+#endif
+                        PATACHE_TERM_RESET, PATACHE_TERM_BOLD, fast_io::mnp::os_c_str (pMessage),
+                        " : ", PATACHE_TERM_RESET, rSize);
 
-  for (std::uint32_t i = 0; i < Size; ++i)
+  for (std::uint32_t i = 0; i < rSize; ++i)
     {
-      if (List[i] != nullptr)
-        fast_io::io::println (PATACHE_FAST_IO_BUFF_OUT, "  ", PATACHE_TERM_DIM,
-                              fast_io::mnp::os_c_str (List[i]), PATACHE_TERM_RESET);
-      else
-        break;
+      fast_io::io::println (PATACHE_FASTIO_BUFFOUT, "  ", PATACHE_TERM_DIM,
+                            fast_io::mnp::os_c_str (pList[i]), PATACHE_TERM_RESET);
     }
 
 #if PATACHE_DEBUG == 1
-#if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
-  std::free (VarTypeRealName);
-#endif
+  PATACHE_FREE_VARTYPE_STRING (pVarTypeRealName);
 #endif
 
-  fast_io::io::println (PATACHE_FAST_IO_BUFF_OUT);
+  fast_io::io::println (PATACHE_FASTIO_BUFFOUT);
 }
 
 void
-Patache::Log::VulkanCheck (const char * const Message, const vk::Result & Result)
+Patache::VulkanCheck (const char * const pMessage, const vk::Result & rResult)
 {
 #if PATACHE_DEBUG == 1
-#if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
-  char * VarTypeRealName = abi::__cxa_demangle (typeid (Result).name (), nullptr, nullptr, nullptr);
-#else
-  const char * VarTypeRealName = typeid (Result).name ();
-#endif
+  PATACHE_VARTYPE_STRING_PTR pVarTypeRealName = nullptr;
+
+  PATACHE_GET_VARTYPE_STRING (pVarTypeRealName, rResult);
 #endif
 
-  if (Result != vk::Result::eSuccess && Result != vk::Result::eSuboptimalKHR)
+  if (rResult != vk::Result::eSuccess && rResult != vk::Result::eSuboptimalKHR)
     {
-      fast_io::io::println (PATACHE_FAST_IO_BUFF_OUT,
+      fast_io::io::println (PATACHE_FASTIO_BUFFOUT,
 #if PATACHE_DEBUG == 1
-                            PATACHE_TERM_DIM, PATACHE_TERM_COLOR_GRAY0, "[",
-                            fast_io::mnp::os_c_str (typeid (Result).name ()), "] ",
-#endif // PATACHE_DEBUG
-                            PATACHE_TERM_RESET, PATACHE_TERM_BOLD, fast_io::mnp::os_c_str (Message),
-                            " : ", PATACHE_TERM_RESET, PATACHE_TERM_COLOR_YELLOW,
-                            vk::to_string (Result), PATACHE_TERM_RESET);
+                            PATACHE_FASTIO_SHOW_VARTYPE_STRING (pVarTypeRealName, 0, 2, 0),
+#endif
+                            PATACHE_TERM_RESET, PATACHE_TERM_BOLD,
+                            fast_io::mnp::os_c_str (pMessage), " : ", PATACHE_TERM_RESET,
+                            PATACHE_TERM_COLOR_YELLOW, vk::to_string (rResult), PATACHE_TERM_RESET);
     }
   else
-    fast_io::io::println (PATACHE_FAST_IO_BUFF_OUT,
+    {
+      fast_io::io::println (PATACHE_FASTIO_BUFFOUT,
 #if PATACHE_DEBUG == 1
-                          PATACHE_TERM_DIM, PATACHE_TERM_COLOR_GRAY0, "[",
-                          fast_io::mnp::os_c_str (VarTypeRealName), "] ",
-#endif // PATACHE_DEBUG
-                          PATACHE_TERM_RESET, PATACHE_TERM_BOLD, fast_io::mnp::os_c_str (Message),
-                          " : ", PATACHE_TERM_RESET, PATACHE_TERM_COLOR_GREEN,
-                          vk::to_string (Result), PATACHE_TERM_RESET);
+                            PATACHE_FASTIO_SHOW_VARTYPE_STRING (pVarTypeRealName, 0, 2, 0),
+#endif
+                            PATACHE_TERM_RESET, PATACHE_TERM_BOLD,
+                            fast_io::mnp::os_c_str (pMessage), " : ", PATACHE_TERM_RESET,
+                            PATACHE_TERM_COLOR_GREEN, vk::to_string (rResult), PATACHE_TERM_RESET);
+    }
 
 #if PATACHE_DEBUG == 1
-#if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
-  std::free (VarTypeRealName);
-#endif
+  PATACHE_FREE_VARTYPE_STRING (pVarTypeRealName);
 #endif
 }

@@ -1,10 +1,10 @@
 // ARGB 8888 Format
-#define PATACHE_CSD_CLOSE_BUTTON_HEIGHT     18
-#define PATACHE_CSD_CLOSE_BUTTON_WIDTH      27
-#define PATACHE_CSD_CLOSE_BUTTON_SIZE       1944 // W * H * 4
-#define PATACHE_CSD_CLOSE_BUTTON_PIXELCOUNT 486  // W * H
+#define PATACHE_CLOSE_BUTTON_CSD_HEIGHT     18
+#define PATACHE_CLOSE_BUTTON_CSD_WIDTH      27
+#define PATACHE_CLOSE_BUTTON_CSD_SIZE       1944 // W * H * 4
+#define PATACHE_CLOSE_BUTTON_CSD_PIXELCOUNT 486  // W * H
 
-static constexpr std::uint32_t CSDCloseButton[] = {
+static constexpr std::uint32_t sCloseButtonCSD[] = {
   0x00000000, 0xffac7a7a, 0xffac7a7a, 0xffac7a7a, 0xffac7a7a, 0xffae7a7a, 0xffac7a7a, 0xffac7a7a,
   0xffac7a7a, 0xffac7a7a, 0xffac7a7a, 0xffad7a7a, 0xffac7a7a, 0xffae7a7a, 0xffac7a7a, 0xffac7a7a,
   0xffac7a7a, 0xffac7a7a, 0xffad7a7a, 0xffac7a7a, 0xffac7a7a, 0xffac7a7b, 0xffac7a7a, 0xffac7a78,

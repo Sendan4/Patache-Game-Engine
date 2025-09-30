@@ -1,13 +1,18 @@
+#include <fast_io.h>
+
+// Patache Engine
 #include "StartLogInfo.hpp"
+#include "ColorTerminal.hpp"
+#include "FastIOBuff.hpp"
 
 void
-Patache::Log::StartPatacheLogInfo (void)
+StartLogInfo (void)
 {
-  fast_io::io::println (PATACHE_FAST_IO_BUFF_OUT, PATACHE_TERM_COLOR_PATACHE, PATACHE_ENGINE_NAME,
+  fast_io::io::println (PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_COLOR_PATACHE, PATACHE_ENGINE_NAME,
                         PATACHE_TERM_RESET, " INFO");
 
 #if PATACHE_DEBUG == 1
-  fast_io::io::println (PATACHE_FAST_IO_BUFF_OUT,
+  fast_io::io::println (PATACHE_FASTIO_BUFFOUT,
 #if defined(PATACHE_GIT_BRANCH)
                         PATACHE_TERM_BOLD, fast_io::mnp::right ("Branch : ", 11),
                         PATACHE_TERM_RESET, PATACHE_GIT_BRANCH, "\n",
@@ -39,7 +44,7 @@ Patache::Log::StartPatacheLogInfo (void)
 #endif // PATACHE_DEBUG
 
   fast_io::io::println (
-      PATACHE_FAST_IO_BUFF_OUT,
+      PATACHE_FASTIO_BUFFOUT,
       // Patache Version
       PATACHE_TERM_BOLD, fast_io::mnp::right ("Version : ", 12), PATACHE_TERM_RESET,
       PATACHE_ENGINE_VERSION, " \n",
@@ -69,5 +74,5 @@ Patache::Log::StartPatacheLogInfo (void)
       PATACHE_TERM_BOLD, fast_io::mnp::right ("CPU Architecture : ", 21), PATACHE_TERM_RESET,
       PATACHE_ARCH);
 
-  fast_io::io::println (PATACHE_FAST_IO_BUFF_OUT);
+  fast_io::io::println (PATACHE_FASTIO_BUFFOUT);
 }

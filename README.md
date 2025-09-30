@@ -1,28 +1,34 @@
-| Español | [English](README_en.md) |
+| [Español](README.md) | English |
 | :--: | :--: |
 
 <p align = "center"><img draggable = false src = "data/assets/patache.svg?ref_type=heads&inline=false" width=64></p>
 
 <h1 align = "center">Motor Patache</h1>
 
-_Motor tonto y simple de videojuegos hecho en C++._
+_Motor de videojuegos 2D tonto y simple hecho con C++. El objetivo es hacerlo rapido, ligero y portable._
 
-<p><strong>Es un motor 2D sencillo y ligero</strong> con el enfoque en el desarrollo de videojuegos utilizando C++.</p>
+<p>⚠️ Esta en un estado muy temprano de desarrollo.</p>
 
-<p>Este motor esta hecho para ser utilizado junto con <a href = "http://www.libsdl.org/">SDL3</a>. Se abstrae la creación de la ventana, el renderizado de graficos, el sonido y la configuración en una API sencilla de utilizar.</p>
+## Enlaces
+<!-- - [Documentation](#)-->
+<b>Repositorios espejo</b>
 
-<p><strong>Es portable</strong>, funciona en varios sistemas operativos.</p>
+| [Github](https://github.com/Sendan4/Patache-Game-Engine) | [Codeberg](https://codeberg.org/PatacheEngine/Patache.git) |
+| :--: | :--: |
 
-| Windows | GNU/Linux |
-| :-----: | :-----: |
-|<b>x86_64</b> | <b>x86_64</b> |
+## Plataformas
+<b>PC</b>
+|    Windows   |  GNU/Linux   |
+| :----------: | :----------: |
+| x86_64/AMD64 | x86_64/AMD64 |
 
-<p>⚠️ <strong>Advertencia</strong>: Esta en un estado muy temprano de desarrollo y no es estable.</p>
+## Requerimentos de sistema
+- CPU multinucleo con extensiones de instrucciones x86_64 AVX y SSE (MMX si usas GCC).
+- GPU compatible con vulkan.
+- almenos 200 MiB de memoria RAM disponible.
+- almenos 14 GiB de espacio libre para los binarios y el codigo fuente (incluido todas las caracteristicas de depuracion)
 
-## Gamescope
-Si el motor o el juego no se ejecuta dentro de gamescope, prueba con ```--expose-wayland```.
-
-## Dependencias usadas en este proyecto
+## Dependencias
 - [SDL3](http://www.libsdl.org/)
 - [Vulkan](https://www.vulkan.org/)
 	- [Vulkan-Headers](https://github.com/KhronosGroup/Vulkan-Headers.git)
@@ -40,13 +46,81 @@ Si el motor o el juego no se ejecuta dentro de gamescope, prueba con ```--expose
 	- [Wayland Client](https://gitlab.freedesktop.org/wayland/wayland)
 	- [Wayland Protocols](https://gitlab.freedesktop.org/wayland/wayland-protocols.git)
 
-## Enlaces
-- [Documentación](#)
-#### Espejos Oficiales
-- [Github](https://github.com/Sendan4/Patache-Game-Engine)
-- [Codeberg](https://codeberg.org/PatacheEngine/Patache.git)
+## Gamescope
+Si el motor o juego no inicia dentro de gamescope, prueba con ```--expose-wayland```.
+
+## Convencion de nombres
+<b>Variables</b>
+```cpp
+int var = 0;
+int longVar = 0;
+int veryLongVarABBREVIATION = 0;
+```
+
+<b>Funciones</b>
+```cpp
+void Func(void);
+void LongFunc(void);
+void VeryLongFuncABBREVIATION(void);
+``` 
+
+<b>Macros</b>
+
+Las abreviaciones son alineadas hacia la derecha en media de lo posible.
+
+```cpp
+#define PATACHE_MACRO
+#define PATACHE_LONGMACRO
+#define PATACHE_LONGMACRO_MACRO
+#define PATACHE_VERYLONGMACRO_ABBREVIATION
+#define PATACHE_MACRO_LONGMACRO_ABBREVIATION_MACRO
+```
+
+<b>Enumeraciones</b>
+```cpp
+Patache::Enum::Value;
+Patache::LongEnum::LongValue;
+Patache::VeryLongEnumABBREVIATION::VeryLongValueABBREVIATION;
+``` 
+
+<b>Estructuras/Clases</b>
+```cpp
+Patache::Class var;
+Patache::LongClass longVar;
+Patache::VeryLongClassABBREVIATION veryLongVarABBREVIATION;
+``` 
+
+<b>Archivos fuente</b>
+- Name.cpp/.hpp
+- LongName.cpp/.hpp
+- ImportantName_LongName.cpp/.hpp
+- ImportantName_LongName_OtherName.cpp/.hpp
+- ImportantName_LongName_Abbreviation.cpp/.hpp
+- Abbreviation_LongName_OtherName.cpp/.hpp
+
+<b>Otras reglas:</b>
+
+- No subrayados '_' en los nombres de las estructuras/clases.
+- No simbolos especiales en los nombres de las variables.
+- Las varibles puntero comienzan con 'p'.
+```cpp
+int * pPointer = nullptr;
+int ** ppDoublePointer = nullptr;
+``` 
+
+- Variables referencia comienzan con 'r'.
+```cpp
+int & rReference = something;
+``` 
+
+- Variables estaticas comienzan con 's'.
+```cpp
+static int sVar = 0;
+```
+
+- No caracteres especiales en nombres de archivos, excepto por subrayados '_'.
+- Los archivos fuente usan extensiones .cpp/.hpp
 
 <hr>
 
 Patache esta bajo la licencia [MIT](LICENSE.txt)
-

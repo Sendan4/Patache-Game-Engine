@@ -1,10 +1,10 @@
 // ARGB 8888 Format
-#define PATACHE_CSD_MAXIMIZE_BUTTON_HEIGHT     18
-#define PATACHE_CSD_MAXIMIZE_BUTTON_WIDTH      27
-#define PATACHE_CSD_MAXIMIZE_BUTTON_SIZE       1944 // W * H * 4
-#define PATACHE_CSD_MAXIMIZE_BUTTON_PIXELCOUNT 486  // W * H
+#define PATACHE_MAXIMIZE_BUTTON_CSD_HEIGHT     18
+#define PATACHE_MAXIMIZE_BUTTON_CSD_WIDTH      27
+#define PATACHE_MAXIMIZE_BUTTON_CSD_SIZE       1944 // W * H * 4
+#define PATACHE_MAXIMIZE_BUTTON_CSD_PIXELCOUNT 486  // W * H
 
-static constexpr std::uint32_t CSDMaximizeButton[] = {
+static constexpr std::uint32_t sMaximizeButtonCSD[] = {
   0x00000000, 0xff7aae8e, 0xff7aac8e, 0xff7aac8e, 0xff7aac8e, 0xff7aac8e, 0xff7aac8e, 0xff7aac8e,
   0xff78ac8e, 0xff7aac8e, 0xff7bac8e, 0xff7aac8e, 0xff7aac8f, 0xff7aac8e, 0xff7aac8e, 0xff7aac8e,
   0xff7aac8e, 0xff7aac8c, 0xff7aac8c, 0xff7aac8c, 0xff7aac8c, 0xff7aac8c, 0xff7aac8c, 0xff7aac8c,

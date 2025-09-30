@@ -3,15 +3,15 @@
 bool
 Patache::Engine::BeginCopyBuffer (void)
 {
-  const vk::CommandBufferAllocateInfo cmdTransferInfo{ .commandPool        = Vulkan.CommandPool,
+  const vk::CommandBufferAllocateInfo cmdTransferInfo{ .commandPool        = vulkan.commandPool,
                                                        .commandBufferCount = 1 };
 
-  vk::Result Result = Vulkan.Device.allocateCommandBuffers (&cmdTransferInfo, &Vulkan.CmdTransfer);
+  vk::Result result = vulkan.device.allocateCommandBuffers (&cmdTransferInfo, &vulkan.cmdTransfer);
 
-  if (Result != vk::Result::eSuccess)
+  if (result != vk::Result::eSuccess)
     {
-      std::future<void> ReturnVulkanCheck = std::async (
-          std::launch::async, Patache::Log::VulkanCheck, "Transfer Command Buffer", Result);
+      std::future<void> returnVulkanCheck = std::async (std::launch::async, Patache::VulkanCheck,
+                                                        "Transfer Command Buffer", result);
 
       return false;
     }
@@ -20,25 +20,25 @@ Patache::Engine::BeginCopyBuffer (void)
     .flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit
   };
 
-  Result = Vulkan.CmdTransfer.begin (&cmdTransferBeginInfo);
-  assert ("Fail to start recording commands for transfer" && (Result == vk::Result::eSuccess));
+  result = vulkan.cmdTransfer.begin (&cmdTransferBeginInfo);
+  assert ("Fail to start recording commands for transfer" && (result == vk::Result::eSuccess));
 
   return true;
 }
 
 void
-Patache::Engine::CopyTriangle (Patache::Triangle & Triangle)
+Patache::Engine::CopyTriangle (Patache::Triangle & rTriangle)
 {
   // Map memory
 
   // Copy buffer CPU -> GPU
   const vk::BufferCopy copyMemoryRegion{ .srcOffset = 0,
-                                         .dstOffset = Triangle.offset,
+                                         .dstOffset = rTriangle.offset,
                                          .size      = sizeof (Patache::Triangle::vertex) };
 
-  for (std::uint8_t i = 0; i < Vulkan.SwapChainImageCount; ++i)
+  for (std::uint8_t i = 0; i < vulkan.swapchainImageCount; ++i)
     {
-      Vulkan.CmdTransfer.copyBuffer (VK_NULL_HANDLE, Vulkan.renderBuffer[i], 1, &copyMemoryRegion);
+      vulkan.cmdTransfer.copyBuffer (VK_NULL_HANDLE, vulkan.pRenderBuffer[i], 1, &copyMemoryRegion);
 
       const vk::BufferMemoryBarrier syncBufferWrite{ .srcAccessMask
                                                      = vk::AccessFlagBits::eTransferWrite,
@@ -49,7 +49,7 @@ Patache::Engine::CopyTriangle (Patache::Triangle & Triangle)
                                                      .buffer = VK_NULL_HANDLE, // buffer src
                                                      .size   = sizeof (Patache::Triangle::vertex) };
 
-      Vulkan.CmdTransfer.pipelineBarrier (vk::PipelineStageFlagBits::eTransfer,
+      vulkan.cmdTransfer.pipelineBarrier (vk::PipelineStageFlagBits::eTransfer,
                                           vk::PipelineStageFlagBits::eTransfer, {}, 0, nullptr, 1,
                                           &syncBufferWrite, 0, nullptr);
     }
@@ -58,22 +58,22 @@ Patache::Engine::CopyTriangle (Patache::Triangle & Triangle)
 void
 Patache::Engine::EndCopyBuffer (void)
 {
-  [[maybe_unused]] vk::Result Result = Vulkan.CmdTransfer.end ();
+  [[maybe_unused]] vk::Result result = vulkan.cmdTransfer.end ();
 
-  assert ("Fail to end recording commands for transfer" && (Result == vk::Result::eSuccess));
+  assert ("Fail to end recording commands for transfer" && (result == vk::Result::eSuccess));
 
   const vk::SubmitInfo submitInfo{ .commandBufferCount = 1,
-                                   .pCommandBuffers    = &Vulkan.CmdTransfer };
+                                   .pCommandBuffers    = &vulkan.cmdTransfer };
 
-  Result = Vulkan.Queue.submit (1, &submitInfo, VK_NULL_HANDLE);
+  result = vulkan.queue.submit (1, &submitInfo, VK_NULL_HANDLE);
 
-  assert ("Fail queue submit for transfer" && (Result == vk::Result::eSuccess));
+  assert ("Fail queue submit for transfer" && (result == vk::Result::eSuccess));
 
-  Result = Vulkan.Queue.waitIdle ();
+  result = vulkan.queue.waitIdle ();
 
-  assert ("Fail to wait for transfer queue" && (Result == vk::Result::eSuccess));
+  assert ("Fail to wait for transfer queue" && (result == vk::Result::eSuccess));
 
-  Vulkan.Device.freeCommandBuffers (Vulkan.CommandPool, 1, &Vulkan.CmdTransfer);
+  vulkan.device.freeCommandBuffers (vulkan.commandPool, 1, &vulkan.cmdTransfer);
 
-  Vulkan.CmdTransfer = VK_NULL_HANDLE;
+  vulkan.cmdTransfer = VK_NULL_HANDLE;
 }

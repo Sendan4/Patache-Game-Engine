@@ -1,7 +1,7 @@
 #include "DebugUI.hpp"
 
 void
-Patache::DrawDebugUI (Patache::Engine * const engine)
+Patache::DrawDebugUI (Patache::Engine * const pEngine)
 {
   // Patache Style
   ImGui::GetStyle ().Colors[ImGuiCol_TitleBgActive] = ImVec4 (PATACHE_IMGUI_PATACHE_COLOR);
@@ -37,19 +37,19 @@ Patache::DrawDebugUI (Patache::Engine * const engine)
   // End Patache Style
 
   // Menu Bar
-  if (engine->engineInfo.ShowMainMenuBar)
+  if (pEngine->debugInfo.showMainMenuBar)
     {
       ImGui::GetStyle ().Colors[ImGuiCol_Button] = ImVec4 (0.0f, 0.0f, 0.0f, 0.0f);
 
       if (ImGui::BeginMainMenuBar ())
         {
           if (ImGui::Button ("(Patache Icon)"))
-            engine->engineInfo.ShowMainMenuBar ^= 0b00000001; // Cambiar bits
+            pEngine->debugInfo.showMainMenuBar ^= 0b00000001; // Cambiar bits
 
           if (ImGui::BeginMenu ("Raccoon"))
             {
               if (ImGui::MenuItem ("Renderer", ""))
-                engine->engineInfo.PatacheRaccoonRendererInfoWindow ^= 0b00000001; // Cambiar bits
+                pEngine->debugInfo.raccoonRendererInfoWindow ^= 0b00000001; // Cambiar bits
 
               // No implementado aun
               // ImGui::MenuItem ("Profiler", "");
@@ -59,10 +59,10 @@ Patache::DrawDebugUI (Patache::Engine * const engine)
             }
 
           if (ImGui::Button ("Configuration"))
-            engine->engineInfo.PatacheConfigWindow ^= 0b00000001; // Cambiar bits
+            pEngine->debugInfo.configWindow ^= 0b00000001; // Cambiar bits
 
           if (ImGui::Button ("About"))
-            engine->engineInfo.PatacheInfoWindow ^= 0b00000001; // Cambiar bits
+            pEngine->debugInfo.infoWindow ^= 0b00000001; // Cambiar bits
 
           ImGui::EndMainMenuBar ();
         }
@@ -72,11 +72,11 @@ Patache::DrawDebugUI (Patache::Engine * const engine)
   // End Menu Bar
 
   // Patache Window Info
-  if (engine->engineInfo.PatacheInfoWindow)
+  if (pEngine->debugInfo.infoWindow)
     {
       ImGui::SetNextWindowSize (ImVec2 (400, 440), ImGuiCond_FirstUseEver);
 
-      ImGui::Begin (PATACHE_ENGINE_NAME, &engine->engineInfo.PatacheInfoWindow);
+      ImGui::Begin (PATACHE_ENGINE_NAME, &pEngine->debugInfo.infoWindow);
 
       ImGui::PushStyleVar (ImGuiStyleVar_CellPadding, ImVec2 (PATACHE_IMGUI_TABLE_PADDING));
 
@@ -94,8 +94,8 @@ Patache::DrawDebugUI (Patache::Engine * const engine)
       ImGui::Spacing ();
 #endif
 
-      // Text about the engine
-      ImGui::Text ("Simple and free Game engine");
+      // Text about the pEngine
+      ImGui::Text ("Simple and free Game pEngine");
       ImGui::Text ("%s is under the MIT License.", PATACHE_ENGINE_NAME);
       ImGui::Spacing ();
 
@@ -183,81 +183,81 @@ Patache::DrawDebugUI (Patache::Engine * const engine)
           // List of SDL WINDOW CREATION FLAGS
           if (ImGui::TreeNode ("SDL CREATION FLAGS"))
             {
-              if (engine->engineInfo.WindowCreationFlags & SDL_WINDOW_FULLSCREEN)
+              if (pEngine->debugInfo.windowCreationFlags & SDL_WINDOW_FULLSCREEN)
                 ImGui::BulletText ("fullscreen window");
 
-              if (engine->engineInfo.WindowCreationFlags & SDL_WINDOW_OPENGL)
+              if (pEngine->debugInfo.windowCreationFlags & SDL_WINDOW_OPENGL)
                 ImGui::BulletText ("window usable with OpenGL context");
 
-              if (engine->engineInfo.WindowCreationFlags & SDL_WINDOW_OCCLUDED)
+              if (pEngine->debugInfo.windowCreationFlags & SDL_WINDOW_OCCLUDED)
                 ImGui::BulletText ("window is occluded");
 
-              if (engine->engineInfo.WindowCreationFlags & SDL_WINDOW_HIDDEN)
+              if (pEngine->debugInfo.windowCreationFlags & SDL_WINDOW_HIDDEN)
                 ImGui::BulletText ("window is not visible");
 
-              if (engine->engineInfo.WindowCreationFlags & SDL_WINDOW_BORDERLESS)
+              if (pEngine->debugInfo.windowCreationFlags & SDL_WINDOW_BORDERLESS)
                 ImGui::BulletText ("no window decoration");
 
-              if (engine->engineInfo.WindowCreationFlags & SDL_WINDOW_RESIZABLE)
+              if (pEngine->debugInfo.windowCreationFlags & SDL_WINDOW_RESIZABLE)
                 ImGui::BulletText ("window can be resized");
 
-              if (engine->engineInfo.WindowCreationFlags & SDL_WINDOW_MINIMIZED)
+              if (pEngine->debugInfo.windowCreationFlags & SDL_WINDOW_MINIMIZED)
                 ImGui::BulletText ("window is minimized");
 
-              if (engine->engineInfo.WindowCreationFlags & SDL_WINDOW_MAXIMIZED)
+              if (pEngine->debugInfo.windowCreationFlags & SDL_WINDOW_MAXIMIZED)
                 ImGui::BulletText ("window is maximized");
 
-              if (engine->engineInfo.WindowCreationFlags & SDL_WINDOW_MOUSE_GRABBED)
+              if (pEngine->debugInfo.windowCreationFlags & SDL_WINDOW_MOUSE_GRABBED)
                 ImGui::BulletText ("window has grabbed mouse input");
 
-              if (engine->engineInfo.WindowCreationFlags & SDL_WINDOW_INPUT_FOCUS)
+              if (pEngine->debugInfo.windowCreationFlags & SDL_WINDOW_INPUT_FOCUS)
                 ImGui::BulletText ("window has input focus");
 
-              if (engine->engineInfo.WindowCreationFlags & SDL_WINDOW_MOUSE_FOCUS)
+              if (pEngine->debugInfo.windowCreationFlags & SDL_WINDOW_MOUSE_FOCUS)
                 ImGui::BulletText ("window has mouse focus");
 
-              if (engine->engineInfo.WindowCreationFlags & SDL_WINDOW_EXTERNAL)
+              if (pEngine->debugInfo.windowCreationFlags & SDL_WINDOW_EXTERNAL)
                 ImGui::BulletText ("window not created by SDL");
 
-              if (engine->engineInfo.WindowCreationFlags & SDL_WINDOW_MODAL)
+              if (pEngine->debugInfo.windowCreationFlags & SDL_WINDOW_MODAL)
                 ImGui::BulletText ("window is modal");
 
-              if (engine->engineInfo.WindowCreationFlags & SDL_WINDOW_HIGH_PIXEL_DENSITY)
+              if (pEngine->debugInfo.windowCreationFlags & SDL_WINDOW_HIGH_PIXEL_DENSITY)
                 ImGui::BulletText ("window uses high pixel density back "
                                    "buffer if possible");
 
-              if (engine->engineInfo.WindowCreationFlags & SDL_WINDOW_MOUSE_CAPTURE)
+              if (pEngine->debugInfo.windowCreationFlags & SDL_WINDOW_MOUSE_CAPTURE)
                 ImGui::BulletText ("window has mouse captured "
                                    "(unrelated to MOUSE_GRABBED)");
 
-              if (engine->engineInfo.WindowCreationFlags & SDL_WINDOW_MOUSE_RELATIVE_MODE)
+              if (pEngine->debugInfo.windowCreationFlags & SDL_WINDOW_MOUSE_RELATIVE_MODE)
                 ImGui::BulletText ("window has relative mode enabled");
 
-              if (engine->engineInfo.WindowCreationFlags & SDL_WINDOW_ALWAYS_ON_TOP)
+              if (pEngine->debugInfo.windowCreationFlags & SDL_WINDOW_ALWAYS_ON_TOP)
                 ImGui::BulletText ("window should always be above others");
 
-              if (engine->engineInfo.WindowCreationFlags & SDL_WINDOW_UTILITY)
+              if (pEngine->debugInfo.windowCreationFlags & SDL_WINDOW_UTILITY)
                 ImGui::BulletText ("window should be treated as a utility window");
 
-              if (engine->engineInfo.WindowCreationFlags & SDL_WINDOW_TOOLTIP)
+              if (pEngine->debugInfo.windowCreationFlags & SDL_WINDOW_TOOLTIP)
                 ImGui::BulletText ("window should be treated as a tooltip");
 
-              if (engine->engineInfo.WindowCreationFlags & SDL_WINDOW_POPUP_MENU)
+              if (pEngine->debugInfo.windowCreationFlags & SDL_WINDOW_POPUP_MENU)
                 ImGui::BulletText ("window should be treated as a popup menu");
 
-              if (engine->engineInfo.WindowCreationFlags & SDL_WINDOW_KEYBOARD_GRABBED)
+              if (pEngine->debugInfo.windowCreationFlags & SDL_WINDOW_KEYBOARD_GRABBED)
                 ImGui::BulletText ("window has grabbed keyboard input");
 
-              if (engine->engineInfo.WindowCreationFlags & SDL_WINDOW_VULKAN)
-                ImGui::BulletText ("window usable for Vulkan surface");
+              if (pEngine->debugInfo.windowCreationFlags & SDL_WINDOW_VULKAN)
+                ImGui::BulletText ("window usable for vulkan surface");
 
-              if (engine->engineInfo.WindowCreationFlags & SDL_WINDOW_METAL)
+              if (pEngine->debugInfo.windowCreationFlags & SDL_WINDOW_METAL)
                 ImGui::BulletText ("window usable for Metal view");
 
-              if (engine->engineInfo.WindowCreationFlags & SDL_WINDOW_TRANSPARENT)
+              if (pEngine->debugInfo.windowCreationFlags & SDL_WINDOW_TRANSPARENT)
                 ImGui::BulletText ("window with transparent buffer");
 
-              if (engine->engineInfo.WindowCreationFlags & SDL_WINDOW_NOT_FOCUSABLE)
+              if (pEngine->debugInfo.windowCreationFlags & SDL_WINDOW_NOT_FOCUSABLE)
                 ImGui::BulletText ("window should not be focusable");
 
               ImGui::Spacing ();
@@ -267,23 +267,24 @@ Patache::DrawDebugUI (Patache::Engine * const engine)
 #if defined(__linux__)
           ImGui::Text ("WINDOW DECORATION :");
 
-          switch (engine->engineInfo.windowDecorationType)
+          switch (pEngine->debugInfo.windowDecorationType)
             {
-            case Patache::WindowDecorationType::None:
+            case Patache::WindowDecorationType::eNone:
               ImGui::SameLine ();
               ImGui::Text ("NO");
               break;
 
-            case Patache::WindowDecorationType::ClientSideDecoration:
+            case Patache::WindowDecorationType::eClientSideDecoration:
               ImGui::SameLine ();
               ImGui::Text ("Client Side");
               break;
 
-            case Patache::WindowDecorationType::ServerSideDecoration:
+            case Patache::WindowDecorationType::eServerSideDecoration:
               ImGui::SameLine ();
               ImGui::Text ("Server Side");
               break;
             }
+
           ImGui::Spacing ();
 #endif
         }
@@ -294,75 +295,68 @@ Patache::DrawDebugUI (Patache::Engine * const engine)
   // End Patache Window Info
 
   // Raccoon Renderer Info
-  if (engine->engineInfo.PatacheRaccoonRendererInfoWindow)
+  if (pEngine->debugInfo.raccoonRendererInfoWindow)
     {
       ImGui::SetNextWindowSize (ImVec2 (480, 400), ImGuiCond_FirstUseEver);
 
-      ImGui::Begin ("Raccoon Renderer", &engine->engineInfo.PatacheRaccoonRendererInfoWindow);
+      ImGui::Begin ("Raccoon Renderer", &pEngine->debugInfo.raccoonRendererInfoWindow);
 
       ImGui::PushStyleVar (ImGuiStyleVar_CellPadding, ImVec2 (PATACHE_IMGUI_TABLE_PADDING));
 
-      // Only Vulkan for now. OpenGL as compability option maybe in the future
-      ImGui::Text ("API : Vulkan");
+      // Only vulkan for now. OpenGL as compability option maybe in the future
+      ImGui::Text ("API : vulkan %s", pEngine->debugInfo.versionVK);
 
-      if (engine->engineInfo.VkVersion[0] != '\0')
-        {
-          ImGui::SameLine ();
-          ImGui::Text ("%s", engine->engineInfo.VkVersion);
-        }
-
-      ImGui::Spacing ();
-
-      // Lists of Vulkan layers and extensions
       if (ImGui::CollapsingHeader ("LAYERS AND EXTENSIONS"))
         {
-          // Vulkan Instance Extensions list
+          // vulkan Instance Extensions list
           if (ImGui::BeginTable ("INSTANCE##VkInstanceList", 1, PATACHE_IMGUI_TABLE_FLAGS))
             {
               ImGui::TableSetupColumn ("INSTANCE", ImGuiTableColumnFlags_WidthFixed);
               ImGui::TableHeadersRow ();
 
-              for (std::uint16_t i = 0; i < engine->engineInfo.VkInstanceExtensionsCount; ++i)
+              for (std::uint32_t i = 0; i < pEngine->debugInfo.instanceExtensionsCountVK; ++i)
                 {
                   ImGui::TableNextRow ();
 
                   ImGui::TableSetColumnIndex (0);
-                  ImGui::Text ("%s", engine->engineInfo.ppVkInstanceExtensions[i]);
+                  ImGui::Text ("%s", pEngine->debugInfo.ppInstanceExtensionsVK[i]);
                 }
+
               ImGui::EndTable ();
             }
 
           ImGui::SameLine ();
 
-          // Vulkan Device Extensions List
+          // vulkan Device Extensions List
           if (ImGui::BeginTable ("DEVICE##VkDeviceList", 1, PATACHE_IMGUI_TABLE_FLAGS))
             {
               ImGui::TableSetupColumn ("DEVICE", ImGuiTableColumnFlags_WidthFixed);
               ImGui::TableHeadersRow ();
 
-              for (std::uint32_t i = 0; i < engine->engineInfo.VkDeviceExtensionsCount; ++i)
+              for (std::uint32_t i = 0; i < pEngine->debugInfo.deviceExtensionsCountVK; ++i)
                 {
                   ImGui::TableNextRow ();
 
                   ImGui::TableSetColumnIndex (0);
-                  ImGui::Text ("%s", engine->engineInfo.ppVkDeviceExtensions[i]);
+                  ImGui::Text ("%s", pEngine->debugInfo.ppDeviceExtensionsVK[i]);
                 }
+
               ImGui::EndTable ();
             }
 
-            // Vulkan Layers List
+            // vulkan Layers List
 #if defined(PATACHE_USE_VVL)
           if (ImGui::BeginTable ("LAYERS##VkLayerList", 1, PATACHE_IMGUI_TABLE_FLAGS))
             {
               ImGui::TableSetupColumn ("LAYER", ImGuiTableColumnFlags_WidthFixed);
               ImGui::TableHeadersRow ();
 
-              for (std::uint16_t i = 0; i < PATACHE_VK_LAYER_COUNT; ++i)
+              for (std::uint16_t i = 0; i < PATACHE_LAYER_VK_COUNT; ++i)
                 {
                   ImGui::TableNextRow ();
 
                   ImGui::TableSetColumnIndex (0);
-                  ImGui::Text ("%s", engine->engineInfo.ppVkLayers[i]);
+                  ImGui::Text ("%s", pEngine->debugInfo.ppLayersVK[i]);
                 }
 
               ImGui::EndTable ();
@@ -373,36 +367,36 @@ Patache::DrawDebugUI (Patache::Engine * const engine)
       ImGui::Spacing ();
 
       // Device name
-      if (engine->engineInfo.VkDeviceName[0] != '\0')
+      if (pEngine->debugInfo.deviceNameVK[0] != '\0')
         {
           ImGui::BeginGroup ();
           ImGui::Text ("DEVICE :");
           ImGui::SameLine ();
 
-          switch (engine->engineInfo.VkDeviceVendorId)
+          switch (pEngine->debugInfo.deviceVendorIdVK)
             {
             case 32902:
               ImGui::TextColored (ImVec4 (PATACHE_IMGUI_INTEL_COLOR), "%s",
-                                  engine->engineInfo.VkDeviceName);
+                                  pEngine->debugInfo.deviceNameVK);
               break;
 
             case 4098:
               ImGui::TextColored (ImVec4 (PATACHE_IMGUI_AMD_COLOR), "%s",
-                                  engine->engineInfo.VkDeviceName);
+                                  pEngine->debugInfo.deviceNameVK);
               break;
 
             case 4318:
               ImGui::TextColored (ImVec4 (PATACHE_IMGUI_NVIDIA_COLOR), "%s",
-                                  engine->engineInfo.VkDeviceName);
+                                  pEngine->debugInfo.deviceNameVK);
               break;
 
             case 65541:
               ImGui::TextColored (ImVec4 (PATACHE_IMGUI_MESA_COLOR), "%s",
-                                  engine->engineInfo.VkDeviceName);
+                                  pEngine->debugInfo.deviceNameVK);
               break;
 
             default:
-              ImGui::Text ("%s", engine->engineInfo.VkDeviceName);
+              ImGui::Text ("%s", pEngine->debugInfo.deviceNameVK);
               break;
             }
           ImGui::EndGroup ();
@@ -412,12 +406,12 @@ Patache::DrawDebugUI (Patache::Engine * const engine)
       if (ImGui::BeginItemTooltip ())
         {
           // GPU Vendor Name if is not unknown
-          if (engine->engineInfo.VkDeviceVendorId != 0)
+          if (pEngine->debugInfo.deviceVendorIdVK != 0)
             {
               ImGui::Text ("VENDOR :");
               ImGui::SameLine ();
 
-              switch (engine->engineInfo.VkDeviceVendorId)
+              switch (pEngine->debugInfo.deviceVendorIdVK)
                 {
                 case 32902:
                   ImGui::TextColored (ImVec4 (PATACHE_IMGUI_INTEL_COLOR), "Intel");
@@ -436,7 +430,7 @@ Patache::DrawDebugUI (Patache::Engine * const engine)
                   break;
 
                 default:
-                  ImGui::Text ("%d", engine->engineInfo.VkDeviceVendorId);
+                  ImGui::Text ("%d", pEngine->debugInfo.deviceVendorIdVK);
                   break;
                 }
 
@@ -444,35 +438,35 @@ Patache::DrawDebugUI (Patache::Engine * const engine)
               ImGui::Text ("VENDOR ID :");
               ImGui::SameLine ();
 
-              switch (engine->engineInfo.VkDeviceVendorId)
+              switch (pEngine->debugInfo.deviceVendorIdVK)
                 {
                 case 32902:
                   ImGui::TextColored (ImVec4 (PATACHE_IMGUI_INTEL_COLOR), "%u 0x%X",
-                                      engine->engineInfo.VkDeviceVendorId,
-                                      engine->engineInfo.VkDeviceVendorId);
+                                      pEngine->debugInfo.deviceVendorIdVK,
+                                      pEngine->debugInfo.deviceVendorIdVK);
                   break;
 
                 case 4098:
                   ImGui::TextColored (ImVec4 (PATACHE_IMGUI_AMD_COLOR), "%u 0x%X",
-                                      engine->engineInfo.VkDeviceVendorId,
-                                      engine->engineInfo.VkDeviceVendorId);
+                                      pEngine->debugInfo.deviceVendorIdVK,
+                                      pEngine->debugInfo.deviceVendorIdVK);
                   break;
 
                 case 4318:
                   ImGui::TextColored (ImVec4 (PATACHE_IMGUI_NVIDIA_COLOR), "%u 0x%X",
-                                      engine->engineInfo.VkDeviceVendorId,
-                                      engine->engineInfo.VkDeviceVendorId);
+                                      pEngine->debugInfo.deviceVendorIdVK,
+                                      pEngine->debugInfo.deviceVendorIdVK);
                   break;
 
                 case 65541:
                   ImGui::TextColored (ImVec4 (PATACHE_IMGUI_MESA_COLOR), "%u 0x%X",
-                                      engine->engineInfo.VkDeviceVendorId,
-                                      engine->engineInfo.VkDeviceVendorId);
+                                      pEngine->debugInfo.deviceVendorIdVK,
+                                      pEngine->debugInfo.deviceVendorIdVK);
                   break;
 
                 default:
-                  ImGui::Text ("%u 0x%X", engine->engineInfo.VkDeviceVendorId,
-                               engine->engineInfo.VkDeviceVendorId);
+                  ImGui::Text ("%u 0x%X", pEngine->debugInfo.deviceVendorIdVK,
+                               pEngine->debugInfo.deviceVendorIdVK);
                   break;
                 }
             }
@@ -480,12 +474,12 @@ Patache::DrawDebugUI (Patache::Engine * const engine)
         }
 
       // Device type {Discrete?, Integrated?}
-      if (engine->engineInfo.VkDeviceType[0] != '\0')
-        ImGui::Text ("DEVICE TYPE : %s", engine->engineInfo.VkDeviceType);
+      if (pEngine->debugInfo.deviceTypeVK[0] != '\0')
+        ImGui::Text ("DEVICE TYPE : %s", pEngine->debugInfo.deviceTypeVK);
 
       // Device Memory Size (VRAM size)
-      ImGui::Text ("DEVICE VRAM : %.2f %s", engine->engineInfo.VkVramSize,
-                   engine->engineInfo.VkVramSizeUnit);
+      ImGui::Text ("DEVICE VRAM : %.2f %s", pEngine->debugInfo.vramSizeVK,
+                   pEngine->debugInfo.vramSizeUnitVK);
 
       ImGui::Spacing ();
 
@@ -503,44 +497,44 @@ Patache::DrawDebugUI (Patache::Engine * const engine)
               // Queue Index
               ImGui::TableNextRow ();
               ImGui::TableSetColumnIndex (0);
-              ImGui::Text ("%u", engine->Vulkan.GraphicsQueueFamilyIndex);
+              ImGui::Text ("%u", pEngine->vulkan.graphicsQueueFamilyIndex);
 
               // Queue Family Properties
               ImGui::TableSetColumnIndex (1);
 
-              if (engine->engineInfo.VkQueueFlags & vk::QueueFlagBits::eGraphics)
+              if (pEngine->debugInfo.queueFlagsVK & vk::QueueFlagBits::eGraphics)
                 ImGui::BulletText ("Graphics");
 
-              if (engine->engineInfo.VkQueueFlags & vk::QueueFlagBits::eCompute)
+              if (pEngine->debugInfo.queueFlagsVK & vk::QueueFlagBits::eCompute)
                 ImGui::BulletText ("Compute");
 
-              if (engine->engineInfo.VkQueueFlags & vk::QueueFlagBits::eTransfer)
+              if (pEngine->debugInfo.queueFlagsVK & vk::QueueFlagBits::eTransfer)
                 ImGui::BulletText ("Transfer");
 
-              if (engine->engineInfo.VkQueueFlags & vk::QueueFlagBits::eSparseBinding)
+              if (pEngine->debugInfo.queueFlagsVK & vk::QueueFlagBits::eSparseBinding)
                 ImGui::BulletText ("Sparse Binding");
 
-              if (engine->engineInfo.VkQueueFlags & vk::QueueFlagBits::eProtected)
+              if (pEngine->debugInfo.queueFlagsVK & vk::QueueFlagBits::eProtected)
                 ImGui::BulletText ("Protected");
 
-              if (engine->engineInfo.VkQueueFlags & vk::QueueFlagBits::eVideoDecodeKHR)
+              if (pEngine->debugInfo.queueFlagsVK & vk::QueueFlagBits::eVideoDecodeKHR)
                 ImGui::BulletText ("Video Decode KHR");
 
-              if (engine->engineInfo.VkQueueFlags & vk::QueueFlagBits::eVideoEncodeKHR)
+              if (pEngine->debugInfo.queueFlagsVK & vk::QueueFlagBits::eVideoEncodeKHR)
                 ImGui::BulletText ("Video Encode KHR");
 
-              if (engine->engineInfo.VkQueueFlags & vk::QueueFlagBits::eOpticalFlowNV)
+              if (pEngine->debugInfo.queueFlagsVK & vk::QueueFlagBits::eOpticalFlowNV)
                 ImGui::BulletText ("Nvidia Optical Flow");
 
               // Queue Priority
               ImGui::TableSetColumnIndex (2);
 
-              if (engine->engineInfo.VkQueuePriority == 1.0f)
-                ImGui::Text ("%.2f (High)", engine->engineInfo.VkQueuePriority);
-              else if (engine->engineInfo.VkQueuePriority < 0.4f)
-                ImGui::Text ("%.2f (Low)", engine->engineInfo.VkQueuePriority);
+              if (pEngine->debugInfo.queuePriorityVK == 1.0f)
+                ImGui::Text ("%.2f (High)", pEngine->debugInfo.queuePriorityVK);
+              else if (pEngine->debugInfo.queuePriorityVK < 0.4f)
+                ImGui::Text ("%.2f (Low)", pEngine->debugInfo.queuePriorityVK);
               else
-                ImGui::Text ("%.2f", engine->engineInfo.VkQueuePriority);
+                ImGui::Text ("%.2f", pEngine->debugInfo.queuePriorityVK);
 
               ImGui::EndTable ();
             }
@@ -549,53 +543,53 @@ Patache::DrawDebugUI (Patache::Engine * const engine)
       ImGui::Spacing ();
 
       // Driver
-      if (engine->engineInfo.VkDriverName[0] != '\0')
+      if (pEngine->debugInfo.driverNameVK[0] != '\0')
         {
           ImGui::BeginGroup ();
           ImGui::Text ("DRIVER :");
           ImGui::SameLine ();
 
           // Driver Name
-          switch (engine->engineInfo.VkDeviceVendorId)
+          switch (pEngine->debugInfo.deviceVendorIdVK)
             {
             case 32902:
               ImGui::TextColored (ImVec4 (PATACHE_IMGUI_INTEL_COLOR), "%s",
-                                  engine->engineInfo.VkDriverName);
+                                  pEngine->debugInfo.driverNameVK);
               break;
             case 4098:
               ImGui::TextColored (ImVec4 (PATACHE_IMGUI_AMD_COLOR), "%s",
-                                  engine->engineInfo.VkDriverName);
+                                  pEngine->debugInfo.driverNameVK);
               break;
             case 4318:
               ImGui::TextColored (ImVec4 (PATACHE_IMGUI_NVIDIA_COLOR), "%s",
-                                  engine->engineInfo.VkDriverName);
+                                  pEngine->debugInfo.driverNameVK);
               break;
             case 65541:
               ImGui::TextColored (ImVec4 (PATACHE_IMGUI_MESA_COLOR), "%s",
-                                  engine->engineInfo.VkDriverName);
+                                  pEngine->debugInfo.driverNameVK);
               break;
 
             default:
-              ImGui::Text ("%s", engine->engineInfo.VkDriverName);
+              ImGui::Text ("%s", pEngine->debugInfo.driverNameVK);
               break;
             }
 
           ImGui::SameLine ();
 
           // Driver Version
-          if (engine->engineInfo.VkDriverVersion[0] != '\0')
-            ImGui::Text ("%s", engine->engineInfo.VkDriverVersion);
+          if (pEngine->debugInfo.driverVersionVK[0] != '\0')
+            ImGui::Text ("%s", pEngine->debugInfo.driverVersionVK);
 
           ImGui::EndGroup ();
 
           // Driver Vendor Tooltip
           if (ImGui::BeginItemTooltip ())
             {
-              if (engine->engineInfo.VkDriverId[0] != '\0')
-                ImGui::Text ("ID : %s", engine->engineInfo.VkDriverId);
+              if (pEngine->debugInfo.driverIdVK[0] != '\0')
+                ImGui::Text ("ID : %s", pEngine->debugInfo.driverIdVK);
 
-              if (engine->engineInfo.VkDriverInfo[0] != '\0')
-                ImGui::Text ("INFO : %s", engine->engineInfo.VkDriverInfo);
+              if (pEngine->debugInfo.driverInfoVK[0] != '\0')
+                ImGui::Text ("INFO : %s", pEngine->debugInfo.driverInfoVK);
 
               ImGui::EndTooltip ();
             }
@@ -605,33 +599,33 @@ Patache::DrawDebugUI (Patache::Engine * const engine)
 
       // Swapchain present mode
       ImGui::Text ("SWAPCHAIN PRESENT MODE : %s",
-                   vk::to_string (engine->engineInfo.VkSwapchainPresentMode).c_str ());
+                   vk::to_string (pEngine->debugInfo.swapchainPresentModeVK).c_str ());
 
-      // Is Vsync?
-      if ((engine->engineInfo.VkSwapchainPresentMode == vk::PresentModeKHR::eFifo
-           || engine->engineInfo.VkSwapchainPresentMode == vk::PresentModeKHR::eFifoRelaxed
-           || engine->engineInfo.VkSwapchainPresentMode
+      // Is vsync?
+      if ((pEngine->debugInfo.swapchainPresentModeVK == vk::PresentModeKHR::eFifo
+           || pEngine->debugInfo.swapchainPresentModeVK == vk::PresentModeKHR::eFifoRelaxed
+           || pEngine->debugInfo.swapchainPresentModeVK
                   == vk::PresentModeKHR::eSharedContinuousRefresh)
-          && (engine->configuration.Vsync))
+          && (pEngine->configuration.vsync))
         {
           ImGui::SameLine ();
           ImGui::TextColored (ImVec4 (PATACHE_IMGUI_POSITIVE_VALUE), "Vertical sync");
         }
 
       // Image count
-      ImGui::Text ("SWAPCHAIN IMAGE COUNT : %u", engine->Vulkan.SwapChainImageCount);
+      ImGui::Text ("SWAPCHAIN IMAGE COUNT : %u", pEngine->vulkan.swapchainImageCount);
 
       // Image Color Format
       ImGui::Text ("COLOR FORMAT : %s",
-                   vk::to_string (engine->engineInfo.VkSwapchainImageColorFormat).c_str ());
+                   vk::to_string (pEngine->debugInfo.swapchainImageColorFormatVK).c_str ());
 
       // Image Color Space
       ImGui::Text ("COLOR SPACE : %s",
-                   vk::to_string (engine->engineInfo.VkSwapchainImageColorSpace).c_str ());
+                   vk::to_string (pEngine->debugInfo.swapchainImageColorSpaceVK).c_str ());
 
       // Drawable Size
-      ImGui::Text ("SWAPCHAIN DRAWABLE SIZE : %u x %u", engine->Vulkan.SwapChainExtent.width,
-                   engine->Vulkan.SwapChainExtent.height);
+      ImGui::Text ("SWAPCHAIN DRAWABLE SIZE : %u x %u", pEngine->vulkan.swapchainExtent.width,
+                   pEngine->vulkan.swapchainExtent.height);
 
       ImGui::Spacing ();
 
@@ -641,63 +635,63 @@ Patache::DrawDebugUI (Patache::Engine * const engine)
   // End Raccoon Renderer Info
 
   // Patache Window configuration
-  if (engine->engineInfo.PatacheConfigWindow)
+  if (pEngine->debugInfo.configWindow)
     {
-      ImGui::Begin ("Configuration##ConfigView", &engine->engineInfo.PatacheConfigWindow);
+      ImGui::Begin ("Configuration##ConfigView", &pEngine->debugInfo.configWindow);
       ImGui::TextColored (ImVec4 (PATACHE_IMGUI_WARNING_VALUE), "Danger Zone");
 
       // Show Fatal Error MessageBox
       if (ImGui::Checkbox ("Show Fatal Error "
                            "Messagebox##ConfigView_ShowFatalErrorMessagebox",
-                           &engine->configuration.ShowFatalErrorMessagebox))
-        engine->configuration.TriggeredChange
-            |= Patache::ChangeConfigFlagBits::ShowFatalErrorMessagebox;
+                           &pEngine->configuration.showFatalErrorMessagebox))
+        pEngine->configuration.triggeredChange
+            |= Patache::ChangeConfigFlagBits::eShowFatalErrorMessagebox;
 
       // Vsync
-      if (ImGui::Checkbox ("Vsync##ConfigView_Vsync", &engine->configuration.Vsync))
-        engine->configuration.TriggeredChange |= Patache::ChangeConfigFlagBits::Vsync;
+      if (ImGui::Checkbox ("Vsync##ConfigView_Vsync", &pEngine->configuration.vsync))
+        pEngine->configuration.triggeredChange |= Patache::ChangeConfigFlagBits::eVsync;
 
       ImGui::SameLine ();
 
       // 10 Bit Depth
-      if (ImGui::Checkbox ("10 Bit Depth##ConfigView_BitDepth", &engine->configuration.BitDepth10))
-        engine->configuration.TriggeredChange |= Patache::ChangeConfigFlagBits::BitDepth10;
+      if (ImGui::Checkbox ("10 Bit Depth##ConfigView_BitDepth", &pEngine->configuration.bitDepth10))
+        pEngine->configuration.triggeredChange |= Patache::ChangeConfigFlagBits::eBitDepth10;
 
       ImGui::Spacing ();
 
       // Add Image Count
-      int ActualCount = engine->Vulkan.SwapChainImageCount;
+      int actualCount = pEngine->vulkan.swapchainImageCount;
 
       ImGui::Text ("Add Image Count");
-      if (ImGui::SliderInt ("###ConfigView_AddImageCount", &ActualCount,
-                            engine->engineInfo.VkMinImageCount,
-                            static_cast<int> (engine->engineInfo.VkMinImageCount + 4), "%d Images"))
-        engine->configuration.TriggeredChange |= Patache::ChangeConfigFlagBits::AddImageCount;
+      if (ImGui::SliderInt ("###ConfigView_AddImageCount", &actualCount,
+                            pEngine->debugInfo.minImageCountVK,
+                            static_cast<int> (pEngine->debugInfo.minImageCountVK + 4), "%d Images"))
+        pEngine->configuration.triggeredChange |= Patache::ChangeConfigFlagBits::eAddImageCount;
 
       ImGui::End ();
     }
   // End Patache Window configuration
 
-  // Reset style outside of engine core
-  ImGui::GetStyle ().Colors[ImGuiCol_TitleBgActive]     = engine->engineInfo.engineStyles[0];
-  ImGui::GetStyle ().Colors[ImGuiCol_ResizeGrip]        = engine->engineInfo.engineStyles[1];
-  ImGui::GetStyle ().Colors[ImGuiCol_ResizeGripActive]  = engine->engineInfo.engineStyles[2];
-  ImGui::GetStyle ().Colors[ImGuiCol_ResizeGripHovered] = engine->engineInfo.engineStyles[3];
-  ImGui::GetStyle ().Colors[ImGuiCol_SeparatorHovered]  = engine->engineInfo.engineStyles[4];
-  ImGui::GetStyle ().Colors[ImGuiCol_SeparatorActive]   = engine->engineInfo.engineStyles[5];
-  ImGui::GetStyle ().Colors[ImGuiCol_Tab]               = engine->engineInfo.engineStyles[6];
-  ImGui::GetStyle ().Colors[ImGuiCol_TabSelected]       = engine->engineInfo.engineStyles[7];
-  ImGui::GetStyle ().Colors[ImGuiCol_TabHovered]        = engine->engineInfo.engineStyles[8];
-  ImGui::GetStyle ().Colors[ImGuiCol_Header]            = engine->engineInfo.engineStyles[9];
-  ImGui::GetStyle ().Colors[ImGuiCol_HeaderActive]      = engine->engineInfo.engineStyles[10];
-  ImGui::GetStyle ().Colors[ImGuiCol_HeaderHovered]     = engine->engineInfo.engineStyles[11];
-  ImGui::GetStyle ().Colors[ImGuiCol_Button]            = engine->engineInfo.engineStyles[12];
-  ImGui::GetStyle ().Colors[ImGuiCol_ButtonHovered]     = engine->engineInfo.engineStyles[13];
-  ImGui::GetStyle ().Colors[ImGuiCol_ButtonActive]      = engine->engineInfo.engineStyles[14];
-  ImGui::GetStyle ().Colors[ImGuiCol_FrameBg]           = engine->engineInfo.engineStyles[15];
-  ImGui::GetStyle ().Colors[ImGuiCol_FrameBgHovered]    = engine->engineInfo.engineStyles[16];
-  ImGui::GetStyle ().Colors[ImGuiCol_FrameBgActive]     = engine->engineInfo.engineStyles[17];
-  ImGui::GetStyle ().Colors[ImGuiCol_CheckMark]         = engine->engineInfo.engineStyles[18];
-  ImGui::GetStyle ().Colors[ImGuiCol_SliderGrab]        = engine->engineInfo.engineStyles[19];
-  ImGui::GetStyle ().Colors[ImGuiCol_SliderGrabActive]  = engine->engineInfo.engineStyles[20];
+  // Reset style outside of pEngine core
+  ImGui::GetStyle ().Colors[ImGuiCol_TitleBgActive]     = pEngine->debugInfo.engineStyles[0];
+  ImGui::GetStyle ().Colors[ImGuiCol_ResizeGrip]        = pEngine->debugInfo.engineStyles[1];
+  ImGui::GetStyle ().Colors[ImGuiCol_ResizeGripActive]  = pEngine->debugInfo.engineStyles[2];
+  ImGui::GetStyle ().Colors[ImGuiCol_ResizeGripHovered] = pEngine->debugInfo.engineStyles[3];
+  ImGui::GetStyle ().Colors[ImGuiCol_SeparatorHovered]  = pEngine->debugInfo.engineStyles[4];
+  ImGui::GetStyle ().Colors[ImGuiCol_SeparatorActive]   = pEngine->debugInfo.engineStyles[5];
+  ImGui::GetStyle ().Colors[ImGuiCol_Tab]               = pEngine->debugInfo.engineStyles[6];
+  ImGui::GetStyle ().Colors[ImGuiCol_TabSelected]       = pEngine->debugInfo.engineStyles[7];
+  ImGui::GetStyle ().Colors[ImGuiCol_TabHovered]        = pEngine->debugInfo.engineStyles[8];
+  ImGui::GetStyle ().Colors[ImGuiCol_Header]            = pEngine->debugInfo.engineStyles[9];
+  ImGui::GetStyle ().Colors[ImGuiCol_HeaderActive]      = pEngine->debugInfo.engineStyles[10];
+  ImGui::GetStyle ().Colors[ImGuiCol_HeaderHovered]     = pEngine->debugInfo.engineStyles[11];
+  ImGui::GetStyle ().Colors[ImGuiCol_Button]            = pEngine->debugInfo.engineStyles[12];
+  ImGui::GetStyle ().Colors[ImGuiCol_ButtonHovered]     = pEngine->debugInfo.engineStyles[13];
+  ImGui::GetStyle ().Colors[ImGuiCol_ButtonActive]      = pEngine->debugInfo.engineStyles[14];
+  ImGui::GetStyle ().Colors[ImGuiCol_FrameBg]           = pEngine->debugInfo.engineStyles[15];
+  ImGui::GetStyle ().Colors[ImGuiCol_FrameBgHovered]    = pEngine->debugInfo.engineStyles[16];
+  ImGui::GetStyle ().Colors[ImGuiCol_FrameBgActive]     = pEngine->debugInfo.engineStyles[17];
+  ImGui::GetStyle ().Colors[ImGuiCol_CheckMark]         = pEngine->debugInfo.engineStyles[18];
+  ImGui::GetStyle ().Colors[ImGuiCol_SliderGrab]        = pEngine->debugInfo.engineStyles[19];
+  ImGui::GetStyle ().Colors[ImGuiCol_SliderGrabActive]  = pEngine->debugInfo.engineStyles[20];
 }

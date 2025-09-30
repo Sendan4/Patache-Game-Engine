@@ -2,8 +2,10 @@
 #include <functional>
 #include <cstring>
 
-#if defined(__linux__)
 #include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <sys/mman.h>
 
 #include <wayland-client.h>
 #include <wayland-cursor.h>
@@ -13,67 +15,65 @@
 #include <xdg-decoration-unstable-v1.h>
 
 #include <SDL3/SDL.h>
-#include <fast_io.h>
 
 #include "PatacheEngine/PatacheEngine.hpp"
-#include "Log.hpp"
+#include "Message.hpp"
 
 // Window Actions
-bool        ResizingPending = false;
-extern bool Resize;
-extern bool IsFullScreen;
+bool        resizingPending = false;
+extern bool resize;
+extern bool isFullScreen;
 
 // CSD (Window Client Side Decoration) Actions
-static bool         IsCSDFocus             = true;
-bool                IsMaximized            = false;
-static std::uint8_t CSDResize              = XDG_TOPLEVEL_RESIZE_EDGE_NONE;
-static wl_surface * PointerSelectedSurface = nullptr;
-static SDL_Event    PushWaylandEvent{};
+static bool         sFocusCSD                = true;
+bool                isMaximized              = false;
+static std::uint8_t sResizeCSD               = XDG_TOPLEVEL_RESIZE_EDGE_NONE;
+static wl_surface * spPointerSelectedSurface = nullptr;
+static SDL_Event    pushWaylandEvent{};
 
-// CSD (Window Client Side Decoration) Pixel Data Buttons
+// CSD (Window Client Side Decoration) Pixel pData Buttons
 // Minimize
-#include "CSDMinimizeButtonLittleEndian.hpp"
-#include "CSDMinimizeButtonHoverLittleEndian.hpp"
-#include "CSDMinimizeButtonFocusLostLittleEndian.hpp"
+#include "MinimizeButton_LittleEndian_CSD.hpp"
+#include "MinimizeButtonHover_LittleEndian_CSD.hpp"
+#include "MinimizeButtonFocusLost_LittleEndian_CSD.hpp"
 // Maximize
-#include "CSDMaximizeButtonLittleEndian.hpp"
-#include "CSDMaximizeButtonHoverLittleEndian.hpp"
-#include "CSDMaximizedButtonLittleEndian.hpp"
-#include "CSDMaximizedButtonHoverLittleEndian.hpp"
-#include "CSDMaximizeButtonFocusLostLittleEndian.hpp"
-#include "CSDMaximizedButtonFocusLostLittleEndian.hpp"
+#include "MaximizeButton_LittleEndian_CSD.hpp"
+#include "MaximizeButtonHover_LittleEndian_CSD.hpp"
+#include "MaximizedButton_LittleEndian_CSD.hpp"
+#include "MaximizedButtonHover_LittleEndian_CSD.hpp"
+#include "MaximizeButtonFocusLost_LittleEndian_CSD.hpp"
+#include "MaximizedButtonFocusLost_LittleEndian_CSD.hpp"
 // Close
-#include "CSDCloseButtonLittleEndian.hpp"
-#include "CSDCloseButtonHoverLittleEndian.hpp"
-#include "CSDCloseButtonFocusLostLittleEndian.hpp"
+#include "CloseButton_LittleEndian_CSD.hpp"
+#include "CloseButtonHover_LittleEndian_CSD.hpp"
+#include "CloseButtonFocusLost_LittleEndian_CSD.hpp"
 
 // Sizes
-#define PATACHE_CSD_HEIGHT_SIZE         22
-#define PATACHE_CSD_THRESHOLD_EDGE_SIZE 4
+#define PATACHE_MAINBAR_HEIGHT_CSD_SIZE       22
+#define PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE 4
 
 // Color
-#define PATACHE_CSD_FOCUS_COLOR            0xFFC6A982
-#define PATACHE_CSD_LOSTFOCUS_COLOR        0xFF808080
-#define PATACHE_CSD_BORDER_COLOR           0xFFF1E9E0
-#define PATACHE_CSD_BORDER_LOSTFOCUS_COLOR 0xFFF2F2F2
+#define PATACHE_MAINBAR_FOCUS_CSD_COLOR     0xFFC6A982
+#define PATACHE_MAINBAR_LOSTFOCUS_CSD_COLOR 0xFF808080
+#define PATACHE_BORDER_CSD_COLOR            0xFFF1E9E0
+#define PATACHE_BORDER_LOSTFOCUS_CSD_COLOR  0xFFF2F2F2
 
 // Mouse Buttons
-#define PATACHE_CSD_POINTER_LEFT_CODE        272
-#define PATACHE_CSD_POINTER_RIGHT_CODE       273
-#define PATACHE_CSD_POINTER_WEEL_BUTTON_CODE 274
+#define PATACHE_POINTER_LEFT_CSD_CODE       272
+#define PATACHE_POINTER_RIGHT_CSD_CODE      273
+#define PATACHE_POINTER_WEELBUTTON_CSD_CODE 274
 
-bool CreateWaylandWindow (const std::uint32_t &, const std::uint32_t &, const char * const,
-                          Patache::Engine * const);
+#include "WaylandWindow_Funcs.hpp"
 
 // xdg_wm_base
 static void
-PingToWindowManangerBase (void * Data, xdg_wm_base * WindowManangerBase, std::uint32_t Serial)
+PingToWindowManangerBase (void * pData, xdg_wm_base * pWindowManangerBase, std::uint32_t serial)
 {
-  static_cast<void> (Data);
-  xdg_wm_base_pong (WindowManangerBase, Serial);
+  static_cast<void> (pData);
+  xdg_wm_base_pong (pWindowManangerBase, serial);
 }
 
-static const struct xdg_wm_base_listener WindowManangerBaseListener
+static constexpr struct xdg_wm_base_listener sWindowManangerBaseListener
     = { .ping = PingToWindowManangerBase };
 
 /*
@@ -82,256 +82,269 @@ static const struct xdg_wm_base_listener WindowManangerBaseListener
  * Window
  */
 static void
-DesktopStyleUserInterfaceConfigure (void * Data, xdg_surface * DesktopStyleUserInterface,
-                                    std::uint32_t Serial)
+DesktopStyleUserInterfaceConfigure (void * pData, xdg_surface * pDesktopStyleUserInterface,
+                                    std::uint32_t serial)
 {
-  xdg_surface_ack_configure (DesktopStyleUserInterface, Serial);
-  Patache::Engine * Engine = static_cast<Patache::Engine *> (Data);
+  xdg_surface_ack_configure (pDesktopStyleUserInterface, serial);
+  Patache::Engine * pEngine = static_cast<Patache::Engine *> (pData);
 
-  if (ResizingPending)
+  if (resizingPending)
     {
-      Resize = true;
+      resize = true;
 
-      SDL_SetWindowSize (Engine->GameWindow, Engine->Vulkan.SwapChainExtent.width,
-                         Engine->Vulkan.SwapChainExtent.height);
+      SDL_SetWindowSize (pEngine->pGameWindow, pEngine->vulkan.swapchainExtent.width,
+                         pEngine->vulkan.swapchainExtent.height);
 
       // If Server Side Decorations is no available
-      if (Engine->WaylandWindow.DecorationMananger == nullptr
-          && Engine->WaylandWindow.SubCompositor != nullptr)
+      if (pEngine->waylandWindow.pDecorationMananger == nullptr
+          && pEngine->waylandWindow.pSubCompositor != nullptr)
         {
           // Borders
-          if (!IsMaximized && !IsFullScreen)
+          if (!isMaximized && !isFullScreen)
             {
               // Horizontal border
               wl_subsurface_set_position (
-                  Engine->WaylandWindow.BorderSubSurface[PATACHE_CSD_TOP_BORDER_INDEX], 0, -26);
+                  pEngine->waylandWindow.pBorderSubSurface[Patache::BorderIndexCSD::eTop], 0, -26);
 
               wl_subsurface_set_position (
-                  Engine->WaylandWindow.BorderSubSurface[PATACHE_CSD_BOTTOM_BORDER_INDEX], 0,
-                  Engine->Vulkan.SwapChainExtent.height);
+                  pEngine->waylandWindow.pBorderSubSurface[Patache::BorderIndexCSD::eBottom], 0,
+                  pEngine->vulkan.swapchainExtent.height);
 
               // Vertical Border
               wl_subsurface_set_position (
-                  Engine->WaylandWindow.BorderSubSurface[PATACHE_CSD_LEFT_BORDER_INDEX],
-                  -PATACHE_CSD_THRESHOLD_EDGE_SIZE, -PATACHE_CSD_HEIGHT_SIZE);
+                  pEngine->waylandWindow.pBorderSubSurface[Patache::BorderIndexCSD::eLeft],
+                  -PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE, -PATACHE_MAINBAR_HEIGHT_CSD_SIZE);
 
               wl_subsurface_set_position (
-                  Engine->WaylandWindow.BorderSubSurface[PATACHE_CSD_RIGHT_BORDER_INDEX],
-                  Engine->Vulkan.SwapChainExtent.width, -PATACHE_CSD_HEIGHT_SIZE);
+                  pEngine->waylandWindow.pBorderSubSurface[Patache::BorderIndexCSD::eRight],
+                  pEngine->vulkan.swapchainExtent.width, -PATACHE_MAINBAR_HEIGHT_CSD_SIZE);
 
               // Corner Borders
               wl_subsurface_set_position (
-                  Engine->WaylandWindow.BorderSubSurface[PATACHE_CSD_TOPLEFT_BORDER_INDEX],
-                  -PATACHE_CSD_THRESHOLD_EDGE_SIZE, -26);
+                  pEngine->waylandWindow.pBorderSubSurface[Patache::BorderIndexCSD::eTopLeft],
+                  -PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE, -26);
 
               wl_subsurface_set_position (
-                  Engine->WaylandWindow.BorderSubSurface[PATACHE_CSD_TOPRIGHT_BORDER_INDEX],
-                  Engine->Vulkan.SwapChainExtent.width, -26);
+                  pEngine->waylandWindow.pBorderSubSurface[Patache::BorderIndexCSD::eTopRight],
+                  pEngine->vulkan.swapchainExtent.width, -26);
 
               wl_subsurface_set_position (
-                  Engine->WaylandWindow.BorderSubSurface[PATACHE_CSD_BOTTOMLEFT_BORDER_INDEX],
-                  -PATACHE_CSD_THRESHOLD_EDGE_SIZE, Engine->Vulkan.SwapChainExtent.height);
+                  pEngine->waylandWindow.pBorderSubSurface[Patache::BorderIndexCSD::eBottomLeft],
+                  -PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE, pEngine->vulkan.swapchainExtent.height);
 
               wl_subsurface_set_position (
-                  Engine->WaylandWindow.BorderSubSurface[PATACHE_CSD_BOTTOMRIGHT_BORDER_INDEX],
-                  Engine->Vulkan.SwapChainExtent.width, Engine->Vulkan.SwapChainExtent.height);
+                  pEngine->waylandWindow.pBorderSubSurface[Patache::BorderIndexCSD::eBottomRight],
+                  pEngine->vulkan.swapchainExtent.width, pEngine->vulkan.swapchainExtent.height);
 
               // Horizontal border
-              for (std::uint8_t i = 0; i < PATACHE_CSD_BORDER_HORIZONTAL_SIZE; ++i)
+              for (std::uint8_t i = 0; i < PATACHE_BORDER_HORIZONTAL_CSD_SIZE; ++i)
                 {
-                  // Create a file descriptor for a buffer
-                  char         CSDBorderFileName[] = "Patache-Border";
-                  std::int32_t CSDBorderFileDescriptor
-                      = shm_open (CSDBorderFileName, O_RDWR | O_CREAT | O_EXCL,
+                  // File descriptor
+                  char borderFileNameCSD[] = "Patache-Border";
+
+                  std::int32_t borderFileDescriptorCSD
+                      = shm_open (borderFileNameCSD, O_RDWR | O_CREAT | O_EXCL,
                                   S_IWUSR | S_IRUSR | S_IWOTH | S_IROTH);
-                  shm_unlink (CSDBorderFileName);
-                  ftruncate (CSDBorderFileDescriptor, Engine->Vulkan.SwapChainExtent.width
-                                                          * PATACHE_CSD_THRESHOLD_EDGE_SIZE * 4);
 
-                  /*
-                   * Map File to a memory (To write the color) to be used for a
-                   * wl_buffer
-                   */
-                  Engine->WaylandWindow.BorderPixels[i] = static_cast<std::uint32_t *> (mmap (
-                      nullptr,
-                      Engine->Vulkan.SwapChainExtent.width * PATACHE_CSD_THRESHOLD_EDGE_SIZE * 4,
-                      PROT_READ | PROT_WRITE, MAP_SHARED, CSDBorderFileDescriptor, 0));
+                  shm_unlink (borderFileNameCSD);
 
-                  // Write Color for a wl_buffer
-                  if (IsCSDFocus)
+                  ftruncate (borderFileDescriptorCSD, pEngine->vulkan.swapchainExtent.width
+                                                          * PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE
+                                                          * 4);
+
+                  // Memory
+                  pEngine->waylandWindow.pBorderPixels[i] = static_cast<std::uint32_t *> (
+                      mmap (nullptr,
+                            pEngine->vulkan.swapchainExtent.width
+                                * PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE * 4,
+                            PROT_READ | PROT_WRITE, MAP_SHARED, borderFileDescriptorCSD, 0));
+
+                  if (sFocusCSD)
                     {
-                      for (std::uint32_t i2 = 0; i2 < (Engine->Vulkan.SwapChainExtent.width
-                                                       * PATACHE_CSD_THRESHOLD_EDGE_SIZE);
+                      for (std::uint32_t i2 = 0; i2 < (pEngine->vulkan.swapchainExtent.width
+                                                       * PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE);
                            ++i2)
                         {
-                          Engine->WaylandWindow.BorderPixels[i][i2] = PATACHE_CSD_BORDER_COLOR;
+                          pEngine->waylandWindow.pBorderPixels[i][i2] = PATACHE_BORDER_CSD_COLOR;
                         }
                     }
                   else
                     {
-                      for (std::uint32_t i2 = 0; i2 < (Engine->Vulkan.SwapChainExtent.width
-                                                       * PATACHE_CSD_THRESHOLD_EDGE_SIZE);
+                      for (std::uint32_t i2 = 0; i2 < (pEngine->vulkan.swapchainExtent.width
+                                                       * PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE);
                            ++i2)
-                        Engine->WaylandWindow.BorderPixels[i][i2]
-                            = PATACHE_CSD_BORDER_LOSTFOCUS_COLOR;
+                        pEngine->waylandWindow.pBorderPixels[i][i2]
+                            = PATACHE_BORDER_LOSTFOCUS_CSD_COLOR;
                     }
 
-                  wl_shm_pool * DecorationBorderPool = wl_shm_create_pool (
-                      Engine->WaylandWindow.DecorationSharedMemory, CSDBorderFileDescriptor,
-                      Engine->Vulkan.SwapChainExtent.width * PATACHE_CSD_THRESHOLD_EDGE_SIZE * 4);
+                  wl_shm_pool * pDecorationBorderPool = wl_shm_create_pool (
+                      pEngine->waylandWindow.pDecorationSharedMemory, borderFileDescriptorCSD,
+                      pEngine->vulkan.swapchainExtent.width * PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE
+                          * 4);
 
-                  Engine->WaylandWindow.BorderBuffer[i] = wl_shm_pool_create_buffer (
-                      DecorationBorderPool, 0, Engine->Vulkan.SwapChainExtent.width,
-                      PATACHE_CSD_THRESHOLD_EDGE_SIZE, Engine->Vulkan.SwapChainExtent.width * 4,
-                      WL_SHM_FORMAT_ARGB8888);
+                  pEngine->waylandWindow.pBorderBuffer[i] = wl_shm_pool_create_buffer (
+                      pDecorationBorderPool, 0, pEngine->vulkan.swapchainExtent.width,
+                      PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE,
+                      pEngine->vulkan.swapchainExtent.width * 4, WL_SHM_FORMAT_ARGB8888);
 
-                  wl_surface_attach (Engine->WaylandWindow.BorderSurface[i],
-                                     Engine->WaylandWindow.BorderBuffer[i], 0, 0);
+                  // Draw
+                  wl_surface_attach (pEngine->waylandWindow.pBorderSurface[i],
+                                     pEngine->waylandWindow.pBorderBuffer[i], 0, 0);
 
-                  wl_surface_damage_buffer (Engine->WaylandWindow.BorderSurface[i], 0, 0,
-                                            Engine->Vulkan.SwapChainExtent.width,
-                                            PATACHE_CSD_THRESHOLD_EDGE_SIZE);
+                  wl_surface_damage_buffer (pEngine->waylandWindow.pBorderSurface[i], 0, 0,
+                                            pEngine->vulkan.swapchainExtent.width,
+                                            PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE);
 
-                  wl_shm_pool_destroy (DecorationBorderPool);
-                  close (CSDBorderFileDescriptor);
+                  wl_shm_pool_destroy (pDecorationBorderPool);
+                  close (borderFileDescriptorCSD);
 
-                  wl_surface_commit (Engine->WaylandWindow.BorderSurface[i]);
+                  wl_surface_commit (pEngine->waylandWindow.pBorderSurface[i]);
                 }
 
               // Vertical Border
-              for (std::uint8_t i = 2; i < 4; ++i)
+              for (std::uint8_t i = 2; i < PATACHE_BORDER_VERTICAL_CSD_SIZE; ++i)
                 {
-                  // Create a file descriptor for a buffer
-                  char         CSDBorderFileName[] = "Patache-Border";
-                  std::int32_t CSDBorderFileDescriptor
-                      = shm_open (CSDBorderFileName, O_RDWR | O_CREAT | O_EXCL,
+                  // File descriptor
+                  char borderFileNameCSD[] = "Patache-Border";
+
+                  std::int32_t borderFileDescriptorCSD
+                      = shm_open (borderFileNameCSD, O_RDWR | O_CREAT | O_EXCL,
                                   S_IWUSR | S_IRUSR | S_IWOTH | S_IROTH);
-                  shm_unlink (CSDBorderFileName);
-                  ftruncate (CSDBorderFileDescriptor,
-                             PATACHE_CSD_THRESHOLD_EDGE_SIZE
-                                 * (Engine->Vulkan.SwapChainExtent.height + PATACHE_CSD_HEIGHT_SIZE)
-                                 * 4);
 
-                  /*
-                   * Map File to a memory (To write the color) to be used for a
-                   * wl_buffer
-                   */
-                  Engine->WaylandWindow.BorderPixels[i] = static_cast<std::uint32_t *> (mmap (
-                      nullptr,
-                      PATACHE_CSD_THRESHOLD_EDGE_SIZE
-                          * (Engine->Vulkan.SwapChainExtent.height + PATACHE_CSD_HEIGHT_SIZE) * 4,
-                      PROT_READ | PROT_WRITE, MAP_SHARED, CSDBorderFileDescriptor, 0));
+                  shm_unlink (borderFileNameCSD);
 
-                  // Write Color for a wl_buffer
-                  if (IsCSDFocus)
+                  ftruncate (borderFileDescriptorCSD, PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE
+                                                          * (pEngine->vulkan.swapchainExtent.height
+                                                             + PATACHE_MAINBAR_HEIGHT_CSD_SIZE)
+                                                          * 4);
+
+                  // Memory
+                  pEngine->waylandWindow.pBorderPixels[i] = static_cast<std::uint32_t *> (
+                      mmap (nullptr,
+                            PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE
+                                * (pEngine->vulkan.swapchainExtent.height
+                                   + PATACHE_MAINBAR_HEIGHT_CSD_SIZE)
+                                * 4,
+                            PROT_READ | PROT_WRITE, MAP_SHARED, borderFileDescriptorCSD, 0));
+
+                  if (sFocusCSD)
                     {
-                      for (std::uint32_t i2 = 0; i2 < PATACHE_CSD_THRESHOLD_EDGE_SIZE
-                                                          * (Engine->Vulkan.SwapChainExtent.height
-                                                             + PATACHE_CSD_HEIGHT_SIZE);
+                      for (std::uint32_t i2 = 0; i2 < PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE
+                                                          * (pEngine->vulkan.swapchainExtent.height
+                                                             + PATACHE_MAINBAR_HEIGHT_CSD_SIZE);
                            ++i2)
                         {
-
-                          Engine->WaylandWindow.BorderPixels[i][i2] = PATACHE_CSD_BORDER_COLOR;
+                          pEngine->waylandWindow.pBorderPixels[i][i2] = PATACHE_BORDER_CSD_COLOR;
                         }
                     }
                   else
                     {
-                      for (std::uint32_t i2 = 0; i2 < PATACHE_CSD_THRESHOLD_EDGE_SIZE
-                                                          * (Engine->Vulkan.SwapChainExtent.height
-                                                             + PATACHE_CSD_HEIGHT_SIZE);
+                      for (std::uint32_t i2 = 0; i2 < PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE
+                                                          * (pEngine->vulkan.swapchainExtent.height
+                                                             + PATACHE_MAINBAR_HEIGHT_CSD_SIZE);
                            ++i2)
-                        Engine->WaylandWindow.BorderPixels[i][i2]
-                            = PATACHE_CSD_BORDER_LOSTFOCUS_COLOR;
+                        {
+                          pEngine->waylandWindow.pBorderPixels[i][i2]
+                              = PATACHE_BORDER_LOSTFOCUS_CSD_COLOR;
+                        }
                     }
 
-                  wl_shm_pool * DecorationBorderPool = wl_shm_create_pool (
-                      Engine->WaylandWindow.DecorationSharedMemory, CSDBorderFileDescriptor,
-                      PATACHE_CSD_THRESHOLD_EDGE_SIZE
-                          * (Engine->Vulkan.SwapChainExtent.height + PATACHE_CSD_HEIGHT_SIZE) * 4);
+                  wl_shm_pool * pDecorationBorderPool = wl_shm_create_pool (
+                      pEngine->waylandWindow.pDecorationSharedMemory, borderFileDescriptorCSD,
+                      PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE
+                          * (pEngine->vulkan.swapchainExtent.height
+                             + PATACHE_MAINBAR_HEIGHT_CSD_SIZE)
+                          * 4);
 
-                  Engine->WaylandWindow.BorderBuffer[i] = wl_shm_pool_create_buffer (
-                      DecorationBorderPool, 0, PATACHE_CSD_THRESHOLD_EDGE_SIZE,
-                      (Engine->Vulkan.SwapChainExtent.height + PATACHE_CSD_HEIGHT_SIZE),
-                      PATACHE_CSD_THRESHOLD_EDGE_SIZE * 4, WL_SHM_FORMAT_ARGB8888);
+                  pEngine->waylandWindow.pBorderBuffer[i] = wl_shm_pool_create_buffer (
+                      pDecorationBorderPool, 0, PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE,
+                      (pEngine->vulkan.swapchainExtent.height + PATACHE_MAINBAR_HEIGHT_CSD_SIZE),
+                      PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE * 4, WL_SHM_FORMAT_ARGB8888);
 
-                  wl_surface_attach (Engine->WaylandWindow.BorderSurface[i],
-                                     Engine->WaylandWindow.BorderBuffer[i], 0, 0);
+                  // Draw
+                  wl_surface_attach (pEngine->waylandWindow.pBorderSurface[i],
+                                     pEngine->waylandWindow.pBorderBuffer[i], 0, 0);
 
                   wl_surface_damage_buffer (
-                      Engine->WaylandWindow.BorderSurface[i], 0, 0, PATACHE_CSD_THRESHOLD_EDGE_SIZE,
-                      (Engine->Vulkan.SwapChainExtent.height + PATACHE_CSD_HEIGHT_SIZE));
+                      pEngine->waylandWindow.pBorderSurface[i], 0, 0,
+                      PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE,
+                      (pEngine->vulkan.swapchainExtent.height + PATACHE_MAINBAR_HEIGHT_CSD_SIZE));
 
-                  wl_shm_pool_destroy (DecorationBorderPool);
-                  close (CSDBorderFileDescriptor);
+                  wl_shm_pool_destroy (pDecorationBorderPool);
+                  close (borderFileDescriptorCSD);
 
-                  wl_surface_commit (Engine->WaylandWindow.BorderSurface[i]);
+                  wl_surface_commit (pEngine->waylandWindow.pBorderSurface[i]);
                 }
 
               // Corner Border
-              for (std::uint8_t i = 4; i < 8; ++i)
+              for (std::uint8_t i = 4; i < PATACHE_BORDER_CSD_SIZE; ++i)
                 {
-                  // Create a file descriptor for a buffer
-                  char         CSDBorderFileName[] = "Patache-Border";
-                  std::int32_t CSDBorderFileDescriptor
-                      = shm_open (CSDBorderFileName, O_RDWR | O_CREAT | O_EXCL,
+                  // File descriptor
+                  char borderFileNameCSD[] = "Patache-Border";
+
+                  std::int32_t borderFileDescriptorCSD
+                      = shm_open (borderFileNameCSD, O_RDWR | O_CREAT | O_EXCL,
                                   S_IWUSR | S_IRUSR | S_IWOTH | S_IROTH);
-                  shm_unlink (CSDBorderFileName);
-                  ftruncate (CSDBorderFileDescriptor,
-                             PATACHE_CSD_THRESHOLD_EDGE_SIZE * PATACHE_CSD_THRESHOLD_EDGE_SIZE * 4);
 
-                  /*
-                   * Map File to a memory (To write the color) to be used for a
-                   * wl_buffer
-                   */
-                  Engine->WaylandWindow.BorderPixels[i] = static_cast<std::uint32_t *> (
+                  shm_unlink (borderFileNameCSD);
+
+                  ftruncate (borderFileDescriptorCSD, PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE
+                                                          * PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE
+                                                          * 4);
+
+                  // Memory
+                  pEngine->waylandWindow.pBorderPixels[i] = static_cast<std::uint32_t *> (
                       mmap (nullptr,
-                            PATACHE_CSD_THRESHOLD_EDGE_SIZE * PATACHE_CSD_THRESHOLD_EDGE_SIZE * 4,
-                            PROT_READ | PROT_WRITE, MAP_SHARED, CSDBorderFileDescriptor, 0));
+                            PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE
+                                * PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE * 4,
+                            PROT_READ | PROT_WRITE, MAP_SHARED, borderFileDescriptorCSD, 0));
 
-                  // Write Color for a wl_buffer
-                  if (IsCSDFocus)
+                  if (sFocusCSD)
                     {
-                      for (std::uint32_t i2 = 0;
-                           i2 < (PATACHE_CSD_THRESHOLD_EDGE_SIZE * PATACHE_CSD_THRESHOLD_EDGE_SIZE);
+                      for (std::uint32_t i2 = 0; i2 < (PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE
+                                                       * PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE);
                            ++i2)
                         {
-
-                          Engine->WaylandWindow.BorderPixels[i][i2] = PATACHE_CSD_BORDER_COLOR;
+                          pEngine->waylandWindow.pBorderPixels[i][i2] = PATACHE_BORDER_CSD_COLOR;
                         }
                     }
                   else
                     {
-                      for (std::uint32_t i2 = 0;
-                           i2 < (PATACHE_CSD_THRESHOLD_EDGE_SIZE * PATACHE_CSD_THRESHOLD_EDGE_SIZE);
+                      for (std::uint32_t i2 = 0; i2 < (PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE
+                                                       * PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE);
                            ++i2)
-                        Engine->WaylandWindow.BorderPixels[i][i2]
-                            = PATACHE_CSD_BORDER_LOSTFOCUS_COLOR;
+                        {
+                          pEngine->waylandWindow.pBorderPixels[i][i2]
+                              = PATACHE_BORDER_LOSTFOCUS_CSD_COLOR;
+                        }
                     }
 
-                  wl_shm_pool * DecorationBorderPool = wl_shm_create_pool (
-                      Engine->WaylandWindow.DecorationSharedMemory, CSDBorderFileDescriptor,
-                      PATACHE_CSD_THRESHOLD_EDGE_SIZE * PATACHE_CSD_THRESHOLD_EDGE_SIZE * 4);
+                  wl_shm_pool * pDecorationBorderPool = wl_shm_create_pool (
+                      pEngine->waylandWindow.pDecorationSharedMemory, borderFileDescriptorCSD,
+                      PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE * PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE
+                          * 4);
 
-                  Engine->WaylandWindow.BorderBuffer[i] = wl_shm_pool_create_buffer (
-                      DecorationBorderPool, 0, PATACHE_CSD_THRESHOLD_EDGE_SIZE,
-                      PATACHE_CSD_THRESHOLD_EDGE_SIZE, PATACHE_CSD_THRESHOLD_EDGE_SIZE * 4,
-                      WL_SHM_FORMAT_ARGB8888);
+                  pEngine->waylandWindow.pBorderBuffer[i] = wl_shm_pool_create_buffer (
+                      pDecorationBorderPool, 0, PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE,
+                      PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE,
+                      PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE * 4, WL_SHM_FORMAT_ARGB8888);
 
-                  wl_surface_attach (Engine->WaylandWindow.BorderSurface[i],
-                                     Engine->WaylandWindow.BorderBuffer[i], 0, 0);
+                  // Draw
+                  wl_surface_attach (pEngine->waylandWindow.pBorderSurface[i],
+                                     pEngine->waylandWindow.pBorderBuffer[i], 0, 0);
 
-                  wl_surface_damage_buffer (Engine->WaylandWindow.BorderSurface[i], 0, 0,
-                                            PATACHE_CSD_THRESHOLD_EDGE_SIZE,
-                                            PATACHE_CSD_THRESHOLD_EDGE_SIZE);
+                  wl_surface_damage_buffer (pEngine->waylandWindow.pBorderSurface[i], 0, 0,
+                                            PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE,
+                                            PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE);
 
-                  wl_shm_pool_destroy (DecorationBorderPool);
-                  close (CSDBorderFileDescriptor);
+                  wl_shm_pool_destroy (pDecorationBorderPool);
+                  close (borderFileDescriptorCSD);
 
-                  wl_surface_commit (Engine->WaylandWindow.BorderSurface[i]);
+                  wl_surface_commit (pEngine->waylandWindow.pBorderSurface[i]);
                 }
             }
 
-          if (!IsFullScreen)
+          if (!isFullScreen)
             {
               /*
                * Buttons
@@ -343,79 +356,81 @@ DesktopStyleUserInterfaceConfigure (void * Data, xdg_surface * DesktopStyleUserI
 
               // Update button position for the new bar size
               wl_subsurface_set_position (
-                  Engine->WaylandWindow.ButtonSubSurface[PATACHE_CSD_MINIMIZE_BUTTON_INDEX],
-                  (Engine->Vulkan.SwapChainExtent.width - 89), 2);
+                  pEngine->waylandWindow.pButtonSubSurface[Patache::ButtonIndexCSD::eMinimize],
+                  (pEngine->vulkan.swapchainExtent.width - 89), 2);
 
               wl_subsurface_set_position (
-                  Engine->WaylandWindow.ButtonSubSurface[PATACHE_CSD_MAXIMIZE_BUTTON_INDEX],
-                  (Engine->Vulkan.SwapChainExtent.width - 59), 2);
+                  pEngine->waylandWindow.pButtonSubSurface[Patache::ButtonIndexCSD::eMaximize],
+                  (pEngine->vulkan.swapchainExtent.width - 59), 2);
 
               wl_subsurface_set_position (
-                  Engine->WaylandWindow.ButtonSubSurface[PATACHE_CSD_CLOSE_BUTTON_INDEX],
-                  (Engine->Vulkan.SwapChainExtent.width - 29), 2);
+                  pEngine->waylandWindow.pButtonSubSurface[Patache::ButtonIndexCSD::eClose],
+                  (pEngine->vulkan.swapchainExtent.width - 29), 2);
 
-              for (std::uint8_t i = 0; i < 3; ++i)
+              for (std::uint8_t i = 0; i < PATACHE_BUTTON_CSD_SIZE; ++i)
                 {
-                  // Create a file descriptor for a buffer
-                  char         CSDButtonFileName[] = "Patache-Button-File";
-                  std::int32_t CSDButtonFileDescriptor
-                      = shm_open (CSDButtonFileName, O_RDWR | O_CREAT | O_EXCL,
+                  // File descriptor
+                  char buttonFileNameCSD[] = "Patache-Button-File";
+
+                  std::int32_t buttonFileDescriptorCSD
+                      = shm_open (buttonFileNameCSD, O_RDWR | O_CREAT | O_EXCL,
                                   S_IWUSR | S_IRUSR | S_IWOTH | S_IROTH);
-                  shm_unlink (CSDButtonFileName);
-                  ftruncate (CSDButtonFileDescriptor, PATACHE_CSD_CLOSE_BUTTON_SIZE);
 
-                  /*
-                   * Map File to a memory (To write the color) to be used for a
-                   * wl_buffer
-                   */
-                  Engine->WaylandWindow.DecorationButtonPixels[i] = static_cast<std::uint32_t *> (
-                      mmap (nullptr, PATACHE_CSD_CLOSE_BUTTON_SIZE, PROT_READ | PROT_WRITE,
-                            MAP_SHARED, CSDButtonFileDescriptor, 0));
+                  shm_unlink (buttonFileNameCSD);
 
-                  if (IsCSDFocus)
+                  ftruncate (buttonFileDescriptorCSD, PATACHE_CLOSE_BUTTON_CSD_SIZE);
+
+                  // Memory
+                  pEngine->waylandWindow.pDecorationButtonPixels[i] = static_cast<std::uint32_t *> (
+                      mmap (nullptr, PATACHE_CLOSE_BUTTON_CSD_SIZE, PROT_READ | PROT_WRITE,
+                            MAP_SHARED, buttonFileDescriptorCSD, 0));
+
+                  if (sFocusCSD)
                     {
                       // Focus Colors
                       switch (i)
                         {
-                        case PATACHE_CSD_MINIMIZE_BUTTON_INDEX:
-                          for (std::uint32_t i2 = 0; i2 < PATACHE_CSD_MINIMIZE_BUTTON_PIXELCOUNT;
+                        case Patache::ButtonIndexCSD::eMinimize:
+                          for (std::uint32_t i2 = 0; i2 < PATACHE_MINIMIZE_BUTTON_CSD_PIXELCOUNT;
                                ++i2)
                             {
-                              Engine->WaylandWindow
-                                  .DecorationButtonPixels[PATACHE_CSD_MINIMIZE_BUTTON_INDEX][i2]
-                                  = CSDMinimizeButton[i2];
+                              pEngine->waylandWindow
+                                  .pDecorationButtonPixels[Patache::ButtonIndexCSD::eMinimize][i2]
+                                  = sMinimizeButtonCSD[i2];
                             }
                           break;
 
-                        case PATACHE_CSD_MAXIMIZE_BUTTON_INDEX:
-                          if (IsMaximized)
+                        case Patache::ButtonIndexCSD::eMaximize:
+                          if (isMaximized)
                             {
                               for (std::uint32_t i2 = 0;
-                                   i2 < PATACHE_CSD_MAXIMIZE_BUTTON_PIXELCOUNT; ++i2)
+                                   i2 < PATACHE_MAXIMIZE_BUTTON_CSD_PIXELCOUNT; ++i2)
                                 {
-                                  Engine->WaylandWindow
-                                      .DecorationButtonPixels[PATACHE_CSD_MAXIMIZE_BUTTON_INDEX][i2]
-                                      = CSDMaximizedButton[i2];
+                                  pEngine->waylandWindow
+                                      .pDecorationButtonPixels[Patache::ButtonIndexCSD::eMaximize]
+                                                              [i2]
+                                      = sMaximizedButtonCSD[i2];
                                 }
                             }
                           else
                             {
                               for (std::uint32_t i2 = 0;
-                                   i2 < PATACHE_CSD_MAXIMIZE_BUTTON_PIXELCOUNT; ++i2)
+                                   i2 < PATACHE_MAXIMIZE_BUTTON_CSD_PIXELCOUNT; ++i2)
                                 {
-                                  Engine->WaylandWindow
-                                      .DecorationButtonPixels[PATACHE_CSD_MAXIMIZE_BUTTON_INDEX][i2]
-                                      = CSDMaximizeButton[i2];
+                                  pEngine->waylandWindow
+                                      .pDecorationButtonPixels[Patache::ButtonIndexCSD::eMaximize]
+                                                              [i2]
+                                      = sMaximizeButtonCSD[i2];
                                 }
                             }
                           break;
 
-                        case PATACHE_CSD_CLOSE_BUTTON_INDEX:
-                          for (std::uint32_t i2 = 0; i2 < PATACHE_CSD_CLOSE_BUTTON_PIXELCOUNT; ++i2)
+                        case Patache::ButtonIndexCSD::eClose:
+                          for (std::uint32_t i2 = 0; i2 < PATACHE_CLOSE_BUTTON_CSD_PIXELCOUNT; ++i2)
                             {
-                              Engine->WaylandWindow
-                                  .DecorationButtonPixels[PATACHE_CSD_CLOSE_BUTTON_INDEX][i2]
-                                  = CSDCloseButton[i2];
+                              pEngine->waylandWindow
+                                  .pDecorationButtonPixels[Patache::ButtonIndexCSD::eClose][i2]
+                                  = sCloseButtonCSD[i2];
                             }
                           break;
                         }
@@ -425,70 +440,73 @@ DesktopStyleUserInterfaceConfigure (void * Data, xdg_surface * DesktopStyleUserI
                       // Lost Focus colors
                       switch (i)
                         {
-                        case PATACHE_CSD_MINIMIZE_BUTTON_INDEX:
-                          for (std::uint32_t i2 = 0; i2 < PATACHE_CSD_MINIMIZE_BUTTON_PIXELCOUNT;
+                        case Patache::ButtonIndexCSD::eMinimize:
+                          for (std::uint32_t i2 = 0; i2 < PATACHE_MINIMIZE_BUTTON_CSD_PIXELCOUNT;
                                ++i2)
                             {
-                              Engine->WaylandWindow
-                                  .DecorationButtonPixels[PATACHE_CSD_MINIMIZE_BUTTON_INDEX][i2]
-                                  = CSDMinimizeButtonFocusLost[i2];
+                              pEngine->waylandWindow
+                                  .pDecorationButtonPixels[Patache::ButtonIndexCSD::eMinimize][i2]
+                                  = sMinimizeButtonFocusLostCSD[i2];
                             }
                           break;
 
-                        case PATACHE_CSD_MAXIMIZE_BUTTON_INDEX:
-                          if (IsMaximized)
+                        case Patache::ButtonIndexCSD::eMaximize:
+                          if (isMaximized)
                             {
                               for (std::uint32_t i2 = 0;
-                                   i2 < PATACHE_CSD_MAXIMIZE_BUTTON_PIXELCOUNT; ++i2)
+                                   i2 < PATACHE_MAXIMIZE_BUTTON_CSD_PIXELCOUNT; ++i2)
                                 {
-                                  Engine->WaylandWindow
-                                      .DecorationButtonPixels[PATACHE_CSD_MAXIMIZE_BUTTON_INDEX][i2]
-                                      = CSDMaximizedButtonFocusLost[i2];
+                                  pEngine->waylandWindow
+                                      .pDecorationButtonPixels[Patache::ButtonIndexCSD::eMaximize]
+                                                              [i2]
+                                      = sMaximizedButtonFocusLostCSD[i2];
                                 }
                             }
                           else
                             {
                               for (std::uint32_t i2 = 0;
-                                   i2 < PATACHE_CSD_MAXIMIZE_BUTTON_PIXELCOUNT; ++i2)
+                                   i2 < PATACHE_MAXIMIZE_BUTTON_CSD_PIXELCOUNT; ++i2)
                                 {
-                                  Engine->WaylandWindow
-                                      .DecorationButtonPixels[PATACHE_CSD_MAXIMIZE_BUTTON_INDEX][i2]
-                                      = CSDMaximizeButtonFocusLost[i2];
+                                  pEngine->waylandWindow
+                                      .pDecorationButtonPixels[Patache::ButtonIndexCSD::eMaximize]
+                                                              [i2]
+                                      = sMaximizeButtonFocusLostCSD[i2];
                                 }
                             }
                           break;
 
-                        case PATACHE_CSD_CLOSE_BUTTON_INDEX:
-                          for (std::uint32_t i2 = 0; i2 < PATACHE_CSD_CLOSE_BUTTON_PIXELCOUNT; ++i2)
+                        case Patache::ButtonIndexCSD::eClose:
+                          for (std::uint32_t i2 = 0; i2 < PATACHE_CLOSE_BUTTON_CSD_PIXELCOUNT; ++i2)
                             {
-                              Engine->WaylandWindow
-                                  .DecorationButtonPixels[PATACHE_CSD_CLOSE_BUTTON_INDEX][i2]
-                                  = CSDCloseButtonFocusLost[i2];
+                              pEngine->waylandWindow
+                                  .pDecorationButtonPixels[Patache::ButtonIndexCSD::eClose][i2]
+                                  = sCloseButtonFocusLostCSD[i2];
                             }
                           break;
                         }
                     }
 
-                  wl_shm_pool * DecorationButtonPool
-                      = wl_shm_create_pool (Engine->WaylandWindow.DecorationSharedMemory,
-                                            CSDButtonFileDescriptor, PATACHE_CSD_CLOSE_BUTTON_SIZE);
+                  wl_shm_pool * pDecorationButtonPool
+                      = wl_shm_create_pool (pEngine->waylandWindow.pDecorationSharedMemory,
+                                            buttonFileDescriptorCSD, PATACHE_CLOSE_BUTTON_CSD_SIZE);
 
-                  Engine->WaylandWindow.DecorationButtonBuffer[i] = wl_shm_pool_create_buffer (
-                      DecorationButtonPool, 0, PATACHE_CSD_CLOSE_BUTTON_WIDTH,
-                      PATACHE_CSD_CLOSE_BUTTON_HEIGHT, PATACHE_CSD_CLOSE_BUTTON_WIDTH * 4,
+                  pEngine->waylandWindow.pDecorationButtonBuffer[i] = wl_shm_pool_create_buffer (
+                      pDecorationButtonPool, 0, PATACHE_CLOSE_BUTTON_CSD_WIDTH,
+                      PATACHE_CLOSE_BUTTON_CSD_HEIGHT, PATACHE_CLOSE_BUTTON_CSD_WIDTH * 4,
                       WL_SHM_FORMAT_ARGB8888);
 
-                  wl_surface_attach (Engine->WaylandWindow.ButtonSurface[i],
-                                     Engine->WaylandWindow.DecorationButtonBuffer[i], 0, 0);
+                  // Draw
+                  wl_surface_attach (pEngine->waylandWindow.pButtonSurface[i],
+                                     pEngine->waylandWindow.pDecorationButtonBuffer[i], 0, 0);
 
-                  wl_surface_damage_buffer (Engine->WaylandWindow.ButtonSurface[i], 0, 0,
-                                            PATACHE_CSD_CLOSE_BUTTON_WIDTH,
-                                            PATACHE_CSD_CLOSE_BUTTON_HEIGHT);
+                  wl_surface_damage_buffer (pEngine->waylandWindow.pButtonSurface[i], 0, 0,
+                                            PATACHE_CLOSE_BUTTON_CSD_WIDTH,
+                                            PATACHE_CLOSE_BUTTON_CSD_HEIGHT);
 
-                  wl_shm_pool_destroy (DecorationButtonPool);
-                  close (CSDButtonFileDescriptor);
+                  wl_shm_pool_destroy (pDecorationButtonPool);
+                  close (buttonFileDescriptorCSD);
 
-                  wl_surface_commit (Engine->WaylandWindow.ButtonSurface[i]);
+                  wl_surface_commit (pEngine->waylandWindow.pButtonSurface[i]);
                 }
 
               /*
@@ -496,130 +514,136 @@ DesktopStyleUserInterfaceConfigure (void * Data, xdg_surface * DesktopStyleUserI
                * [||||||||||||||||||||||]
                */
 
-              wl_subsurface_set_position (Engine->WaylandWindow.MainBarSubSurface, 0,
-                                          -PATACHE_CSD_HEIGHT_SIZE);
+              wl_subsurface_set_position (pEngine->waylandWindow.pMainBarSubSurface, 0,
+                                          -PATACHE_MAINBAR_HEIGHT_CSD_SIZE);
 
-              // Create a file descriptor for a buffer
-              char         MainBarName[]         = "Patache-MainBar";
+              // File descriptor
+              char MainBarName[] = "Patache-MainBar";
+
               std::int32_t MainBarFileDescriptor = shm_open (MainBarName, O_RDWR | O_CREAT | O_EXCL,
                                                              S_IWUSR | S_IRUSR | S_IWOTH | S_IROTH);
-              shm_unlink (MainBarName);
-              ftruncate (MainBarFileDescriptor,
-                         Engine->Vulkan.SwapChainExtent.width * PATACHE_CSD_HEIGHT_SIZE * 4);
 
-              /*
-               * Map File to a memory (To write the color) to be used for a
-               * wl_buffer
-               */
-              Engine->WaylandWindow.MainBarPixels = static_cast<std::uint32_t *> (
-                  mmap (nullptr, Engine->Vulkan.SwapChainExtent.width * PATACHE_CSD_HEIGHT_SIZE * 4,
+              shm_unlink (MainBarName);
+
+              ftruncate (MainBarFileDescriptor, pEngine->vulkan.swapchainExtent.width
+                                                    * PATACHE_MAINBAR_HEIGHT_CSD_SIZE * 4);
+
+              // Memory
+              pEngine->waylandWindow.pMainBarPixels = static_cast<std::uint32_t *> (
+                  mmap (nullptr,
+                        pEngine->vulkan.swapchainExtent.width * PATACHE_MAINBAR_HEIGHT_CSD_SIZE * 4,
                         PROT_READ | PROT_WRITE, MAP_SHARED, MainBarFileDescriptor, 0));
 
-              // Write Color for a wl_buffer
-              if (IsCSDFocus)
+              if (sFocusCSD)
                 {
-                  for (std::uint32_t i = 0;
-                       i < (Engine->Vulkan.SwapChainExtent.width * PATACHE_CSD_HEIGHT_SIZE); ++i)
-                    Engine->WaylandWindow.MainBarPixels[i] = PATACHE_CSD_FOCUS_COLOR;
+                  for (std::uint32_t i = 0; i < (pEngine->vulkan.swapchainExtent.width
+                                                 * PATACHE_MAINBAR_HEIGHT_CSD_SIZE);
+                       ++i)
+                    pEngine->waylandWindow.pMainBarPixels[i] = PATACHE_MAINBAR_FOCUS_CSD_COLOR;
                 }
               else
                 {
-                  for (std::uint32_t i = 0;
-                       i < (Engine->Vulkan.SwapChainExtent.width * PATACHE_CSD_HEIGHT_SIZE); ++i)
-                    Engine->WaylandWindow.MainBarPixels[i] = PATACHE_CSD_LOSTFOCUS_COLOR;
+                  for (std::uint32_t i = 0; i < (pEngine->vulkan.swapchainExtent.width
+                                                 * PATACHE_MAINBAR_HEIGHT_CSD_SIZE);
+                       ++i)
+                    pEngine->waylandWindow.pMainBarPixels[i] = PATACHE_MAINBAR_LOSTFOCUS_CSD_COLOR;
                 }
 
-              wl_shm_pool * DecorationPool = wl_shm_create_pool (
-                  Engine->WaylandWindow.DecorationSharedMemory, MainBarFileDescriptor,
-                  Engine->Vulkan.SwapChainExtent.width * PATACHE_CSD_HEIGHT_SIZE * 4);
+              wl_shm_pool * pDecorationMainBarPool = wl_shm_create_pool (
+                  pEngine->waylandWindow.pDecorationSharedMemory, MainBarFileDescriptor,
+                  pEngine->vulkan.swapchainExtent.width * PATACHE_MAINBAR_HEIGHT_CSD_SIZE * 4);
 
-              Engine->WaylandWindow.MainBarBuffer = wl_shm_pool_create_buffer (
-                  DecorationPool, 0, Engine->Vulkan.SwapChainExtent.width, PATACHE_CSD_HEIGHT_SIZE,
-                  Engine->Vulkan.SwapChainExtent.width * 4, WL_SHM_FORMAT_ARGB8888);
+              pEngine->waylandWindow.pMainBarBuffer = wl_shm_pool_create_buffer (
+                  pDecorationMainBarPool, 0, pEngine->vulkan.swapchainExtent.width,
+                  PATACHE_MAINBAR_HEIGHT_CSD_SIZE, pEngine->vulkan.swapchainExtent.width * 4,
+                  WL_SHM_FORMAT_ARGB8888);
 
-              wl_surface_attach (Engine->WaylandWindow.MainBarSurface,
-                                 Engine->WaylandWindow.MainBarBuffer, 0, 0);
-              wl_surface_damage_buffer (Engine->WaylandWindow.MainBarSurface, 0, 0,
-                                        Engine->Vulkan.SwapChainExtent.width,
-                                        PATACHE_CSD_HEIGHT_SIZE);
+              // Draw
+              wl_surface_attach (pEngine->waylandWindow.pMainBarSurface,
+                                 pEngine->waylandWindow.pMainBarBuffer, 0, 0);
+              wl_surface_damage_buffer (pEngine->waylandWindow.pMainBarSurface, 0, 0,
+                                        pEngine->vulkan.swapchainExtent.width,
+                                        PATACHE_MAINBAR_HEIGHT_CSD_SIZE);
 
-              wl_shm_pool_destroy (DecorationPool);
+              wl_shm_pool_destroy (pDecorationMainBarPool);
               close (MainBarFileDescriptor);
 
-              wl_surface_commit (Engine->WaylandWindow.MainBarSurface);
+              wl_surface_commit (pEngine->waylandWindow.pMainBarSurface);
             }
         }
     }
 }
 
-static const struct xdg_surface_listener DesktopStyleUserInterfaceListener
+static constexpr struct xdg_surface_listener sDesktopStyleUserInterfaceListener
     = { .configure = DesktopStyleUserInterfaceConfigure };
 
 // Seat
 // Using seat input for basic windowing needs
 // cast to void to silence GNU Compiler
 static void
-PointerEnter (void * Data, wl_pointer * Pointer, std::uint32_t Serial, wl_surface * Surface,
-              wl_fixed_t SurfaceX, wl_fixed_t SurfaceY)
+PointerEnter (void * pData, wl_pointer * pPointer, std::uint32_t serial, wl_surface * pSurface,
+              [[maybe_unused]] wl_fixed_t surfaceX, [[maybe_unused]] wl_fixed_t surfaceY)
 {
-  Patache::Engine * Engine = static_cast<Patache::Engine *> (Data);
+  Patache::Engine * pEngine = static_cast<Patache::Engine *> (pData);
 
-  static_cast<void> (SurfaceX);
-  static_cast<void> (SurfaceY);
-
-  if (Engine->WaylandWindow.DecorationMananger == nullptr
-      && Engine->WaylandWindow.SubCompositor != nullptr)
+  if (pEngine->waylandWindow.pDecorationMananger == nullptr
+      && pEngine->waylandWindow.pSubCompositor != nullptr)
     {
-      PointerSelectedSurface = Surface;
-      char CursorType[21]{ 0 };
+      spPointerSelectedSurface = pSurface;
+      char cursorType[21]{ 0 };
 
       // Resize Cursor
-      if (Surface == Engine->WaylandWindow.BorderSurface[PATACHE_CSD_TOP_BORDER_INDEX])
-        std::strncpy (CursorType, "top_side", 20);
-      else if (Surface == Engine->WaylandWindow.BorderSurface[PATACHE_CSD_BOTTOM_BORDER_INDEX])
-        std::strncpy (CursorType, "bottom_side", 20);
-      else if (Surface == Engine->WaylandWindow.BorderSurface[PATACHE_CSD_LEFT_BORDER_INDEX])
-        std::strncpy (CursorType, "left_side", 20);
-      else if (Surface == Engine->WaylandWindow.BorderSurface[PATACHE_CSD_TOPLEFT_BORDER_INDEX])
-        std::strncpy (CursorType, "top_left_corner", 20);
-      else if (Surface == Engine->WaylandWindow.BorderSurface[PATACHE_CSD_BOTTOMLEFT_BORDER_INDEX])
-        std::strncpy (CursorType, "bottom_left_corner", 20);
-      else if (Surface == Engine->WaylandWindow.BorderSurface[PATACHE_CSD_RIGHT_BORDER_INDEX])
-        std::strncpy (CursorType, "right_side", 20);
-      else if (Surface == Engine->WaylandWindow.BorderSurface[PATACHE_CSD_TOPRIGHT_BORDER_INDEX])
-        std::strncpy (CursorType, "top_right_corner", 20);
-      else if (Surface == Engine->WaylandWindow.BorderSurface[PATACHE_CSD_BOTTOMRIGHT_BORDER_INDEX])
-        std::strncpy (CursorType, "bottom_right_corner", 20);
+      if (pSurface == pEngine->waylandWindow.pBorderSurface[Patache::BorderIndexCSD::eTop])
+        std::strncpy (cursorType, "top_side", 20);
+      else if (pSurface == pEngine->waylandWindow.pBorderSurface[Patache::BorderIndexCSD::eBottom])
+        std::strncpy (cursorType, "bottom_side", 20);
+      else if (pSurface == pEngine->waylandWindow.pBorderSurface[Patache::BorderIndexCSD::eLeft])
+        std::strncpy (cursorType, "left_side", 20);
+      else if (pSurface == pEngine->waylandWindow.pBorderSurface[Patache::BorderIndexCSD::eTopLeft])
+        std::strncpy (cursorType, "top_left_corner", 20);
+      else if (pSurface
+               == pEngine->waylandWindow.pBorderSurface[Patache::BorderIndexCSD::eBottomLeft])
+        std::strncpy (cursorType, "bottom_left_corner", 20);
+      else if (pSurface == pEngine->waylandWindow.pBorderSurface[Patache::BorderIndexCSD::eRight])
+        std::strncpy (cursorType, "right_side", 20);
+      else if (pSurface
+               == pEngine->waylandWindow.pBorderSurface[Patache::BorderIndexCSD::eTopRight])
+        std::strncpy (cursorType, "top_right_corner", 20);
+      else if (pSurface
+               == pEngine->waylandWindow.pBorderSurface[Patache::BorderIndexCSD::eBottomRight])
+        std::strncpy (cursorType, "bottom_right_corner", 20);
 
       // Normal Cursor
-      if (Surface == Engine->WaylandWindow.MainBarSurface
-          || Surface == Engine->WaylandWindow.Surface
-          || Surface == Engine->WaylandWindow.ButtonSurface[PATACHE_CSD_MINIMIZE_BUTTON_INDEX]
-          || Surface == Engine->WaylandWindow.ButtonSurface[PATACHE_CSD_MAXIMIZE_BUTTON_INDEX]
-          || Surface == Engine->WaylandWindow.ButtonSurface[PATACHE_CSD_CLOSE_BUTTON_INDEX])
+      if (pSurface == pEngine->waylandWindow.pMainBarSurface
+          || pSurface == pEngine->waylandWindow.pSurface
+          || pSurface == pEngine->waylandWindow.pButtonSurface[Patache::ButtonIndexCSD::eMinimize]
+          || pSurface == pEngine->waylandWindow.pButtonSurface[Patache::ButtonIndexCSD::eMaximize]
+          || pSurface == pEngine->waylandWindow.pButtonSurface[Patache::ButtonIndexCSD::eClose])
         {
-          std::strncpy (CursorType, "left_ptr", 19);
+          std::strncpy (cursorType, "left_ptr", 19);
         }
 
-      wl_cursor * const Cursor
-          = wl_cursor_theme_get_cursor (Engine->WaylandWindow.CursorTheme, CursorType);
+      wl_cursor * const pCursor
+          = wl_cursor_theme_get_cursor (pEngine->waylandWindow.pCursorTheme, cursorType);
 
-      if (Cursor != nullptr)
+      if (pCursor != nullptr)
         {
-          wl_cursor_image * const CursorImage = Cursor->images[0];
+          wl_cursor_image * const pCursorImage = pCursor->images[0];
 
-          wl_pointer_set_cursor (Pointer, Serial, Engine->WaylandWindow.CursorSurface,
-                                 CursorImage->hotspot_x, CursorImage->hotspot_y);
+          wl_pointer_set_cursor (pPointer, serial, pEngine->waylandWindow.pCursorSurface,
+                                 pCursorImage->hotspot_x, pCursorImage->hotspot_y);
 
-          wl_surface_attach (Engine->WaylandWindow.CursorSurface,
-                             wl_cursor_image_get_buffer (CursorImage), 0, 0);
-          wl_surface_damage (Engine->WaylandWindow.CursorSurface, 0, 0, CursorImage->width,
-                             CursorImage->height);
-          wl_surface_commit (Engine->WaylandWindow.CursorSurface);
+          wl_surface_attach (pEngine->waylandWindow.pCursorSurface,
+                             wl_cursor_image_get_buffer (pCursorImage), 0, 0);
+
+          wl_surface_damage (pEngine->waylandWindow.pCursorSurface, 0, 0, pCursorImage->width,
+                             pCursorImage->height);
+
+          wl_surface_commit (pEngine->waylandWindow.pCursorSurface);
         }
 
       // Button Hover
-      if (!IsFullScreen)
+      if (!isFullScreen)
         {
           /*
            * Buttons
@@ -629,175 +653,173 @@ PointerEnter (void * Data, wl_pointer * Pointer, std::uint32_t Serial, wl_surfac
            * correct position in the main bar
            */
 
-          // Create a file descriptor for a buffer
-          char         CSDButtonFileName[]     = "Patache-Button-File";
-          std::int32_t CSDButtonFileDescriptor = shm_open (
-              CSDButtonFileName, O_RDWR | O_CREAT | O_EXCL, S_IWUSR | S_IRUSR | S_IWOTH | S_IROTH);
-          shm_unlink (CSDButtonFileName);
-          ftruncate (CSDButtonFileDescriptor, PATACHE_CSD_CLOSE_BUTTON_SIZE);
+          // File descriptor
+          char buttonFileNameCSD[] = "Patache-Button-File";
 
-          if (Surface == Engine->WaylandWindow.ButtonSurface[PATACHE_CSD_CLOSE_BUTTON_INDEX])
+          std::int32_t buttonFileDescriptorCSD = shm_open (
+              buttonFileNameCSD, O_RDWR | O_CREAT | O_EXCL, S_IWUSR | S_IRUSR | S_IWOTH | S_IROTH);
+
+          shm_unlink (buttonFileNameCSD);
+
+          ftruncate (buttonFileDescriptorCSD, PATACHE_CLOSE_BUTTON_CSD_SIZE);
+
+          if (pSurface == pEngine->waylandWindow.pButtonSurface[Patache::ButtonIndexCSD::eClose])
             {
-              /*
-               * Map File to a memory (To write the color) to be used for a
-               * wl_buffer
-               */
-              Engine->WaylandWindow.DecorationButtonPixels[PATACHE_CSD_CLOSE_BUTTON_INDEX]
-                  = static_cast<std::uint32_t *> (mmap (nullptr, PATACHE_CSD_CLOSE_BUTTON_SIZE,
+              // Memory
+              pEngine->waylandWindow.pDecorationButtonPixels[Patache::ButtonIndexCSD::eClose]
+                  = static_cast<std::uint32_t *> (mmap (nullptr, PATACHE_CLOSE_BUTTON_CSD_SIZE,
                                                         PROT_READ | PROT_WRITE, MAP_SHARED,
-                                                        CSDButtonFileDescriptor, 0));
+                                                        buttonFileDescriptorCSD, 0));
 
-              for (std::uint32_t i = 0; i < PATACHE_CSD_CLOSE_BUTTON_PIXELCOUNT; ++i)
+              for (std::uint32_t i = 0; i < PATACHE_CLOSE_BUTTON_CSD_PIXELCOUNT; ++i)
                 {
-                  Engine->WaylandWindow.DecorationButtonPixels[PATACHE_CSD_CLOSE_BUTTON_INDEX][i]
-                      = CSDCloseButtonHover[i];
+                  pEngine->waylandWindow.pDecorationButtonPixels[Patache::ButtonIndexCSD::eClose][i]
+                      = sCloseButtonHoverCSD[i];
                 }
 
-              wl_shm_pool * DecorationButtonPool
-                  = wl_shm_create_pool (Engine->WaylandWindow.DecorationSharedMemory,
-                                        CSDButtonFileDescriptor, PATACHE_CSD_CLOSE_BUTTON_SIZE);
+              wl_shm_pool * pDecorationButtonPool
+                  = wl_shm_create_pool (pEngine->waylandWindow.pDecorationSharedMemory,
+                                        buttonFileDescriptorCSD, PATACHE_CLOSE_BUTTON_CSD_SIZE);
 
-              Engine->WaylandWindow.DecorationButtonBuffer[PATACHE_CSD_CLOSE_BUTTON_INDEX]
+              pEngine->waylandWindow.pDecorationButtonBuffer[Patache::ButtonIndexCSD::eClose]
                   = wl_shm_pool_create_buffer (
-                      DecorationButtonPool, 0, PATACHE_CSD_CLOSE_BUTTON_WIDTH,
-                      PATACHE_CSD_CLOSE_BUTTON_HEIGHT, PATACHE_CSD_CLOSE_BUTTON_WIDTH * 4,
+                      pDecorationButtonPool, 0, PATACHE_CLOSE_BUTTON_CSD_WIDTH,
+                      PATACHE_CLOSE_BUTTON_CSD_HEIGHT, PATACHE_CLOSE_BUTTON_CSD_WIDTH * 4,
                       WL_SHM_FORMAT_ARGB8888);
 
+              // Draw
               wl_surface_attach (
-                  Engine->WaylandWindow.ButtonSurface[PATACHE_CSD_CLOSE_BUTTON_INDEX],
-                  Engine->WaylandWindow.DecorationButtonBuffer[PATACHE_CSD_CLOSE_BUTTON_INDEX], 0,
-                  0);
+                  pEngine->waylandWindow.pButtonSurface[Patache::ButtonIndexCSD::eClose],
+                  pEngine->waylandWindow.pDecorationButtonBuffer[Patache::ButtonIndexCSD::eClose],
+                  0, 0);
 
               wl_surface_damage_buffer (
-                  Engine->WaylandWindow.ButtonSurface[PATACHE_CSD_CLOSE_BUTTON_INDEX], 0, 0,
-                  PATACHE_CSD_CLOSE_BUTTON_WIDTH, PATACHE_CSD_CLOSE_BUTTON_HEIGHT);
+                  pEngine->waylandWindow.pButtonSurface[Patache::ButtonIndexCSD::eClose], 0, 0,
+                  PATACHE_CLOSE_BUTTON_CSD_WIDTH, PATACHE_CLOSE_BUTTON_CSD_HEIGHT);
 
-              wl_shm_pool_destroy (DecorationButtonPool);
-              close (CSDButtonFileDescriptor);
+              wl_shm_pool_destroy (pDecorationButtonPool);
+              close (buttonFileDescriptorCSD);
 
               wl_surface_commit (
-                  Engine->WaylandWindow.ButtonSurface[PATACHE_CSD_CLOSE_BUTTON_INDEX]);
+                  pEngine->waylandWindow.pButtonSurface[Patache::ButtonIndexCSD::eClose]);
 
-              wl_surface_commit (Engine->WaylandWindow.MainBarSurface);
+              wl_surface_commit (pEngine->waylandWindow.pMainBarSurface);
             }
 
-          if (Surface == Engine->WaylandWindow.ButtonSurface[PATACHE_CSD_MAXIMIZE_BUTTON_INDEX])
+          if (pSurface == pEngine->waylandWindow.pButtonSurface[Patache::ButtonIndexCSD::eMaximize])
             {
-              /*
-               * Map File to a memory (To write the color) to be used for a
-               * wl_buffer
-               */
-              Engine->WaylandWindow.DecorationButtonPixels[PATACHE_CSD_MAXIMIZE_BUTTON_INDEX]
-                  = static_cast<std::uint32_t *> (mmap (nullptr, PATACHE_CSD_MAXIMIZE_BUTTON_SIZE,
+              // Memory
+              pEngine->waylandWindow.pDecorationButtonPixels[Patache::ButtonIndexCSD::eMaximize]
+                  = static_cast<std::uint32_t *> (mmap (nullptr, PATACHE_MAXIMIZE_BUTTON_CSD_SIZE,
                                                         PROT_READ | PROT_WRITE, MAP_SHARED,
-                                                        CSDButtonFileDescriptor, 0));
+                                                        buttonFileDescriptorCSD, 0));
 
-              if (IsMaximized)
+              if (isMaximized)
                 {
-                  for (std::uint32_t i = 0; i < PATACHE_CSD_MAXIMIZE_BUTTON_PIXELCOUNT; ++i)
+                  for (std::uint32_t i = 0; i < PATACHE_MAXIMIZE_BUTTON_CSD_PIXELCOUNT; ++i)
                     {
-                      Engine->WaylandWindow
-                          .DecorationButtonPixels[PATACHE_CSD_MAXIMIZE_BUTTON_INDEX][i]
-                          = CSDMaximizedButtonHover[i];
+                      pEngine->waylandWindow
+                          .pDecorationButtonPixels[Patache::ButtonIndexCSD::eMaximize][i]
+                          = sMaximizedButtonHoverCSD[i];
                     }
                 }
               else
                 {
-                  for (std::uint32_t i = 0; i < PATACHE_CSD_MAXIMIZE_BUTTON_PIXELCOUNT; ++i)
+                  for (std::uint32_t i = 0; i < PATACHE_MAXIMIZE_BUTTON_CSD_PIXELCOUNT; ++i)
                     {
-                      Engine->WaylandWindow
-                          .DecorationButtonPixels[PATACHE_CSD_MAXIMIZE_BUTTON_INDEX][i]
-                          = CSDMaximizeButtonHover[i];
+                      pEngine->waylandWindow
+                          .pDecorationButtonPixels[Patache::ButtonIndexCSD::eMaximize][i]
+                          = sMaximizeButtonHoverCSD[i];
                     }
                 }
 
-              wl_shm_pool * DecorationButtonPool
-                  = wl_shm_create_pool (Engine->WaylandWindow.DecorationSharedMemory,
-                                        CSDButtonFileDescriptor, PATACHE_CSD_MAXIMIZE_BUTTON_SIZE);
+              wl_shm_pool * pDecorationButtonPool
+                  = wl_shm_create_pool (pEngine->waylandWindow.pDecorationSharedMemory,
+                                        buttonFileDescriptorCSD, PATACHE_MAXIMIZE_BUTTON_CSD_SIZE);
 
-              Engine->WaylandWindow.DecorationButtonBuffer[PATACHE_CSD_MAXIMIZE_BUTTON_INDEX]
+              pEngine->waylandWindow.pDecorationButtonBuffer[Patache::ButtonIndexCSD::eMaximize]
                   = wl_shm_pool_create_buffer (
-                      DecorationButtonPool, 0, PATACHE_CSD_MAXIMIZE_BUTTON_WIDTH,
-                      PATACHE_CSD_MAXIMIZE_BUTTON_HEIGHT, PATACHE_CSD_MAXIMIZE_BUTTON_WIDTH * 4,
+                      pDecorationButtonPool, 0, PATACHE_MAXIMIZE_BUTTON_CSD_WIDTH,
+                      PATACHE_MAXIMIZE_BUTTON_CSD_HEIGHT, PATACHE_MAXIMIZE_BUTTON_CSD_WIDTH * 4,
                       WL_SHM_FORMAT_ARGB8888);
 
+              // Draw
               wl_surface_attach (
-                  Engine->WaylandWindow.ButtonSurface[PATACHE_CSD_MAXIMIZE_BUTTON_INDEX],
-                  Engine->WaylandWindow.DecorationButtonBuffer[PATACHE_CSD_MAXIMIZE_BUTTON_INDEX],
+                  pEngine->waylandWindow.pButtonSurface[Patache::ButtonIndexCSD::eMaximize],
+                  pEngine->waylandWindow
+                      .pDecorationButtonBuffer[Patache::ButtonIndexCSD::eMaximize],
                   0, 0);
 
               wl_surface_damage_buffer (
-                  Engine->WaylandWindow.ButtonSurface[PATACHE_CSD_MAXIMIZE_BUTTON_INDEX], 0, 0,
-                  PATACHE_CSD_MAXIMIZE_BUTTON_WIDTH, PATACHE_CSD_MAXIMIZE_BUTTON_HEIGHT);
+                  pEngine->waylandWindow.pButtonSurface[Patache::ButtonIndexCSD::eMaximize], 0, 0,
+                  PATACHE_MAXIMIZE_BUTTON_CSD_WIDTH, PATACHE_MAXIMIZE_BUTTON_CSD_HEIGHT);
 
-              wl_shm_pool_destroy (DecorationButtonPool);
-              close (CSDButtonFileDescriptor);
+              wl_shm_pool_destroy (pDecorationButtonPool);
+              close (buttonFileDescriptorCSD);
 
               wl_surface_commit (
-                  Engine->WaylandWindow.ButtonSurface[PATACHE_CSD_MAXIMIZE_BUTTON_INDEX]);
+                  pEngine->waylandWindow.pButtonSurface[Patache::ButtonIndexCSD::eMaximize]);
 
-              wl_surface_commit (Engine->WaylandWindow.MainBarSurface);
+              wl_surface_commit (pEngine->waylandWindow.pMainBarSurface);
             }
 
-          if (Surface == Engine->WaylandWindow.ButtonSurface[PATACHE_CSD_MINIMIZE_BUTTON_INDEX])
+          if (pSurface == pEngine->waylandWindow.pButtonSurface[Patache::ButtonIndexCSD::eMinimize])
             {
-              /*
-               * Map File to a memory (To write the color) to be used for a
-               * wl_buffer
-               */
-              Engine->WaylandWindow.DecorationButtonPixels[PATACHE_CSD_MINIMIZE_BUTTON_INDEX]
-                  = static_cast<std::uint32_t *> (mmap (nullptr, PATACHE_CSD_MINIMIZE_BUTTON_SIZE,
+              // Memory
+              pEngine->waylandWindow.pDecorationButtonPixels[Patache::ButtonIndexCSD::eMinimize]
+                  = static_cast<std::uint32_t *> (mmap (nullptr, PATACHE_MINIMIZE_BUTTON_CSD_SIZE,
                                                         PROT_READ | PROT_WRITE, MAP_SHARED,
-                                                        CSDButtonFileDescriptor, 0));
+                                                        buttonFileDescriptorCSD, 0));
 
-              for (std::uint32_t i = 0; i < PATACHE_CSD_MINIMIZE_BUTTON_PIXELCOUNT; ++i)
+              for (std::uint32_t i = 0; i < PATACHE_MINIMIZE_BUTTON_CSD_PIXELCOUNT; ++i)
                 {
-                  Engine->WaylandWindow.DecorationButtonPixels[PATACHE_CSD_MINIMIZE_BUTTON_INDEX][i]
-                      = CSDMinimizeButtonHover[i];
+                  pEngine->waylandWindow
+                      .pDecorationButtonPixels[Patache::ButtonIndexCSD::eMinimize][i]
+                      = sMinimizeButtonHoverCSD[i];
                 }
 
-              wl_shm_pool * DecorationButtonPool
-                  = wl_shm_create_pool (Engine->WaylandWindow.DecorationSharedMemory,
-                                        CSDButtonFileDescriptor, PATACHE_CSD_MINIMIZE_BUTTON_SIZE);
+              wl_shm_pool * pDecorationButtonPool
+                  = wl_shm_create_pool (pEngine->waylandWindow.pDecorationSharedMemory,
+                                        buttonFileDescriptorCSD, PATACHE_MINIMIZE_BUTTON_CSD_SIZE);
 
-              Engine->WaylandWindow.DecorationButtonBuffer[PATACHE_CSD_MINIMIZE_BUTTON_INDEX]
+              pEngine->waylandWindow.pDecorationButtonBuffer[Patache::ButtonIndexCSD::eMinimize]
                   = wl_shm_pool_create_buffer (
-                      DecorationButtonPool, 0, PATACHE_CSD_MINIMIZE_BUTTON_WIDTH,
-                      PATACHE_CSD_MINIMIZE_BUTTON_HEIGHT, PATACHE_CSD_MINIMIZE_BUTTON_WIDTH * 4,
+                      pDecorationButtonPool, 0, PATACHE_MINIMIZE_BUTTON_CSD_WIDTH,
+                      PATACHE_MINIMIZE_BUTTON_CSD_HEIGHT, PATACHE_MINIMIZE_BUTTON_CSD_WIDTH * 4,
                       WL_SHM_FORMAT_ARGB8888);
 
+              // Draw
               wl_surface_attach (
-                  Engine->WaylandWindow.ButtonSurface[PATACHE_CSD_MINIMIZE_BUTTON_INDEX],
-                  Engine->WaylandWindow.DecorationButtonBuffer[PATACHE_CSD_MINIMIZE_BUTTON_INDEX],
+                  pEngine->waylandWindow.pButtonSurface[Patache::ButtonIndexCSD::eMinimize],
+                  pEngine->waylandWindow
+                      .pDecorationButtonBuffer[Patache::ButtonIndexCSD::eMinimize],
                   0, 0);
 
               wl_surface_damage_buffer (
-                  Engine->WaylandWindow.ButtonSurface[PATACHE_CSD_MINIMIZE_BUTTON_INDEX], 0, 0,
-                  PATACHE_CSD_MINIMIZE_BUTTON_WIDTH, PATACHE_CSD_MINIMIZE_BUTTON_HEIGHT);
+                  pEngine->waylandWindow.pButtonSurface[Patache::ButtonIndexCSD::eMinimize], 0, 0,
+                  PATACHE_MINIMIZE_BUTTON_CSD_WIDTH, PATACHE_MINIMIZE_BUTTON_CSD_HEIGHT);
 
-              wl_shm_pool_destroy (DecorationButtonPool);
-              close (CSDButtonFileDescriptor);
+              wl_shm_pool_destroy (pDecorationButtonPool);
+              close (buttonFileDescriptorCSD);
 
               wl_surface_commit (
-                  Engine->WaylandWindow.ButtonSurface[PATACHE_CSD_MINIMIZE_BUTTON_INDEX]);
+                  pEngine->waylandWindow.pButtonSurface[Patache::ButtonIndexCSD::eMinimize]);
 
-              wl_surface_commit (Engine->WaylandWindow.MainBarSurface);
+              wl_surface_commit (pEngine->waylandWindow.pMainBarSurface);
             }
         }
     }
 }
 
 static void
-PointerLeave (void * Data, wl_pointer * Pointer, uint Serial, wl_surface * Surface)
+PointerLeave (void * pData, [[maybe_unused]] wl_pointer * pPointer,
+              [[maybe_unused]] std::uint32_t serial, wl_surface * pSurface)
 {
-  Patache::Engine * Engine = static_cast<Patache::Engine *> (Data);
-
-  static_cast<void> (Pointer);
-  static_cast<void> (Serial);
+  Patache::Engine * pEngine = static_cast<Patache::Engine *> (pData);
 
   // Restore button colors when the cursor leave the surface of that button
-  if (!IsFullScreen && Engine->WaylandWindow.DecorationMananger == nullptr
-      && Engine->WaylandWindow.SubCompositor != nullptr)
+  if (!isFullScreen && pEngine->waylandWindow.pDecorationMananger == nullptr
+      && pEngine->waylandWindow.pSubCompositor != nullptr)
     {
       /*
        * Buttons
@@ -807,417 +829,390 @@ PointerLeave (void * Data, wl_pointer * Pointer, uint Serial, wl_surface * Surfa
        * correct position in the main bar
        */
 
-      // Create a file descriptor for a buffer
-      char         CSDButtonFileName[]     = "Patache-Button-File";
-      std::int32_t CSDButtonFileDescriptor = shm_open (CSDButtonFileName, O_RDWR | O_CREAT | O_EXCL,
+      // File descriptor
+      char buttonFileNameCSD[] = "Patache-Button-File";
+
+      std::int32_t buttonFileDescriptorCSD = shm_open (buttonFileNameCSD, O_RDWR | O_CREAT | O_EXCL,
                                                        S_IWUSR | S_IRUSR | S_IWOTH | S_IROTH);
-      shm_unlink (CSDButtonFileName);
-      ftruncate (CSDButtonFileDescriptor, PATACHE_CSD_CLOSE_BUTTON_SIZE);
+      shm_unlink (buttonFileNameCSD);
+
+      ftruncate (buttonFileDescriptorCSD, PATACHE_CLOSE_BUTTON_CSD_SIZE);
 
       // Restore close button color back to normal or lost focus
-      if (Surface == Engine->WaylandWindow.ButtonSurface[PATACHE_CSD_CLOSE_BUTTON_INDEX])
+      if (pSurface == pEngine->waylandWindow.pButtonSurface[Patache::ButtonIndexCSD::eClose])
         {
-          /*
-           * Map File to a memory (To write the color) to be used for a
-           * wl_buffer
-           */
-          Engine->WaylandWindow.DecorationButtonPixels[PATACHE_CSD_CLOSE_BUTTON_INDEX]
-              = static_cast<std::uint32_t *> (mmap (nullptr, PATACHE_CSD_CLOSE_BUTTON_SIZE,
+          // Memory
+          pEngine->waylandWindow.pDecorationButtonPixels[Patache::ButtonIndexCSD::eClose]
+              = static_cast<std::uint32_t *> (mmap (nullptr, PATACHE_CLOSE_BUTTON_CSD_SIZE,
                                                     PROT_READ | PROT_WRITE, MAP_SHARED,
-                                                    CSDButtonFileDescriptor, 0));
+                                                    buttonFileDescriptorCSD, 0));
 
-          if (IsCSDFocus)
+          if (sFocusCSD)
             {
-              for (std::uint32_t i = 0; i < PATACHE_CSD_CLOSE_BUTTON_PIXELCOUNT; ++i)
+              for (std::uint32_t i = 0; i < PATACHE_CLOSE_BUTTON_CSD_PIXELCOUNT; ++i)
                 {
-                  Engine->WaylandWindow.DecorationButtonPixels[PATACHE_CSD_CLOSE_BUTTON_INDEX][i]
-                      = CSDCloseButton[i];
+                  pEngine->waylandWindow.pDecorationButtonPixels[Patache::ButtonIndexCSD::eClose][i]
+                      = sCloseButtonCSD[i];
                 }
             }
           else
             {
-              for (std::uint32_t i = 0; i < PATACHE_CSD_CLOSE_BUTTON_PIXELCOUNT; ++i)
+              for (std::uint32_t i = 0; i < PATACHE_CLOSE_BUTTON_CSD_PIXELCOUNT; ++i)
                 {
-                  Engine->WaylandWindow.DecorationButtonPixels[PATACHE_CSD_CLOSE_BUTTON_INDEX][i]
-                      = CSDCloseButtonFocusLost[i];
+                  pEngine->waylandWindow.pDecorationButtonPixels[Patache::ButtonIndexCSD::eClose][i]
+                      = sCloseButtonFocusLostCSD[i];
                 }
             }
 
-          wl_shm_pool * DecorationButtonPool
-              = wl_shm_create_pool (Engine->WaylandWindow.DecorationSharedMemory,
-                                    CSDButtonFileDescriptor, PATACHE_CSD_CLOSE_BUTTON_SIZE);
+          wl_shm_pool * pDecorationButtonPool
+              = wl_shm_create_pool (pEngine->waylandWindow.pDecorationSharedMemory,
+                                    buttonFileDescriptorCSD, PATACHE_CLOSE_BUTTON_CSD_SIZE);
 
-          Engine->WaylandWindow.DecorationButtonBuffer[PATACHE_CSD_CLOSE_BUTTON_INDEX]
-              = wl_shm_pool_create_buffer (DecorationButtonPool, 0, PATACHE_CSD_CLOSE_BUTTON_WIDTH,
-                                           PATACHE_CSD_CLOSE_BUTTON_HEIGHT,
-                                           PATACHE_CSD_CLOSE_BUTTON_WIDTH * 4,
+          pEngine->waylandWindow.pDecorationButtonBuffer[Patache::ButtonIndexCSD::eClose]
+              = wl_shm_pool_create_buffer (pDecorationButtonPool, 0, PATACHE_CLOSE_BUTTON_CSD_WIDTH,
+                                           PATACHE_CLOSE_BUTTON_CSD_HEIGHT,
+                                           PATACHE_CLOSE_BUTTON_CSD_WIDTH * 4,
                                            WL_SHM_FORMAT_ARGB8888);
 
+          // Draw
           wl_surface_attach (
-              Engine->WaylandWindow.ButtonSurface[PATACHE_CSD_CLOSE_BUTTON_INDEX],
-              Engine->WaylandWindow.DecorationButtonBuffer[PATACHE_CSD_CLOSE_BUTTON_INDEX], 0, 0);
+              pEngine->waylandWindow.pButtonSurface[Patache::ButtonIndexCSD::eClose],
+              pEngine->waylandWindow.pDecorationButtonBuffer[Patache::ButtonIndexCSD::eClose], 0,
+              0);
 
           wl_surface_damage_buffer (
-              Engine->WaylandWindow.ButtonSurface[PATACHE_CSD_CLOSE_BUTTON_INDEX], 0, 0,
-              PATACHE_CSD_CLOSE_BUTTON_WIDTH, PATACHE_CSD_CLOSE_BUTTON_HEIGHT);
+              pEngine->waylandWindow.pButtonSurface[Patache::ButtonIndexCSD::eClose], 0, 0,
+              PATACHE_CLOSE_BUTTON_CSD_WIDTH, PATACHE_CLOSE_BUTTON_CSD_HEIGHT);
 
-          wl_shm_pool_destroy (DecorationButtonPool);
-          close (CSDButtonFileDescriptor);
+          wl_shm_pool_destroy (pDecorationButtonPool);
+          close (buttonFileDescriptorCSD);
 
-          wl_surface_commit (Engine->WaylandWindow.ButtonSurface[PATACHE_CSD_CLOSE_BUTTON_INDEX]);
+          wl_surface_commit (
+              pEngine->waylandWindow.pButtonSurface[Patache::ButtonIndexCSD::eClose]);
 
-          wl_surface_commit (Engine->WaylandWindow.MainBarSurface);
+          wl_surface_commit (pEngine->waylandWindow.pMainBarSurface);
         }
 
       // Restore maximize button color back to normal or lost focus
-      if (Surface == Engine->WaylandWindow.ButtonSurface[PATACHE_CSD_MAXIMIZE_BUTTON_INDEX])
+      if (pSurface == pEngine->waylandWindow.pButtonSurface[Patache::ButtonIndexCSD::eMaximize])
         {
-          /*
-           * Map File to a memory (To write the color) to be used for a
-           * wl_buffer
-           */
-          Engine->WaylandWindow.DecorationButtonPixels[PATACHE_CSD_MAXIMIZE_BUTTON_INDEX]
-              = static_cast<std::uint32_t *> (mmap (nullptr, PATACHE_CSD_MAXIMIZE_BUTTON_SIZE,
+          // Memory
+          pEngine->waylandWindow.pDecorationButtonPixels[Patache::ButtonIndexCSD::eMaximize]
+              = static_cast<std::uint32_t *> (mmap (nullptr, PATACHE_MAXIMIZE_BUTTON_CSD_SIZE,
                                                     PROT_READ | PROT_WRITE, MAP_SHARED,
-                                                    CSDButtonFileDescriptor, 0));
+                                                    buttonFileDescriptorCSD, 0));
 
-          if (IsCSDFocus)
+          if (sFocusCSD)
             {
-              if (IsMaximized)
+              if (isMaximized)
                 {
-                  for (std::uint32_t i = 0; i < PATACHE_CSD_MAXIMIZE_BUTTON_PIXELCOUNT; ++i)
+                  for (std::uint32_t i = 0; i < PATACHE_MAXIMIZE_BUTTON_CSD_PIXELCOUNT; ++i)
                     {
-                      Engine->WaylandWindow
-                          .DecorationButtonPixels[PATACHE_CSD_MAXIMIZE_BUTTON_INDEX][i]
-                          = CSDMaximizedButton[i];
+                      pEngine->waylandWindow
+                          .pDecorationButtonPixels[Patache::ButtonIndexCSD::eMaximize][i]
+                          = sMaximizedButtonCSD[i];
                     }
                 }
               else
                 {
-                  for (std::uint32_t i = 0; i < PATACHE_CSD_MAXIMIZE_BUTTON_PIXELCOUNT; ++i)
+                  for (std::uint32_t i = 0; i < PATACHE_MAXIMIZE_BUTTON_CSD_PIXELCOUNT; ++i)
                     {
-                      Engine->WaylandWindow
-                          .DecorationButtonPixels[PATACHE_CSD_MAXIMIZE_BUTTON_INDEX][i]
-                          = CSDMaximizeButton[i];
+                      pEngine->waylandWindow
+                          .pDecorationButtonPixels[Patache::ButtonIndexCSD::eMaximize][i]
+                          = sMaximizeButtonCSD[i];
                     }
                 }
             }
           else
             {
-              if (IsMaximized)
+              if (isMaximized)
                 {
-                  for (std::uint32_t i = 0; i < PATACHE_CSD_MAXIMIZE_BUTTON_PIXELCOUNT; ++i)
+                  for (std::uint32_t i = 0; i < PATACHE_MAXIMIZE_BUTTON_CSD_PIXELCOUNT; ++i)
                     {
-                      Engine->WaylandWindow
-                          .DecorationButtonPixels[PATACHE_CSD_MAXIMIZE_BUTTON_INDEX][i]
-                          = CSDMaximizedButtonFocusLost[i];
+                      pEngine->waylandWindow
+                          .pDecorationButtonPixels[Patache::ButtonIndexCSD::eMaximize][i]
+                          = sMaximizedButtonFocusLostCSD[i];
                     }
                 }
               else
                 {
-                  for (std::uint32_t i = 0; i < PATACHE_CSD_MAXIMIZE_BUTTON_PIXELCOUNT; ++i)
+                  for (std::uint32_t i = 0; i < PATACHE_MAXIMIZE_BUTTON_CSD_PIXELCOUNT; ++i)
                     {
-                      Engine->WaylandWindow
-                          .DecorationButtonPixels[PATACHE_CSD_MAXIMIZE_BUTTON_INDEX][i]
-                          = CSDMaximizeButtonFocusLost[i];
+                      pEngine->waylandWindow
+                          .pDecorationButtonPixels[Patache::ButtonIndexCSD::eMaximize][i]
+                          = sMaximizeButtonFocusLostCSD[i];
                     }
                 }
             }
 
-          wl_shm_pool * DecorationButtonPool
-              = wl_shm_create_pool (Engine->WaylandWindow.DecorationSharedMemory,
-                                    CSDButtonFileDescriptor, PATACHE_CSD_MAXIMIZE_BUTTON_SIZE);
+          wl_shm_pool * pDecorationButtonPool
+              = wl_shm_create_pool (pEngine->waylandWindow.pDecorationSharedMemory,
+                                    buttonFileDescriptorCSD, PATACHE_MAXIMIZE_BUTTON_CSD_SIZE);
 
-          Engine->WaylandWindow.DecorationButtonBuffer[PATACHE_CSD_MAXIMIZE_BUTTON_INDEX]
+          pEngine->waylandWindow.pDecorationButtonBuffer[Patache::ButtonIndexCSD::eMaximize]
               = wl_shm_pool_create_buffer (
-                  DecorationButtonPool, 0, PATACHE_CSD_MAXIMIZE_BUTTON_WIDTH,
-                  PATACHE_CSD_MAXIMIZE_BUTTON_HEIGHT, PATACHE_CSD_MAXIMIZE_BUTTON_WIDTH * 4,
+                  pDecorationButtonPool, 0, PATACHE_MAXIMIZE_BUTTON_CSD_WIDTH,
+                  PATACHE_MAXIMIZE_BUTTON_CSD_HEIGHT, PATACHE_MAXIMIZE_BUTTON_CSD_WIDTH * 4,
                   WL_SHM_FORMAT_ARGB8888);
 
+          // Draw
           wl_surface_attach (
-              Engine->WaylandWindow.ButtonSurface[PATACHE_CSD_MAXIMIZE_BUTTON_INDEX],
-              Engine->WaylandWindow.DecorationButtonBuffer[PATACHE_CSD_MAXIMIZE_BUTTON_INDEX], 0,
+              pEngine->waylandWindow.pButtonSurface[Patache::ButtonIndexCSD::eMaximize],
+              pEngine->waylandWindow.pDecorationButtonBuffer[Patache::ButtonIndexCSD::eMaximize], 0,
               0);
 
           wl_surface_damage_buffer (
-              Engine->WaylandWindow.ButtonSurface[PATACHE_CSD_MAXIMIZE_BUTTON_INDEX], 0, 0,
-              PATACHE_CSD_MAXIMIZE_BUTTON_WIDTH, PATACHE_CSD_MAXIMIZE_BUTTON_HEIGHT);
+              pEngine->waylandWindow.pButtonSurface[Patache::ButtonIndexCSD::eMaximize], 0, 0,
+              PATACHE_MAXIMIZE_BUTTON_CSD_WIDTH, PATACHE_MAXIMIZE_BUTTON_CSD_HEIGHT);
 
-          wl_shm_pool_destroy (DecorationButtonPool);
-          close (CSDButtonFileDescriptor);
+          wl_shm_pool_destroy (pDecorationButtonPool);
+          close (buttonFileDescriptorCSD);
 
           wl_surface_commit (
-              Engine->WaylandWindow.ButtonSurface[PATACHE_CSD_MAXIMIZE_BUTTON_INDEX]);
+              pEngine->waylandWindow.pButtonSurface[Patache::ButtonIndexCSD::eMaximize]);
 
-          wl_surface_commit (Engine->WaylandWindow.MainBarSurface);
+          wl_surface_commit (pEngine->waylandWindow.pMainBarSurface);
         }
 
       // Restore minimize button color back to normal or lost focus
-      if (Surface == Engine->WaylandWindow.ButtonSurface[PATACHE_CSD_MINIMIZE_BUTTON_INDEX])
+      if (pSurface == pEngine->waylandWindow.pButtonSurface[Patache::ButtonIndexCSD::eMinimize])
         {
-          /*
-           * Map File to a memory (To write the color) to be used for a
-           * wl_buffer
-           */
-          Engine->WaylandWindow.DecorationButtonPixels[PATACHE_CSD_MINIMIZE_BUTTON_INDEX]
-              = static_cast<std::uint32_t *> (mmap (nullptr, PATACHE_CSD_MINIMIZE_BUTTON_SIZE,
+          // Memory
+          pEngine->waylandWindow.pDecorationButtonPixels[Patache::ButtonIndexCSD::eMinimize]
+              = static_cast<std::uint32_t *> (mmap (nullptr, PATACHE_MINIMIZE_BUTTON_CSD_SIZE,
                                                     PROT_READ | PROT_WRITE, MAP_SHARED,
-                                                    CSDButtonFileDescriptor, 0));
+                                                    buttonFileDescriptorCSD, 0));
 
-          if (IsCSDFocus)
+          if (sFocusCSD)
             {
-              for (std::uint32_t i = 0; i < PATACHE_CSD_MINIMIZE_BUTTON_PIXELCOUNT; ++i)
+              for (std::uint32_t i = 0; i < PATACHE_MINIMIZE_BUTTON_CSD_PIXELCOUNT; ++i)
                 {
-                  Engine->WaylandWindow.DecorationButtonPixels[PATACHE_CSD_MINIMIZE_BUTTON_INDEX][i]
-                      = CSDMinimizeButton[i];
+                  pEngine->waylandWindow
+                      .pDecorationButtonPixels[Patache::ButtonIndexCSD::eMinimize][i]
+                      = sMinimizeButtonCSD[i];
                 }
             }
           else
             {
-              for (std::uint32_t i = 0; i < PATACHE_CSD_MINIMIZE_BUTTON_PIXELCOUNT; ++i)
+              for (std::uint32_t i = 0; i < PATACHE_MINIMIZE_BUTTON_CSD_PIXELCOUNT; ++i)
                 {
-                  Engine->WaylandWindow.DecorationButtonPixels[PATACHE_CSD_MINIMIZE_BUTTON_INDEX][i]
-                      = CSDMinimizeButtonFocusLost[i];
+                  pEngine->waylandWindow
+                      .pDecorationButtonPixels[Patache::ButtonIndexCSD::eMinimize][i]
+                      = sMinimizeButtonFocusLostCSD[i];
                 }
             }
 
-          wl_shm_pool * DecorationButtonPool
-              = wl_shm_create_pool (Engine->WaylandWindow.DecorationSharedMemory,
-                                    CSDButtonFileDescriptor, PATACHE_CSD_MINIMIZE_BUTTON_SIZE);
+          wl_shm_pool * pDecorationButtonPool
+              = wl_shm_create_pool (pEngine->waylandWindow.pDecorationSharedMemory,
+                                    buttonFileDescriptorCSD, PATACHE_MINIMIZE_BUTTON_CSD_SIZE);
 
-          Engine->WaylandWindow.DecorationButtonBuffer[PATACHE_CSD_MINIMIZE_BUTTON_INDEX]
+          pEngine->waylandWindow.pDecorationButtonBuffer[Patache::ButtonIndexCSD::eMinimize]
               = wl_shm_pool_create_buffer (
-                  DecorationButtonPool, 0, PATACHE_CSD_MINIMIZE_BUTTON_WIDTH,
-                  PATACHE_CSD_MINIMIZE_BUTTON_HEIGHT, PATACHE_CSD_MINIMIZE_BUTTON_WIDTH * 4,
+                  pDecorationButtonPool, 0, PATACHE_MINIMIZE_BUTTON_CSD_WIDTH,
+                  PATACHE_MINIMIZE_BUTTON_CSD_HEIGHT, PATACHE_MINIMIZE_BUTTON_CSD_WIDTH * 4,
                   WL_SHM_FORMAT_ARGB8888);
 
+          // Draw
           wl_surface_attach (
-              Engine->WaylandWindow.ButtonSurface[PATACHE_CSD_MINIMIZE_BUTTON_INDEX],
-              Engine->WaylandWindow.DecorationButtonBuffer[PATACHE_CSD_MINIMIZE_BUTTON_INDEX], 0,
+              pEngine->waylandWindow.pButtonSurface[Patache::ButtonIndexCSD::eMinimize],
+              pEngine->waylandWindow.pDecorationButtonBuffer[Patache::ButtonIndexCSD::eMinimize], 0,
               0);
 
           wl_surface_damage_buffer (
-              Engine->WaylandWindow.ButtonSurface[PATACHE_CSD_MINIMIZE_BUTTON_INDEX], 0, 0,
-              PATACHE_CSD_MAXIMIZE_BUTTON_WIDTH, PATACHE_CSD_MAXIMIZE_BUTTON_HEIGHT);
+              pEngine->waylandWindow.pButtonSurface[Patache::ButtonIndexCSD::eMinimize], 0, 0,
+              PATACHE_MAXIMIZE_BUTTON_CSD_WIDTH, PATACHE_MAXIMIZE_BUTTON_CSD_HEIGHT);
 
-          wl_shm_pool_destroy (DecorationButtonPool);
-          close (CSDButtonFileDescriptor);
+          wl_shm_pool_destroy (pDecorationButtonPool);
+          close (buttonFileDescriptorCSD);
 
           wl_surface_commit (
-              Engine->WaylandWindow.ButtonSurface[PATACHE_CSD_MINIMIZE_BUTTON_INDEX]);
+              pEngine->waylandWindow.pButtonSurface[Patache::ButtonIndexCSD::eMinimize]);
 
-          wl_surface_commit (Engine->WaylandWindow.MainBarSurface);
+          wl_surface_commit (pEngine->waylandWindow.pMainBarSurface);
         }
     }
 }
 
 static void
-PointerMotion (void * Data, wl_pointer * Pointer, std::uint32_t Time, wl_fixed_t SurfaceX,
-               wl_fixed_t SurfaceY)
+PointerMotion (void * pData, [[maybe_unused]] wl_pointer * pPointer,
+               [[maybe_unused]] std::uint32_t time, [[maybe_unused]] wl_fixed_t surfaceX,
+               [[maybe_unused]] wl_fixed_t surfaceY)
 {
-  Patache::Engine * Engine = static_cast<Patache::Engine *> (Data);
-
-  static_cast<void> (Pointer);
-  static_cast<void> (Time);
-  static_cast<void> (SurfaceX);
-  static_cast<void> (SurfaceY);
+  Patache::Engine * pEngine = static_cast<Patache::Engine *> (pData);
 
   // If Server Side Decorations is no available
-  if (Engine->WaylandWindow.DecorationMananger == nullptr
-      && Engine->WaylandWindow.SubCompositor != nullptr)
+  if (pEngine->waylandWindow.pDecorationMananger == nullptr
+      && pEngine->waylandWindow.pSubCompositor != nullptr)
     {
-      if (PointerSelectedSurface
-          == Engine->WaylandWindow.BorderSurface[PATACHE_CSD_TOP_BORDER_INDEX])
+      if (spPointerSelectedSurface
+          == pEngine->waylandWindow.pBorderSurface[Patache::BorderIndexCSD::eTop])
         {
-          CSDResize = XDG_TOPLEVEL_RESIZE_EDGE_TOP;
+          sResizeCSD = XDG_TOPLEVEL_RESIZE_EDGE_TOP;
         }
-      else if (PointerSelectedSurface
-               == Engine->WaylandWindow.BorderSurface[PATACHE_CSD_BOTTOM_BORDER_INDEX])
+      else if (spPointerSelectedSurface
+               == pEngine->waylandWindow.pBorderSurface[Patache::BorderIndexCSD::eBottom])
         {
-          CSDResize = XDG_TOPLEVEL_RESIZE_EDGE_BOTTOM;
+          sResizeCSD = XDG_TOPLEVEL_RESIZE_EDGE_BOTTOM;
         }
-      else if (PointerSelectedSurface
-               == Engine->WaylandWindow.BorderSurface[PATACHE_CSD_LEFT_BORDER_INDEX])
+      else if (spPointerSelectedSurface
+               == pEngine->waylandWindow.pBorderSurface[Patache::BorderIndexCSD::eLeft])
         {
-          CSDResize = XDG_TOPLEVEL_RESIZE_EDGE_LEFT;
+          sResizeCSD = XDG_TOPLEVEL_RESIZE_EDGE_LEFT;
         }
-      else if (PointerSelectedSurface
-               == Engine->WaylandWindow.BorderSurface[PATACHE_CSD_RIGHT_BORDER_INDEX])
+      else if (spPointerSelectedSurface
+               == pEngine->waylandWindow.pBorderSurface[Patache::BorderIndexCSD::eRight])
         {
-          CSDResize = XDG_TOPLEVEL_RESIZE_EDGE_RIGHT;
+          sResizeCSD = XDG_TOPLEVEL_RESIZE_EDGE_RIGHT;
         }
-      else if (PointerSelectedSurface
-               == Engine->WaylandWindow.BorderSurface[PATACHE_CSD_TOPLEFT_BORDER_INDEX])
+      else if (spPointerSelectedSurface
+               == pEngine->waylandWindow.pBorderSurface[Patache::BorderIndexCSD::eTopLeft])
         {
-          CSDResize = XDG_TOPLEVEL_RESIZE_EDGE_TOP_LEFT;
+          sResizeCSD = XDG_TOPLEVEL_RESIZE_EDGE_TOP_LEFT;
         }
-      else if (PointerSelectedSurface
-               == Engine->WaylandWindow.BorderSurface[PATACHE_CSD_TOPRIGHT_BORDER_INDEX])
+      else if (spPointerSelectedSurface
+               == pEngine->waylandWindow.pBorderSurface[Patache::BorderIndexCSD::eTopRight])
         {
-          CSDResize = XDG_TOPLEVEL_RESIZE_EDGE_TOP_RIGHT;
+          sResizeCSD = XDG_TOPLEVEL_RESIZE_EDGE_TOP_RIGHT;
         }
-      else if (PointerSelectedSurface
-               == Engine->WaylandWindow.BorderSurface[PATACHE_CSD_BOTTOMLEFT_BORDER_INDEX])
+      else if (spPointerSelectedSurface
+               == pEngine->waylandWindow.pBorderSurface[Patache::BorderIndexCSD::eBottomLeft])
         {
-          CSDResize = XDG_TOPLEVEL_RESIZE_EDGE_BOTTOM_LEFT;
+          sResizeCSD = XDG_TOPLEVEL_RESIZE_EDGE_BOTTOM_LEFT;
         }
-      else if (PointerSelectedSurface
-               == Engine->WaylandWindow.BorderSurface[PATACHE_CSD_BOTTOMRIGHT_BORDER_INDEX])
+      else if (spPointerSelectedSurface
+               == pEngine->waylandWindow.pBorderSurface[Patache::BorderIndexCSD::eBottomRight])
         {
-          CSDResize = XDG_TOPLEVEL_RESIZE_EDGE_BOTTOM_RIGHT;
+          sResizeCSD = XDG_TOPLEVEL_RESIZE_EDGE_BOTTOM_RIGHT;
         }
       else
         {
-          CSDResize = XDG_TOPLEVEL_RESIZE_EDGE_NONE;
+          sResizeCSD = XDG_TOPLEVEL_RESIZE_EDGE_NONE;
         }
     }
 }
 
 static void
-PointerPressButton (void * Data, wl_pointer * Pointer, std::uint32_t Serial,
-                    std::uint32_t TimePressed, std::uint32_t Button, std::uint32_t State)
+PointerPressButton (void * pData, [[maybe_unused]] wl_pointer * pPointer, std::uint32_t serial,
+                    [[maybe_unused]] std::uint32_t timePressed, std::uint32_t button,
+                    std::uint32_t state)
 {
-  Patache::Engine * Engine = static_cast<Patache::Engine *> (Data);
-
-  static_cast<void> (Pointer);
-  static_cast<void> (TimePressed);
+  Patache::Engine * pEngine = static_cast<Patache::Engine *> (pData);
 
   // If Server Side Decorations is no available
   // Client window decoration interactions for button left of mouse
-  if ((Button == PATACHE_CSD_POINTER_LEFT_CODE) && (State == WL_POINTER_BUTTON_STATE_PRESSED)
-      && !IsFullScreen && Engine->WaylandWindow.DecorationMananger == nullptr
-      && Engine->WaylandWindow.SubCompositor != nullptr)
+  if ((button == PATACHE_POINTER_LEFT_CSD_CODE) && (state == WL_POINTER_BUTTON_STATE_PRESSED)
+      && !isFullScreen && pEngine->waylandWindow.pDecorationMananger == nullptr
+      && pEngine->waylandWindow.pSubCompositor != nullptr)
     {
       // Minimize Button
-      if (PointerSelectedSurface
-          == Engine->WaylandWindow.ButtonSurface[PATACHE_CSD_MINIMIZE_BUTTON_INDEX])
+      if (spPointerSelectedSurface
+          == pEngine->waylandWindow.pButtonSurface[Patache::ButtonIndexCSD::eMinimize])
         {
-          xdg_toplevel_set_minimized (Engine->WaylandWindow.DesktopWindow);
+          xdg_toplevel_set_minimized (pEngine->waylandWindow.pDesktopWindow);
         }
 
       // Maximize Button
-      if (PointerSelectedSurface
-          == Engine->WaylandWindow.ButtonSurface[PATACHE_CSD_MAXIMIZE_BUTTON_INDEX])
+      if (spPointerSelectedSurface
+          == pEngine->waylandWindow.pButtonSurface[Patache::ButtonIndexCSD::eMaximize])
         {
-          if (IsMaximized)
+          if (isMaximized)
             {
               // Border Window
-              for (std::uint8_t i = 0; i < PATACHE_CSD_BORDER_SIZE; ++i)
+              for (std::uint8_t i = 0; i < PATACHE_BORDER_CSD_SIZE; ++i)
                 {
-                  Engine->WaylandWindow.BorderSubSurface[i] = wl_subcompositor_get_subsurface (
-                      Engine->WaylandWindow.SubCompositor,
-                      Engine->WaylandWindow.BorderSurface[i], // surface turned
-                                                              // into a sub-surface
-                      Engine->WaylandWindow.Surface);         // the parent surface
+                  pEngine->waylandWindow.pBorderSubSurface[i] = wl_subcompositor_get_subsurface (
+                      pEngine->waylandWindow.pSubCompositor,
+                      pEngine->waylandWindow.pBorderSurface[i], pEngine->waylandWindow.pSurface);
                 }
 
-              xdg_toplevel_unset_maximized (Engine->WaylandWindow.DesktopWindow);
+              xdg_toplevel_unset_maximized (pEngine->waylandWindow.pDesktopWindow);
             }
           else
             {
-              xdg_toplevel_set_maximized (Engine->WaylandWindow.DesktopWindow);
+              xdg_toplevel_set_maximized (pEngine->waylandWindow.pDesktopWindow);
 
               // Border Window
-              for (std::uint8_t i = 0; i < PATACHE_CSD_BORDER_SIZE; ++i)
+              for (std::uint8_t i = 0; i < PATACHE_BORDER_CSD_SIZE; ++i)
                 {
-                  wl_subsurface_destroy (Engine->WaylandWindow.BorderSubSurface[i]);
+                  wl_subsurface_destroy (pEngine->waylandWindow.pBorderSubSurface[i]);
                 }
             }
 
-          IsMaximized ^= true;
+          isMaximized ^= true;
         }
 
       // Close Button
-      if (PointerSelectedSurface
-          == Engine->WaylandWindow.ButtonSurface[PATACHE_CSD_CLOSE_BUTTON_INDEX])
+      if (spPointerSelectedSurface
+          == pEngine->waylandWindow.pButtonSurface[Patache::ButtonIndexCSD::eClose])
         {
-          PushWaylandEvent.type = SDL_EVENT_QUIT;
-          SDL_PushEvent (&PushWaylandEvent);
+          pushWaylandEvent.type = SDL_EVENT_QUIT;
+          SDL_PushEvent (&pushWaylandEvent);
         }
 
-      if (PointerSelectedSurface == Engine->WaylandWindow.MainBarSurface && !IsMaximized)
+      if (spPointerSelectedSurface == pEngine->waylandWindow.pMainBarSurface && !isMaximized)
         {
-          xdg_toplevel_move (Engine->WaylandWindow.DesktopWindow, Engine->WaylandWindow.Input,
-                             Serial);
+          xdg_toplevel_move (pEngine->waylandWindow.pDesktopWindow, pEngine->waylandWindow.pInput,
+                             serial);
         }
-      else if (CSDResize != XDG_TOPLEVEL_RESIZE_EDGE_NONE)
+      else if (sResizeCSD != XDG_TOPLEVEL_RESIZE_EDGE_NONE)
         {
-          xdg_toplevel_resize (Engine->WaylandWindow.DesktopWindow, Engine->WaylandWindow.Input,
-                               Serial, CSDResize);
+          xdg_toplevel_resize (pEngine->waylandWindow.pDesktopWindow, pEngine->waylandWindow.pInput,
+                               serial, sResizeCSD);
         }
     }
 }
 
 // This function is not used, but is here to silence GNU Compiler
 static void
-PointerAxis (void * data, wl_pointer * wl_pointer, uint time, uint axis, wl_fixed_t value)
+PointerAxis ([[maybe_unused]] void * pData, [[maybe_unused]] wl_pointer * pPointer,
+             [[maybe_unused]] std::uint32_t time, [[maybe_unused]] std::uint32_t axis,
+             [[maybe_unused]] wl_fixed_t value)
 {
-  static_cast<void> (data);
-  static_cast<void> (wl_pointer);
-  static_cast<void> (time);
-  static_cast<void> (axis);
-  static_cast<void> (value);
 }
 
 // This function is not used, but is here to silence GNU Compiler
 static void
-Frame (void * Data, wl_pointer * Pointer)
+Frame ([[maybe_unused]] void * pData, [[maybe_unused]] wl_pointer * pPointer)
 {
-  static_cast<void> (Data);
-  static_cast<void> (Pointer);
 }
 
 // This function is not used, but is here to silence GNU Compiler
 static void
-AxisSource (void * Data, wl_pointer * Pointer, std::uint32_t AxisSource)
+AxisSource ([[maybe_unused]] void * pData, [[maybe_unused]] wl_pointer * pPointer,
+            [[maybe_unused]] std::uint32_t axisSource)
 {
-  static_cast<void> (Data);
-  static_cast<void> (Pointer);
-  static_cast<void> (AxisSource);
 }
 
 // This function is not used, but is here to silence GNU Compiler
 static void
-AxisStop (void * Data, wl_pointer * Pointer, std::uint32_t Time, std::uint32_t Axis)
+AxisStop ([[maybe_unused]] void * pData, [[maybe_unused]] wl_pointer * pPointer,
+          [[maybe_unused]] std::uint32_t time, [[maybe_unused]] std::uint32_t axis)
 {
-  static_cast<void> (Data);
-  static_cast<void> (Pointer);
-  static_cast<void> (Time);
-  static_cast<void> (Axis);
 }
 
 // This function is not used, but is here to silence GNU Compiler
 static void
-AxisDiscrete (void * Data, wl_pointer * Pointer, std::uint32_t Axis, std::int32_t Discrete)
+AxisDiscrete ([[maybe_unused]] void * pData, [[maybe_unused]] wl_pointer * pPointer,
+              [[maybe_unused]] std::uint32_t axis, [[maybe_unused]] std::int32_t discrete)
 {
-  static_cast<void> (Data);
-  static_cast<void> (Pointer);
-  static_cast<void> (Axis);
-  static_cast<void> (Discrete);
 }
 
 // This function is not used, but is here to silence GNU Compiler
 static void
-AxisValue120 (void * Data, wl_pointer * Pointer, std::uint32_t Axis, std::int32_t Axis120)
+AxisValue120 ([[maybe_unused]] void * pData, [[maybe_unused]] wl_pointer * pPointer,
+              [[maybe_unused]] std::uint32_t axis, [[maybe_unused]] std::int32_t axis120)
 {
-  static_cast<void> (Data);
-  static_cast<void> (Pointer);
-  static_cast<void> (Axis);
-  static_cast<void> (Axis120);
 }
 
 // This function is not used, but is here to silence GNU Compiler
 static void
-AxisRelativeDirection (void * Data, wl_pointer * Pointer, std::uint32_t Axis,
-                       std::uint32_t RelativeDirection)
+AxisRelativeDirection ([[maybe_unused]] void * pData, [[maybe_unused]] wl_pointer * pPointer,
+                       [[maybe_unused]] std::uint32_t axis,
+                       [[maybe_unused]] std::uint32_t relativeDirection)
 {
-  static_cast<void> (Data);
-  static_cast<void> (Pointer);
-  static_cast<void> (Axis);
-  static_cast<void> (RelativeDirection);
 }
 
-static const struct wl_pointer_listener PointerListener = {
+static constexpr struct wl_pointer_listener sPointerListener = {
   .enter                   = PointerEnter,
   .leave                   = PointerLeave,
   .motion                  = PointerMotion,
@@ -1232,192 +1227,179 @@ static const struct wl_pointer_listener PointerListener = {
 };
 
 static void
-GetInputCapabilities (void * Data, wl_seat * Input, std::uint32_t Capabilities)
+GetInputCapabilities (void * pData, wl_seat * pInput, std::uint32_t capabilities)
 {
-  Patache::Engine * Engine = static_cast<Patache::Engine *> (Data);
+  Patache::Engine * pEngine = static_cast<Patache::Engine *> (pData);
 
   // If Server Side Decorations is no available
   // Using pointer input for client side window decorations (CSD)
-  if (Capabilities & WL_SEAT_CAPABILITY_POINTER
-      && Engine->WaylandWindow.DecorationMananger == nullptr
-      && Engine->WaylandWindow.SubCompositor != nullptr)
+  if (capabilities & WL_SEAT_CAPABILITY_POINTER
+      && pEngine->waylandWindow.pDecorationMananger == nullptr
+      && pEngine->waylandWindow.pSubCompositor != nullptr)
     {
-      wl_pointer_add_listener (wl_seat_get_pointer (Input), &PointerListener, Data);
+      wl_pointer_add_listener (wl_seat_get_pointer (pInput), &sPointerListener, pData);
 
-      Engine->WaylandWindow.CursorSurface
-          = wl_compositor_create_surface (Engine->WaylandWindow.Compositor);
+      pEngine->waylandWindow.pCursorSurface
+          = wl_compositor_create_surface (pEngine->waylandWindow.pCompositor);
     }
 }
 
 // This function is not used, but is here to silence GNU Compiler
 static void
-Name (void * Data, wl_seat * Input, const char * Name)
+Name ([[maybe_unused]] void * pData, [[maybe_unused]] wl_seat * pInput,
+      [[maybe_unused]] const char * pName)
 {
-  static_cast<void> (Data);
-  static_cast<void> (Input);
-  static_cast<void> (Name);
 }
 
-static const struct wl_seat_listener InputListener
+static constexpr struct wl_seat_listener sInputListener
     = { .capabilities = GetInputCapabilities, .name = Name };
 
 // Registry
 // Get Wayland handles from protocols and core
 static void
-AddObject (void * Data, wl_registry * Registry, std::uint32_t Name, const char * Interface,
-           std::uint32_t Version)
+AddObject (void * pData, wl_registry * pRegistry, std::uint32_t name, const char * pInterface,
+           [[maybe_unused]] std::uint32_t version)
 {
-  static_cast<void> (Version);
-  Patache::Engine * Engine = static_cast<Patache::Engine *> (Data);
+  Patache::Engine * pEngine = static_cast<Patache::Engine *> (pData);
 
-  if (strcmp (Interface, wl_compositor_interface.name) == 0)
+  if (std::strcmp (pInterface, wl_compositor_interface.name) == 0)
     {
-      Engine->WaylandWindow.Compositor = static_cast<wl_compositor *> (
-          wl_registry_bind (Registry, Name, &wl_compositor_interface, 4));
+      pEngine->waylandWindow.pCompositor = static_cast<wl_compositor *> (
+          wl_registry_bind (pRegistry, name, &wl_compositor_interface, 4));
     }
-  else if (strcmp (Interface, xdg_wm_base_interface.name) == 0)
+  else if (std::strcmp (pInterface, xdg_wm_base_interface.name) == 0)
     {
-      Engine->WaylandWindow.WindowManangerBase = static_cast<xdg_wm_base *> (
-          wl_registry_bind (Registry, Name, &xdg_wm_base_interface, 1));
+      pEngine->waylandWindow.pWindowManangerBase = static_cast<xdg_wm_base *> (
+          wl_registry_bind (pRegistry, name, &xdg_wm_base_interface, 1));
 
-      xdg_wm_base_add_listener (Engine->WaylandWindow.WindowManangerBase,
-                                &WindowManangerBaseListener, nullptr);
+      xdg_wm_base_add_listener (pEngine->waylandWindow.pWindowManangerBase,
+                                &sWindowManangerBaseListener, nullptr);
     }
-  else if (strcmp (Interface, zxdg_decoration_manager_v1_interface.name) == 0)
+  else if (std::strcmp (pInterface, zxdg_decoration_manager_v1_interface.name) == 0)
     {
       // Server Side Decoration (SSD)
-      Engine->WaylandWindow.DecorationMananger = static_cast<zxdg_decoration_manager_v1 *> (
-          wl_registry_bind (Registry, Name, &zxdg_decoration_manager_v1_interface, 1));
+      pEngine->waylandWindow.pDecorationMananger = static_cast<zxdg_decoration_manager_v1 *> (
+          wl_registry_bind (pRegistry, name, &zxdg_decoration_manager_v1_interface, 1));
     }
-  else if (strcmp (Interface, wl_subcompositor_interface.name) == 0)
+  else if (std::strcmp (pInterface, wl_subcompositor_interface.name) == 0)
     {
       // Client Side Decoration (CSD)
-      Engine->WaylandWindow.SubCompositor = static_cast<wl_subcompositor *> (
-          wl_registry_bind (Registry, Name, &wl_subcompositor_interface, 1));
+      pEngine->waylandWindow.pSubCompositor = static_cast<wl_subcompositor *> (
+          wl_registry_bind (pRegistry, name, &wl_subcompositor_interface, 1));
     }
-  else if (strcmp (Interface, wl_shm_interface.name) == 0)
+  else if (std::strcmp (pInterface, wl_shm_interface.name) == 0)
     {
-      Engine->WaylandWindow.DecorationSharedMemory
-          = static_cast<wl_shm *> (wl_registry_bind (Registry, Name, &wl_shm_interface, 1));
+      pEngine->waylandWindow.pDecorationSharedMemory
+          = static_cast<wl_shm *> (wl_registry_bind (pRegistry, name, &wl_shm_interface, 1));
 
-      Engine->WaylandWindow.CursorTheme
-          = wl_cursor_theme_load (nullptr, 32, Engine->WaylandWindow.DecorationSharedMemory);
+      pEngine->waylandWindow.pCursorTheme
+          = wl_cursor_theme_load (nullptr, 32, pEngine->waylandWindow.pDecorationSharedMemory);
     }
-  else if (strcmp (Interface, wl_seat_interface.name) == 0)
+  else if (std::strcmp (pInterface, wl_seat_interface.name) == 0)
     {
-      Engine->WaylandWindow.Input
-          = static_cast<wl_seat *> (wl_registry_bind (Registry, Name, &wl_seat_interface, 1));
+      pEngine->waylandWindow.pInput
+          = static_cast<wl_seat *> (wl_registry_bind (pRegistry, name, &wl_seat_interface, 1));
 
-      wl_seat_add_listener (Engine->WaylandWindow.Input, &InputListener, Data);
+      wl_seat_add_listener (pEngine->waylandWindow.pInput, &sInputListener, pData);
     }
 }
 
 // This function is not used, but is here to silence GNU Compiler
 static void
-RemoveObject (void * Data, wl_registry * Registry, std::uint32_t Name)
+RemoveObject ([[maybe_unused]] void * pData, [[maybe_unused]] wl_registry * pRegistry,
+              [[maybe_unused]] std::uint32_t name)
 {
-  static_cast<void> (Data);
-  static_cast<void> (Registry);
-  static_cast<void> (Name);
 }
 
-static const struct wl_registry_listener RegistryListener
+static constexpr struct wl_registry_listener sRegistryListener
     = { .global = AddObject, .global_remove = RemoveObject };
 
 // xdg_toplevel
 static void
-GetWindowSize (void * Data, xdg_toplevel * DesktopWindow, std::int32_t Width, std::int32_t Height,
-               wl_array * States)
+GetWindowSize (void * pData, [[maybe_unused]] xdg_toplevel * pDesktopWindow, std::int32_t width,
+               std::int32_t height, wl_array * pStates)
 {
-  static_cast<void> (DesktopWindow);
-
-  // Resize Vulkan SwapChain
-  if (Width != 0 && Height != 0)
+  // Resize vulkan swapchain
+  if (width != 0 && height != 0)
     {
-      Patache::Engine * Engine = static_cast<Patache::Engine *> (Data);
-      ResizingPending          = true;
+      Patache::Engine * pEngine = static_cast<Patache::Engine *> (pData);
+      resizingPending           = true;
 
       // If Server Side Decorations (CSD) is no available
-      if (Engine->WaylandWindow.DecorationMananger == nullptr
-          && Engine->WaylandWindow.SubCompositor != nullptr)
+      if (pEngine->waylandWindow.pDecorationMananger == nullptr
+          && pEngine->waylandWindow.pSubCompositor != nullptr)
         {
           /*
-           * States
+           * pStates
            * This is the worst part of wayland for C++
            */
-          std::uint32_t * State = static_cast<std::uint32_t *> (States->data);
+          std::uint32_t * state = static_cast<std::uint32_t *> (pStates->data);
           std::uint32_t * end   = reinterpret_cast<std::uint32_t *> (
-              static_cast<std::uint8_t *> (States->data) + States->size);
+              static_cast<std::uint8_t *> (pStates->data) + pStates->size);
 
-          IsCSDFocus = false;
-          for (; State < end; ++State)
+          sFocusCSD = false;
+          for (; state < end; ++state)
             {
-              if (*(enum xdg_toplevel_state *)State == XDG_TOPLEVEL_STATE_ACTIVATED)
-                IsCSDFocus = true;
+              if (*reinterpret_cast<enum xdg_toplevel_state *> (state)
+                  == XDG_TOPLEVEL_STATE_ACTIVATED)
+                sFocusCSD = true;
             }
 
-          if (!IsFullScreen && !IsMaximized)
+          if (!isFullScreen && !isMaximized)
             {
-              Engine->Vulkan.SwapChainExtent.width
-                  = Width - PATACHE_CSD_THRESHOLD_EDGE_SIZE - PATACHE_CSD_THRESHOLD_EDGE_SIZE;
+              pEngine->vulkan.swapchainExtent.width = width - PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE
+                                                      - PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE;
 
-              Engine->Vulkan.SwapChainExtent.height
-                  = Height - PATACHE_CSD_HEIGHT_SIZE - (PATACHE_CSD_THRESHOLD_EDGE_SIZE * 2);
+              pEngine->vulkan.swapchainExtent.height
+                  = height - PATACHE_MAINBAR_HEIGHT_CSD_SIZE
+                    - (PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE * 2);
             }
-          else if (IsMaximized && !IsFullScreen)
+          else if (isMaximized && !isFullScreen)
             {
-              Engine->Vulkan.SwapChainExtent.width = Width;
+              pEngine->vulkan.swapchainExtent.width = width;
 
-              Engine->Vulkan.SwapChainExtent.height = Height - PATACHE_CSD_HEIGHT_SIZE;
+              pEngine->vulkan.swapchainExtent.height = height - PATACHE_MAINBAR_HEIGHT_CSD_SIZE;
             }
           else
             {
-              // CSD Fullscreen
-              Engine->Vulkan.SwapChainExtent.width  = Width;
-              Engine->Vulkan.SwapChainExtent.height = Height;
+              // CSD FullScreen
+              pEngine->vulkan.swapchainExtent.width  = width;
+              pEngine->vulkan.swapchainExtent.height = height;
             }
         }
       else
         {
           // Server Side Decoration (SSD)
-          Engine->Vulkan.SwapChainExtent.width  = Width;
-          Engine->Vulkan.SwapChainExtent.height = Height;
+          pEngine->vulkan.swapchainExtent.width  = width;
+          pEngine->vulkan.swapchainExtent.height = height;
         }
     }
 }
 
 static void
-CloseWindow (void * Data, xdg_toplevel * DesktopWindow)
+CloseWindow ([[maybe_unused]] void * pData, [[maybe_unused]] xdg_toplevel * pDesktopWindow)
 {
-  static_cast<void> (Data);
-  static_cast<void> (DesktopWindow);
-
-  PushWaylandEvent.type = SDL_EVENT_QUIT;
-  SDL_PushEvent (&PushWaylandEvent);
+  pushWaylandEvent.type = SDL_EVENT_QUIT;
+  SDL_PushEvent (&pushWaylandEvent);
 }
 
 // This function is not used, but is here to silence GNU Compiler
 static void
-ConfigureBounds (void * Data, xdg_toplevel * DesktopWindow, std::int32_t Width, std::int32_t Height)
+ConfigureBounds ([[maybe_unused]] void * pData, [[maybe_unused]] xdg_toplevel * pDesktopWindow,
+                 [[maybe_unused]] std::int32_t width, [[maybe_unused]] std::int32_t height)
 {
-  static_cast<void> (Data);
-  static_cast<void> (DesktopWindow);
-  static_cast<void> (Width);
-  static_cast<void> (Height);
 }
 
 // This function is not used, but is here to silence GNU Compiler
 static void
-WindowManangerCapabilities (void * Data, xdg_toplevel * DesktopWindow, wl_array * States)
+WindowManangerCapabilities ([[maybe_unused]] void *         pData,
+                            [[maybe_unused]] xdg_toplevel * pDesktopWindow,
+                            [[maybe_unused]] wl_array *     pStates)
 {
-  static_cast<void> (Data);
-  static_cast<void> (DesktopWindow);
-  static_cast<void> (States);
 }
 
-static const struct xdg_toplevel_listener DesktopWindowListener
+static constexpr struct xdg_toplevel_listener sDesktopWindowListener
     = { .configure        = GetWindowSize,
         .close            = CloseWindow,
         .configure_bounds = ConfigureBounds,
         .wm_capabilities  = WindowManangerCapabilities };
-#endif

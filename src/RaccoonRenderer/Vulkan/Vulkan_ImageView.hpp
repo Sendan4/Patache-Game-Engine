@@ -1,12 +1,12 @@
 #include <cstdio>
 #include <future>
 
-#include <SDL3/SDL.h>
+#include <vulkan/vulkan.hpp>
 
 // Patache Engine
-#include "PatacheEngine/PatacheEngine.hpp"
-#include "Log.hpp"
+#include "PatacheEngine/VulkanBackend.hpp"
+#include "Vulkan_SetupLog.hpp"
 
-bool CreateImageView (Patache::VulkanBackend &, const Patache::SwapChainInfo &);
+bool CreateImageView (Patache::VulkanBackend &, const Patache::SwapchainInfo &);
 
 #define PATACHE_ERROR_TEXT_SIZE 64

@@ -5,7 +5,7 @@
 #include <cstring>
 
 #if defined(_WIN64)
-#include <windows.h>
+#include <windows.h> // wincon.h
 #endif
 #include <SDL3/SDL.h>
 
@@ -15,12 +15,18 @@
 #if PATACHE_DEBUG == 1
 #include "CstdlibWrapped.hpp"
 #endif
-#include "Log.hpp"
+#include "StartLogInfo.hpp"
+#include "Message.hpp"
 // Icon
 #if PATACHE_DEBUG == 1
 #include "PatacheDebugIcon.hpp"
 #else
 #include "PatacheReleaseIcon.hpp"
+#endif
+
+#if defined(_WIN64)
+static HANDLE sTerminal = GetStdHandle (STD_OUTPUT_HANDLE);
+static DWORD  sMode     = 0;
 #endif
 
 // VVL Path macros
@@ -31,28 +37,28 @@
 #define PATACHE_VVL_PATH PATACHE_VVL_SDK_PATH
 #endif
 
-// Function Prototipes
-bool LoadConfiguration (Patache::Config &);
+#include "Configuration_Funcs.hpp"
 
 #if defined(__linux__)
-bool CreateWaylandWindow (const std::uint32_t &, const std::uint32_t &, const char * const,
-                          Patache::Engine * const);
+#include "WaylandWindow_Funcs.hpp"
 #else
-// Event Filter for Window Resize
-bool SDLCALL HandleResize (void * userdata, SDL_Event * event);
-extern bool  Resize;
+// Event Filter for Window Resize | Input.cpp Func
+bool SDLCALL HandleResize (void *, SDL_Event *);
+extern bool  resize;
 #endif
 
-bool RaccoonRendererInit (Patache::Engine *, const Patache::EngineCreateInfo &);
-
-void RaccoonRendererClose (Patache::VulkanBackend &);
+#include "Vulkan_SetupRenderer_Funcs.hpp"
 
 bool
-Patache::Engine::Init (const Patache::EngineCreateInfo & Info)
+Patache::Engine::Init (const Patache::EngineCreateInfo & rInfo)
 {
+#if defined(_WIN64)
+  GetConsoleMode (sTerminal, &sMode);
+  SetConsoleMode (sTerminal, ENABLE_VIRTUAL_TERMINAL_PROCESSING | sMode);
+#endif
+
   {
-    std::future<void> PatacheStartLogInfo
-        = std::async (std::launch::async, Patache::Log::StartPatacheLogInfo);
+    std::future<void> startLogInfo = std::async (std::launch::async, StartLogInfo);
   }
 
   if (!LoadConfiguration (configuration))
@@ -61,48 +67,51 @@ Patache::Engine::Init (const Patache::EngineCreateInfo & Info)
 #if defined(PATACHE_VVL_PATH)
   if (PATACHE_SETENV ("VK_LAYER_PATH", PATACHE_VVL_PATH) != PATACHE_SETENV_SUCCESS)
     {
-      std::future<void> Err = std::async (std::launch::async, Patache::Log::ErrorMessage,
+      std::future<void> err = std::async (std::launch::async, Patache::ErrorMessage,
                                           "Cannot set enviroment varible VK_LAYER_PATH");
     }
 #endif
 
     // Make a window title
 #if PATACHE_DEBUG == 1
-  // Debug
-  char WindowTitle[64]{ 0 };
+    // Debug
+#define PATACHE_WINDOW_TITLE windowTitle
+  char windowTitle[64]{ 0 };
 
-  if (Info.windowTitle != nullptr)
+  if (rInfo.pWindowTitle != nullptr)
     {
-      PATACHE_STRNCPY (WindowTitle, Info.windowTitle, 63);
+      PATACHE_STRNCPY (windowTitle, rInfo.pWindowTitle, 63);
     }
-  else if (Info.gameName != nullptr)
+  else if (rInfo.pGameName != nullptr)
     {
-      PATACHE_STRNCPY (WindowTitle, Info.gameName, 63);
+      PATACHE_STRNCPY (windowTitle, rInfo.pGameName, 63);
     }
   else
     {
-      PATACHE_STRNCPY (WindowTitle, PATACHE_ENGINE_NAME, 63);
+      PATACHE_STRNCPY (windowTitle, PATACHE_ENGINE_NAME, 63);
     }
 
-  PATACHE_STRNCAT (WindowTitle, " (Debug / Development)", 63);
+  PATACHE_STRNCAT (windowTitle, " (Debug / Development)", 63);
 #else
   // Release
-  const char * WindowTitle = (Info.windowTitle != nullptr) ? Info.windowTitle : Info.gameName;
+#define PATACHE_WINDOW_TITLE pWindowTitle
+  const char * pWindowTitle
+      = (rInfo.pWindowTitle != nullptr) ? rInfo.pWindowTitle : rInfo.pGameName;
 
-  if (WindowTitle == nullptr)
-    WindowTitle = PATACHE_ENGINE_NAME;
+  if (pWindowTitle == nullptr)
+    pWindowTitle = PATACHE_ENGINE_NAME;
 #endif
 
-  // Init Window for linux wayland
+  // Init Window for linux wayland. this to do before SDL init
 #if defined(__linux__)
-  if (!CreateWaylandWindow (854, 480, WindowTitle, this))
+  if (!CreateWaylandWindow (854, 480, PATACHE_WINDOW_TITLE, this))
     return false;
 #endif
 
   // Init SDL Subsystems
   if (!SDL_Init (SDL_INIT_VIDEO | SDL_INIT_EVENTS))
     {
-      std::future<void> Err = std::async (std::launch::async, Patache::Log::FatalErrorMessage,
+      std::future<void> err = std::async (std::launch::async, Patache::FatalErrorMessage,
                                           "Patache Engine - SDL2", SDL_GetError (), configuration);
 
       return false;
@@ -112,95 +121,99 @@ Patache::Engine::Init (const Patache::EngineCreateInfo & Info)
 #if !defined(__linux__)
   {
     // Window Initial Size
-    std::uint32_t w = 0, h = 0;
+    std::uint32_t width = 0, height = 0;
 
     // Displays
-    int                           DisplaysCount = 0;
-    SDL_DisplayID *               DID           = SDL_GetDisplays (&DisplaysCount);
-    const SDL_DisplayMode * const CurrentMode   = SDL_GetCurrentDisplayMode (*DID);
+    int                           displaysCount = 0;
+    SDL_DisplayID *               dID           = SDL_GetDisplays (&displaysCount);
+    const SDL_DisplayMode * const pCurrentMode  = SDL_GetCurrentDisplayMode (*dID);
 
     // Initial Resolution
-    if (CurrentMode != nullptr)
+    if (pCurrentMode != nullptr)
       {
-        w = static_cast<std::uint32_t> (CurrentMode->w * 0.64);
-        h = static_cast<std::uint32_t> (CurrentMode->h * 0.64);
+        width  = static_cast<std::uint32_t> (pCurrentMode->w * 0.64);
+        height = static_cast<std::uint32_t> (pCurrentMode->h * 0.64);
       }
     else
       {
-        std::future<void> Err = std::async (std::launch::async, Patache::Log::ErrorMessage,
+        std::future<void> err = std::async (std::launch::async, Patache::ErrorMessage,
                                             "can't get the current resolution. starting with 480p "
                                             "(1.78)");
 
-        w = 854;
-        h = 480;
+        width  = 854;
+        height = 480;
       }
 
     // Create Window
-    GameWindow = SDL_CreateWindow (WindowTitle, w, h,
-                                   SDL_WINDOW_RESIZABLE | SDL_WINDOW_VULKAN
-                                       | SDL_WINDOW_HIGH_PIXEL_DENSITY);
+    pGameWindow = SDL_CreateWindow (PATACHE_WINDOW_TITLE, width, height,
+                                    SDL_WINDOW_RESIZABLE | SDL_WINDOW_VULKAN
+                                        | SDL_WINDOW_HIGH_PIXEL_DENSITY);
 
-    if (GameWindow == nullptr)
+    if (pGameWindow == nullptr)
       {
-        std::future<void> Err
-            = std::async (std::launch::async, Patache::Log::FatalErrorMessage,
+        std::future<void> err
+            = std::async (std::launch::async, Patache::FatalErrorMessage,
                           "Window cannot be created", SDL_GetError (), configuration);
 
         return false;
       }
 
-    SDL_SetWindowMinimumSize (GameWindow, 640, 360);
+    SDL_SetWindowMinimumSize (pGameWindow, 640, 360);
   }
 
   // Set Window Icon
   {
-    SDL_Surface * WindowIcon = nullptr;
+    SDL_Surface * pWindowIcon = nullptr;
 
-    if (Info.windowIconPath != nullptr)
+    if (rInfo.pWindowIconPath != nullptr)
       {
-        char Path[512]{ 0 };
-        PATACHE_STRNCPY (Path, SDL_GetBasePath (), 511);
-        PATACHE_STRNCAT (Path, "/", 511);
-        PATACHE_STRNCAT (Path, Info.windowIconPath, 511);
+        char path[512]{ 0 };
+        PATACHE_STRNCPY (path, SDL_GetBasePath (), 511);
+        PATACHE_STRNCAT (path, "/", 511);
+        PATACHE_STRNCAT (path, rInfo.pWindowIconPath, 511);
 
-        WindowIcon = SDL_LoadBMP (Path);
+        pWindowIcon = SDL_LoadBMP (path);
       }
     else
-      WindowIcon = SDL_CreateSurfaceFrom (Patache::Icon::Width, Patache::Icon::Height,
-                                          SDL_PIXELFORMAT_BGRA8888, (void *)Patache::Icon::Data,
-                                          Patache::Icon::Pitch);
-
-    if (WindowIcon == nullptr)
       {
-        std::future<void> Err
-            = std::async (std::launch::async, Patache::Log::ErrorMessage, "Icon cannot be loaded");
+        pWindowIcon = SDL_CreateSurfaceFrom (Patache::Icon::Width, Patache::Icon::Height,
+                                             SDL_PIXELFORMAT_BGRA8888, (void *)Patache::Icon::Data,
+                                             Patache::Icon::Pitch);
+      }
+
+    if (pWindowIcon == nullptr)
+      {
+        std::future<void> err
+            = std::async (std::launch::async, Patache::ErrorMessage, "Icon cannot be loaded");
       }
     else
-      SDL_SetWindowIcon (GameWindow, WindowIcon);
+      {
+        SDL_SetWindowIcon (pGameWindow, pWindowIcon);
+      }
 
-    SDL_DestroySurface (WindowIcon);
-    WindowIcon = nullptr;
+    SDL_DestroySurface (pWindowIcon);
+    pWindowIcon = nullptr;
   }
 
-  SDL_SetEventFilter (HandleResize, &Resize);
+  SDL_SetEventFilter (HandleResize, &resize);
 #endif
 
 #if PATACHE_DEBUG == 1
-  engineInfo.WindowCreationFlags = SDL_GetWindowFlags (GameWindow);
+  debugInfo.windowCreationFlags = SDL_GetWindowFlags (pGameWindow);
 #endif
 
-  if (!RaccoonRendererInit (this, Info))
+  if (!RaccoonRendererInit (this, rInfo))
     return false;
 
   return true;
 }
 
-Patache::Engine::Engine (const Patache::EngineCreateInfo & Info, bool * Err)
+Patache::Engine::Engine (const Patache::EngineCreateInfo & rInfo, bool * pErr)
 {
-  if (Err != nullptr)
-    *Err = Init (Info);
+  if (pErr != nullptr)
+    *pErr = Init (rInfo);
   else
-    Init (Info);
+    Init (rInfo);
 }
 
 #if PATACHE_DEBUG == 1
@@ -210,60 +223,64 @@ Patache::Engine::Engine (const Patache::EngineCreateInfo & Info, bool * Err)
 
 Patache::Engine::~Engine (void)
 {
-  RaccoonRendererClose (Vulkan);
+  RaccoonRendererClose (vulkan);
 
 #if PATACHE_DEBUG == 1
   // Imgui
-  ImGuiIO * io = nullptr;
+  ImGuiIO * pIO = nullptr;
 
   if (ImGui::GetCurrentContext () != nullptr)
     {
-      io = &ImGui::GetIO ();
+      pIO = &ImGui::GetIO ();
 
-      if (io->BackendPlatformName != nullptr)
+      if (pIO->BackendPlatformName != nullptr)
         ImGui_ImplSDL3_Shutdown ();
 
       ImGui::DestroyContext ();
     }
 
-  // Struct / Patache Engine Info
-  if (engineInfo.ppVkLayers != nullptr)
+  // Debug Info
+  if (debugInfo.ppLayersVK != nullptr)
     {
-      delete[] engineInfo.ppVkLayers;
-      engineInfo.ppVkLayers = nullptr;
+      delete[] debugInfo.ppLayersVK;
+      debugInfo.ppLayersVK = nullptr;
     }
 
-  if (engineInfo.ppVkInstanceExtensions != nullptr)
+  if (debugInfo.ppInstanceExtensionsVK != nullptr)
     {
-      delete[] engineInfo.ppVkInstanceExtensions;
-      engineInfo.ppVkInstanceExtensions    = nullptr;
-      engineInfo.VkInstanceExtensionsCount = 0;
+      delete[] debugInfo.ppInstanceExtensionsVK;
+      debugInfo.ppInstanceExtensionsVK    = nullptr;
+      debugInfo.instanceExtensionsCountVK = 0;
     }
 
-  if (engineInfo.ppVkDeviceExtensions != nullptr)
+  if (debugInfo.ppDeviceExtensionsVK != nullptr)
     {
-      delete[] engineInfo.ppVkDeviceExtensions;
-      engineInfo.ppVkDeviceExtensions    = nullptr;
-      engineInfo.VkDeviceExtensionsCount = 0;
+      delete[] debugInfo.ppDeviceExtensionsVK;
+      debugInfo.ppDeviceExtensionsVK    = nullptr;
+      debugInfo.deviceExtensionsCountVK = 0;
     }
 
-  engineInfo.VkDeviceVendorId    = 0;
-  engineInfo.WindowCreationFlags = 0;
+  debugInfo.deviceVendorIdVK    = 0;
+  debugInfo.windowCreationFlags = 0;
 #endif
 
   // SDL
-  SDL_DestroyWindow (GameWindow);
+  SDL_DestroyWindow (pGameWindow);
 
   // Wayland
 #if defined(__linux__)
-  if (WaylandWindow.CursorTheme != nullptr)
+  if (waylandWindow.pCursorTheme != nullptr)
     {
-      wl_cursor_theme_destroy (WaylandWindow.CursorTheme);
-      WaylandWindow.CursorTheme = nullptr;
+      wl_cursor_theme_destroy (waylandWindow.pCursorTheme);
+      waylandWindow.pCursorTheme = nullptr;
     }
 #endif
 
   // SDL
   SDL_QuitSubSystem (SDL_INIT_VIDEO | SDL_INIT_EVENTS);
   SDL_Quit ();
+
+#if defined(_WIN64)
+  SetConsoleMode (sTerminal, sMode);
+#endif
 }

@@ -1,50 +1,50 @@
 #include "Vulkan_SincronizationPrimitives.hpp"
 
 bool
-CreateSemaphores (Patache::VulkanBackend & Vulkan)
+CreateSemaphores (Patache::VulkanBackend & rVulkan)
 {
-  static constexpr const vk::SemaphoreCreateInfo SemaphoreInfo{};
+  constexpr vk::SemaphoreCreateInfo semaphoreInfo{};
 
-  vk::Result Result;
+  vk::Result result;
 
-  if (Vulkan.ImageAvailableSemaphore == VK_NULL_HANDLE)
-    Vulkan.ImageAvailableSemaphore = new vk::Semaphore[Vulkan.SwapChainImageCount];
+  if (rVulkan.pImageAvailableSemaphores == nullptr)
+    rVulkan.pImageAvailableSemaphores = new vk::Semaphore[rVulkan.swapchainImageCount];
 
-  if (Vulkan.ImageFinishedSemaphore == VK_NULL_HANDLE)
-    Vulkan.ImageFinishedSemaphore = new vk::Semaphore[Vulkan.SwapChainImageCount];
+  if (rVulkan.pImageFinishedSemaphores == nullptr)
+    rVulkan.pImageFinishedSemaphores = new vk::Semaphore[rVulkan.swapchainImageCount];
 
-  for (std::uint32_t i = 0; i < Vulkan.SwapChainImageCount; ++i)
+  for (std::uint32_t i = 0; i < rVulkan.swapchainImageCount; ++i)
     {
       // ImageAvailableSemaphore
-      Result = Vulkan.Device.createSemaphore (&SemaphoreInfo, nullptr,
-                                              &Vulkan.ImageAvailableSemaphore[i]);
+      result = rVulkan.device.createSemaphore (&semaphoreInfo, nullptr,
+                                               &rVulkan.pImageAvailableSemaphores[i]);
 
-      if (Result != vk::Result::eSuccess)
+      if (result != vk::Result::eSuccess)
         {
-          char ErrorText[PATACHE_ERROR_TEXT_SIZE]{ 0 };
+          char errorText[PATACHE_ERROR_TEXT_SIZE]{ 0 };
 
-          std::snprintf (ErrorText, PATACHE_ERROR_TEXT_SIZE - 1, "Image Available Semaphore #%.3u",
+          std::snprintf (errorText, PATACHE_ERROR_TEXT_SIZE - 1, "Image Available Semaphore #%.3u",
                          i + 1);
 
-          std::future<void> ReturnVulkanCheck
-              = std::async (std::launch::async, Patache::Log::VulkanCheck, ErrorText, Result);
+          std::future<void> returnVulkanCheck
+              = std::async (std::launch::async, Patache::VulkanCheck, errorText, result);
 
           return false;
         }
 
       // ImageFinishedSemaphore
-      Result = Vulkan.Device.createSemaphore (&SemaphoreInfo, nullptr,
-                                              &Vulkan.ImageFinishedSemaphore[i]);
+      result = rVulkan.device.createSemaphore (&semaphoreInfo, nullptr,
+                                               &rVulkan.pImageFinishedSemaphores[i]);
 
-      if (Result != vk::Result::eSuccess)
+      if (result != vk::Result::eSuccess)
         {
-          char ErrorText[PATACHE_ERROR_TEXT_SIZE]{ 0 };
+          char errorText[PATACHE_ERROR_TEXT_SIZE]{ 0 };
 
-          std::snprintf (ErrorText, PATACHE_ERROR_TEXT_SIZE - 1, "Image Finished Semaphore #%.3u",
+          std::snprintf (errorText, PATACHE_ERROR_TEXT_SIZE - 1, "Image Finished Semaphore #%.3u",
                          i + 1);
 
-          std::future<void> ReturnVulkanCheck
-              = std::async (std::launch::async, Patache::Log::VulkanCheck, ErrorText, Result);
+          std::future<void> returnVulkanCheck
+              = std::async (std::launch::async, Patache::VulkanCheck, errorText, result);
 
           return false;
         }
@@ -54,27 +54,27 @@ CreateSemaphores (Patache::VulkanBackend & Vulkan)
 }
 
 bool
-CreateFence (Patache::VulkanBackend & Vulkan)
+CreateFence (Patache::VulkanBackend & rVulkan)
 {
-  static constexpr vk::FenceCreateInfo FenceInfo{ .flags = vk::FenceCreateFlagBits::eSignaled };
+  constexpr vk::FenceCreateInfo fenceInfo{ .flags = vk::FenceCreateFlagBits::eSignaled };
 
-  vk::Result Result;
+  vk::Result result;
 
-  if (Vulkan.InFlightFences == VK_NULL_HANDLE)
-    Vulkan.InFlightFences = new vk::Fence[Vulkan.SwapChainImageCount];
+  if (rVulkan.pInFlightFences == nullptr)
+    rVulkan.pInFlightFences = new vk::Fence[rVulkan.swapchainImageCount];
 
-  for (std::uint32_t i = 0; i < Vulkan.SwapChainImageCount; ++i)
+  for (std::uint32_t i = 0; i < rVulkan.swapchainImageCount; ++i)
     {
-      Result = Vulkan.Device.createFence (&FenceInfo, nullptr, &Vulkan.InFlightFences[i]);
+      result = rVulkan.device.createFence (&fenceInfo, nullptr, &rVulkan.pInFlightFences[i]);
 
-      if (Result != vk::Result::eSuccess)
+      if (result != vk::Result::eSuccess)
         {
-          char ErrorText[PATACHE_ERROR_TEXT_SIZE]{ 0 };
+          char errorText[PATACHE_ERROR_TEXT_SIZE]{ 0 };
 
-          std::snprintf (ErrorText, PATACHE_ERROR_TEXT_SIZE - 1, "In Flight Fence #%.3u", i + 1);
+          std::snprintf (errorText, PATACHE_ERROR_TEXT_SIZE - 1, "In Flight Fence #%.3u", i + 1);
 
-          std::future<void> ReturnVulkanCheck
-              = std::async (std::launch::async, Patache::Log::VulkanCheck, ErrorText, Result);
+          std::future<void> returnVulkanCheck
+              = std::async (std::launch::async, Patache::VulkanCheck, errorText, result);
 
           return false;
         }

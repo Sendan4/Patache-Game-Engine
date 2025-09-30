@@ -1,7 +1,9 @@
 #include <SDL3/SDL.h>
+#include <imgui.h>
 
 #include "PatacheEngine/PatacheEngine.hpp"
 #include "StartLogInfo.hpp"
+
 // Custom ImGui Styles
 // Vulkan Vendor
 #define PATACHE_IMGUI_INTEL_COLOR          0.314f, 0.759f, 0.950f, 1.0f
@@ -49,5 +51,5 @@
 
 namespace Patache
 {
-void DrawDebugUI (Patache::Engine * const engine);
+void DrawDebugUI (Patache::Engine * const);
 }

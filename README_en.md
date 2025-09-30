@@ -5,24 +5,30 @@
 
 <h1 align = "center">Patache Engine</h1>
 
-_Dumb and simple game engine made in C++._
+_Dumb and simple 2D game engine made in C++. The goal is to do fast, lightweight and portable._
 
-<p><strong>Is a 2D engine, simple and lightweight</strong> with a focus on game development using C++.</p>
+<p>⚠️ It is at a very early stage of development.</p>
 
-<p>This engine is intended to be used in conjunction with <a href = "http://www.libsdl.org/">SDL3</a>. Abstracts window creation, graphics rendering, sound and configuration into one easy-to-use API.</p>
+## Links
+<!-- - [Documentation](#)-->
+<b>Mirror repositories</b>
 
-<p><strong>It is portable</strong>, works on various operating systems.</p>
+| [Github](https://github.com/Sendan4/Patache-Game-Engine) | [Codeberg](https://codeberg.org/PatacheEngine/Patache.git) |
+| :--: | :--: |
 
-| Windows | GNU/Linux |
-| :-----: | :-----: |
-|<b>x86_64</b> | <b>x86_64</b> |
+## Platforms
+<b>PC</b>
+|    Windows   |  GNU/Linux   |
+| :----------: | :----------: |
+| x86_64/AMD64 | x86_64/AMD64 |
 
-<p>⚠️ <strong>WARNING</strong>: It is at a very early stage of development and is not stable.</p>
+## System requirements
+- Multi-core CPU with instructions AVX y SSE (MMX if you use GCC)
+- Vulkan compatible GPU
+- At least 4 GB of RAM
+- At least 14 GB of free space for source code and binaries (includes debug with all features)
 
-## Gamescope
-If the engine or game does not run inside gamescope, try with ```--expose-wayland```.
-
-## Dependencies used in this project
+## Dependencies used
 - [SDL3](http://www.libsdl.org/)
 - [Vulkan](https://www.vulkan.org/)
 	- [Vulkan-Headers](https://github.com/KhronosGroup/Vulkan-Headers.git)
@@ -40,11 +46,78 @@ If the engine or game does not run inside gamescope, try with ```--expose-waylan
 	- [Wayland Client](https://gitlab.freedesktop.org/wayland/wayland)
 	- [Wayland Protocols](https://gitlab.freedesktop.org/wayland/wayland-protocols.git)
 
-## Links
-- [Documentation](#)
-#### Official Mirrors
-- [Github](https://github.com/Sendan4/Patache-Game-Engine)
-- [Codeberg](https://codeberg.org/PatacheEngine/Patache.git)
+## Gamescope
+If the engine or game does not run inside gamescope, try with ```--expose-wayland```.
+
+## Naming convention
+<b>Variables</b>
+```cpp
+int var = 0;
+int longVar = 0;
+int veryLongVarABBREVIATION = 0;
+```
+
+<b>Functions</b>
+```cpp
+void Func(void);
+void LongFunc(void);
+void VeryLongFuncABBREVIATION(void);
+``` 
+
+<b>Macros</b>
+Abbreviation is more right aligned
+```cpp
+#define PATACHE_MACRO
+#define PATACHE_LONGMACRO
+#define PATACHE_LONGMACRO_MACRO
+#define PATACHE_VERYLONGMACRO_ABBREVIATION
+#define PATACHE_MACRO_LONGMACRO_ABBREVIATION_MACRO
+```
+
+<b>Enumerations</b>
+```cpp
+Patache::Enum::Value;
+Patache::LongEnum::LongValue;
+Patache::VeryLongEnumABBREVIATION::VeryLongValueABBREVIATION;
+``` 
+
+<b>Struct/Class</b>
+```cpp
+Patache::Class var;
+Patache::LongClass longVar;
+Patache::VeryLongClassABBREVIATION veryLongVarABBREVIATION;
+``` 
+
+<b>Source file</b>
+- Name.cpp/.hpp
+- LongName.cpp/.hpp
+- ImportantName_LongName.cpp/.hpp
+- ImportantName_LongName_OtherName.cpp/.hpp
+- ImportantName_LongName_Abbreviation.cpp/.hpp
+- Abbreviation_LongName_OtherName.cpp/.hpp
+
+<b>Other rules:</b>
+
+- No underscores '_' in the struct/class name.
+- No special symbols in variable names.
+- Pointer variables begin with 'p'.
+```cpp
+int * pPointer = nullptr;
+int ** ppDoublePointer = nullptr;
+``` 
+
+- Reference variables begin with 'r'.
+```cpp
+int & rReference = something;
+``` 
+
+- Static variables begin with 's'.
+```cpp
+static int sVar = 0;
+```
+
+- No special characters in file names, except for underscores '_'.
+- The source file name must end with the extension .cpp/.hpp.
 
 <hr>
 

@@ -1,83 +1,83 @@
 #include "Vulkan_Info.hpp"
 
 void
-VulkanInfo (Patache::Engine * const Engine, const Patache::SwapChainInfo & SwapChainInfo)
+VulkanInfo (Patache::Engine * const pEngine, const Patache::SwapchainInfo & rSwapchainInfo)
 {
-  fast_io::io::println (PATACHE_FAST_IO_BUFF_OUT, PATACHE_TERM_BOLD, PATACHE_TERM_COLOR_PATACHE,
+  fast_io::io::println (PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_BOLD, PATACHE_TERM_COLOR_PATACHE,
                         "Raccoon Renderer ", PATACHE_TERM_RESET, "INFO");
 
-  vk::PhysicalDeviceDriverProperties Driver;
+  vk::PhysicalDeviceDriverProperties driver{};
 
-  vk::PhysicalDeviceProperties2 PhysicalDeviceProperties;
-  PhysicalDeviceProperties.pNext = &Driver;
-  Engine->Vulkan.PhysicalDevice.getProperties2 (&PhysicalDeviceProperties);
+  vk::PhysicalDeviceProperties2 physicalDeviceProperties{};
+  physicalDeviceProperties.pNext = &driver;
+  pEngine->vulkan.physicalDevice.getProperties2 (&physicalDeviceProperties);
 
   std::uint64_t vramSizeTmp  = 0;
   double        vramSize     = 0;
   const char *  vramSizeUnit = "Byte";
 
-  vk::PhysicalDeviceMemoryProperties MemProperties;
-  Engine->Vulkan.PhysicalDevice.getMemoryProperties (&MemProperties);
+  vk::PhysicalDeviceMemoryProperties memProperties{};
+  pEngine->vulkan.physicalDevice.getMemoryProperties (&memProperties);
 
-  for (std::uint32_t i = 0; i < MemProperties.memoryHeapCount; ++i)
+  for (std::uint32_t i = 0; i < memProperties.memoryHeapCount; ++i)
     {
-      if (MemProperties.memoryHeaps[i].flags & vk::MemoryHeapFlagBits::eDeviceLocal)
-        vramSizeTmp += static_cast<std::uint64_t> (MemProperties.memoryHeaps[i].size);
+      if (memProperties.memoryHeaps[i].flags & vk::MemoryHeapFlagBits::eDeviceLocal)
+        vramSizeTmp += static_cast<std::uint64_t> (memProperties.memoryHeaps[i].size);
     }
 
 #if PATACHE_DEBUG == 1
   /*
-   * Storing information about Engine->Vulkan to display it through ImGui.
+   * Storing information about pEngine->vulkan to display it through ImGui.
    * Only on debug builds
    */
 
   // Vulkan Version
-  std::snprintf (Engine->engineInfo.VkVersion, PATACHE_VK_VERSION_SIZE, "%u.%u.%u.%u",
-                 VK_VERSION_MAJOR (PhysicalDeviceProperties.properties.apiVersion),
-                 VK_VERSION_MINOR (PhysicalDeviceProperties.properties.apiVersion),
-                 VK_VERSION_PATCH (PhysicalDeviceProperties.properties.apiVersion),
-                 VK_API_VERSION_VARIANT (PhysicalDeviceProperties.properties.apiVersion));
+  std::snprintf (pEngine->debugInfo.versionVK, PATACHE_VERSION_VK_SIZE, "%u.%u.%u.%u",
+                 VK_VERSION_MAJOR (physicalDeviceProperties.properties.apiVersion),
+                 VK_VERSION_MINOR (physicalDeviceProperties.properties.apiVersion),
+                 VK_VERSION_PATCH (physicalDeviceProperties.properties.apiVersion),
+                 VK_API_VERSION_VARIANT (physicalDeviceProperties.properties.apiVersion));
 
   // Vulkan Device Name
-  for (std::uint16_t i = 0; i < VK_MAX_PHYSICAL_DEVICE_NAME_SIZE; ++i)
-    Engine->engineInfo.VkDeviceName[i]
-        = *(PhysicalDeviceProperties.properties.deviceName.data () + i);
+  PATACHE_STRNCPY (pEngine->debugInfo.deviceNameVK,
+                   physicalDeviceProperties.properties.deviceName.data (),
+                   VK_MAX_PHYSICAL_DEVICE_NAME_SIZE);
 
   // Vulkan Device Vendor ID
-  Engine->engineInfo.VkDeviceVendorId
-      = static_cast<uint32_t> (PhysicalDeviceProperties.properties.vendorID);
+  pEngine->debugInfo.deviceVendorIdVK
+      = static_cast<uint32_t> (physicalDeviceProperties.properties.vendorID);
 
   // Vulkan Device Type
-  PATACHE_STRNCPY (Engine->engineInfo.VkDeviceType,
-                   vk::to_string (PhysicalDeviceProperties.properties.deviceType).c_str (),
-                   PATACHE_VK_DEVICE_TYPE_SIZE);
+  PATACHE_STRNCPY (pEngine->debugInfo.deviceTypeVK,
+                   vk::to_string (physicalDeviceProperties.properties.deviceType).c_str (),
+                   PATACHE_DEVICETYPE_VK_SIZE);
 
   // Vulkan Driver Name
-  for (std::uint16_t i = 0; i < VK_MAX_DRIVER_NAME_SIZE; ++i)
-    Engine->engineInfo.VkDriverName[i] = *(Driver.driverName.data () + i);
+  PATACHE_STRNCPY (pEngine->debugInfo.driverNameVK, driver.driverName.data (),
+                   VK_MAX_DRIVER_NAME_SIZE);
 
   // Vulkan Driver ID
-  PATACHE_STRNCPY (Engine->engineInfo.VkDriverId, vk::to_string (Driver.driverID).c_str (),
-                   PATACHE_VK_DRIVER_ID_SIZE);
+  PATACHE_STRNCPY (pEngine->debugInfo.driverIdVK, vk::to_string (driver.driverID).c_str (),
+                   PATACHE_DRIVERID_VK_SIZE);
 
   // Vulkan Driver Info
-  for (std::uint16_t i = 0; i < VK_MAX_DRIVER_INFO_SIZE; ++i)
-    Engine->engineInfo.VkDriverInfo[i] = *(Driver.driverInfo.data () + i);
+  PATACHE_STRNCPY (pEngine->debugInfo.driverInfoVK, driver.driverInfo.data (),
+                   VK_MAX_DRIVER_INFO_SIZE);
 
   // Vulkan Driver Version
-  std::snprintf (Engine->engineInfo.VkDriverVersion, PATACHE_VK_DRIVER_VERSION_SIZE, "%u.%u.%u.%u",
-                 VK_VERSION_MAJOR (PhysicalDeviceProperties.properties.driverVersion),
-                 VK_VERSION_MINOR (PhysicalDeviceProperties.properties.driverVersion),
-                 VK_VERSION_PATCH (PhysicalDeviceProperties.properties.driverVersion),
-                 VK_API_VERSION_VARIANT (PhysicalDeviceProperties.properties.driverVersion));
+  std::snprintf (pEngine->debugInfo.driverVersionVK, PATACHE_DRIVER_VERSION_VK_SIZE, "%u.%u.%u.%u",
+                 VK_VERSION_MAJOR (physicalDeviceProperties.properties.driverVersion),
+                 VK_VERSION_MINOR (physicalDeviceProperties.properties.driverVersion),
+                 VK_VERSION_PATCH (physicalDeviceProperties.properties.driverVersion),
+                 VK_API_VERSION_VARIANT (physicalDeviceProperties.properties.driverVersion));
 #endif
 
   // VRAM HEAP size
   if (vramSizeTmp >= 1024U)
     {
 #if PATACHE_DEBUG == 1
-      Engine->engineInfo.VkVramSizeUnit = "KiB";
-      Engine->engineInfo.VkVramSize     = vramSizeTmp / 1024.0f;
+      pEngine->debugInfo.vramSizeUnitVK = "KiB";
+      pEngine->debugInfo.vramSizeVK     = vramSizeTmp / 1024.0f;
 #endif
       vramSizeUnit = "KiB";
       vramSize     = vramSizeTmp / 1024.0f;
@@ -86,8 +86,8 @@ VulkanInfo (Patache::Engine * const Engine, const Patache::SwapChainInfo & SwapC
   if (vramSizeTmp >= 1024U)
     {
 #if PATACHE_DEBUG == 1
-      Engine->engineInfo.VkVramSizeUnit = "MiB";
-      Engine->engineInfo.VkVramSize     = vramSizeTmp / 1048576.0f;
+      pEngine->debugInfo.vramSizeUnitVK = "MiB";
+      pEngine->debugInfo.vramSizeVK     = vramSizeTmp / 1048576.0f;
 #endif
       vramSizeUnit = "MiB";
       vramSize     = vramSizeTmp / 1048576.0f;
@@ -96,614 +96,408 @@ VulkanInfo (Patache::Engine * const Engine, const Patache::SwapChainInfo & SwapC
   if (vramSizeTmp >= 1073741824U)
     {
 #if PATACHE_DEBUG == 1
-      Engine->engineInfo.VkVramSizeUnit = "GiB";
-      Engine->engineInfo.VkVramSize     = vramSizeTmp / 1073741824.0f;
+      pEngine->debugInfo.vramSizeUnitVK = "GiB";
+      pEngine->debugInfo.vramSizeVK     = vramSizeTmp / 1073741824.0f;
 #endif
       vramSizeUnit = "GiB";
       vramSize     = vramSizeTmp / 1073741824.0f;
     }
 
+#if PATACHE_DEBUG == 1
+  PATACHE_VARTYPE_STRING_PTR pVarTypeRealName = nullptr;
+#endif
+
   // =================== Vulkan Version ===========================
-  // =================== __cxa_demangle alloc =====================
-  // TODO: hacer una macro que chekee y obtenga la string y otra que desasigne
-  // la memoria de __cxa_demangle()
-  fast_io::io::println (PATACHE_FAST_IO_BUFF_OUT, PATACHE_TERM_BOLD, "  Version",
-                        PATACHE_TERM_RESET);
-
-#if PATACHE_DEBUG == 1
-#if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__) // Is GCC
-  // __cxa_demangle alloc
-  char * VarTypeRealName = abi::__cxa_demangle (
-      typeid (PhysicalDeviceProperties.properties.apiVersion).name (), nullptr, nullptr, nullptr);
-#else
-  const char * VarTypeRealName = typeid (PhysicalDeviceProperties.properties.apiVersion).name ();
-#endif
+#if defined(PATACHE_DEBUG)
+  PATACHE_GET_VARTYPE_STRING (pVarTypeRealName, physicalDeviceProperties.properties.apiVersion);
 #endif
 
-  // Vulkan Version
-  fast_io::io::println (PATACHE_FAST_IO_BUFF_OUT,
-#if PATACHE_DEBUG == 1
-                        PATACHE_TERM_DIM, PATACHE_TERM_COLOR_GRAY0, fast_io::mnp::right ("[", 5),
-                        fast_io::mnp::os_c_str (VarTypeRealName), fast_io::mnp::left ("]", 2),
-#else
-                        "    ",
+  fast_io::io::println (PATACHE_FASTIO_BUFFOUT,
+#if defined(PATACHE_DEBUG)
+                        PATACHE_FASTIO_SHOW_VARTYPE_STRING (pVarTypeRealName, 3, 2, 2),
 #endif
                         PATACHE_TERM_RESET, PATACHE_TERM_BOLD, "Vulkan : ", PATACHE_TERM_RESET,
-                        VK_VERSION_MAJOR (PhysicalDeviceProperties.properties.apiVersion), ".",
-                        VK_VERSION_MINOR (PhysicalDeviceProperties.properties.apiVersion), ".",
-                        VK_VERSION_PATCH (PhysicalDeviceProperties.properties.apiVersion), ".",
-                        VK_API_VERSION_VARIANT (PhysicalDeviceProperties.properties.apiVersion),
+                        VK_VERSION_MAJOR (physicalDeviceProperties.properties.apiVersion), ".",
+                        VK_VERSION_MINOR (physicalDeviceProperties.properties.apiVersion), ".",
+                        VK_VERSION_PATCH (physicalDeviceProperties.properties.apiVersion), ".",
+                        VK_API_VERSION_VARIANT (physicalDeviceProperties.properties.apiVersion),
                         "\n");
 
-#if PATACHE_DEBUG == 1
-#if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
-  // free __cxa_demangle alloc
-  std::free (VarTypeRealName);
-#endif
+#if defined(PATACHE_DEBUG)
+  PATACHE_FREE_VARTYPE_STRING (pVarTypeRealName);
 #endif
 
   // =================== Device ===================================
-  // =================== __cxa_demangle alloc =====================
-#if PATACHE_DEBUG == 1
-#if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
-  // __cxa_demangle alloc
-  VarTypeRealName
-      = abi::__cxa_demangle (typeid (PhysicalDeviceProperties).name (), nullptr, nullptr, nullptr);
-#else
-  VarTypeRealName = typeid (PhysicalDeviceProperties).name ();
-#endif
+#if defined(PATACHE_DEBUG)
+  PATACHE_GET_VARTYPE_STRING (pVarTypeRealName, physicalDeviceProperties);
 #endif
 
-  fast_io::io::println (PATACHE_FAST_IO_BUFF_OUT,
-#if PATACHE_DEBUG == 1
-                        PATACHE_TERM_DIM, PATACHE_TERM_COLOR_GRAY0, fast_io::mnp::right ("[", 3),
-                        fast_io::mnp::os_c_str (VarTypeRealName), fast_io::mnp::left ("]", 2),
-#else  // PATACHE_DEBUG
-                        "  ",
-#endif // PATACHE_DEBUG
+  fast_io::io::println (PATACHE_FASTIO_BUFFOUT,
+#if defined(PATACHE_DEBUG)
+                        PATACHE_FASTIO_SHOW_VARTYPE_STRING (pVarTypeRealName, 3, 2, 2),
+#endif
                         PATACHE_TERM_RESET, PATACHE_TERM_BOLD, "Device", PATACHE_TERM_RESET);
 
-#if PATACHE_DEBUG == 1
-#if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
-  // free __cxa_demangle alloc
-  std::free (VarTypeRealName);
-#endif
+#if defined(PATACHE_DEBUG)
+  PATACHE_FREE_VARTYPE_STRING (pVarTypeRealName);
 #endif
 
   // =================== Device Name ==============================
-  // =================== __cxa_demangle alloc =====================
   {
-#if PATACHE_DEBUG == 1
-#if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
-    // __cxa_demangle alloc
-    VarTypeRealName = abi::__cxa_demangle (
-        typeid (PhysicalDeviceProperties.properties.deviceName).name (), nullptr, nullptr, nullptr);
-#else
-    VarTypeRealName = typeid (PhysicalDeviceProperties.properties.deviceName).name ();
-#endif
+#if defined(PATACHE_DEBUG)
+    PATACHE_GET_VARTYPE_STRING (pVarTypeRealName, physicalDeviceProperties.properties.deviceName);
 #endif
 
-    fast_io::io::print (PATACHE_FAST_IO_BUFF_OUT,
-#if PATACHE_DEBUG == 1
-                        PATACHE_TERM_DIM, PATACHE_TERM_COLOR_GRAY0, fast_io::mnp::right ("[", 5),
-                        fast_io::mnp::os_c_str (VarTypeRealName),
-                        "] "
-#else  // PATACHE_DEBUG
-                        "    ",
-#endif // PATACHE_DEBUG
-                        PATACHE_TERM_RESET,
-                        PATACHE_TERM_BOLD, "Name : ", PATACHE_TERM_RESET);
-
-#if PATACHE_DEBUG == 1
-#if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
-    // free __cxa_demangle alloc
-    std::free (VarTypeRealName);
+    fast_io::io::print (PATACHE_FASTIO_BUFFOUT,
+#if defined(PATACHE_DEBUG)
+                        PATACHE_FASTIO_SHOW_VARTYPE_STRING (pVarTypeRealName, 5, 2, 4),
 #endif
+                        PATACHE_TERM_RESET, PATACHE_TERM_BOLD, "Name : ", PATACHE_TERM_RESET);
+
+#if defined(PATACHE_DEBUG)
+    PATACHE_FREE_VARTYPE_STRING (pVarTypeRealName);
 #endif
 
-    switch (PhysicalDeviceProperties.properties.vendorID)
+    switch (physicalDeviceProperties.properties.vendorID)
       {
       case 32902:
-        fast_io::io::print (PATACHE_FAST_IO_BUFF_OUT, PATACHE_TERM_COLOR_BLUE);
+        fast_io::io::print (PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_COLOR_BLUE);
         break;
 
       case 4098:
-        fast_io::io::print (PATACHE_FAST_IO_BUFF_OUT, PATACHE_TERM_COLOR_RED);
+        fast_io::io::print (PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_COLOR_RED);
         break;
 
       case 4318:
-        fast_io::io::print (PATACHE_FAST_IO_BUFF_OUT, PATACHE_TERM_COLOR_GREEN);
+        fast_io::io::print (PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_COLOR_GREEN);
         break;
       }
 
-    fast_io::io::println (PATACHE_FAST_IO_BUFF_OUT,
-                          fast_io::mnp::os_c_str (PhysicalDeviceProperties.properties.deviceName),
+    fast_io::io::println (PATACHE_FASTIO_BUFFOUT,
+                          fast_io::mnp::os_c_str (physicalDeviceProperties.properties.deviceName),
                           PATACHE_TERM_RESET);
   }
 
   // =================== Device Vendor ============================
-  // =================== __cxa_demangle alloc =====================
   {
-    const char * Vendor = nullptr;
+    const char * pVendor = nullptr;
 
-    switch (PhysicalDeviceProperties.properties.vendorID)
+    switch (physicalDeviceProperties.properties.vendorID)
       {
       case 32902:
-        Vendor = "Intel";
+        pVendor = "Intel";
         break;
 
       case 4098:
-        Vendor = "AMD";
+        pVendor = "AMD";
         break;
 
       case 4318:
-        Vendor = "Nvidia";
+        pVendor = "Nvidia";
         break;
 
       case 65541:
-        Vendor = "Mesa";
+        pVendor = "Mesa";
         break;
 
       default:
-        Vendor = "Unknown";
+        pVendor = "Unknown";
         break;
       }
 
-#if PATACHE_DEBUG == 1
-#if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
-    // __cxa_demangle alloc
-    VarTypeRealName = abi::__cxa_demangle (
-        typeid (PhysicalDeviceProperties.properties.vendorID).name (), nullptr, nullptr, nullptr);
-#else
-    VarTypeRealName = typeid (PhysicalDeviceProperties.properties.vendorID).name ();
-#endif
+#if defined(PATACHE_DEBUG)
+    PATACHE_GET_VARTYPE_STRING (pVarTypeRealName, physicalDeviceProperties.properties.vendorID);
 #endif
 
-    fast_io::io::print (PATACHE_FAST_IO_BUFF_OUT,
-#if PATACHE_DEBUG == 1
-                        PATACHE_TERM_DIM, PATACHE_TERM_COLOR_GRAY0, fast_io::mnp::right ("[", 5),
-                        fast_io::mnp::os_c_str (VarTypeRealName), fast_io::mnp::left ("]", 2),
-#else  // PATACHE_DEBUG
-                        "    ",
-#endif // PATACHE_DEBUG
+    fast_io::io::print (PATACHE_FASTIO_BUFFOUT,
+#if defined(PATACHE_DEBUG)
+                        PATACHE_FASTIO_SHOW_VARTYPE_STRING (pVarTypeRealName, 5, 2, 4),
+#endif
                         PATACHE_TERM_RESET, PATACHE_TERM_BOLD, "Vendor : ", PATACHE_TERM_RESET);
 
-#if PATACHE_DEBUG == 1
-#if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
-    // free __cxa_demangle alloc
-    std::free (VarTypeRealName);
-#endif
+#if defined(PATACHE_DEBUG)
+    PATACHE_FREE_VARTYPE_STRING (pVarTypeRealName);
 #endif
 
     // String Vendor
-    switch (PhysicalDeviceProperties.properties.vendorID)
+    switch (physicalDeviceProperties.properties.vendorID)
       {
       case 32902:
-        fast_io::io::print (PATACHE_FAST_IO_BUFF_OUT, PATACHE_TERM_COLOR_BLUE,
-                            fast_io::mnp::os_c_str (Vendor), PATACHE_TERM_RESET);
+        fast_io::io::print (PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_COLOR_BLUE,
+                            fast_io::mnp::os_c_str (pVendor), PATACHE_TERM_RESET);
         break;
 
       case 4098:
-        fast_io::io::print (PATACHE_FAST_IO_BUFF_OUT, PATACHE_TERM_COLOR_RED,
-                            fast_io::mnp::os_c_str (Vendor), PATACHE_TERM_RESET);
+        fast_io::io::print (PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_COLOR_RED,
+                            fast_io::mnp::os_c_str (pVendor), PATACHE_TERM_RESET);
         break;
 
       case 4318:
-        fast_io::io::print (PATACHE_FAST_IO_BUFF_OUT, PATACHE_TERM_COLOR_GREEN,
-                            fast_io::mnp::os_c_str (Vendor), PATACHE_TERM_RESET);
+        fast_io::io::print (PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_COLOR_GREEN,
+                            fast_io::mnp::os_c_str (pVendor), PATACHE_TERM_RESET);
         break;
 
       case 65541:
-        fast_io::io::print (PATACHE_FAST_IO_BUFF_OUT, PATACHE_TERM_COLOR_GRAY1,
-                            fast_io::mnp::os_c_str (Vendor), PATACHE_TERM_RESET);
+        fast_io::io::print (PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_COLOR_GRAY1,
+                            fast_io::mnp::os_c_str (pVendor), PATACHE_TERM_RESET);
         break;
 
       default:
-        fast_io::io::print (PATACHE_FAST_IO_BUFF_OUT, fast_io::mnp::os_c_str (Vendor));
+        fast_io::io::print (PATACHE_FASTIO_BUFFOUT, fast_io::mnp::os_c_str (pVendor));
         break;
       }
 
     // Hexadecimal VendorID
-    fast_io::io::print (PATACHE_FAST_IO_BUFF_OUT, PATACHE_TERM_DIM, PATACHE_TERM_COLOR_GRAY0,
+    fast_io::io::print (PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_DIM, PATACHE_TERM_COLOR_GRAY0,
                         " | [Hexadecimal] ", PATACHE_TERM_RESET);
 
-    switch (PhysicalDeviceProperties.properties.vendorID)
+    switch (physicalDeviceProperties.properties.vendorID)
       {
       case 32902:
-        fast_io::io::print (PATACHE_FAST_IO_BUFF_OUT, PATACHE_TERM_COLOR_BLUE);
+        fast_io::io::print (PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_COLOR_BLUE);
         break;
 
       case 4098:
-        fast_io::io::print (PATACHE_FAST_IO_BUFF_OUT, PATACHE_TERM_COLOR_RED);
+        fast_io::io::print (PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_COLOR_RED);
         break;
 
       case 4318:
-        fast_io::io::print (PATACHE_FAST_IO_BUFF_OUT, PATACHE_TERM_COLOR_GREEN);
+        fast_io::io::print (PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_COLOR_GREEN);
         break;
       }
 
-    fast_io::io::print (PATACHE_FAST_IO_BUFF_OUT,
-                        fast_io::mnp::hex (PhysicalDeviceProperties.properties.vendorID),
+    fast_io::io::print (PATACHE_FASTIO_BUFFOUT,
+                        fast_io::mnp::hex (physicalDeviceProperties.properties.vendorID),
                         PATACHE_TERM_RESET, " ");
 
     // Decimal VendorID
-    fast_io::io::print (PATACHE_FAST_IO_BUFF_OUT, PATACHE_TERM_DIM, PATACHE_TERM_COLOR_GRAY0,
+    fast_io::io::print (PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_DIM, PATACHE_TERM_COLOR_GRAY0,
                         "| [Decimal] ", PATACHE_TERM_RESET);
 
-    switch (PhysicalDeviceProperties.properties.vendorID)
+    switch (physicalDeviceProperties.properties.vendorID)
       {
       case 32902:
-        fast_io::io::print (PATACHE_FAST_IO_BUFF_OUT, PATACHE_TERM_COLOR_BLUE);
+        fast_io::io::print (PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_COLOR_BLUE);
         break;
 
       case 4098:
-        fast_io::io::print (PATACHE_FAST_IO_BUFF_OUT, PATACHE_TERM_COLOR_RED);
+        fast_io::io::print (PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_COLOR_RED);
         break;
 
       case 4318:
-        fast_io::io::print (PATACHE_FAST_IO_BUFF_OUT, PATACHE_TERM_COLOR_GREEN);
+        fast_io::io::print (PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_COLOR_GREEN);
         break;
       }
-    fast_io::io::println (PATACHE_FAST_IO_BUFF_OUT, PhysicalDeviceProperties.properties.vendorID,
+    fast_io::io::println (PATACHE_FASTIO_BUFFOUT, physicalDeviceProperties.properties.vendorID,
                           PATACHE_TERM_RESET);
   }
 
   // =================== Device Type ==============================
-  // =================== __cxa_demangle alloc =====================
-#if PATACHE_DEBUG == 1
-#if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
-  // __cxa_demangle alloc
-  VarTypeRealName = abi::__cxa_demangle (
-      typeid (PhysicalDeviceProperties.properties.deviceType).name (), nullptr, nullptr, nullptr);
-#else
-  VarTypeRealName = typeid (PhysicalDeviceProperties.properties.deviceType).name ();
-#endif
+#if defined(PATACHE_DEBUG)
+  PATACHE_GET_VARTYPE_STRING (pVarTypeRealName, physicalDeviceProperties.properties.deviceType);
 #endif
 
   // Device Type
-  fast_io::io::println (PATACHE_FAST_IO_BUFF_OUT,
-#if PATACHE_DEBUG == 1
-                        PATACHE_TERM_DIM, PATACHE_TERM_COLOR_GRAY0, fast_io::mnp::right ("[", 5),
-                        fast_io::mnp::os_c_str (VarTypeRealName), fast_io::mnp::left ("]", 2),
-#else  // PATACHE_DEBUG
-                        "    ",
-#endif // PATACHE_DEBUG
-                        PATACHE_TERM_RESET, PATACHE_TERM_BOLD, "Type : ", PATACHE_TERM_RESET,
-                        vk::to_string (PhysicalDeviceProperties.properties.deviceType));
-
-#if PATACHE_DEBUG == 1
-#if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
-  // free __cxa_demangle alloc
-  std::free (VarTypeRealName);
+  fast_io::io::println (PATACHE_FASTIO_BUFFOUT,
+#if defined(PATACHE_DEBUG)
+                        PATACHE_FASTIO_SHOW_VARTYPE_STRING (pVarTypeRealName, 5, 2, 4),
 #endif
+                        PATACHE_TERM_RESET, PATACHE_TERM_BOLD, "Type : ", PATACHE_TERM_RESET,
+                        vk::to_string (physicalDeviceProperties.properties.deviceType));
+
+#if defined(PATACHE_DEBUG)
+  PATACHE_FREE_VARTYPE_STRING (pVarTypeRealName);
 #endif
 
   // =================== Device Vram Size =========================
-  fast_io::io::println (PATACHE_FAST_IO_BUFF_OUT, PATACHE_TERM_RESET, PATACHE_TERM_BOLD,
+  fast_io::io::println (PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_RESET, PATACHE_TERM_BOLD,
                         fast_io::mnp::right ("Vram Size : ", 16), PATACHE_TERM_RESET, vramSize, " ",
                         fast_io::mnp::os_c_str (vramSizeUnit), "\n");
 
   // =================== Driver ===================================
-  // =================== __cxa_demangle alloc =====================
-#if PATACHE_DEBUG == 1
-#if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
-  // __cxa_demangle alloc
-  VarTypeRealName = abi::__cxa_demangle (typeid (Driver).name (), nullptr, nullptr, nullptr);
-#else
-  VarTypeRealName = typeid (Driver).name ();
-#endif
+#if defined(PATACHE_DEBUG)
+  PATACHE_GET_VARTYPE_STRING (pVarTypeRealName, driver);
 #endif
 
   // Vulkan Driver
-  fast_io::io::println (PATACHE_FAST_IO_BUFF_OUT,
-#if PATACHE_DEBUG == 1
-                        PATACHE_TERM_DIM, PATACHE_TERM_COLOR_GRAY0, fast_io::mnp::right ("[", 3),
-                        fast_io::mnp::os_c_str (VarTypeRealName), fast_io::mnp::left ("]", 2),
-#else  // PATACHE_DEBUG
-                        "  ",
-#endif // PATACHE_DEBUG
+  fast_io::io::println (PATACHE_FASTIO_BUFFOUT,
+#if defined(PATACHE_DEBUG)
+                        PATACHE_FASTIO_SHOW_VARTYPE_STRING (pVarTypeRealName, 3, 2, 2),
+#endif
                         PATACHE_TERM_RESET, PATACHE_TERM_BOLD, "Driver", PATACHE_TERM_RESET);
 
-#if PATACHE_DEBUG == 1
-#if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
-  // free __cxa_demangle alloc
-  std::free (VarTypeRealName);
-#endif
+#if defined(PATACHE_DEBUG)
+  PATACHE_FREE_VARTYPE_STRING (pVarTypeRealName);
 #endif
 
   // =================== Driver Name ==============================
-  // =================== __cxa_demangle alloc =====================
-#if PATACHE_DEBUG == 1
-#if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
-  // __cxa_demangle alloc
-  VarTypeRealName
-      = abi::__cxa_demangle (typeid (Driver.driverName).name (), nullptr, nullptr, nullptr);
-#else
-  VarTypeRealName = typeid (Driver.driverName).name ();
-#endif
+#if defined(PATACHE_DEBUG)
+  PATACHE_GET_VARTYPE_STRING (pVarTypeRealName, driver.driverName);
 #endif
 
-  fast_io::io::println (PATACHE_FAST_IO_BUFF_OUT,
-#if PATACHE_DEBUG == 1
-                        PATACHE_TERM_DIM, PATACHE_TERM_COLOR_GRAY0, fast_io::mnp::right ("[", 5),
-                        fast_io::mnp::os_c_str (VarTypeRealName), fast_io::mnp::left ("]", 2),
-#else  // PATACHE_DEBUG
-                        "    ",
-#endif // PATACHE_DEBUG
+  fast_io::io::println (PATACHE_FASTIO_BUFFOUT,
+#if defined(PATACHE_DEBUG)
+                        PATACHE_FASTIO_SHOW_VARTYPE_STRING (pVarTypeRealName, 5, 2, 4),
+#endif
                         PATACHE_TERM_RESET, PATACHE_TERM_BOLD, "Name : ", PATACHE_TERM_RESET,
-                        fast_io::mnp::os_c_str (Driver.driverName));
+                        fast_io::mnp::os_c_str (driver.driverName));
 
-#if PATACHE_DEBUG == 1
-#if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
-  // free __cxa_demangle alloc
-  std::free (VarTypeRealName);
-#endif
+#if defined(PATACHE_DEBUG)
+  PATACHE_FREE_VARTYPE_STRING (pVarTypeRealName);
 #endif
 
   // =================== Driver ID ================================
-  // =================== __cxa_demangle alloc =====================
-#if PATACHE_DEBUG == 1
-#if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
-  // __cxa_demangle alloc
-  VarTypeRealName
-      = abi::__cxa_demangle (typeid (Driver.driverID).name (), nullptr, nullptr, nullptr);
-#else
-  VarTypeRealName = typeid (Driver.driverID).name ();
-#endif
+#if defined(PATACHE_DEBUG)
+  PATACHE_GET_VARTYPE_STRING (pVarTypeRealName, driver.driverID);
 #endif
 
-  fast_io::io::println (PATACHE_FAST_IO_BUFF_OUT,
-#if PATACHE_DEBUG == 1
-                        PATACHE_TERM_DIM, PATACHE_TERM_COLOR_GRAY0, fast_io::mnp::right ("[", 5),
-                        fast_io::mnp::os_c_str (VarTypeRealName), fast_io::mnp::left ("]", 2),
-#else  // PATACHE_DEBUG
-                        "    ",
-#endif // PATACHE_DEBUG
+  fast_io::io::println (PATACHE_FASTIO_BUFFOUT,
+#if defined(PATACHE_DEBUG)
+                        PATACHE_FASTIO_SHOW_VARTYPE_STRING (pVarTypeRealName, 5, 2, 4),
+#endif
                         PATACHE_TERM_RESET, PATACHE_TERM_BOLD, "ID : ", PATACHE_TERM_RESET,
-                        vk::to_string (Driver.driverID));
+                        vk::to_string (driver.driverID));
 
-#if PATACHE_DEBUG == 1
-#if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
-  // free __cxa_demangle alloc
-  std::free (VarTypeRealName);
-#endif
+#if defined(PATACHE_DEBUG)
+  PATACHE_FREE_VARTYPE_STRING (pVarTypeRealName);
 #endif
 
   // =================== Driver Info ==============================
-  // =================== __cxa_demangle alloc =====================
-#if PATACHE_DEBUG == 1
-#if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
-  // __cxa_demangle alloc
-  VarTypeRealName
-      = abi::__cxa_demangle (typeid (Driver.driverInfo).name (), nullptr, nullptr, nullptr);
-#else
-  VarTypeRealName = typeid (Driver.driverInfo).name ();
-#endif
+#if defined(PATACHE_DEBUG)
+  PATACHE_GET_VARTYPE_STRING (pVarTypeRealName, driver.driverInfo);
 #endif
 
-  fast_io::io::println (PATACHE_FAST_IO_BUFF_OUT,
-#if PATACHE_DEBUG == 1
-                        PATACHE_TERM_DIM, PATACHE_TERM_COLOR_GRAY0, fast_io::mnp::right ("[", 5),
-                        fast_io::mnp::os_c_str (VarTypeRealName), fast_io::mnp::left ("]", 2),
-#else  // PATACHE_DEBUG
-                        "    ",
-#endif // PATACHE_DEBUG
+  fast_io::io::println (PATACHE_FASTIO_BUFFOUT,
+#if defined(PATACHE_DEBUG)
+                        PATACHE_FASTIO_SHOW_VARTYPE_STRING (pVarTypeRealName, 5, 2, 4),
+#endif
                         PATACHE_TERM_RESET, PATACHE_TERM_BOLD, "Info : ", PATACHE_TERM_RESET,
-                        fast_io::mnp::os_c_str (Driver.driverInfo));
+                        fast_io::mnp::os_c_str (driver.driverInfo));
 
-#if PATACHE_DEBUG == 1
-#if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
-  // free __cxa_demangle alloc
-  std::free (VarTypeRealName);
-#endif
+#if defined(PATACHE_DEBUG)
+  PATACHE_FREE_VARTYPE_STRING (pVarTypeRealName);
 #endif
 
   // =================== Driver Version ===========================
-  // =================== __cxa_demangle alloc =====================
-#if PATACHE_DEBUG == 1
-#if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
-  // __cxa_demangle alloc
-  VarTypeRealName
-      = abi::__cxa_demangle (typeid (PhysicalDeviceProperties.properties.driverVersion).name (),
-                             nullptr, nullptr, nullptr);
-#else
-  VarTypeRealName = typeid (PhysicalDeviceProperties.properties.driverVersion).name ();
-#endif
+#if defined(PATACHE_DEBUG)
+  PATACHE_GET_VARTYPE_STRING (pVarTypeRealName, physicalDeviceProperties.properties.driverVersion);
 #endif
 
-  fast_io::io::println (PATACHE_FAST_IO_BUFF_OUT,
-#if PATACHE_DEBUG == 1
-                        PATACHE_TERM_DIM, PATACHE_TERM_COLOR_GRAY0, fast_io::mnp::right ("[", 5),
-                        fast_io::mnp::os_c_str (VarTypeRealName), fast_io::mnp::left ("]", 2),
-#else  // PATACHE_DEBUG
-                        "    ",
-#endif // PATACHE_DEBUG
+  fast_io::io::println (PATACHE_FASTIO_BUFFOUT,
+#if defined(PATACHE_DEBUG)
+                        PATACHE_FASTIO_SHOW_VARTYPE_STRING (pVarTypeRealName, 5, 2, 4),
+#endif
                         PATACHE_TERM_RESET, PATACHE_TERM_BOLD, "Version : ", PATACHE_TERM_RESET,
-                        VK_VERSION_MAJOR (PhysicalDeviceProperties.properties.driverVersion), ".",
-                        VK_VERSION_MINOR (PhysicalDeviceProperties.properties.driverVersion), ".",
-                        VK_VERSION_PATCH (PhysicalDeviceProperties.properties.driverVersion), ".",
-                        VK_API_VERSION_VARIANT (PhysicalDeviceProperties.properties.driverVersion),
+                        VK_VERSION_MAJOR (physicalDeviceProperties.properties.driverVersion), ".",
+                        VK_VERSION_MINOR (physicalDeviceProperties.properties.driverVersion), ".",
+                        VK_VERSION_PATCH (physicalDeviceProperties.properties.driverVersion), ".",
+                        VK_API_VERSION_VARIANT (physicalDeviceProperties.properties.driverVersion),
                         "\n");
 
-#if PATACHE_DEBUG == 1
-#if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
-  // free __cxa_demangle alloc
-  std::free (VarTypeRealName);
-#endif
+#if defined(PATACHE_DEBUG)
+  PATACHE_FREE_VARTYPE_STRING (pVarTypeRealName);
 #endif
 
   // =================== Swapchain ================================
-  // =================== __cxa_demangle alloc =====================
-#if PATACHE_DEBUG == 1
-#if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
-  VarTypeRealName
-      = abi::__cxa_demangle (typeid (Engine->Vulkan.SwapChain).name (), nullptr, nullptr, nullptr);
-#else
-  VarTypeRealName = typeid (Engine->Vulkan.SwapChain).name ();
-#endif
+#if defined(PATACHE_DEBUG)
+  PATACHE_GET_VARTYPE_STRING (pVarTypeRealName, pEngine->vulkan.swapchain);
 #endif
 
-  fast_io::io::println (PATACHE_FAST_IO_BUFF_OUT,
-#if PATACHE_DEBUG == 1
-                        PATACHE_TERM_DIM, PATACHE_TERM_COLOR_GRAY0, fast_io::mnp::right ("[", 3),
-                        fast_io::mnp::os_c_str (VarTypeRealName), fast_io::mnp::left ("]", 2),
-#else  // PATACHE_DEBUG
-                        "  ",
-#endif // PATACHE_DEBUG
-                        PATACHE_TERM_RESET, PATACHE_TERM_BOLD, "SwapChain", PATACHE_TERM_RESET);
+  fast_io::io::println (PATACHE_FASTIO_BUFFOUT,
+#if defined(PATACHE_DEBUG)
+                        PATACHE_FASTIO_SHOW_VARTYPE_STRING (pVarTypeRealName, 3, 2, 2),
+#endif
+                        PATACHE_TERM_RESET, PATACHE_TERM_BOLD, "Swapchain", PATACHE_TERM_RESET);
 
 #if PATACHE_DEBUG == 1
-#if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
-  // free __cxa_demangle alloc
-  std::free (VarTypeRealName);
-#endif
+  PATACHE_FREE_VARTYPE_STRING (pVarTypeRealName);
 #endif
 
   // =================== Swapchain Present Mode ===================
-  // =================== __cxa_demangle alloc =====================
-#if PATACHE_DEBUG == 1
-#if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
-  // __cxa_demangle alloc
-  VarTypeRealName
-      = abi::__cxa_demangle (typeid (SwapChainInfo.PresentMode).name (), nullptr, nullptr, nullptr);
-#else
-  VarTypeRealName = typeid (SwapChainInfo.PresentMode).name ();
-#endif
+#if defined(PATACHE_DEBUG)
+  PATACHE_GET_VARTYPE_STRING (pVarTypeRealName, rSwapchainInfo.presentMode);
 #endif
 
   // SwapChain Present Mode
-  fast_io::io::print (PATACHE_FAST_IO_BUFF_OUT,
-#if PATACHE_DEBUG == 1
-                      PATACHE_TERM_DIM, PATACHE_TERM_COLOR_GRAY0, fast_io::mnp::right ("[", 5),
-                      fast_io::mnp::os_c_str (VarTypeRealName), fast_io::mnp::left ("]", 2),
-#else  // PATACHE_DEBUG
-                      "    ",
-#endif // PATACHE_DEBUG
-                      PATACHE_TERM_RESET, PATACHE_TERM_BOLD, "Present Mode : ", PATACHE_TERM_RESET,
-                      vk::to_string (SwapChainInfo.PresentMode), " ");
-
-#if PATACHE_DEBUG == 1
-#if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
-  // free __cxa_demangle alloc
-  std::free (VarTypeRealName);
+  fast_io::io::print (PATACHE_FASTIO_BUFFOUT,
+#if defined(PATACHE_DEBUG)
+                      PATACHE_FASTIO_SHOW_VARTYPE_STRING (pVarTypeRealName, 5, 2, 4),
 #endif
+                      PATACHE_TERM_RESET, PATACHE_TERM_BOLD, "Present Mode : ", PATACHE_TERM_RESET,
+                      vk::to_string (rSwapchainInfo.presentMode), " ");
+
+#if defined(PATACHE_DEBUG)
+  PATACHE_FREE_VARTYPE_STRING (pVarTypeRealName);
 #endif
 
   // Vulkan Vsync
-  if ((SwapChainInfo.PresentMode == vk::PresentModeKHR::eFifo
-       || SwapChainInfo.PresentMode == vk::PresentModeKHR::eFifoRelaxed)
-      && Engine->configuration.Vsync)
-    fast_io::io::println (PATACHE_FAST_IO_BUFF_OUT, PATACHE_TERM_COLOR_GREEN, "Vertical Sync",
+  if ((rSwapchainInfo.presentMode == vk::PresentModeKHR::eFifo
+       || rSwapchainInfo.presentMode == vk::PresentModeKHR::eFifoRelaxed)
+      && pEngine->configuration.vsync)
+    fast_io::io::println (PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_COLOR_GREEN, "Vertical Sync",
                           PATACHE_TERM_RESET);
   else
-    fast_io::io::println (PATACHE_FAST_IO_BUFF_OUT);
+    fast_io::io::println (PATACHE_FASTIO_BUFFOUT);
 
   // =================== Swapchain Images =========================
-  // =================== __cxa_demangle alloc =====================
-#if PATACHE_DEBUG == 1
-#if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
-  // __cxa_demangle alloc
-  VarTypeRealName = abi::__cxa_demangle (typeid (Engine->Vulkan.SwapChainImages).name (), nullptr,
-                                         nullptr, nullptr);
-#else
-  VarTypeRealName = typeid (Engine->Vulkan.SwapChainImages).name ();
-#endif
+#if defined(PATACHE_DEBUG)
+  PATACHE_GET_VARTYPE_STRING (pVarTypeRealName, pEngine->vulkan.pSwapchainImages);
 #endif
 
-  // Swapchain Images
-  fast_io::io::println (PATACHE_FAST_IO_BUFF_OUT,
-#if PATACHE_DEBUG == 1
-                        PATACHE_TERM_DIM, PATACHE_TERM_COLOR_GRAY0, fast_io::mnp::right ("[", 5),
-                        fast_io::mnp::os_c_str (VarTypeRealName), fast_io::mnp::left ("]", 2),
-#else  // PATACHE_DEBUG
-                        "    ",
-#endif // PATACHE_DEBUG
-                        PATACHE_TERM_RESET, PATACHE_TERM_BOLD, "Images : ", PATACHE_TERM_RESET,
-                        Engine->Vulkan.SwapChainImageCount);
-
-#if PATACHE_DEBUG == 1
-#if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
-  // free __cxa_demangle alloc
-  std::free (VarTypeRealName);
+  fast_io::io::println (PATACHE_FASTIO_BUFFOUT,
+#if defined(PATACHE_DEBUG)
+                        PATACHE_FASTIO_SHOW_VARTYPE_STRING (pVarTypeRealName, 5, 2, 4),
 #endif
+                        PATACHE_TERM_RESET, PATACHE_TERM_BOLD, "Image Count : ", PATACHE_TERM_RESET,
+                        pEngine->vulkan.swapchainImageCount);
+
+#if defined(PATACHE_DEBUG)
+  PATACHE_FREE_VARTYPE_STRING (pVarTypeRealName);
 #endif
 
   // =================== Swapchain Image Color Format =============
-  // =================== __cxa_demangle alloc =====================
-#if PATACHE_DEBUG == 1
-#if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
-  // __cxa_demangle alloc
-  VarTypeRealName = abi::__cxa_demangle (typeid (SwapChainInfo.ImageColorFormat).name (), nullptr,
-                                         nullptr, nullptr);
-#else
-  VarTypeRealName = typeid (SwapChainInfo.ImageColorFormat).name ();
-#endif
+#if defined(PATACHE_DEBUG)
+  PATACHE_GET_VARTYPE_STRING (pVarTypeRealName, rSwapchainInfo.imageColorFormat);
 #endif
 
-  fast_io::io::println (PATACHE_FAST_IO_BUFF_OUT,
-#if PATACHE_DEBUG == 1
-                        PATACHE_TERM_DIM, PATACHE_TERM_COLOR_GRAY0, fast_io::mnp::right ("[", 5),
-                        fast_io::mnp::os_c_str (VarTypeRealName), fast_io::mnp::left ("]", 2),
-#else  // PATACHE_DEBUG
-                        "    ",
-#endif // PATACHE_DEBUG
+  fast_io::io::println (PATACHE_FASTIO_BUFFOUT,
+#if defined(PATACHE_DEBUG)
+                        PATACHE_FASTIO_SHOW_VARTYPE_STRING (pVarTypeRealName, 5, 2, 4),
+#endif
                         PATACHE_TERM_RESET, PATACHE_TERM_BOLD,
                         "Surface Color Format : ", PATACHE_TERM_RESET,
-                        vk::to_string (SwapChainInfo.ImageColorFormat));
+                        vk::to_string (rSwapchainInfo.imageColorFormat));
 
-#if PATACHE_DEBUG == 1
-#if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
-  // free __cxa_demangle alloc
-  std::free (VarTypeRealName);
-#endif
+#if defined(PATACHE_DEBUG)
+  PATACHE_FREE_VARTYPE_STRING (pVarTypeRealName);
 #endif
 
   // =================== Swapchain Image Color Format =============
   // =================== __cxa_demangle alloc =====================
-#if PATACHE_DEBUG == 1
-#if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
-  // __cxa_demangle alloc
-  VarTypeRealName = abi::__cxa_demangle (typeid (SwapChainInfo.ImageColorSpace).name (), nullptr,
-                                         nullptr, nullptr);
-#else
-  VarTypeRealName = typeid (SwapChainInfo.ImageColorSpace).name ();
-#endif
+#if defined(PATACHE_DEBUG)
+  PATACHE_GET_VARTYPE_STRING (pVarTypeRealName, rSwapchainInfo.imageColorSpace);
 #endif
 
-  fast_io::io::println (PATACHE_FAST_IO_BUFF_OUT,
-#if PATACHE_DEBUG == 1
-                        PATACHE_TERM_DIM, PATACHE_TERM_COLOR_GRAY0, fast_io::mnp::right ("[", 5),
-                        fast_io::mnp::os_c_str (VarTypeRealName), fast_io::mnp::left ("]", 2),
-#else  // PATACHE_DEBUG
-                        "    ",
-#endif // PATACHE_DEBUG
+  fast_io::io::println (PATACHE_FASTIO_BUFFOUT,
+#if defined(PATACHE_DEBUG)
+                        PATACHE_FASTIO_SHOW_VARTYPE_STRING (pVarTypeRealName, 5, 2, 4),
+#endif
                         PATACHE_TERM_RESET, PATACHE_TERM_BOLD,
                         "Surface Color Space : ", PATACHE_TERM_RESET,
-                        vk::to_string (SwapChainInfo.ImageColorSpace));
+                        vk::to_string (rSwapchainInfo.imageColorSpace), "\n");
 
-#if PATACHE_DEBUG == 1
-#if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
-  // free __cxa_demangle alloc
-  std::free (VarTypeRealName);
-#endif
+#if defined(PATACHE_DEBUG)
+  PATACHE_FREE_VARTYPE_STRING (pVarTypeRealName);
 #endif
 
   // =================== Debug ====================================
 #if PATACHE_DEBUG == 1
-  fast_io::io::println (PATACHE_FAST_IO_BUFF_OUT, PATACHE_TERM_BOLD, "\n  Debug",
-                        PATACHE_TERM_RESET);
-
-// Vulkan Validation Layer Version
-#if defined(PATACHE_USE_VVL)
-  fast_io::io::println (PATACHE_FAST_IO_BUFF_OUT, PATACHE_TERM_BOLD,
-                        "    Validation Layers : ", PATACHE_TERM_RESET, PATACHE_TERM_COLOR_GREEN,
-                        "Enabled", PATACHE_TERM_RESET);
-#endif
-
 #if defined(PATACHE_IMGUI_VERSION)
-  fast_io::io::println (PATACHE_FAST_IO_BUFF_OUT, PATACHE_TERM_BOLD,
-                        "    Imgui Version : ", PATACHE_TERM_RESET, PATACHE_IMGUI_VERSION);
+  fast_io::io::println (PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_BOLD,
+                        fast_io::mnp::right ("ImGui Version : ", 18), PATACHE_TERM_RESET,
+                        PATACHE_IMGUI_VERSION);
 #endif
-#endif // PATACHE_DEBUG
-  fast_io::io::println (PATACHE_FAST_IO_BUFF_OUT);
+#endif
+
+  fast_io::io::println (PATACHE_FASTIO_BUFFOUT);
 }

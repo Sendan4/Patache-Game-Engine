@@ -1,10 +1,12 @@
 #include <future>
 #include <cstdio>
 
-#include <SDL3/SDL.h>
+#include <vulkan/vulkan.hpp>
 
 // Patache Engine
-#include "PatacheEngine/PatacheEngine.hpp"
-#include "Log.hpp"
+#include "PatacheEngine/VulkanBackend.hpp"
+#include "Vulkan_SetupLog.hpp"
+
+bool CreateCommandBuffer (Patache::VulkanBackend &);
 
 #define PATACHE_ERROR_TEXT_SIZE 64

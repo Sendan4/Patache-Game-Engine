@@ -1,10 +1,10 @@
 // ARGB 8888 Format
-#define PATACHE_CSD_MINIMIZE_BUTTON_HEIGHT     18
-#define PATACHE_CSD_MINIMIZE_BUTTON_WIDTH      27
-#define PATACHE_CSD_MINIMIZE_BUTTON_SIZE       1944 // W * H * 4
-#define PATACHE_CSD_MINIMIZE_BUTTON_PIXELCOUNT 486  // W * H
+#define PATACHE_MINIMIZE_BUTTON_CSD_HEIGHT     18
+#define PATACHE_MINIMIZE_BUTTON_CSD_WIDTH      27
+#define PATACHE_MINIMIZE_BUTTON_CSD_SIZE       1944 // W * H * 4
+#define PATACHE_MINIMIZE_BUTTON_CSD_PIXELCOUNT 486  // W * H
 
-static constexpr std::uint32_t CSDMinimizeButton[] = {
+static constexpr std::uint32_t sMinimizeButtonCSD[] = {
   0x00000000, 0xffac9d7a, 0xffac9d7a, 0xffac9d7a, 0xffac9d7a, 0xffac9d7a, 0xffac9d7a, 0xffac9d7a,
   0xffae9d7a, 0xffac9d7a, 0xffac9d7a, 0xffac9d7a, 0xffac9d7a, 0xffac9d7a, 0xffac9d7a, 0xffac9d7a,
   0xffac9d7a, 0xffac9d7a, 0xffac9d7a, 0xffac9d7a, 0xffac9d7a, 0xffac9d7a, 0xffac9d7a, 0xffac9d7a,

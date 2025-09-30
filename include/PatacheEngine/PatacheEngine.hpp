@@ -35,7 +35,7 @@
 #include "PatacheEngine/VulkanBackend.hpp"
 #include "PatacheEngine/StructConfig.hpp"
 #if PATACHE_DEBUG == 1
-#include "PatacheEngine/StructEngineInfo.hpp"
+#include "PatacheEngine/StructDebugInfo.hpp"
 #endif
 
 namespace Patache
@@ -49,16 +49,16 @@ enum class ProjectGraphics : bool
 // you can use nullptr to not use the options or not assign them at all.
 struct EngineCreateInfo
 {
-  const char * const  gameName    = nullptr; // Name of the game // It is optional.
+  const char * const  pGameName   = nullptr; // Name of the game // It is optional.
   const std::uint32_t gameVersion = 0;
   // Vulkan version style: major.minor.patch.variant // It is
   // optional.
-  const char * const windowTitle = nullptr;
+  const char * const pWindowTitle = nullptr;
   // Initial title of the window. // It is optional.
   const Patache::ProjectGraphics projectGraphicsMode = Patache::ProjectGraphics::Mode2D;
   // Determines whether the project uses 2D or 3D graphics.
   // It is mandatory.
-  const char * const windowIconPath = nullptr;
+  const char * const pWindowIconPath = nullptr;
   // Initial icon of the window. // It is optional.
   // Use bitmap (.bmp) format/codec. // It is optional.
   const std::uint32_t bufferRenderSize  = 262144;
@@ -94,14 +94,14 @@ struct Triangle
   vk::DeviceSize offset  = 0;
 
   PATACHE_API constexpr void
-  SetColorRGB (const std::uint8_t & side, const float & Red, const float & Blue,
-               const float & Green)
+  SetColorRGB (const std::uint8_t & rSide, const float & rRed, const float & rBlue,
+               const float & rGreen)
   {
-    assert ("A triangle only have 3 sides (0 - 3)" && (side <= 2));
+    assert ("A triangle only have 3 sides (0 - 3)" && (rSide <= 2));
 
-    vertex[side].color[0] = Red;
-    vertex[side].color[1] = Blue;
-    vertex[side].color[2] = Green;
+    vertex[rSide].color[0] = rRed;
+    vertex[rSide].color[1] = rBlue;
+    vertex[rSide].color[2] = rGreen;
   }
 };
 
@@ -109,52 +109,56 @@ struct Triangle
 struct WaylandWindow
 {
   // Globals
-  wl_display *    Display    = nullptr;
-  wl_compositor * Compositor = nullptr;
-  wl_seat *       Input      = nullptr;
+  wl_display *    pDisplay    = nullptr;
+  wl_compositor * pCompositor = nullptr;
+  wl_seat *       pInput      = nullptr;
   // Main Surface for graphics
-  wl_surface *   Surface                   = nullptr; // Used by Vulkan
-  xdg_wm_base *  WindowManangerBase        = nullptr;
-  xdg_surface *  DesktopStyleUserInterface = nullptr;
-  xdg_toplevel * DesktopWindow             = nullptr;
+  wl_surface *   pSurface                   = nullptr; // Used by Vulkan
+  xdg_wm_base *  pWindowManangerBase        = nullptr;
+  xdg_surface *  pDesktopStyleUserInterface = nullptr;
+  xdg_toplevel * pDesktopWindow             = nullptr;
   // Server side decoration (SSD)
-  zxdg_decoration_manager_v1 *  DecorationMananger = nullptr;
-  zxdg_toplevel_decoration_v1 * Decoration         = nullptr;
+  zxdg_decoration_manager_v1 *  pDecorationMananger = nullptr;
+  zxdg_toplevel_decoration_v1 * pDecoration         = nullptr;
   // Client side decoration (CSD)
-  wl_shm *           DecorationSharedMemory = nullptr;
-  wl_subcompositor * SubCompositor          = nullptr;
+  wl_shm *           pDecorationSharedMemory = nullptr;
+  wl_subcompositor * pSubCompositor          = nullptr;
   // Main Bar
-  wl_surface *    MainBarSurface    = nullptr;
-  wl_subsurface * MainBarSubSurface = nullptr;
-  std::uint32_t * MainBarPixels     = nullptr;
-  wl_buffer *     MainBarBuffer     = nullptr;
+  wl_surface *    pMainBarSurface    = nullptr;
+  wl_subsurface * pMainBarSubSurface = nullptr;
+  std::uint32_t * pMainBarPixels     = nullptr;
+  wl_buffer *     pMainBarBuffer     = nullptr;
   // Border
-  wl_surface * BorderSurface[8]
+  wl_surface * pBorderSurface[8]
       = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
-  wl_subsurface * BorderSubSurface[8]
+  wl_subsurface * pBorderSubSurface[8]
       = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
-  std::uint32_t * BorderPixels[8]
+  std::uint32_t * pBorderPixels[8]
       = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
-  wl_buffer * BorderBuffer[8]
+  wl_buffer * pBorderBuffer[8]
       = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
   // Buttons
-  wl_surface *    ButtonSurface[3]          = { nullptr, nullptr, nullptr };
-  wl_subsurface * ButtonSubSurface[3]       = { nullptr, nullptr, nullptr };
-  std::uint32_t * DecorationButtonPixels[3] = { nullptr, nullptr, nullptr };
-  wl_buffer *     DecorationButtonBuffer[3] = { nullptr, nullptr, nullptr };
+  wl_surface *    pButtonSurface[3]          = { nullptr, nullptr, nullptr };
+  wl_subsurface * pButtonSubSurface[3]       = { nullptr, nullptr, nullptr };
+  std::uint32_t * pDecorationButtonPixels[3] = { nullptr, nullptr, nullptr };
+  wl_buffer *     pDecorationButtonBuffer[3] = { nullptr, nullptr, nullptr };
   // Cursor
-  wl_surface *      CursorSurface = nullptr;
-  wl_cursor_theme * CursorTheme   = nullptr;
+  wl_surface *      pCursorSurface = nullptr;
+  wl_cursor_theme * pCursorTheme   = nullptr;
 };
 
 /*
  * CSD Buttons Layout
  * [MINIMIZE | MAXIMIZE | CLOSE]
  */
-#define PATACHE_CSD_MINIMIZE_BUTTON_INDEX 0
-#define PATACHE_CSD_MAXIMIZE_BUTTON_INDEX 1
-#define PATACHE_CSD_CLOSE_BUTTON_INDEX    2
-#define PATACHE_CSD_BUTTON_SIZE           3
+#define PATACHE_BUTTON_CSD_SIZE 3
+
+enum ButtonIndexCSD : std::uint8_t
+{
+  eMinimize,
+  eMaximize,
+  eClose
+};
 
 /*
  * CSD Borders Layout
@@ -166,20 +170,22 @@ struct WaylandWindow
  * TOP RIGHT
  * BOTTOM LEFT
  * BOTTOM RIGHT
- * */
-#define PATACHE_CSD_TOP_BORDER_INDEX       0
-#define PATACHE_CSD_BOTTOM_BORDER_INDEX    1
-#define PATACHE_CSD_BORDER_HORIZONTAL_SIZE 2
+ */
+#define PATACHE_BORDER_HORIZONTAL_CSD_SIZE 2
+#define PATACHE_BORDER_VERTICAL_CSD_SIZE   4
+#define PATACHE_BORDER_CSD_SIZE            8
 
-#define PATACHE_CSD_LEFT_BORDER_INDEX    2
-#define PATACHE_CSD_RIGHT_BORDER_INDEX   3
-#define PATACHE_CSD_BORDER_VERTICAL_SIZE 4
-
-#define PATACHE_CSD_TOPLEFT_BORDER_INDEX     4
-#define PATACHE_CSD_TOPRIGHT_BORDER_INDEX    5
-#define PATACHE_CSD_BOTTOMLEFT_BORDER_INDEX  6
-#define PATACHE_CSD_BOTTOMRIGHT_BORDER_INDEX 7
-#define PATACHE_CSD_BORDER_SIZE              8
+enum BorderIndexCSD : std::uint8_t
+{
+  eTop,
+  eBottom,
+  eLeft,
+  eRight,
+  eTopLeft,
+  eTopRight,
+  eBottomLeft,
+  eBottomRight
+};
 #endif
 
 struct Engine
@@ -217,16 +223,16 @@ struct Engine
   PATACHE_API void ClearColorRGBA (const float &, const float &, const float &);
 
   // Window
-  SDL_Window * GameWindow = nullptr;
+  SDL_Window * pGameWindow = nullptr;
 
 #if defined(__linux__)
-  Patache::WaylandWindow WaylandWindow{};
+  Patache::WaylandWindow waylandWindow{};
 #endif
 
-  Patache::VulkanBackend Vulkan{};
+  Patache::VulkanBackend vulkan{};
 
 #if PATACHE_DEBUG == 1
-  Patache::EngineInfo engineInfo{};
+  Patache::EngineInfo debugInfo{};
 #endif
 
   PATACHE_API bool BeginCopyBuffer (void);
@@ -239,39 +245,39 @@ struct Engine
 
 // Versioning management in the style of Vulkan. // major.minor.patch.variant
 constexpr std::uint32_t
-MakeVersion (const std::uint8_t & Major, const std::uint16_t & Minor, const std::uint16_t & Patch,
-             const std::uint8_t & Variant)
+          MakeVersion (const std::uint8_t & rMajor, const std::uint16_t & rMinor,
+                       const std::uint16_t & rPatch, const std::uint8_t & rVariant)
 {
-  return ((static_cast<std::uint32_t> (Variant)) << 29U
-          | (static_cast<std::uint32_t> (Major)) << 22U
-          | (static_cast<std::uint32_t> (Minor)) << 12U | static_cast<std::uint32_t> (Patch));
+  return ((static_cast<std::uint32_t> (rVariant)) << 29U
+          | (static_cast<std::uint32_t> (rMajor)) << 22U
+          | (static_cast<std::uint32_t> (rMinor)) << 12U | static_cast<std::uint32_t> (rPatch));
 }
 
 constexpr std::uint8_t
-          GetVersionMajor (const std::uint32_t & Major)
+          GetVersionMajor (const std::uint32_t & rMajor)
 {
   // 6 bits
-  return Major >> 22U & 0b1111111;
+  return rMajor >> 22U & 0b1111111;
 }
 
 constexpr std::uint16_t
-          GetVersionMinor (const std::uint32_t & Minor)
+          GetVersionMinor (const std::uint32_t & rMinor)
 {
   // 9 bits
-  return Minor >> 12U & 0b1111111111;
+  return rMinor >> 12U & 0b1111111111;
 }
 
 constexpr std::uint16_t
-          GetVersionPatch (const std::uint32_t & Patch)
+          GetVersionPatch (const std::uint32_t & rPatch)
 {
   // 11 bits
-  return Patch & 0b111111111111;
+  return rPatch & 0b111111111111;
 }
 
 constexpr std::uint8_t
-          GetVersionVariant (const std::uint32_t & Variant)
+          GetVersionVariant (const std::uint32_t & rVariant)
 {
   // 5 bits
-  return Variant >> 29U & 0b111111;
+  return rVariant >> 29U & 0b111111;
 }
 }

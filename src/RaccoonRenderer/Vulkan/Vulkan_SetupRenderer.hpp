@@ -4,24 +4,21 @@
 #include <future>
 #include <functional>
 
-#include <fast_io.h>
-#include <fast_io_device.h>
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_vulkan.h>
-#if PATACHE_DEBUG == 1
-#include <imgui_impl_vulkan.h>
-#endif
+#include <fast_io.h>
+#include <fast_io_device.h>
 // #include <cglm/cglm.h>
 
 // Patache Engine
 #include "PatacheEngine/PatacheEngine.hpp"
 #include "ColorTerminal.hpp"
-#include "Log.hpp"
-#include "fast_io_buff.hpp"
+#include "FastIOBuff.hpp"
+#include "LogMacroUtils.hpp"
 #include "CstringWrapped.hpp"
-#if PATACHE_DEBUG == 1
-#include "PatacheEngine/StructEngineInfo.hpp"
-#endif
+#include "Vulkan_SetupLog.hpp"
+#include "Message.hpp"
+#include "Vulkan_SetupRenderer_Funcs.hpp"
 
 #define PATACHE_ENGINE_VERSION_VK                                                                  \
   VK_MAKE_API_VERSION (0, PATACHE_ENGINE_VERSION_MAYOR, PATACHE_ENGINE_VERSION_MINOR,              \
@@ -55,12 +52,12 @@ vkDestroyDebugUtilsMessengerEXT (VkInstance instance, VkDebugUtilsMessengerEXT m
 
 // Callback Message function
 VKAPI_ATTR vk::Bool32 VKAPI_CALL
-           debugMessageFunc (vk::DebugUtilsMessageSeverityFlagBitsEXT       messageSeverity,
+           DebugMessageFunc (vk::DebugUtilsMessageSeverityFlagBitsEXT       messageSeverity,
                              vk::DebugUtilsMessageTypeFlagsEXT              messageTypes,
                              vk::DebugUtilsMessengerCallbackDataEXT const * pCallbackData,
                              void * /*pUserData*/)
 {
-  fast_io::io::println (PATACHE_FAST_IO_BUFF_OUT, PATACHE_TERM_BOLD, PATACHE_TERM_COLOR_RED,
+  fast_io::io::println (PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_BOLD, PATACHE_TERM_COLOR_RED,
                         "Vulkan Validation Layers :", PATACHE_TERM_RESET);
 
   // Message Severity
@@ -68,18 +65,18 @@ VKAPI_ATTR vk::Bool32 VKAPI_CALL
     {
     case vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose:
     case vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo:
-      fast_io::io::println (PATACHE_FAST_IO_BUFF_OUT, fast_io::mnp::right ("Severity : ", 13),
+      fast_io::io::println (PATACHE_FASTIO_BUFFOUT, fast_io::mnp::right ("Severity : ", 13),
                             vk::to_string (messageSeverity));
       break;
 
     case vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning:
-      fast_io::io::println (PATACHE_FAST_IO_BUFF_OUT, fast_io::mnp::right ("Severity : ", 13),
+      fast_io::io::println (PATACHE_FASTIO_BUFFOUT, fast_io::mnp::right ("Severity : ", 13),
                             PATACHE_TERM_COLOR_YELLOW, vk::to_string (messageSeverity),
                             PATACHE_TERM_RESET);
       break;
 
     case vk::DebugUtilsMessageSeverityFlagBitsEXT::eError:
-      fast_io::io::println (PATACHE_FAST_IO_BUFF_OUT, fast_io::mnp::right ("Severity : ", 13),
+      fast_io::io::println (PATACHE_FASTIO_BUFFOUT, fast_io::mnp::right ("Severity : ", 13),
                             PATACHE_TERM_COLOR_RED, vk::to_string (messageSeverity),
                             PATACHE_TERM_RESET);
       break;
@@ -87,21 +84,21 @@ VKAPI_ATTR vk::Bool32 VKAPI_CALL
 
   // Message Types
   if (messageTypes & vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral)
-    fast_io::io::println (PATACHE_FAST_IO_BUFF_OUT, fast_io::mnp::right ("Type : ", 9),
+    fast_io::io::println (PATACHE_FASTIO_BUFFOUT, fast_io::mnp::right ("Type : ", 9),
                           vk::to_string (messageTypes));
 
   if (messageTypes & vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation
       || messageTypes & vk::DebugUtilsMessageTypeFlagBitsEXT::eDeviceAddressBinding)
-    fast_io::io::println (PATACHE_FAST_IO_BUFF_OUT, fast_io::mnp::right ("Type : ", 9),
+    fast_io::io::println (PATACHE_FASTIO_BUFFOUT, fast_io::mnp::right ("Type : ", 9),
                           PATACHE_TERM_COLOR_YELLOW, vk::to_string (messageTypes),
                           PATACHE_TERM_RESET);
 
   if (messageTypes & vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance)
-    fast_io::io::println (PATACHE_FAST_IO_BUFF_OUT, fast_io::mnp::right ("Type : ", 9),
+    fast_io::io::println (PATACHE_FASTIO_BUFFOUT, fast_io::mnp::right ("Type : ", 9),
                           PATACHE_TERM_COLOR_BLUE, vk::to_string (messageTypes),
                           PATACHE_TERM_RESET);
 
-  fast_io::io::println (PATACHE_FAST_IO_BUFF_OUT, fast_io::mnp::right ("ID Name : ", 12),
+  fast_io::io::println (PATACHE_FASTIO_BUFFOUT, fast_io::mnp::right ("ID Name : ", 12),
                         fast_io::mnp::os_c_str (pCallbackData->pMessageIdName), "\n",
                         fast_io::mnp::right ("ID Number : ", 14), pCallbackData->messageIdNumber,
                         "\n", fast_io::mnp::right ("Message : ", 12),
@@ -112,18 +109,25 @@ VKAPI_ATTR vk::Bool32 VKAPI_CALL
 #endif
 
 // Patache Engine
-bool CreateSwapChain (Patache::Engine * const, Patache::SwapChainInfo &);
-bool CreateImageView (Patache::VulkanBackend &, const Patache::SwapChainInfo &);
+// Vulkan_Swapchain.cpp Func
+bool CreateSwapchain (Patache::Engine * const, Patache::SwapchainInfo &);
+// Vulkan_ImageView.cpp Func
+bool CreateImageView (Patache::VulkanBackend &, const Patache::SwapchainInfo &);
+// Vulkan_FrameBuffer.cpp Func
 bool CreateFrameBuffer (Patache::VulkanBackend &);
+// Vulkan_DepthBuffer.cpp Func
 bool CreateDepthBuffer (Patache::VulkanBackend &, Patache::Config &);
+// Vulkan_SincronizationPrimitives.cpp Funcs
 bool CreateSemaphores (Patache::VulkanBackend &);
 bool CreateCommandBuffer (Patache::VulkanBackend &);
 bool CreateFence (Patache::VulkanBackend &);
-void VulkanInfo (Patache::Engine * const, const Patache::SwapChainInfo &);
+// Vulkan_Info.cpp Func
+void VulkanInfo (Patache::Engine * const, const Patache::SwapchainInfo &);
 
 #if PATACHE_DEBUG == 1
-void InitImgui (const Patache::Config &, Patache::EngineInfo &);
-bool InitImguiVulkan (Patache::Engine * const);
+// SetupImgui.cpp Funcs
+void InitImGuiCore (const Patache::Config &, Patache::EngineInfo &);
+bool InitImGuiVulkan (Patache::Engine * const);
 bool CreateImguiDescriptorPool (Patache::VulkanBackend &);
 bool CreateImguiPipelineCache (Patache::VulkanBackend &);
 #endif

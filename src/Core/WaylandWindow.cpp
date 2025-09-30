@@ -1,121 +1,124 @@
 #include "WaylandWindow.hpp"
 
 bool
-CreateWaylandWindow (const std::uint32_t & width, const std::uint32_t & height,
-                     const char * const WindowTitle, Patache::Engine * const Engine)
+CreateWaylandWindow (const std::uint32_t & rWidth, const std::uint32_t & rHeight,
+                     const char * const pWindowTitle, Patache::Engine * const pEngine)
 {
-  wl_registry * Registry = nullptr;
+  wl_registry * pRegistry = nullptr;
 
   // Display Connect
-  Engine->WaylandWindow.Display = wl_display_connect (nullptr);
+  pEngine->waylandWindow.pDisplay = wl_display_connect (nullptr);
 
-  if (Engine->WaylandWindow.Display == nullptr)
+  if (pEngine->waylandWindow.pDisplay == nullptr)
     {
-      std::future<void> Err = std::async (
-          std::launch::async, Patache::Log::FatalErrorMessage, "Patache Engine - Wayland",
-          "Cannot connect to wayland display. Use a wayland session",
-          std::cref (Engine->configuration));
+      std::future<void> err
+          = std::async (std::launch::async, Patache::FatalErrorMessage, "Patache pEngine - Wayland",
+                        "Cannot connect to wayland display. Use a wayland session",
+                        std::cref (pEngine->configuration));
 
       return false;
     }
 
   // Display Get Registry
-  Registry = wl_display_get_registry (Engine->WaylandWindow.Display);
+  pRegistry = wl_display_get_registry (pEngine->waylandWindow.pDisplay);
 
-  if (Registry == nullptr)
+  if (pRegistry == nullptr)
     {
-      std::future<void> Err = std::async (
-          std::launch::async, Patache::Log::FatalErrorMessage, "Patache Engine - Wayland",
-          "Cannot get a registry from a display. Use a wayland session",
-          std::cref (Engine->configuration));
+      std::future<void> err
+          = std::async (std::launch::async, Patache::FatalErrorMessage, "Patache pEngine - Wayland",
+                        "Cannot get a registry from a display. Use a wayland session",
+                        std::cref (pEngine->configuration));
 
       return false;
     }
 
-  wl_registry_add_listener (Registry, &RegistryListener, Engine);
+  wl_registry_add_listener (pRegistry, &sRegistryListener, pEngine);
 
-  wl_display_roundtrip (Engine->WaylandWindow.Display);
+  wl_display_roundtrip (pEngine->waylandWindow.pDisplay);
 
-  wl_registry_destroy (Registry);
-  Registry = nullptr;
+  wl_registry_destroy (pRegistry);
+  pRegistry = nullptr;
 
   // Errors
-  if (Engine->WaylandWindow.Compositor == nullptr)
+  if (pEngine->waylandWindow.pCompositor == nullptr)
     {
-      std::future<void> Err = std::async (
-          std::launch::async, Patache::Log::FatalErrorMessage, "Patache Engine - Wayland",
-          "Missing wl_compositor in this compositor", std::cref (Engine->configuration));
+      std::future<void> err = std::async (
+          std::launch::async, Patache::FatalErrorMessage, "Patache pEngine - Wayland",
+          "Missing wl_compositor in this compositor", std::cref (pEngine->configuration));
 
       return false;
     }
-  else if (Engine->WaylandWindow.WindowManangerBase == nullptr)
+  else if (pEngine->waylandWindow.pWindowManangerBase == nullptr)
     {
-      std::future<void> Err = std::async (
-          std::launch::async, Patache::Log::FatalErrorMessage, "Patache Engine - Wayland",
-          "Missing xdg_wm_base in this compositor", std::cref (Engine->configuration));
+      std::future<void> err = std::async (
+          std::launch::async, Patache::FatalErrorMessage, "Patache pEngine - Wayland",
+          "Missing xdg_wm_base in this compositor", std::cref (pEngine->configuration));
 
       return false;
     }
 
   // Create Wayland Surface
-  Engine->WaylandWindow.Surface = wl_compositor_create_surface (Engine->WaylandWindow.Compositor);
+  pEngine->waylandWindow.pSurface
+      = wl_compositor_create_surface (pEngine->waylandWindow.pCompositor);
 
   // Get Shell Surface
-  Engine->WaylandWindow.DesktopStyleUserInterface = xdg_wm_base_get_xdg_surface (
-      Engine->WaylandWindow.WindowManangerBase, Engine->WaylandWindow.Surface);
+  pEngine->waylandWindow.pDesktopStyleUserInterface = xdg_wm_base_get_xdg_surface (
+      pEngine->waylandWindow.pWindowManangerBase, pEngine->waylandWindow.pSurface);
 
-  xdg_surface_add_listener (Engine->WaylandWindow.DesktopStyleUserInterface,
-                            &DesktopStyleUserInterfaceListener, Engine);
+  xdg_surface_add_listener (pEngine->waylandWindow.pDesktopStyleUserInterface,
+                            &sDesktopStyleUserInterfaceListener, pEngine);
 
   // Get xdg_toplevel
-  Engine->WaylandWindow.DesktopWindow
-      = xdg_surface_get_toplevel (Engine->WaylandWindow.DesktopStyleUserInterface);
+  pEngine->waylandWindow.pDesktopWindow
+      = xdg_surface_get_toplevel (pEngine->waylandWindow.pDesktopStyleUserInterface);
 
-  Engine->Vulkan.SwapChainExtent.width  = width;
-  Engine->Vulkan.SwapChainExtent.height = height;
+  pEngine->vulkan.swapchainExtent.width  = rWidth;
+  pEngine->vulkan.swapchainExtent.height = rHeight;
 
-  xdg_toplevel_set_min_size (Engine->WaylandWindow.DesktopWindow, 640, 360);
+  xdg_toplevel_set_min_size (pEngine->waylandWindow.pDesktopWindow, 640, 360);
 
   // Callback for Window events form the desktop
-  xdg_toplevel_add_listener (Engine->WaylandWindow.DesktopWindow, &DesktopWindowListener, Engine);
+  xdg_toplevel_add_listener (pEngine->waylandWindow.pDesktopWindow, &sDesktopWindowListener,
+                             pEngine);
 
-  xdg_toplevel_set_title (Engine->WaylandWindow.DesktopWindow, WindowTitle);
-  xdg_toplevel_set_app_id (Engine->WaylandWindow.DesktopWindow, WindowTitle);
+  xdg_toplevel_set_title (pEngine->waylandWindow.pDesktopWindow, pWindowTitle);
+  xdg_toplevel_set_app_id (pEngine->waylandWindow.pDesktopWindow, pWindowTitle);
 
-  wl_surface_commit (Engine->WaylandWindow.Surface);
-  wl_display_roundtrip (Engine->WaylandWindow.Display);
-  wl_surface_commit (Engine->WaylandWindow.Surface);
+  wl_surface_commit (pEngine->waylandWindow.pSurface);
+  wl_display_roundtrip (pEngine->waylandWindow.pDisplay);
+  wl_surface_commit (pEngine->waylandWindow.pSurface);
 
   // If Server Side Decorations is no available
-  if (Engine->WaylandWindow.DecorationMananger == nullptr)
+  if (pEngine->waylandWindow.pDecorationMananger == nullptr)
     {
-      if (Engine->WaylandWindow.SubCompositor == nullptr)
+      if (pEngine->waylandWindow.pSubCompositor == nullptr)
         {
-          std::future<void> Err = std::async (std::launch::async, Patache::Log::WarningMessage,
+          std::future<void> err = std::async (std::launch::async, Patache::WarningMessage,
                                               "Missing wl_subcompositor in this compositor. "
                                               "continuing without CSD");
 
           goto SKIP_CSD_CREATION;
         }
-      else if (Engine->WaylandWindow.DecorationSharedMemory == nullptr)
+      else if (pEngine->waylandWindow.pDecorationSharedMemory == nullptr)
         {
-          std::future<void> Err = std::async (
-              std::launch::async, Patache::Log::FatalErrorMessage, "Patache Engine - Wayland",
-              "Missing wl_shm in this compositor", std::cref (Engine->configuration));
+          std::future<void> err = std::async (
+              std::launch::async, Patache::FatalErrorMessage, "Patache pEngine - Wayland",
+              "Missing wl_shm in this compositor", std::cref (pEngine->configuration));
 
           return false;
         }
-      else if (Engine->WaylandWindow.Input == nullptr)
+      else if (pEngine->waylandWindow.pInput == nullptr)
         {
-          std::future<void> Err = std::async (
-              std::launch::async, Patache::Log::FatalErrorMessage, "Patache Engine - Wayland",
-              "Missing wl_seat in this compositor", std::cref (Engine->configuration));
+          std::future<void> err = std::async (
+              std::launch::async, Patache::FatalErrorMessage, "Patache pEngine - Wayland",
+              "Missing wl_seat in this compositor", std::cref (pEngine->configuration));
 
           return false;
         }
-        // Store info for debug
+
 #if PATACHE_DEBUG == 1
-      Engine->engineInfo.windowDecorationType = Patache::WindowDecorationType::ClientSideDecoration;
+      pEngine->debugInfo.windowDecorationType
+          = Patache::WindowDecorationType::eClientSideDecoration;
 #endif
 
       // Decoration
@@ -123,57 +126,55 @@ CreateWaylandWindow (const std::uint32_t & width, const std::uint32_t & height,
        * Main Bar
        * [||||||||||||||||||||||]
        */
-      Engine->WaylandWindow.MainBarSurface
-          = wl_compositor_create_surface (Engine->WaylandWindow.Compositor);
+      pEngine->waylandWindow.pMainBarSurface
+          = wl_compositor_create_surface (pEngine->waylandWindow.pCompositor);
 
-      Engine->WaylandWindow.MainBarSubSurface = wl_subcompositor_get_subsurface (
-          Engine->WaylandWindow.SubCompositor,
-          Engine->WaylandWindow.MainBarSurface, // surface turned into a sub-surface
-          Engine->WaylandWindow.Surface);       // the parent surface
+      pEngine->waylandWindow.pMainBarSubSurface = wl_subcompositor_get_subsurface (
+          pEngine->waylandWindow.pSubCompositor, pEngine->waylandWindow.pMainBarSurface,
+          pEngine->waylandWindow.pSurface);
 
-      wl_subsurface_set_position (Engine->WaylandWindow.MainBarSubSurface, 0,
-                                  -PATACHE_CSD_HEIGHT_SIZE);
+      wl_subsurface_set_position (pEngine->waylandWindow.pMainBarSubSurface, 0,
+                                  -PATACHE_MAINBAR_HEIGHT_CSD_SIZE);
 
-      // Create a file descriptor for a buffer
-      char         MainBarName[]         = "Patache-MainBar";
+      // File descriptor
+      char MainBarName[] = "Patache-MainBar";
+
       std::int32_t MainBarFileDescriptor = shm_open (MainBarName, O_RDWR | O_CREAT | O_EXCL,
                                                      S_IWUSR | S_IRUSR | S_IWOTH | S_IROTH);
+
       shm_unlink (MainBarName);
-      ftruncate (MainBarFileDescriptor,
-                 Engine->Vulkan.SwapChainExtent.width * PATACHE_CSD_HEIGHT_SIZE * 4);
 
-      /*
-       * Map File to a memory (To write the color) to be used for a
-       * wl_buffer
-       */
-      Engine->WaylandWindow.MainBarPixels = static_cast<std::uint32_t *> (
-          mmap (nullptr, Engine->Vulkan.SwapChainExtent.width * PATACHE_CSD_HEIGHT_SIZE * 4,
-                PROT_READ | PROT_WRITE, MAP_SHARED, MainBarFileDescriptor, 0));
+      ftruncate (MainBarFileDescriptor, rWidth * PATACHE_MAINBAR_HEIGHT_CSD_SIZE * 4);
 
-      for (std::uint32_t i = 0;
-           i < (Engine->Vulkan.SwapChainExtent.width * PATACHE_CSD_HEIGHT_SIZE); ++i)
+      // Draw
+      pEngine->waylandWindow.pMainBarPixels = static_cast<std::uint32_t *> (
+          mmap (nullptr, rWidth * PATACHE_MAINBAR_HEIGHT_CSD_SIZE * 4, PROT_READ | PROT_WRITE,
+                MAP_SHARED, MainBarFileDescriptor, 0));
+
+      for (std::uint32_t i = 0; i < (rWidth * PATACHE_MAINBAR_HEIGHT_CSD_SIZE); ++i)
         {
           // Write Color for a wl_buffer
-          Engine->WaylandWindow.MainBarPixels[i] = PATACHE_CSD_FOCUS_COLOR;
+          pEngine->waylandWindow.pMainBarPixels[i] = PATACHE_MAINBAR_FOCUS_CSD_COLOR;
         }
 
-      wl_shm_pool * DecorationPool
-          = wl_shm_create_pool (Engine->WaylandWindow.DecorationSharedMemory, MainBarFileDescriptor,
-                                Engine->Vulkan.SwapChainExtent.width * PATACHE_CSD_HEIGHT_SIZE * 4);
+      wl_shm_pool * pDecorationMainBarPool = wl_shm_create_pool (
+          pEngine->waylandWindow.pDecorationSharedMemory, MainBarFileDescriptor,
+          rWidth * PATACHE_MAINBAR_HEIGHT_CSD_SIZE * 4);
 
-      Engine->WaylandWindow.MainBarBuffer = wl_shm_pool_create_buffer (
-          DecorationPool, 0, Engine->Vulkan.SwapChainExtent.width, PATACHE_CSD_HEIGHT_SIZE,
-          Engine->Vulkan.SwapChainExtent.width * 4, WL_SHM_FORMAT_ARGB8888);
+      pEngine->waylandWindow.pMainBarBuffer = wl_shm_pool_create_buffer (
+          pDecorationMainBarPool, 0, rWidth, PATACHE_MAINBAR_HEIGHT_CSD_SIZE, rWidth * 4,
+          WL_SHM_FORMAT_ARGB8888);
 
-      wl_surface_attach (Engine->WaylandWindow.MainBarSurface, Engine->WaylandWindow.MainBarBuffer,
-                         0, 0);
-      wl_surface_damage_buffer (Engine->WaylandWindow.MainBarSurface, 0, 0,
-                                Engine->Vulkan.SwapChainExtent.width, PATACHE_CSD_HEIGHT_SIZE);
+      // Draw
+      wl_surface_attach (pEngine->waylandWindow.pMainBarSurface,
+                         pEngine->waylandWindow.pMainBarBuffer, 0, 0);
+      wl_surface_damage_buffer (pEngine->waylandWindow.pMainBarSurface, 0, 0, rWidth,
+                                PATACHE_MAINBAR_HEIGHT_CSD_SIZE);
 
-      wl_shm_pool_destroy (DecorationPool);
+      wl_shm_pool_destroy (pDecorationMainBarPool);
       close (MainBarFileDescriptor);
 
-      wl_surface_commit (Engine->WaylandWindow.MainBarSurface);
+      wl_surface_commit (pEngine->waylandWindow.pMainBarSurface);
 
       /*
        * Buttons
@@ -181,333 +182,344 @@ CreateWaylandWindow (const std::uint32_t & width, const std::uint32_t & height,
        */
       for (std::uint8_t i = 0; i < 3; ++i)
         {
-          Engine->WaylandWindow.ButtonSurface[i]
-              = wl_compositor_create_surface (Engine->WaylandWindow.Compositor);
+          pEngine->waylandWindow.pButtonSurface[i]
+              = wl_compositor_create_surface (pEngine->waylandWindow.pCompositor);
 
-          Engine->WaylandWindow.ButtonSubSurface[i] = wl_subcompositor_get_subsurface (
-              Engine->WaylandWindow.SubCompositor,
-              Engine->WaylandWindow.ButtonSurface[i], // surface turned
-                                                      // into a sub-surface
-              Engine->WaylandWindow.MainBarSurface);  // the parent surface
+          pEngine->waylandWindow.pButtonSubSurface[i] = wl_subcompositor_get_subsurface (
+              pEngine->waylandWindow.pSubCompositor, pEngine->waylandWindow.pButtonSurface[i],
+              pEngine->waylandWindow.pMainBarSurface);
         }
 
       // Set button position
       wl_subsurface_set_position (
-          Engine->WaylandWindow.ButtonSubSurface[PATACHE_CSD_MINIMIZE_BUTTON_INDEX], (width - 89),
-          2);
+          pEngine->waylandWindow.pButtonSubSurface[Patache::ButtonIndexCSD::eMinimize],
+          (rWidth - 89), 2);
 
       wl_subsurface_set_position (
-          Engine->WaylandWindow.ButtonSubSurface[PATACHE_CSD_MAXIMIZE_BUTTON_INDEX], (width - 59),
-          2);
+          pEngine->waylandWindow.pButtonSubSurface[Patache::ButtonIndexCSD::eMaximize],
+          (rWidth - 59), 2);
 
       wl_subsurface_set_position (
-          Engine->WaylandWindow.ButtonSubSurface[PATACHE_CSD_CLOSE_BUTTON_INDEX], (width - 29), 2);
+          pEngine->waylandWindow.pButtonSubSurface[Patache::ButtonIndexCSD::eClose], (rWidth - 29),
+          2);
 
-      for (std::uint8_t i = 0; i < 3; ++i)
+      for (std::uint8_t i = 0; i < PATACHE_BUTTON_CSD_SIZE; ++i)
         {
-          // Create a file descriptor for a buffer
-          char         CSDButtonFileName[]     = "Patache-Button-File";
+          // File descriptor
+          char CSDButtonFileName[] = "Patache-Button-File";
+
           std::int32_t CSDButtonFileDescriptor = shm_open (
               CSDButtonFileName, O_RDWR | O_CREAT | O_EXCL, S_IWUSR | S_IRUSR | S_IWOTH | S_IROTH);
-          shm_unlink (CSDButtonFileName);
-          ftruncate (CSDButtonFileDescriptor, PATACHE_CSD_CLOSE_BUTTON_SIZE);
 
-          /*
-           * Map File to a memory (To write the color) to be used for a
-           * wl_buffer
-           */
-          Engine->WaylandWindow.DecorationButtonPixels[i] = static_cast<std::uint32_t *> (
-              mmap (nullptr, PATACHE_CSD_CLOSE_BUTTON_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED,
+          shm_unlink (CSDButtonFileName);
+
+          ftruncate (CSDButtonFileDescriptor, PATACHE_CLOSE_BUTTON_CSD_SIZE);
+
+          // Memory
+          pEngine->waylandWindow.pDecorationButtonPixels[i] = static_cast<std::uint32_t *> (
+              mmap (nullptr, PATACHE_CLOSE_BUTTON_CSD_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED,
                     CSDButtonFileDescriptor, 0));
 
           switch (i)
             {
-            case PATACHE_CSD_MINIMIZE_BUTTON_INDEX:
-              for (std::uint32_t i2 = 0; i2 < PATACHE_CSD_MINIMIZE_BUTTON_PIXELCOUNT; ++i2)
+            case Patache::ButtonIndexCSD::eMinimize:
+              for (std::uint32_t i2 = 0; i2 < PATACHE_MAXIMIZE_BUTTON_CSD_PIXELCOUNT; ++i2)
                 {
-                  Engine->WaylandWindow
-                      .DecorationButtonPixels[PATACHE_CSD_MINIMIZE_BUTTON_INDEX][i2]
-                      = CSDMinimizeButton[i2];
+                  pEngine->waylandWindow
+                      .pDecorationButtonPixels[Patache::ButtonIndexCSD::eMinimize][i2]
+                      = sMinimizeButtonCSD[i2];
                 }
               break;
 
-            case PATACHE_CSD_MAXIMIZE_BUTTON_INDEX:
-              for (std::uint32_t i2 = 0; i2 < PATACHE_CSD_MAXIMIZE_BUTTON_PIXELCOUNT; ++i2)
+            case Patache::ButtonIndexCSD::eMaximize:
+              for (std::uint32_t i2 = 0; i2 < PATACHE_CLOSE_BUTTON_CSD_PIXELCOUNT; ++i2)
                 {
-                  Engine->WaylandWindow
-                      .DecorationButtonPixels[PATACHE_CSD_MAXIMIZE_BUTTON_INDEX][i2]
-                      = CSDMaximizeButton[i2];
+                  pEngine->waylandWindow
+                      .pDecorationButtonPixels[Patache::ButtonIndexCSD::eMaximize][i2]
+                      = sMaximizeButtonCSD[i2];
                 }
               break;
 
-            case PATACHE_CSD_CLOSE_BUTTON_INDEX:
-              for (std::uint32_t i2 = 0; i2 < PATACHE_CSD_CLOSE_BUTTON_PIXELCOUNT; ++i2)
+            case Patache::ButtonIndexCSD::eClose:
+              for (std::uint32_t i2 = 0; i2 < PATACHE_CLOSE_BUTTON_CSD_PIXELCOUNT; ++i2)
                 {
-                  Engine->WaylandWindow.DecorationButtonPixels[PATACHE_CSD_CLOSE_BUTTON_INDEX][i2]
-                      = CSDCloseButton[i2];
+                  pEngine->waylandWindow
+                      .pDecorationButtonPixels[Patache::ButtonIndexCSD::eClose][i2]
+                      = sCloseButtonCSD[i2];
                 }
               break;
             }
 
-          wl_shm_pool * DecorationButtonPool
-              = wl_shm_create_pool (Engine->WaylandWindow.DecorationSharedMemory,
-                                    CSDButtonFileDescriptor, PATACHE_CSD_CLOSE_BUTTON_SIZE);
+          wl_shm_pool * pDecorationButtonPool
+              = wl_shm_create_pool (pEngine->waylandWindow.pDecorationSharedMemory,
+                                    CSDButtonFileDescriptor, PATACHE_CLOSE_BUTTON_CSD_SIZE);
 
-          Engine->WaylandWindow.DecorationButtonBuffer[i] = wl_shm_pool_create_buffer (
-              DecorationButtonPool, 0, PATACHE_CSD_CLOSE_BUTTON_WIDTH,
-              PATACHE_CSD_CLOSE_BUTTON_HEIGHT, PATACHE_CSD_CLOSE_BUTTON_WIDTH * 4,
+          pEngine->waylandWindow.pDecorationButtonBuffer[i] = wl_shm_pool_create_buffer (
+              pDecorationButtonPool, 0, PATACHE_CLOSE_BUTTON_CSD_WIDTH,
+              PATACHE_CLOSE_BUTTON_CSD_HEIGHT, PATACHE_CLOSE_BUTTON_CSD_WIDTH * 4,
               WL_SHM_FORMAT_ARGB8888);
 
-          wl_surface_attach (Engine->WaylandWindow.ButtonSurface[i],
-                             Engine->WaylandWindow.DecorationButtonBuffer[i], 0, 0);
+          // Draw
+          wl_surface_attach (pEngine->waylandWindow.pButtonSurface[i],
+                             pEngine->waylandWindow.pDecorationButtonBuffer[i], 0, 0);
 
-          wl_surface_damage_buffer (Engine->WaylandWindow.ButtonSurface[i], 0, 0,
-                                    PATACHE_CSD_CLOSE_BUTTON_WIDTH,
-                                    PATACHE_CSD_CLOSE_BUTTON_HEIGHT);
+          wl_surface_damage_buffer (pEngine->waylandWindow.pButtonSurface[i], 0, 0,
+                                    PATACHE_CLOSE_BUTTON_CSD_WIDTH,
+                                    PATACHE_CLOSE_BUTTON_CSD_HEIGHT);
 
-          wl_shm_pool_destroy (DecorationButtonPool);
+          wl_shm_pool_destroy (pDecorationButtonPool);
           close (CSDButtonFileDescriptor);
 
-          wl_surface_commit (Engine->WaylandWindow.ButtonSurface[i]);
+          wl_surface_commit (pEngine->waylandWindow.pButtonSurface[i]);
         }
 
       // Border Window
-      for (std::uint8_t i = 0; i < PATACHE_CSD_BORDER_SIZE; ++i)
+      for (std::uint8_t i = 0; i < PATACHE_BORDER_CSD_SIZE; ++i)
         {
-          Engine->WaylandWindow.BorderSurface[i]
-              = wl_compositor_create_surface (Engine->WaylandWindow.Compositor);
+          pEngine->waylandWindow.pBorderSurface[i]
+              = wl_compositor_create_surface (pEngine->waylandWindow.pCompositor);
 
-          Engine->WaylandWindow.BorderSubSurface[i] = wl_subcompositor_get_subsurface (
-              Engine->WaylandWindow.SubCompositor,
-              Engine->WaylandWindow.BorderSurface[i], // surface turned
-                                                      // into a sub-surface
-              Engine->WaylandWindow.Surface);         // the parent surface
+          pEngine->waylandWindow.pBorderSubSurface[i] = wl_subcompositor_get_subsurface (
+              pEngine->waylandWindow.pSubCompositor, pEngine->waylandWindow.pBorderSurface[i],
+              pEngine->waylandWindow.pSurface);
         }
 
       // Horizontal border
       wl_subsurface_set_position (
-          Engine->WaylandWindow.BorderSubSurface[PATACHE_CSD_TOP_BORDER_INDEX], 0, -26);
+          pEngine->waylandWindow.pBorderSubSurface[Patache::BorderIndexCSD::eTop], 0, -26);
 
       wl_subsurface_set_position (
-          Engine->WaylandWindow.BorderSubSurface[PATACHE_CSD_BOTTOM_BORDER_INDEX], 0, height);
+          pEngine->waylandWindow.pBorderSubSurface[Patache::BorderIndexCSD::eBottom], 0, rHeight);
 
       // Vertical Border
       wl_subsurface_set_position (
-          Engine->WaylandWindow.BorderSubSurface[PATACHE_CSD_LEFT_BORDER_INDEX],
-          -PATACHE_CSD_THRESHOLD_EDGE_SIZE, -PATACHE_CSD_HEIGHT_SIZE);
+          pEngine->waylandWindow.pBorderSubSurface[Patache::BorderIndexCSD::eLeft],
+          -PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE, -PATACHE_MAINBAR_HEIGHT_CSD_SIZE);
 
       wl_subsurface_set_position (
-          Engine->WaylandWindow.BorderSubSurface[PATACHE_CSD_RIGHT_BORDER_INDEX], width,
-          -PATACHE_CSD_HEIGHT_SIZE);
+          pEngine->waylandWindow.pBorderSubSurface[Patache::BorderIndexCSD::eRight], rWidth,
+          -PATACHE_MAINBAR_HEIGHT_CSD_SIZE);
 
       // Corner Borders
       wl_subsurface_set_position (
-          Engine->WaylandWindow.BorderSubSurface[PATACHE_CSD_TOPLEFT_BORDER_INDEX],
-          -PATACHE_CSD_THRESHOLD_EDGE_SIZE, -26);
+          pEngine->waylandWindow.pBorderSubSurface[Patache::BorderIndexCSD::eTopLeft],
+          -PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE, -26);
 
       wl_subsurface_set_position (
-          Engine->WaylandWindow.BorderSubSurface[PATACHE_CSD_TOPRIGHT_BORDER_INDEX], width, -26);
+          pEngine->waylandWindow.pBorderSubSurface[Patache::BorderIndexCSD::eTopRight], rWidth,
+          -26);
 
       wl_subsurface_set_position (
-          Engine->WaylandWindow.BorderSubSurface[PATACHE_CSD_BOTTOMLEFT_BORDER_INDEX],
-          -PATACHE_CSD_THRESHOLD_EDGE_SIZE, height);
+          pEngine->waylandWindow.pBorderSubSurface[Patache::BorderIndexCSD::eBottomLeft],
+          -PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE, rHeight);
 
       wl_subsurface_set_position (
-          Engine->WaylandWindow.BorderSubSurface[PATACHE_CSD_BOTTOMRIGHT_BORDER_INDEX], width,
-          height);
+          pEngine->waylandWindow.pBorderSubSurface[Patache::BorderIndexCSD::eBottomRight], rWidth,
+          rHeight);
 
       // Horizontal border
-      for (std::uint8_t i = 0; i < PATACHE_CSD_BORDER_HORIZONTAL_SIZE; ++i)
+      for (std::uint8_t i = 0; i < PATACHE_BORDER_HORIZONTAL_CSD_SIZE; ++i)
         {
-          // Create a file descriptor for a buffer
-          char         CSDBorderFileName[]     = "Patache-Border";
+          // File descriptor
+          char CSDBorderFileName[] = "Patache-Border";
+
           std::int32_t CSDBorderFileDescriptor = shm_open (
               CSDBorderFileName, O_RDWR | O_CREAT | O_EXCL, S_IWUSR | S_IRUSR | S_IWOTH | S_IROTH);
+
           shm_unlink (CSDBorderFileName);
-          ftruncate (CSDBorderFileDescriptor, width * PATACHE_CSD_THRESHOLD_EDGE_SIZE * 4);
 
-          /*
-           * Map File to a memory (To write the color) to be used for a
-           * wl_buffer
-           */
-          Engine->WaylandWindow.BorderPixels[i] = static_cast<std::uint32_t *> (
-              mmap (nullptr, width * PATACHE_CSD_THRESHOLD_EDGE_SIZE * 4, PROT_READ | PROT_WRITE,
-                    MAP_SHARED, CSDBorderFileDescriptor, 0));
+          ftruncate (CSDBorderFileDescriptor, rWidth * PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE * 4);
 
-          for (std::uint32_t i2 = 0; i2 < (width * PATACHE_CSD_THRESHOLD_EDGE_SIZE); ++i2)
+          // Memory
+          pEngine->waylandWindow.pBorderPixels[i] = static_cast<std::uint32_t *> (
+              mmap (nullptr, rWidth * PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE * 4,
+                    PROT_READ | PROT_WRITE, MAP_SHARED, CSDBorderFileDescriptor, 0));
+
+          for (std::uint32_t i2 = 0; i2 < (rWidth * PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE); ++i2)
             {
-              Engine->WaylandWindow.BorderPixels[i][i2] = PATACHE_CSD_BORDER_COLOR;
+              pEngine->waylandWindow.pBorderPixels[i][i2] = PATACHE_BORDER_CSD_COLOR;
             }
 
-          wl_shm_pool * DecorationBorderPool = wl_shm_create_pool (
-              Engine->WaylandWindow.DecorationSharedMemory, CSDBorderFileDescriptor,
-              width * PATACHE_CSD_THRESHOLD_EDGE_SIZE * 4);
+          wl_shm_pool * pDecorationBorderPool = wl_shm_create_pool (
+              pEngine->waylandWindow.pDecorationSharedMemory, CSDBorderFileDescriptor,
+              rWidth * PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE * 4);
 
-          Engine->WaylandWindow.BorderBuffer[i] = wl_shm_pool_create_buffer (
-              DecorationBorderPool, 0, width, PATACHE_CSD_THRESHOLD_EDGE_SIZE, width * 4,
+          pEngine->waylandWindow.pBorderBuffer[i] = wl_shm_pool_create_buffer (
+              pDecorationBorderPool, 0, rWidth, PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE, rWidth * 4,
               WL_SHM_FORMAT_ARGB8888);
 
-          wl_surface_attach (Engine->WaylandWindow.BorderSurface[i],
-                             Engine->WaylandWindow.BorderBuffer[i], 0, 0);
+          // Draw
+          wl_surface_attach (pEngine->waylandWindow.pBorderSurface[i],
+                             pEngine->waylandWindow.pBorderBuffer[i], 0, 0);
 
-          wl_surface_damage_buffer (Engine->WaylandWindow.BorderSurface[i], 0, 0, width,
-                                    PATACHE_CSD_THRESHOLD_EDGE_SIZE);
+          wl_surface_damage_buffer (pEngine->waylandWindow.pBorderSurface[i], 0, 0, rWidth,
+                                    PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE);
 
-          wl_shm_pool_destroy (DecorationBorderPool);
+          wl_shm_pool_destroy (pDecorationBorderPool);
           close (CSDBorderFileDescriptor);
 
-          wl_surface_commit (Engine->WaylandWindow.BorderSurface[i]);
+          wl_surface_commit (pEngine->waylandWindow.pBorderSurface[i]);
         }
 
       // Vertical Border
-      for (std::uint8_t i = 2; i < PATACHE_CSD_BORDER_VERTICAL_SIZE; ++i)
+      for (std::uint8_t i = 2; i < PATACHE_BORDER_VERTICAL_CSD_SIZE; ++i)
         {
-          // Create a file descriptor for a buffer
-          char         CSDBorderFileName[]     = "Patache-Border";
+          // File descriptor
+          char CSDBorderFileName[] = "Patache-Border";
+
           std::int32_t CSDBorderFileDescriptor = shm_open (
               CSDBorderFileName, O_RDWR | O_CREAT | O_EXCL, S_IWUSR | S_IRUSR | S_IWOTH | S_IROTH);
+
           shm_unlink (CSDBorderFileName);
-          ftruncate (CSDBorderFileDescriptor,
-                     PATACHE_CSD_THRESHOLD_EDGE_SIZE * (height + PATACHE_CSD_HEIGHT_SIZE) * 4);
 
-          /*
-           * Map File to a memory (To write the color) to be used for a
-           * wl_buffer
-           */
-          Engine->WaylandWindow.BorderPixels[i] = static_cast<std::uint32_t *> (mmap (
-              nullptr, PATACHE_CSD_THRESHOLD_EDGE_SIZE * (height + PATACHE_CSD_HEIGHT_SIZE) * 4,
-              PROT_READ | PROT_WRITE, MAP_SHARED, CSDBorderFileDescriptor, 0));
+          ftruncate (CSDBorderFileDescriptor, PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE
+                                                  * (rHeight + PATACHE_MAINBAR_HEIGHT_CSD_SIZE)
+                                                  * 4);
 
-          for (std::uint32_t i2 = 0;
-               i2 < PATACHE_CSD_THRESHOLD_EDGE_SIZE * (height + PATACHE_CSD_HEIGHT_SIZE); ++i2)
+          // Memory
+          pEngine->waylandWindow.pBorderPixels[i] = static_cast<std::uint32_t *> (
+              mmap (nullptr,
+                    PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE
+                        * (rHeight + PATACHE_MAINBAR_HEIGHT_CSD_SIZE) * 4,
+                    PROT_READ | PROT_WRITE, MAP_SHARED, CSDBorderFileDescriptor, 0));
+
+          for (std::uint32_t i2 = 0; i2 < PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE
+                                              * (rHeight + PATACHE_MAINBAR_HEIGHT_CSD_SIZE);
+               ++i2)
             {
-              Engine->WaylandWindow.BorderPixels[i][i2] = PATACHE_CSD_BORDER_COLOR;
+              pEngine->waylandWindow.pBorderPixels[i][i2] = PATACHE_BORDER_CSD_COLOR;
             }
 
-          wl_shm_pool * DecorationBorderPool = wl_shm_create_pool (
-              Engine->WaylandWindow.DecorationSharedMemory, CSDBorderFileDescriptor,
-              PATACHE_CSD_THRESHOLD_EDGE_SIZE * (height + PATACHE_CSD_HEIGHT_SIZE) * 4);
+          wl_shm_pool * pDecorationBorderPool = wl_shm_create_pool (
+              pEngine->waylandWindow.pDecorationSharedMemory, CSDBorderFileDescriptor,
+              PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE * (rHeight + PATACHE_MAINBAR_HEIGHT_CSD_SIZE)
+                  * 4);
 
-          Engine->WaylandWindow.BorderBuffer[i] = wl_shm_pool_create_buffer (
-              DecorationBorderPool, 0, PATACHE_CSD_THRESHOLD_EDGE_SIZE,
-              (height + PATACHE_CSD_HEIGHT_SIZE), PATACHE_CSD_THRESHOLD_EDGE_SIZE * 4,
-              WL_SHM_FORMAT_ARGB8888);
+          pEngine->waylandWindow.pBorderBuffer[i] = wl_shm_pool_create_buffer (
+              pDecorationBorderPool, 0, PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE,
+              (rHeight + PATACHE_MAINBAR_HEIGHT_CSD_SIZE),
+              PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE * 4, WL_SHM_FORMAT_ARGB8888);
 
-          wl_surface_attach (Engine->WaylandWindow.BorderSurface[i],
-                             Engine->WaylandWindow.BorderBuffer[i], 0, 0);
+          // Draw
+          wl_surface_attach (pEngine->waylandWindow.pBorderSurface[i],
+                             pEngine->waylandWindow.pBorderBuffer[i], 0, 0);
 
-          wl_surface_damage_buffer (Engine->WaylandWindow.BorderSurface[i], 0, 0,
-                                    PATACHE_CSD_THRESHOLD_EDGE_SIZE,
-                                    (height + PATACHE_CSD_HEIGHT_SIZE));
+          wl_surface_damage_buffer (pEngine->waylandWindow.pBorderSurface[i], 0, 0,
+                                    PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE,
+                                    (rHeight + PATACHE_MAINBAR_HEIGHT_CSD_SIZE));
 
-          wl_shm_pool_destroy (DecorationBorderPool);
+          wl_shm_pool_destroy (pDecorationBorderPool);
           close (CSDBorderFileDescriptor);
 
-          wl_surface_commit (Engine->WaylandWindow.BorderSurface[i]);
+          wl_surface_commit (pEngine->waylandWindow.pBorderSurface[i]);
         }
 
       // Corner Border
-      for (std::uint8_t i = 4; i < 8; ++i)
+      for (std::uint8_t i = 4; i < PATACHE_BORDER_CSD_SIZE; ++i)
         {
-          // Create a file descriptor for a buffer
-          char         CSDBorderFileName[]     = "Patache-Border";
+          // File descriptor
+          char CSDBorderFileName[] = "Patache-Border";
+
           std::int32_t CSDBorderFileDescriptor = shm_open (
               CSDBorderFileName, O_RDWR | O_CREAT | O_EXCL, S_IWUSR | S_IRUSR | S_IWOTH | S_IROTH);
-          shm_unlink (CSDBorderFileName);
-          ftruncate (CSDBorderFileDescriptor,
-                     PATACHE_CSD_THRESHOLD_EDGE_SIZE * PATACHE_CSD_THRESHOLD_EDGE_SIZE * 4);
 
-          /*
-           * Map File to a memory (To write the color) to be used for a
-           * wl_buffer
-           */
-          Engine->WaylandWindow.BorderPixels[i] = static_cast<std::uint32_t *> (
-              mmap (nullptr, PATACHE_CSD_THRESHOLD_EDGE_SIZE * PATACHE_CSD_THRESHOLD_EDGE_SIZE * 4,
-                    PROT_READ | PROT_WRITE, MAP_SHARED, CSDBorderFileDescriptor, 0));
+          shm_unlink (CSDBorderFileName);
+
+          ftruncate (CSDBorderFileDescriptor, PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE
+                                                  * PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE * 4);
+
+          // Memory
+          pEngine->waylandWindow.pBorderPixels[i] = static_cast<std::uint32_t *> (mmap (
+              nullptr,
+              PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE * PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE * 4,
+              PROT_READ | PROT_WRITE, MAP_SHARED, CSDBorderFileDescriptor, 0));
 
           for (std::uint32_t i2 = 0;
-               i2 < (PATACHE_CSD_THRESHOLD_EDGE_SIZE * PATACHE_CSD_THRESHOLD_EDGE_SIZE); ++i2)
+               i2 < (PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE * PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE);
+               ++i2)
             {
-              Engine->WaylandWindow.BorderPixels[i][i2] = PATACHE_CSD_BORDER_COLOR;
+              pEngine->waylandWindow.pBorderPixels[i][i2] = PATACHE_BORDER_CSD_COLOR;
             }
 
-          wl_shm_pool * DecorationBorderPool = wl_shm_create_pool (
-              Engine->WaylandWindow.DecorationSharedMemory, CSDBorderFileDescriptor,
-              PATACHE_CSD_THRESHOLD_EDGE_SIZE * PATACHE_CSD_THRESHOLD_EDGE_SIZE * 4);
+          wl_shm_pool * pDecorationBorderPool = wl_shm_create_pool (
+              pEngine->waylandWindow.pDecorationSharedMemory, CSDBorderFileDescriptor,
+              PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE * PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE * 4);
 
-          Engine->WaylandWindow.BorderBuffer[i] = wl_shm_pool_create_buffer (
-              DecorationBorderPool, 0, PATACHE_CSD_THRESHOLD_EDGE_SIZE,
-              PATACHE_CSD_THRESHOLD_EDGE_SIZE, PATACHE_CSD_THRESHOLD_EDGE_SIZE * 4,
+          pEngine->waylandWindow.pBorderBuffer[i] = wl_shm_pool_create_buffer (
+              pDecorationBorderPool, 0, PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE,
+              PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE, PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE * 4,
               WL_SHM_FORMAT_ARGB8888);
 
-          wl_surface_attach (Engine->WaylandWindow.BorderSurface[i],
-                             Engine->WaylandWindow.BorderBuffer[i], 0, 0);
+          // Draw
+          wl_surface_attach (pEngine->waylandWindow.pBorderSurface[i],
+                             pEngine->waylandWindow.pBorderBuffer[i], 0, 0);
 
-          wl_surface_damage_buffer (Engine->WaylandWindow.BorderSurface[i], 0, 0,
-                                    PATACHE_CSD_THRESHOLD_EDGE_SIZE,
-                                    PATACHE_CSD_THRESHOLD_EDGE_SIZE);
+          wl_surface_damage_buffer (pEngine->waylandWindow.pBorderSurface[i], 0, 0,
+                                    PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE,
+                                    PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE);
 
-          wl_shm_pool_destroy (DecorationBorderPool);
+          wl_shm_pool_destroy (pDecorationBorderPool);
           close (CSDBorderFileDescriptor);
 
-          wl_surface_commit (Engine->WaylandWindow.BorderSurface[i]);
+          wl_surface_commit (pEngine->waylandWindow.pBorderSurface[i]);
         }
     }
   else
     {
-      // Store info for debug
 #if PATACHE_DEBUG == 1
-      Engine->engineInfo.windowDecorationType = Patache::WindowDecorationType::ServerSideDecoration;
+      pEngine->debugInfo.windowDecorationType
+          = Patache::WindowDecorationType::eServerSideDecoration;
 #endif
 
       // Has server side decoration
-      Engine->WaylandWindow.Decoration = zxdg_decoration_manager_v1_get_toplevel_decoration (
-          Engine->WaylandWindow.DecorationMananger, Engine->WaylandWindow.DesktopWindow);
+      pEngine->waylandWindow.pDecoration = zxdg_decoration_manager_v1_get_toplevel_decoration (
+          pEngine->waylandWindow.pDecorationMananger, pEngine->waylandWindow.pDesktopWindow);
 
-      zxdg_toplevel_decoration_v1_set_mode (Engine->WaylandWindow.Decoration,
+      zxdg_toplevel_decoration_v1_set_mode (pEngine->waylandWindow.pDecoration,
                                             ZXDG_TOPLEVEL_DECORATION_V1_MODE_SERVER_SIDE);
     }
 
 SKIP_CSD_CREATION:
 
-  // SDL Import Surface
-  SDL_PropertiesID WindowProperties = SDL_CreateProperties ();
+  // SDL Window
+  SDL_PropertiesID windowProperties = SDL_CreateProperties ();
+
   SDL_SetPointerProperty (SDL_GetGlobalProperties (),
                           SDL_PROP_GLOBAL_VIDEO_WAYLAND_WL_DISPLAY_POINTER,
-                          Engine->WaylandWindow.Display);
+                          pEngine->waylandWindow.pDisplay);
 
-  SDL_SetPointerProperty (WindowProperties, SDL_PROP_WINDOW_CREATE_WAYLAND_WL_SURFACE_POINTER,
-                          Engine->WaylandWindow.Surface);
+  SDL_SetPointerProperty (windowProperties, SDL_PROP_WINDOW_CREATE_WAYLAND_WL_SURFACE_POINTER,
+                          pEngine->waylandWindow.pSurface);
 
-  SDL_SetBooleanProperty (WindowProperties, SDL_PROP_WINDOW_CREATE_VULKAN_BOOLEAN, true);
+  SDL_SetBooleanProperty (windowProperties, SDL_PROP_WINDOW_CREATE_VULKAN_BOOLEAN, true);
 
-  SDL_SetNumberProperty (WindowProperties, SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER, width);
+  SDL_SetNumberProperty (windowProperties, SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER, rWidth);
 
-  SDL_SetNumberProperty (WindowProperties, SDL_PROP_WINDOW_CREATE_HEIGHT_NUMBER, height);
+  SDL_SetNumberProperty (windowProperties, SDL_PROP_WINDOW_CREATE_HEIGHT_NUMBER, rHeight);
 
-  SDL_SetBooleanProperty (WindowProperties, SDL_PROP_WINDOW_CREATE_RESIZABLE_BOOLEAN, true);
+  SDL_SetBooleanProperty (windowProperties, SDL_PROP_WINDOW_CREATE_RESIZABLE_BOOLEAN, true);
 
-  SDL_SetBooleanProperty (WindowProperties,
+  SDL_SetBooleanProperty (windowProperties,
                           SDL_PROP_WINDOW_CREATE_WAYLAND_CREATE_EGL_WINDOW_BOOLEAN, false);
 
-  SDL_SetBooleanProperty (WindowProperties,
+  SDL_SetBooleanProperty (windowProperties,
                           SDL_PROP_WINDOW_CREATE_EXTERNAL_GRAPHICS_CONTEXT_BOOLEAN, true);
 
-  SDL_SetBooleanProperty (WindowProperties,
-                          SDL_PROP_WINDOW_CREATE_WAYLAND_SURFACE_ROLE_CUSTOM_BOOLEAN, false);
+  SDL_SetBooleanProperty (windowProperties,
+                          SDL_PROP_WINDOW_CREATE_WAYLAND_SURFACE_ROLE_CUSTOM_BOOLEAN, true);
 
-  SDL_SetBooleanProperty (WindowProperties, SDL_PROP_WINDOW_CREATE_HIGH_PIXEL_DENSITY_BOOLEAN,
+  SDL_SetBooleanProperty (windowProperties, SDL_PROP_WINDOW_CREATE_HIGH_PIXEL_DENSITY_BOOLEAN,
                           true);
 
-  Engine->GameWindow = SDL_CreateWindowWithProperties (WindowProperties);
+  pEngine->pGameWindow = SDL_CreateWindowWithProperties (windowProperties);
 
-  if (Engine->GameWindow == nullptr)
+  if (pEngine->pGameWindow == nullptr)
     {
-      std::future<void> Err = std::async (std::launch::async, Patache::Log::FatalErrorMessage,
+      std::future<void> err = std::async (std::launch::async, Patache::FatalErrorMessage,
                                           "Patache Engine - SDL & Wayland",
                                           "SDL Cannot import external surfaces. if you are "
                                           "using Gamescope try with --expose-wayland",
-                                          std::cref (Engine->configuration));
+                                          std::cref (pEngine->configuration));
 
       return false;
     }

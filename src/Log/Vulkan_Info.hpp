@@ -12,25 +12,12 @@
 #if PATACHE_DEBUG == 1
 #include <imgui_impl_vulkan.h>
 #endif
-#if defined(_WIN64)
-#include <windows.h>
-#endif
 
 // Patache Engine
 #include "PatacheEngine/PatacheEngine.hpp"
 #include "ColorTerminal.hpp"
-#include "Log.hpp"
-#include "fast_io_buff.hpp"
+#include "FastIOBuff.hpp"
+#include "LogMacroUtils.hpp"
 #include "CstringWrapped.hpp"
 
-void VulkanInfo (Patache::Engine * const, const Patache::SwapChainInfo &);
-
-#if PATACHE_DEBUG == 1
-#if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__) // Is GCC
-#define PATACHE_GET_VARTYPE_STRING(STR_SRC)
-#define PATACHE_FREE_VARTYPE_STRING(STR_DST)
-#else
-#define PATACHE_GET_VARTYPE_STRING(STR_SRC)
-#define PATACHE_FREE_VARTYPE_STRING(STR_DST)
-#endif
-#endif
+void VulkanInfo (Patache::Engine * const, const Patache::SwapchainInfo &);
