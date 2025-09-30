@@ -1,4 +1,4 @@
-| [Español](README.md) | English |
+| Español | [English](README_en.md) |
 | :--: | :--: |
 
 <p align = "center"><img draggable = false src = "data/assets/patache.svg?ref_type=heads&inline=false" width=64></p>
