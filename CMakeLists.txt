@@ -44,6 +44,26 @@ include(CheckCXXCompilerFlag)
 include(CheckIncludeFileCXX)
 include(CheckTypeSize)
 
+if (${CMAKE_BUILD_TYPE} STREQUAL "Release" AND USE_LTO)
+    include(CheckIPOSupported)
+    
+    check_ipo_supported(
+  	RESULT COMPILER_SUPPORT_LTO
+  	LANGUAGES CXX
+    )
+    
+    if (NOT COMPILER_SUPPORT_LTO)
+        set(USE_LTO OFF)
+        message(STATUS "${CMAKE_CXX_COMPILER_ID} no support LTO")
+    endif()
+    
+    # LTO dont work well with clang in static builds
+    if (${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang" AND NOT BUILD_SHARED_LIBS)
+        set(USE_LTO OFF) 
+    endif()
+endif()
+
+
 if (WIN32 OR CMAKE_SYSTEM_NAME STREQUAL "Windows")
     enable_language(C)
     include(CheckIncludeFile)
@@ -275,6 +295,8 @@ if (NOT HAVE_FUNCTIONAL)
     message(FATAL_ERROR "missing functional header")
 endif()
 
+set(CMAKE_REQUIRED_FLAGS_BACKUP ${CMAKE_REQUIRED_FLAGS})
+
 # Check std::async
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     string(APPEND CMAKE_REQUIRED_FLAGS "-std=c++20")
@@ -294,6 +316,8 @@ void test(void) { uint8_t c = 0; c++;};
 if (NOT std_async)
     message(FATAL_ERROR "missing std::async function")
 endif()
+
+set(CMAKE_REQUIRED_FLAGS ${CMAKE_REQUIRED_FLAGS_BACKUP})
 
 find_program(GIT NAMES git)
 

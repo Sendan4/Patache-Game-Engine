@@ -47,10 +47,10 @@ if (${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
 
     target_sources (${PROJECT_NAME} PRIVATE
         "Core/WaylandWindow.cpp"
-				${CMAKE_BINARY_DIR}/WaylandProtocols/xdg-shell.h
-				${CMAKE_BINARY_DIR}/WaylandProtocols/xdg-shell.c
-				${CMAKE_BINARY_DIR}/WaylandProtocols/xdg-decoration-unstable-v1.h
-				${CMAKE_BINARY_DIR}/WaylandProtocols/xdg-decoration-unstable-v1.c)
+	${CMAKE_BINARY_DIR}/WaylandProtocols/xdg-shell.h
+	${CMAKE_BINARY_DIR}/WaylandProtocols/xdg-shell.c
+	${CMAKE_BINARY_DIR}/WaylandProtocols/xdg-decoration-unstable-v1.h
+	${CMAKE_BINARY_DIR}/WaylandProtocols/xdg-decoration-unstable-v1.c)
 		
     target_include_directories(${PROJECT_NAME} PRIVATE "Core/WaylandCSD/")
 
@@ -207,7 +207,7 @@ if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
     target_include_directories(${PROJECT_NAME} PRIVATE ${WAYLAND_INCLUDE_DIRS} ${WAYLAND_CURSOR_INCLUDE_DIRS})
 endif()
 
-if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" OR (CMAKE_SYSTEM_NAME STREQUAL "Linux" AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU"))
+if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" OR CMAKE_SYSTEM_NAME STREQUAL "Linux")
     # Using VVL
     if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo" AND USE_VVL)
         target_compile_definitions(${PROJECT_NAME} PRIVATE PATACHE_FIND_VVL_IN_THE_CURRENT_PATH)
@@ -260,7 +260,7 @@ endif()
 
 target_link_libraries(${PROJECT_NAME} PUBLIC Fast_io SDL3::SDL3 cglm)
 target_link_libraries(${PROJECT_NAME} PRIVATE ryml::ryml freetype)
-target_include_directories(${PROJECT_NAME} PRIVATE ${FREETYPE_INCLUDE_DIRS} ${SDL3_INCLUDE_DIRS})
+target_include_directories(${PROJECT_NAME} PRIVATE ${FREETYPE_INCLUDE_DIRS})
 
 if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo")
     target_link_libraries(${PROJECT_NAME} PUBLIC Imgui)

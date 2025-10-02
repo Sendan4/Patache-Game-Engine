@@ -44,7 +44,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC "misc/freetype")
 
 # Link Vulkan from SDK
 # Link Libraries
-if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" OR (CMAKE_SYSTEM_NAME STREQUAL "Linux" AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU"))
+if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" OR CMAKE_SYSTEM_NAME STREQUAL "Linux")
 	# build Vulkan
 	target_link_libraries(${PROJECT_NAME} PRIVATE vulkan Vulkan::Headers)
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
