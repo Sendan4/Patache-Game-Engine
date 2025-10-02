@@ -328,50 +328,32 @@ if (USE_GIT AND GIT)
     execute_process(
         COMMAND git branch --show-current HEAD
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-        OUTPUT_VARIABLE PATACHE_GIT_BRANCH
+        OUTPUT_VARIABLE GIT_BRANCH
         OUTPUT_STRIP_TRAILING_WHITESPACE)
 
     execute_process(
         COMMAND git rev-parse HEAD
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-        OUTPUT_VARIABLE PATACHE_GIT_HASH_LONG
+        OUTPUT_VARIABLE GIT_HASH_LONG
         OUTPUT_STRIP_TRAILING_WHITESPACE)
 
     execute_process(
         COMMAND git rev-parse --short HEAD
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-        OUTPUT_VARIABLE PATACHE_GIT_HASH_SHORT
+        OUTPUT_VARIABLE GIT_HASH_SHORT
         OUTPUT_STRIP_TRAILING_WHITESPACE)
 
     execute_process(
-        COMMAND git diff HEAD --shortstat
+        COMMAND git diff HEAD --shortstat --quiet
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-        OUTPUT_VARIABLE PATACHE_GIT_WORK_DIR_TEXT
+        RESULT_VARIABLE GIT_DIRTY
         OUTPUT_STRIP_TRAILING_WHITESPACE)
 
     execute_process(
-        COMMAND git diff HEAD --shortstat --staged
+        COMMAND git diff HEAD --shortstat --staged --quiet
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-        OUTPUT_VARIABLE PATACHE_GIT_COMMIT_STAGE_TEXT
+        RESULT_VARIABLE GIT_STAGE
         OUTPUT_STRIP_TRAILING_WHITESPACE)
-
-    # The commit is Dirty?
-    if ("${PATACHE_GIT_WORK_DIR_TEXT}" STREQUAL "")
-        set (PATACHE_GIT_WORK_DIR_IS_CLEAN "Clean")
-        set (PATACHE_GIT_WORK_DIR_IS_CLEAN_BOOL 1)
-    else()
-        set (PATACHE_GIT_WORK_DIR_IS_CLEAN "Dirty")
-        set (PATACHE_GIT_WORK_DIR_IS_CLEAN_BOOL 0)
-    endif()
-
-    # The Changes are in the stage?
-    if (NOT "${PATACHE_GIT_COMMIT_STAGE_TEXT}" STREQUAL "")
-        set (PATACHE_GIT_WORK_DIR_IS_STAGED "Staged")
-        set (PATACHE_GIT_WORK_DIR_IS_STAGED_BOOL 1)
-    else()
-        set (PATACHE_GIT_WORK_DIR_IS_STAGED "Not Staged")
-        set (PATACHE_GIT_WORK_DIR_IS_STAGED_BOOL 0)
-    endif()
 endif()
 
 # Search Generator Version

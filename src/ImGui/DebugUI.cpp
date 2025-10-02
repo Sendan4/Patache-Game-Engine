@@ -95,27 +95,22 @@ Patache::DrawDebugUI (Patache::Engine * const pEngine)
 #endif
 
       // Text about the pEngine
-      ImGui::Text ("Simple and free Game pEngine");
+      ImGui::Text ("Simple and free Game Engine");
       ImGui::Text ("%s is under the MIT License.", PATACHE_ENGINE_NAME);
       ImGui::Spacing ();
 
       // below is the advanced Info
       // Git
-#if defined(PATACHE_GIT_BRANCH) && defined(PATACHE_GIT_HASH_SHORT)
+#if defined(PATACHE_USE_GIT)
       if (ImGui::CollapsingHeader ("GIT"))
         {
           ImGui::Text ("BRANCH : %s", PATACHE_GIT_BRANCH);
           ImGui::Text ("COMMIT HASH : %s", PATACHE_GIT_HASH_SHORT);
-
-#if defined(PATACHE_GIT_HASH_LONG)
           ImGui::SetItemTooltip ("LONG HASH : %s", PATACHE_GIT_HASH_LONG);
-#endif
 
-#if defined(PATACHE_GIT_WORK_DIR_IS_CLEAN) && defined(PATACHE_GIT_WORK_DIR_IS_CLEAN_BOOL)          \
-    && defined(PATACHE_GIT_WORK_DIR_IS_STAGED_BOOL)
           ImGui::Text ("SOURCE STATE :");
 
-          if constexpr (PATACHE_GIT_WORK_DIR_IS_CLEAN_BOOL)
+          if constexpr (PATACHE_GIT_DIRTY)
             {
               ImGui::SameLine ();
               ImGui::TextColored (ImVec4 (PATACHE_IMGUI_POSITIVE_VALUE), "Clean");
@@ -126,7 +121,7 @@ Patache::DrawDebugUI (Patache::Engine * const pEngine)
               ImGui::TextColored (ImVec4 (PATACHE_IMGUI_WARNING_VALUE), "Dirty");
             }
 
-          if constexpr (PATACHE_GIT_WORK_DIR_IS_STAGED_BOOL)
+          if constexpr (PATACHE_GIT_STAGE)
             {
               ImGui::SameLine ();
               ImGui::TextColored (ImVec4 (PATACHE_IMGUI_POSITIVE_VALUE), "In Stage Area");
@@ -134,9 +129,9 @@ Patache::DrawDebugUI (Patache::Engine * const pEngine)
           else
             {
               ImGui::SameLine ();
-              ImGui::TextColored (ImVec4 (PATACHE_IMGUI_WARNING_VALUE), "Not Staged");
+              ImGui::TextColored (ImVec4 (PATACHE_IMGUI_WARNING_VALUE), "Un-staged changes");
             }
-#endif
+
           ImGui::Spacing ();
         }
 #endif

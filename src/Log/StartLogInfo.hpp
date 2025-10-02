@@ -1,6 +1,6 @@
 // OS
 #if __linux__ && !__ANDROID__
-#define PATACHE_OS "Linux"
+#define PATACHE_OS "GNU/Linux"
 #elif _WIN64 || _WIN32
 #define PATACHE_OS "Windows"
 #else
