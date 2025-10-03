@@ -19,7 +19,7 @@ StartLogInfo (void)
                         PATACHE_TERM_BOLD, fast_io::mnp::right ("Commit Hash : ", 16), "\n",
                         PATACHE_TERM_RESET, "    ", PATACHE_GIT_HASH_LONG, "\n    ",
                         PATACHE_GIT_HASH_SHORT, "\n",
-#if PATACHE_GIT_DIRTY == 1
+#if PATACHE_GIT_DIRTY == 0
                         PATACHE_TERM_COLOR_GREEN,
                         fast_io::mnp::right ("Clean", 10),
 #else

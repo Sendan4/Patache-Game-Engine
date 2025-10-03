@@ -110,7 +110,7 @@ Patache::DrawDebugUI (Patache::Engine * const pEngine)
 
           ImGui::Text ("SOURCE STATE :");
 
-          if constexpr (PATACHE_GIT_DIRTY)
+          if constexpr (PATACHE_GIT_DIRTY == 0)
             {
               ImGui::SameLine ();
               ImGui::TextColored (ImVec4 (PATACHE_IMGUI_POSITIVE_VALUE), "Clean");

@@ -880,7 +880,7 @@ EXIT_CREATE_DEVICE:
     return false;
 
   std::future<bool> createBuffer_Async
-      = std::async (std::launch::async, [&pEngine, &rInfo] (void) -> bool { return true; });
+      = std::async (std::launch::async, [] (void) -> bool { return true; });
 
   createFence_Async.wait ();
   if (!createFence_Async.get ())
