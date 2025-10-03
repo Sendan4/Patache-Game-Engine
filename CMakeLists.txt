@@ -364,9 +364,9 @@ if (USE_GIT AND GIT)
 
     # The Changes are in the stage?
     if (NOT "${PATACHE_GIT_COMMIT_IS_IN_STAGE}" STREQUAL "")
-        set (GIT_STAGE 1)
-    else()
         set (GIT_STAGE 0)
+    else()
+        set (GIT_STAGE 1)
     endif()
 endif()
 
