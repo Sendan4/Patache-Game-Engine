@@ -70,8 +70,7 @@ RaccoonRendererInit (Patache::Engine * pEngine, const Patache::EngineCreateInfo 
 #endif
 
         PATACHE_MEMCPY (&ppAllExtensionInstance[engineExtensionCount - extensionCountSDL],
-                        pArrayInstanceExtensionsSDL,
-                        extensionCountSDL * sizeof (const char *));
+                        pArrayInstanceExtensionsSDL, extensionCountSDL * sizeof (const char *));
 
 #if PATACHE_DEBUG == 1
         // Debug Info

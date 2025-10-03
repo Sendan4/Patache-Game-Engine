@@ -1,7 +1,7 @@
 | [Español](README.md) | English |
 | :--: | :--: |
 
-<p align = "center"><img draggable = false src = "data/assets/patache.svg?ref_type=heads&inline=false" width=64></p>
+<p align = "center"><img draggable = false src = "data/patache.svg?ref_type=heads&inline=false" width=64></p>
 
 <h1 align = "center">Patache Engine</h1>
 
@@ -12,7 +12,7 @@ _Dumb and simple 2D game engine made in C++. The goal is to do fast, lightweight
 ## Links
 <!-- - [Documentation](#)-->
 
-| [Naming convention](doc/NamingConvention_es.md) |
+| [Naming convention](docs/NamingConvention_es.md) |
 | :--: |
 
 <b>Mirror repositories</b>

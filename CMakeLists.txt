@@ -356,17 +356,17 @@ if (USE_GIT AND GIT)
         OUTPUT_STRIP_TRAILING_WHITESPACE)
 
     # The commit is Dirty?
-    if ("${PATACHE_GIT_IS_DIRTY}" STREQUAL "")
-        set (GIT_DIRTY 0)
-    else()
+    if (NOT "${PATACHE_GIT_IS_DIRTY}" STREQUAL "")
         set (GIT_DIRTY 1)
+    else()
+        set (GIT_DIRTY 0)
     endif()
 
     # The Changes are in the stage?
     if (NOT "${PATACHE_GIT_COMMIT_IS_IN_STAGE}" STREQUAL "")
-        set (GIT_STAGE 0)
-    else()
         set (GIT_STAGE 1)
+    else()
+        set (GIT_STAGE 0)
     endif()
 endif()
 
@@ -420,7 +420,6 @@ add_subdirectory(externals)
 add_subdirectory(src)
 
 add_subdirectory(data)
-add_subdirectory(data/assets)
 
 if (BUILD_SHARED_LIBS)
     set(LIBRARY_TYPE "Shared")

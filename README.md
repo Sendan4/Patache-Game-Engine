@@ -1,7 +1,7 @@
 | Español | [English](README_en.md) |
 | :--: | :--: |
 
-<p align = "center"><img draggable = false src = "data/assets/patache.svg?ref_type=heads&inline=false" width=64></p>
+<p align = "center"><img draggable = false src = "data/patache.svg?ref_type=heads&inline=false" width=64></p>
 
 <h1 align = "center">Motor Patache</h1>
 
@@ -12,7 +12,7 @@ _Motor de videojuegos 2D tonto y simple hecho con C++. El objetivo es hacerlo ra
 ## Enlaces
 <!-- - [Documentation](#)-->
 
-| [Convencion de nombres](doc/NamingConvention_es.md) |
+| [Convencion de nombres](docs/NamingConvention_es.md) |
 | :--: |
 
 <b>Repositorios espejo</b>

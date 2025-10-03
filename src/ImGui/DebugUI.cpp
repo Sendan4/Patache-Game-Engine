@@ -110,21 +110,21 @@ Patache::DrawDebugUI (Patache::Engine * const pEngine)
 
           ImGui::Text ("SOURCE STATE :");
 
-          if constexpr (PATACHE_GIT_DIRTY == 0)
+          if constexpr (PATACHE_GIT_DIRTY)
             {
               ImGui::SameLine ();
-              ImGui::TextColored (ImVec4 (PATACHE_IMGUI_POSITIVE_VALUE), "Clean");
+              ImGui::TextColored (ImVec4 (PATACHE_IMGUI_WARNING_VALUE), "Dirty");
             }
           else
             {
               ImGui::SameLine ();
-              ImGui::TextColored (ImVec4 (PATACHE_IMGUI_WARNING_VALUE), "Dirty");
+              ImGui::TextColored (ImVec4 (PATACHE_IMGUI_POSITIVE_VALUE), "Clean");
             }
 
           if constexpr (PATACHE_GIT_STAGE)
             {
               ImGui::SameLine ();
-              ImGui::TextColored (ImVec4 (PATACHE_IMGUI_POSITIVE_VALUE), "In Stage Area");
+              ImGui::TextColored (ImVec4 (PATACHE_IMGUI_POSITIVE_VALUE), "In stage area");
             }
           else
             {
