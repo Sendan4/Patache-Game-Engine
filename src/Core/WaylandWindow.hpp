@@ -1293,7 +1293,7 @@ AddObject (void * pData, wl_registry * pRegistry, std::uint32_t name, const char
           = static_cast<wl_shm *> (wl_registry_bind (pRegistry, name, &wl_shm_interface, 1));
 
       pEngine->waylandWindow.pCursorTheme
-          = wl_cursor_theme_load (nullptr, 32, pEngine->waylandWindow.pDecorationSharedMemory);
+          = wl_cursor_theme_load (nullptr, 24, pEngine->waylandWindow.pDecorationSharedMemory);
     }
   else if (std::strcmp (pInterface, wl_seat_interface.name) == 0)
     {
