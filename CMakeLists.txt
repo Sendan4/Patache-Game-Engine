@@ -344,16 +344,30 @@ if (USE_GIT AND GIT)
         OUTPUT_STRIP_TRAILING_WHITESPACE)
 
     execute_process(
-        COMMAND git diff HEAD --shortstat --quiet
+        COMMAND git diff HEAD --shortstat
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-        RESULT_VARIABLE GIT_DIRTY
+        OUTPUT_VARIABLE PATACHE_GIT_IS_DIRTY
         OUTPUT_STRIP_TRAILING_WHITESPACE)
 
     execute_process(
-        COMMAND git diff HEAD --shortstat --staged --quiet
+        COMMAND git diff HEAD --shortstat --staged
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-        RESULT_VARIABLE GIT_STAGE
+        OUTPUT_VARIABLE PATACHE_GIT_COMMIT_IS_IN_STAGE
         OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+    # The commit is Dirty?
+    if ("${PATACHE_GIT_IS_DIRTY}" STREQUAL "")
+        set (GIT_DIRTY 0)
+    else()
+        set (GIT_DIRTY 1)
+    endif()
+
+    # The Changes are in the stage?
+    if (NOT "${PATACHE_GIT_COMMIT_IS_IN_STAGE}" STREQUAL "")
+        set (GIT_STAGE 1)
+    else()
+        set (GIT_STAGE 0)
+    endif()
 endif()
 
 # Search Generator Version

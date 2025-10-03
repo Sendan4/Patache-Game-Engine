@@ -29,7 +29,7 @@ StartLogInfo (void)
                         PATACHE_TERM_RESET, " | ",
 #if PATACHE_GIT_STAGE == 1
                         PATACHE_TERM_COLOR_GREEN,
-												"in stage area"
+												"In stage area"
 #else
                         PATACHE_TERM_COLOR_YELLOW,
 												"Un-staged changes"
