@@ -1,6 +1,7 @@
 #include <future>
 
 #include <vulkan/vulkan.hpp>
+#include "PatacheEngine/VmaUsage.hpp"
 #include <fast_io.h>
 
 // Patache Engine

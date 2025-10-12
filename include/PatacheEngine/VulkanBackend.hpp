@@ -4,6 +4,7 @@ namespace Patache
 struct VulkanBackend
 {
   vk::Instance instance = VK_NULL_HANDLE;
+  VmaAllocator allocator;
 
   // Hardware
   vk::PhysicalDevice physicalDevice           = VK_NULL_HANDLE;

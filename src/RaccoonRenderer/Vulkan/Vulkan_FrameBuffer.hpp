@@ -2,6 +2,7 @@
 #include <future>
 
 #include <vulkan/vulkan.hpp>
+#include "PatacheEngine/VmaUsage.hpp"
 
 // Patache Engine
 #include "PatacheEngine/VulkanBackend.hpp"

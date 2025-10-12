@@ -5,6 +5,7 @@
 
 #include <fast_io.h>
 #include <vulkan/vulkan.hpp>
+#include "PatacheEngine/VmaUsage.hpp"
 
 // Patache Engine
 #include "ColorTerminal.hpp"

@@ -1,6 +1,8 @@
 #include <future>
 
 #include <fast_io.h>
+#include <vulkan/vulkan.hpp>
+#include "PatacheEngine/VmaUsage.hpp"
 #include <SDL3/SDL.h>
 #if PATACHE_DEBUG == 1
 #include <imgui_impl_sdl3.h>

@@ -81,6 +81,21 @@ if (MSVC OR LINUX)
 endif()
 
 message("")
+message("  - Vulkan Memory Allocator -")
+set (VMA_BUILD_SAMPLES OFF CACHE BOOL "..." FORCE)
+
+if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/VulkanMemoryAllocator/)
+    add_subdirectory(VulkanMemoryAllocator)
+else()
+    FetchContent_Declare(
+        VulkanMemoryAllocator
+        GIT_REPOSITORY https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git
+        GIT_TAG v3.3.0
+    )
+    FetchContent_MakeAvailable(VulkanMemoryAllocator)
+endif()
+
+message("")
 message("  - Glslang -")
 set (CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})

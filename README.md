@@ -38,6 +38,7 @@ _Motor de videojuegos 2D tonto y simple hecho con C++. El objetivo es hacerlo ra
 	- [Vulkan-Headers](https://github.com/KhronosGroup/Vulkan-Headers.git)
 	- [Vulkan-Loader](https://github.com/KhronosGroup/Vulkan-Loader.git)
 	- [Vulkan-Validation-Layers](https://github.com/KhronosGroup/Vulkan-ValidationLayers.git)
+    - [VulkanMemoryAllocator](https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git)
 	- [Glslang](https://github.com/KhronosGroup/glslang.git)
 - [fast_io](https://github.com/cppfastio/fast_io.git)
 - [RapidYaml](https://github.com/biojppm/rapidyaml.git)

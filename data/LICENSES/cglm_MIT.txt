@@ -1,4 +1,4 @@
-The MIT License (MIT)
+The MIT License
 
 Copyright (c) 2015 Recep Aslantas <info@recp.me> (cglm)
 

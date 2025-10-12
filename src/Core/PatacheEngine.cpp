@@ -7,6 +7,8 @@
 #if defined(_WIN64)
 #include <windows.h> // wincon.h
 #endif
+#include <vulkan/vulkan.hpp>
+#include "PatacheEngine/VmaUsage.hpp"
 #include <SDL3/SDL.h>
 
 // Patache Engine
@@ -80,18 +82,18 @@ Patache::Engine::Init (const Patache::EngineCreateInfo & rInfo)
 
   if (rInfo.pWindowTitle != nullptr)
     {
-      PATACHE_STRNCPY (windowTitle, rInfo.pWindowTitle, 63);
+      PATACHE_STRNCPY (windowTitle, rInfo.pWindowTitle, 63, 64);
     }
   else if (rInfo.pGameName != nullptr)
     {
-      PATACHE_STRNCPY (windowTitle, rInfo.pGameName, 63);
+      PATACHE_STRNCPY (windowTitle, rInfo.pGameName, 63, 64);
     }
   else
     {
-      PATACHE_STRNCPY (windowTitle, PATACHE_ENGINE_NAME, 63);
+      PATACHE_STRNCPY (windowTitle, PATACHE_ENGINE_NAME, 63, 64);
     }
 
-  PATACHE_STRNCAT (windowTitle, " (Debug / Development)", 63);
+  PATACHE_STRNCAT (windowTitle, " (Debug / Development)", 63, 64);
 #else
   // Release
 #define PATACHE_WINDOW_TITLE pWindowTitle
@@ -168,9 +170,9 @@ Patache::Engine::Init (const Patache::EngineCreateInfo & rInfo)
     if (rInfo.pWindowIconPath != nullptr)
       {
         char path[512]{ 0 };
-        PATACHE_STRNCPY (path, SDL_GetBasePath (), 511);
-        PATACHE_STRNCAT (path, "/", 511);
-        PATACHE_STRNCAT (path, rInfo.pWindowIconPath, 511);
+        PATACHE_STRNCPY (path, SDL_GetBasePath (), 511, 512);
+        PATACHE_STRNCAT (path, "/", 511, 512);
+        PATACHE_STRNCAT (path, rInfo.pWindowIconPath, 511, 512);
 
         pWindowIcon = SDL_LoadBMP (path);
       }

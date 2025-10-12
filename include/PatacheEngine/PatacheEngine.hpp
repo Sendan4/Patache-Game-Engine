@@ -2,8 +2,6 @@
 
 #include <cstdint>
 
-#include <vulkan/vulkan.hpp>
-
 // cglm warnings
 #if defined(__GNUC__)
 #pragma GCC diagnostic push

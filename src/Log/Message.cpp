@@ -15,7 +15,7 @@ Patache::FatalErrorMessage (const char * const pTitle, const char * const pMessa
 {
   char errorTitle[1024] = "Patache Engine - ";
 
-  PATACHE_STRNCPY (errorTitle, pTitle, 1023);
+  PATACHE_STRNCPY (errorTitle, pTitle, 1023, 1024);
 
   if (rConfiguration.showFatalErrorMessagebox)
     {

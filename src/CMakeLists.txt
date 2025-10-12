@@ -22,6 +22,7 @@ target_sources (${PROJECT_NAME} PRIVATE
     "RaccoonRenderer/Vulkan/Vulkan_SincronizationPrimitives.cpp"
     "RaccoonRenderer/Vulkan/Vulkan_Render.cpp"
     "RaccoonRenderer/Vulkan/Vulkan_Buffer.cpp"
+    "RaccoonRenderer/Vulkan/VmaUsage.cpp"
     "Core/Triangle.cpp"
     "Log/Message.cpp"
     "Log/StartLogInfo.cpp"
@@ -258,7 +259,7 @@ if (TARGET asm_offset)
         RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 endif()
 
-target_link_libraries(${PROJECT_NAME} PUBLIC Fast_io SDL3::SDL3 cglm)
+target_link_libraries(${PROJECT_NAME} PUBLIC Fast_io SDL3::SDL3 cglm VulkanMemoryAllocator)
 target_link_libraries(${PROJECT_NAME} PRIVATE ryml::ryml freetype)
 target_include_directories(${PROJECT_NAME} PRIVATE ${FREETYPE_INCLUDE_DIRS})
 

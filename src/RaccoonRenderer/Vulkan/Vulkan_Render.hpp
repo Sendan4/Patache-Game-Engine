@@ -5,6 +5,8 @@
 #include <functional>
 #include <cstdio>
 
+#include <vulkan/vulkan.hpp>
+#include "PatacheEngine/VmaUsage.hpp"
 #include <SDL3/SDL.h>
 #if PATACHE_DEBUG == 1
 #include <imgui.h>

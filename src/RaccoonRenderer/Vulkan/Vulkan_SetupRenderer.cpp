@@ -11,6 +11,11 @@ RaccoonRendererInit (Patache::Engine * pEngine, const Patache::EngineCreateInfo 
 
   vk::Result result;
 
+#if PATACHE_DEBUG == 1
+  bool vkEXTDebugUtilsExtensionIsEnabled = false;
+#endif
+  bool vkKHRGetPhysicalDeviceProperties2ExtensionIsEnabled = false;
+
   // Vulkan Instance
   {
     const char * const pGameName = (rInfo.pGameName != nullptr) ? rInfo.pGameName : "Untitled Game";
@@ -37,52 +42,140 @@ RaccoonRendererInit (Patache::Engine * pEngine, const Patache::EngineCreateInfo 
     }
 #endif
 
-    // TODO: mejorar el añadido de extensiones extra
     // Get Extensions
-    std::uint32_t engineExtensionCount = 0, extensionCountSDL = 0;
+    std::uint32_t instanceExtensionCount = 0, extensionCountSDL = 0;
 
     const char * const * pArrayInstanceExtensionsSDL
         = SDL_Vulkan_GetInstanceExtensions (&extensionCountSDL);
 
-    engineExtensionCount += extensionCountSDL;
+    instanceExtensionCount += extensionCountSDL;
 
 #if PATACHE_DEBUG == 1
-    // VK_EXT_debug_utils ++
-    ++engineExtensionCount;
+#define INSTANCE_EXTENSION_COUNT_SEARCH 2 // ++VK_EXT_debug_utils
 #if defined(PATACHE_USE_VVL)
-    // VK_EXT_layer_settings ++
-    ++engineExtensionCount;
+    ++instanceExtensionCount; // VK_EXT_layer_settings is no reported o enumerated
 #endif
-    pEngine->debugInfo.instanceExtensionsCountVK = engineExtensionCount;
+#else
+#define INSTANCE_EXTENSION_COUNT_SEARCH 1
 #endif
 
+    // Search extension instance
+    std::uint32_t             propertyCount       = 0;
+    vk::ExtensionProperties * extensionProperties = nullptr;
+
+    bool          instanceExtensionIndices[INSTANCE_EXTENSION_COUNT_SEARCH]{ false };
+    std::uint32_t otherInstanceExtensionCount = 0;
+
+    result = vk::enumerateInstanceExtensionProperties (nullptr, &propertyCount, nullptr);
+
+    if (result != vk::Result::eSuccess)
+      {
+        std::future<void> returnVulkanErr = std::async (
+            std::launch::async, Patache::WarningMessage,
+            "Cannot get the instance extensions count. continuing without some extensions");
+
+        goto SKIP_OTHER_EXTENSIONS;
+      }
+
+    extensionProperties = new vk::ExtensionProperties[propertyCount];
+
+    result
+        = vk::enumerateInstanceExtensionProperties (nullptr, &propertyCount, extensionProperties);
+
+    if (result != vk::Result::eSuccess)
+      {
+        std::future<void> returnVulkanErr
+            = std::async (std::launch::async, Patache::WarningMessage,
+                          "Cannot get the instance extensions. continuing without some extensions");
+
+        if (extensionProperties != nullptr)
+          delete[] extensionProperties;
+
+        goto SKIP_OTHER_EXTENSIONS;
+      }
+
+    for (std::uint32_t i = 0; i < propertyCount; ++i)
+      {
+        if (std::strcmp (extensionProperties[i].extensionName,
+                         vk::KHRGetPhysicalDeviceProperties2ExtensionName)
+            == 0)
+          {
+            ++otherInstanceExtensionCount;
+            instanceExtensionIndices[0] = true;
+          }
+
+#if PATACHE_DEBUG == 1
+#if defined(PATACHE_USE_VVL)
+        if (std::strcmp (extensionProperties[i].extensionName, vk::EXTDebugUtilsExtensionName) == 0)
+          {
+            ++otherInstanceExtensionCount;
+            instanceExtensionIndices[1] = true;
+          }
+#endif
+#endif
+      }
+
+#if defined(INSTANCE_EXTENSION_COUNT_SEARCH)
+#undef INSTANCE_EXTENSION_COUNT_SEARCH
+#endif
+
+    delete[] extensionProperties;
+
+    instanceExtensionCount += otherInstanceExtensionCount;
+
+  SKIP_OTHER_EXTENSIONS:
+
+    // Enable instance extensions
     const char ** ppAllExtensionInstance = nullptr;
 
     if (pArrayInstanceExtensionsSDL != nullptr)
       {
-        ppAllExtensionInstance = new const char *[engineExtensionCount](nullptr);
+        ppAllExtensionInstance = new const char *[instanceExtensionCount](nullptr);
+
+        PATACHE_MEMCPY (ppAllExtensionInstance, pArrayInstanceExtensionsSDL,
+                        extensionCountSDL * sizeof (const char *),
+                        extensionCountSDL * sizeof (const char *));
+
+        otherInstanceExtensionCount = extensionCountSDL;
+
+        if (instanceExtensionIndices[0])
+          {
+            ppAllExtensionInstance[otherInstanceExtensionCount]
+                = vk::KHRGetPhysicalDeviceProperties2ExtensionName;
+
+            vkKHRGetPhysicalDeviceProperties2ExtensionIsEnabled = true;
+          }
 
 #if PATACHE_DEBUG == 1
-        ppAllExtensionInstance[0] = vk::EXTDebugUtilsExtensionName;
+        if (instanceExtensionIndices[1])
+          {
+            if (instanceExtensionIndices[0])
+              ++otherInstanceExtensionCount;
+
+            ppAllExtensionInstance[otherInstanceExtensionCount] = vk::EXTDebugUtilsExtensionName;
+
+            vkEXTDebugUtilsExtensionIsEnabled = true;
+          }
+
 #if defined(PATACHE_USE_VVL)
-        ppAllExtensionInstance[1] = vk::EXTLayerSettingsExtensionName;
+        ppAllExtensionInstance[(++otherInstanceExtensionCount)] = vk::EXTLayerSettingsExtensionName;
 #endif
 #endif
-
-        PATACHE_MEMCPY (&ppAllExtensionInstance[engineExtensionCount - extensionCountSDL],
-                        pArrayInstanceExtensionsSDL, extensionCountSDL * sizeof (const char *));
 
 #if PATACHE_DEBUG == 1
-        // Debug Info
-        pEngine->debugInfo.ppInstanceExtensionsVK = new const char *[engineExtensionCount](nullptr);
+        // Copy to debug info
+        pEngine->debugInfo.instanceExtensionsCountVK = instanceExtensionCount;
+        pEngine->debugInfo.ppInstanceExtensionsVK
+            = new const char *[instanceExtensionCount](nullptr);
 
         PATACHE_MEMCPY (pEngine->debugInfo.ppInstanceExtensionsVK, ppAllExtensionInstance,
-                        engineExtensionCount * sizeof (const char *));
+                        instanceExtensionCount * sizeof (const char *),
+                        instanceExtensionCount * sizeof (const char *));
 #endif
 
         std::future<void> vulkanList
             = std::async (std::launch::async, Patache::VulkanList, ppAllExtensionInstance,
-                          engineExtensionCount, "Instance Extensions");
+                          instanceExtensionCount, "Instance Extensions");
       }
     else
       {
@@ -141,7 +234,7 @@ RaccoonRendererInit (Patache::Engine * pEngine, const Patache::EngineCreateInfo 
       .enabledLayerCount   = 0,
       .ppEnabledLayerNames = nullptr,
 #endif
-      .enabledExtensionCount   = engineExtensionCount,
+      .enabledExtensionCount   = instanceExtensionCount,
       .ppEnabledExtensionNames = ppAllExtensionInstance,
     };
 
@@ -161,9 +254,10 @@ RaccoonRendererInit (Patache::Engine * pEngine, const Patache::EngineCreateInfo 
         PATACHE_STRNCPY (errorText,
                          "You do not have Vulkan API compatible drivers or your "
                          "GPU does not support the Vulkan API. ",
-                         PATACHE_ERROR_TEXT_SIZE - 1);
+                         PATACHE_ERROR_TEXT_SIZE - 1, PATACHE_ERROR_TEXT_SIZE);
 
-        PATACHE_STRNCAT (errorText, vk::to_string (result).c_str (), PATACHE_ERROR_TEXT_SIZE - 1);
+        PATACHE_STRNCAT (errorText, vk::to_string (result).c_str (), PATACHE_ERROR_TEXT_SIZE - 1,
+                         PATACHE_ERROR_TEXT_SIZE);
 
         std::future<void> returnVulkanErr = std::async (
             std::launch::async, Patache::FatalErrorMessage, "Patache Engine - Raccoon Renderer",
@@ -183,41 +277,42 @@ RaccoonRendererInit (Patache::Engine * pEngine, const Patache::EngineCreateInfo 
 
 #if PATACHE_DEBUG == 1
   // Debug Utils Messenger Info
-  {
-    // Get function address
-    pfnVkCreateDebugUtilsMessengerEXT = reinterpret_cast<PFN_vkCreateDebugUtilsMessengerEXT> (
-        pEngine->vulkan.instance.getProcAddr ("vkCreateDebugUtilsMessengerEXT"));
+  if (vkEXTDebugUtilsExtensionIsEnabled)
+    {
+      // Get function address
+      pfnVkCreateDebugUtilsMessengerEXT = reinterpret_cast<PFN_vkCreateDebugUtilsMessengerEXT> (
+          pEngine->vulkan.instance.getProcAddr ("vkCreateDebugUtilsMessengerEXT"));
 
-    if (pfnVkCreateDebugUtilsMessengerEXT == nullptr)
-      {
-        std::future<void> err = std::async (std::launch::async, Patache::ErrorMessage,
-                                            "Cannot get address of function "
-                                            "vkCreateDebugUtilsMessengerEXT");
+      if (pfnVkCreateDebugUtilsMessengerEXT == nullptr)
+        {
+          std::future<void> err = std::async (std::launch::async, Patache::ErrorMessage,
+                                              "Cannot get address of function "
+                                              "vkCreateDebugUtilsMessengerEXT");
 
-        goto EXIT_CREATE_DEBUG_UTILS_MESSENGER;
-      }
+          goto EXIT_CREATE_DEBUG_UTILS_MESSENGER;
+        }
 
-    // Debug Messenger Info
-    const vk::DebugUtilsMessengerCreateInfoEXT debugMessengerInfo{
-      .messageSeverity = vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning
-                         | vk::DebugUtilsMessageSeverityFlagBitsEXT::eError,
-      .messageType = vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral
-                     | vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation
-                     | vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance,
-      .pfnUserCallback = &DebugMessageFunc
-    };
+      // Debug Messenger Info
+      const vk::DebugUtilsMessengerCreateInfoEXT debugMessengerInfo{
+        .messageSeverity = vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning
+                           | vk::DebugUtilsMessageSeverityFlagBitsEXT::eError,
+        .messageType = vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral
+                       | vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation
+                       | vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance,
+        .pfnUserCallback = &DebugMessageFunc
+      };
 
-    result = pEngine->vulkan.instance.createDebugUtilsMessengerEXT (
-        &debugMessengerInfo, nullptr, &pEngine->vulkan.debugMessenger);
+      result = pEngine->vulkan.instance.createDebugUtilsMessengerEXT (
+          &debugMessengerInfo, nullptr, &pEngine->vulkan.debugMessenger);
 
-    if (result != vk::Result::eSuccess)
-      {
-        std::future<void> returnVulkanCheck = std::async (std::launch::async, Patache::VulkanCheck,
-                                                          "Debug Utils Messenger", result);
+      if (result != vk::Result::eSuccess)
+        {
+          std::future<void> returnVulkanCheck = std::async (
+              std::launch::async, Patache::VulkanCheck, "Debug Utils Messenger", result);
 
-        return false;
-      }
-  }
+          return false;
+        }
+    }
 EXIT_CREATE_DEBUG_UTILS_MESSENGER:
 #endif
 
@@ -374,6 +469,8 @@ EXIT_CREATE_DEBUG_UTILS_MESSENGER:
   }
 EXIT_CREATE_DEVICE:
 
+  VmaAllocatorCreateFlags vmaAllocatorInfoFlags = 0;
+
   /*
   Search a queue of graphics from the selected physical device.
   Create a logical device from the selected physical device.
@@ -406,7 +503,7 @@ EXIT_CREATE_DEVICE:
 
           fast_io::io::println (PATACHE_FASTIO_BUFFOUT,
 #if PATACHE_DEBUG == 1
-                                PATACHE_FASTIO_SHOW_VARTYPE_STRING (pVarTypeRealName, 5, 2, 3),
+                                PATACHE_FASTIO_SHOW_VARTYPE_STRING (pVarTypeRealName, 3, 2, 3),
 #endif
                                 PATACHE_TERM_BOLD, "Index [", PATACHE_TERM_RESET, i,
                                 PATACHE_TERM_BOLD, "] : ", PATACHE_TERM_RESET,
@@ -441,6 +538,7 @@ EXIT_CREATE_DEVICE:
         }
 
 #if PATACHE_DEBUG == 1
+      // Copy to debug info
       pEngine->debugInfo.queuePriorityVK = queuePriority;
       pEngine->debugInfo.queueFlagsVK
           = pQueueFamilyProperties[pEngine->vulkan.graphicsQueueFamilyIndex].queueFlags;
@@ -452,37 +550,420 @@ EXIT_CREATE_DEVICE:
 
     // Logical Device
     {
-      const vk::DeviceQueueCreateInfo deviceQueueCreateInfo{
+      // Search extensions
+      vk::ExtensionProperties * pExtensionsProperties = nullptr;
+      std::uint32_t             propertyCount         = 0;
+
+      // Count
+      result = pEngine->vulkan.physicalDevice.enumerateDeviceExtensionProperties (
+          nullptr, &propertyCount, nullptr);
+
+      if (result != vk::Result::eSuccess)
+        {
+          std::future<void> returnVulkanErr = std::async (
+              std::launch::async, Patache::FatalErrorMessage, "Patache Engine - Raccoon Renderer",
+              "No found device extension count", std::cref (pEngine->configuration));
+
+          return false;
+        }
+
+      pExtensionsProperties = new vk::ExtensionProperties[propertyCount];
+
+      // Device extensions
+      result = pEngine->vulkan.physicalDevice.enumerateDeviceExtensionProperties (
+          nullptr, &propertyCount, pExtensionsProperties);
+
+      if (result != vk::Result::eSuccess)
+        {
+          std::future<void> returnVulkanErr = std::async (
+              std::launch::async, Patache::FatalErrorMessage, "Patache Engine - Raccoon Renderer",
+              "No found device extensions", std::cref (pEngine->configuration));
+
+          return false;
+        }
+
+      // Find extensions
+#if defined(_WIN64) && defined(VK_USE_PLATFORM_WIN32_KHR)
+#define DEVICE_EXTENSION_COUNT_SEARCH 17 // ++VK_KHR_external_memory_win32
+#else
+#define DEVICE_EXTENSION_COUNT_SEARCH 14
+#endif
+
+      std::uint8_t deviceExtensionCount = 1;
+      bool         deviceExtensionIndices[DEVICE_EXTENSION_COUNT_SEARCH]{ false };
+
+#if defined(DEVICE_EXTENSION_COUNT_SEARCH)
+#undef DEVICE_EXTENSION_COUNT_SEARCH
+#endif
+
+      for (std::uint32_t i = 0; i < propertyCount; ++i)
+        {
+          if (std::strcmp (pExtensionsProperties[i].extensionName, vk::KHRBindMemory2ExtensionName)
+              == 0)
+            {
+              deviceExtensionIndices[0] = true;
+              ++deviceExtensionCount;
+            }
+
+          if (std::strcmp (pExtensionsProperties[i].extensionName, vk::KHRMaintenance4ExtensionName)
+              == 0)
+            {
+              deviceExtensionIndices[1] = true;
+              ++deviceExtensionCount;
+            }
+
+          if (std::strcmp (pExtensionsProperties[i].extensionName,
+                           vk::KHRGetMemoryRequirements2ExtensionName)
+              == 0)
+            {
+              deviceExtensionIndices[2] = true;
+              ++deviceExtensionCount;
+            }
+
+          if (std::strcmp (pExtensionsProperties[i].extensionName,
+                           vk::KHRDedicatedAllocationExtensionName)
+              == 0)
+            {
+              deviceExtensionIndices[3] = true;
+              ++deviceExtensionCount;
+            }
+
+          if (vkKHRGetPhysicalDeviceProperties2ExtensionIsEnabled)
+            {
+              if (std::strcmp (pExtensionsProperties[i].extensionName,
+                               vk::KHRDynamicRenderingExtensionName)
+                  == 0)
+                {
+                  deviceExtensionIndices[4] = true;
+                  ++deviceExtensionCount;
+                }
+
+              if (std::strcmp (pExtensionsProperties[i].extensionName,
+                               vk::KHRDepthStencilResolveExtensionName)
+                  == 0)
+                {
+                  deviceExtensionIndices[5] = true;
+                  ++deviceExtensionCount;
+                }
+
+              if (std::strcmp (pExtensionsProperties[i].extensionName,
+                               vk::KHRCreateRenderpass2ExtensionName)
+                  == 0)
+                {
+                  deviceExtensionIndices[6] = true;
+                  ++deviceExtensionCount;
+                }
+
+              if (std::strcmp (pExtensionsProperties[i].extensionName,
+                               vk::KHRMultiviewExtensionName)
+                  == 0)
+                {
+                  deviceExtensionIndices[7] = true;
+                  ++deviceExtensionCount;
+                }
+
+              if (std::strcmp (pExtensionsProperties[i].extensionName,
+                               vk::KHRMaintenance2ExtensionName)
+                  == 0)
+                {
+                  deviceExtensionIndices[8] = true;
+                  ++deviceExtensionCount;
+                }
+
+              if (std::strcmp (pExtensionsProperties[i].extensionName,
+                               vk::KHRMaintenance5ExtensionName)
+                  == 0)
+                {
+                  deviceExtensionIndices[9] = true;
+                  ++deviceExtensionCount;
+                }
+
+              if (std::strcmp (pExtensionsProperties[i].extensionName,
+                               vk::KHRBufferDeviceAddressExtensionName)
+                  == 0)
+                {
+                  deviceExtensionIndices[10] = true;
+                  ++deviceExtensionCount;
+                }
+
+              if (std::strcmp (pExtensionsProperties[i].extensionName,
+                               vk::EXTMemoryPriorityExtensionName)
+                  == 0)
+                {
+                  deviceExtensionIndices[11] = true;
+                  ++deviceExtensionCount;
+                }
+
+              if (std::strcmp (pExtensionsProperties[i].extensionName,
+                               vk::EXTMemoryBudgetExtensionName)
+                  == 0)
+                {
+                  deviceExtensionIndices[12] = true;
+                  ++deviceExtensionCount;
+                }
+
+              if (std::strcmp (pExtensionsProperties[i].extensionName,
+                               vk::AMDDeviceCoherentMemoryExtensionName)
+                  == 0)
+                {
+                  deviceExtensionIndices[13] = true;
+                  ++deviceExtensionCount;
+                }
+
+#if defined(_WIN64) && defined(VK_USE_PLATFORM_WIN32_KHR)
+              if (std::strcmp (pExtensionsProperties[i].extensionName,
+                               vk::KHRExternalMemoryCapabilitiesExtensionName)
+                  == 0)
+                {
+                  deviceExtensionIndices[14] = true;
+                  ++deviceExtensionCount;
+                }
+
+              if (std::strcmp (pExtensionsProperties[i].extensionName,
+                               vk::KHRExternalMemoryExtensionName)
+                  == 0)
+                {
+                  deviceExtensionIndices[15] = true;
+                  ++deviceExtensionCount;
+                }
+
+              if (std::strcmp (pExtensionsProperties[i].extensionName,
+                               vk::KHRExternalMemoryWin32ExtensionName)
+                  == 0)
+                {
+                  deviceExtensionIndices[16] = true;
+                  ++deviceExtensionCount;
+                }
+#endif
+            }
+        }
+
+      // Extensions dependents
+      // VK_KHR_get_memory_requirements2 dependent
+      if (deviceExtensionIndices[2])
+        {
+          // VK_KHR_dedicated_allocation
+          if (!deviceExtensionIndices[3])
+            {
+              --deviceExtensionCount;
+            }
+        }
+      else
+        {
+          // VK_KHR_dedicated_allocation
+          if (deviceExtensionIndices[3])
+            {
+              --deviceExtensionCount;
+            }
+        }
+
+      if (vkKHRGetPhysicalDeviceProperties2ExtensionIsEnabled)
+        {
+          // VK_KHR_dynamic_rendering dependents
+          if (!deviceExtensionIndices[4])
+            {
+              // VK_KHR_depth_stencil_resolve
+              if (deviceExtensionIndices[5])
+                {
+                  --deviceExtensionCount;
+                }
+
+              // VK_KHR_create_renderpass2
+              if (deviceExtensionIndices[6])
+                {
+                  --deviceExtensionCount;
+                }
+
+              // VK_KHR_multiview
+              if (deviceExtensionIndices[7])
+                {
+                  --deviceExtensionCount;
+
+                  // VK_KHR_maintenance2
+                  if (deviceExtensionIndices[8])
+                    {
+                      --deviceExtensionCount;
+
+                      // VK_KHR_maintenance5
+                      if (deviceExtensionIndices[9])
+                        {
+                          --deviceExtensionCount;
+                        }
+                    }
+                }
+            }
+
+#if defined(_WIN64) && defined(VK_USE_PLATFORM_WIN32_KHR)
+          // VK_KHR_external_memory_capabilities
+          if (!deviceExtensionIndices[14])
+            {
+              // VK_KHR_external_memory
+              if (deviceExtensionIndices[15])
+                {
+                  --deviceExtensionCount;
+
+                  // VK_KHR_external_memory_win32
+                  if (deviceExtensionIndices[16])
+                    {
+                      --deviceExtensionCount;
+                    }
+                }
+            }
+#endif
+        }
+
+      // Add device extensions
+      std::uint8_t deviceAddExtensionIndexCount = 0;
+
+      const char ** ppDeviceExtensions = new const char *[deviceExtensionCount](nullptr);
+
+      ppDeviceExtensions[deviceAddExtensionIndexCount] = vk::KHRSwapchainExtensionName;
+
+      if (deviceExtensionIndices[0])
+        {
+          ppDeviceExtensions[(++deviceAddExtensionIndexCount)] = vk::KHRBindMemory2ExtensionName;
+          vmaAllocatorInfoFlags |= VMA_ALLOCATOR_CREATE_KHR_BIND_MEMORY2_BIT;
+        }
+
+      if (deviceExtensionIndices[1])
+        {
+          ppDeviceExtensions[(++deviceAddExtensionIndexCount)] = vk::KHRMaintenance4ExtensionName;
+          vmaAllocatorInfoFlags |= VMA_ALLOCATOR_CREATE_KHR_MAINTENANCE4_BIT;
+        }
+
+      if (deviceExtensionIndices[2] && deviceExtensionIndices[3])
+        {
+          ppDeviceExtensions[(++deviceAddExtensionIndexCount)]
+              = vk::KHRGetMemoryRequirements2ExtensionName;
+
+          ppDeviceExtensions[(++deviceAddExtensionIndexCount)]
+              = vk::KHRDedicatedAllocationExtensionName;
+
+          vmaAllocatorInfoFlags |= VMA_ALLOCATOR_CREATE_KHR_DEDICATED_ALLOCATION_BIT;
+        }
+
+      if (vkKHRGetPhysicalDeviceProperties2ExtensionIsEnabled)
+        {
+          if (deviceExtensionIndices[4])
+            {
+              ppDeviceExtensions[(++deviceAddExtensionIndexCount)]
+                  = vk::KHRDynamicRenderingExtensionName;
+
+              if (deviceExtensionIndices[5])
+                {
+                  ppDeviceExtensions[(++deviceAddExtensionIndexCount)]
+                      = vk::KHRDepthStencilResolveExtensionName;
+
+                  if (deviceExtensionIndices[6])
+                    {
+                      ppDeviceExtensions[(++deviceAddExtensionIndexCount)]
+                          = vk::KHRCreateRenderpass2ExtensionName;
+
+                      if (deviceExtensionIndices[7] && deviceExtensionIndices[8])
+                        {
+                          ppDeviceExtensions[(++deviceAddExtensionIndexCount)]
+                              = vk::KHRMultiviewExtensionName;
+
+                          ppDeviceExtensions[(++deviceAddExtensionIndexCount)]
+                              = vk::KHRMaintenance2ExtensionName;
+
+                          if (deviceExtensionIndices[9])
+                            {
+                              ppDeviceExtensions[(++deviceAddExtensionIndexCount)]
+                                  = vk::KHRMaintenance5ExtensionName;
+                              vmaAllocatorInfoFlags |= VMA_ALLOCATOR_CREATE_KHR_MAINTENANCE5_BIT;
+                            }
+                        }
+                    }
+                }
+            }
+
+          if (deviceExtensionIndices[10])
+            {
+              ppDeviceExtensions[(++deviceAddExtensionIndexCount)]
+                  = vk::KHRBufferDeviceAddressExtensionName;
+              vmaAllocatorInfoFlags |= VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT;
+            }
+
+          if (deviceExtensionIndices[11])
+            {
+              ppDeviceExtensions[(++deviceAddExtensionIndexCount)]
+                  = vk::EXTMemoryPriorityExtensionName;
+              vmaAllocatorInfoFlags |= VMA_ALLOCATOR_CREATE_EXT_MEMORY_PRIORITY_BIT;
+            }
+
+          if (deviceExtensionIndices[12])
+            {
+              ppDeviceExtensions[(++deviceAddExtensionIndexCount)]
+                  = vk::EXTMemoryBudgetExtensionName;
+              vmaAllocatorInfoFlags |= VMA_ALLOCATOR_CREATE_EXT_MEMORY_BUDGET_BIT;
+            }
+
+          if (deviceExtensionIndices[13])
+            {
+              ppDeviceExtensions[(++deviceAddExtensionIndexCount)]
+                  = vk::AMDDeviceCoherentMemoryExtensionName;
+
+              vmaAllocatorInfoFlags |= VMA_ALLOCATOR_CREATE_AMD_DEVICE_COHERENT_MEMORY_BIT;
+            }
+
+#if defined(_WIN64) && defined(VK_USE_PLATFORM_WIN32_KHR)
+          if (deviceExtensionIndices[14])
+            {
+              ppDeviceExtensions[(++deviceAddExtensionIndexCount)]
+                  = vk::KHRExternalMemoryCapabilitiesExtensionName;
+
+              if (deviceExtensionIndices[15])
+                {
+                  ppDeviceExtensions[(++deviceAddExtensionIndexCount)]
+                      = vk::KHRExternalMemoryExtensionName;
+
+                  if (deviceExtensionIndices[16])
+                    {
+                      ppDeviceExtensions[(++deviceAddExtensionIndexCount)]
+                          = vk::KHRExternalMemoryWin32ExtensionName;
+
+                      vmaAllocatorInfoFlags |= VMA_ALLOCATOR_CREATE_KHR_EXTERNAL_MEMORY_WIN32_BIT;
+                    }
+                }
+            }
+#endif
+        }
+
+#if PATACHE_DEBUG == 1
+      // Copy to debug info
+      pEngine->debugInfo.ppDeviceExtensionsVK = new const char *[deviceExtensionCount];
+
+      PATACHE_MEMCPY (pEngine->debugInfo.ppDeviceExtensionsVK, ppDeviceExtensions,
+                      sizeof (ppDeviceExtensions) * deviceExtensionCount,
+                      sizeof (ppDeviceExtensions) * deviceExtensionCount);
+
+      pEngine->debugInfo.deviceExtensionsCountVK = deviceExtensionCount;
+#endif
+
+      {
+        fast_io::io::println (PATACHE_FASTIO_BUFFOUT);
+
+        std::future<void> vulkanList
+            = std::async (std::launch::async, Patache::VulkanList, ppDeviceExtensions,
+                          deviceExtensionCount, "Device Extensions");
+      }
+
+      // Logical device creation
+			const vk::DeviceQueueCreateInfo deviceQueueCreateInfo{
         .queueFamilyIndex = pEngine->vulkan.graphicsQueueFamilyIndex,
         .queueCount       = 1,
         .pQueuePriorities = &queuePriority,
       };
 
-      const char * const pDeviceExtensions[]{ "VK_KHR_swapchain" };
-
-#if PATACHE_DEBUG == 1
-      pEngine->debugInfo.ppDeviceExtensionsVK    = new const char *[1];
-      pEngine->debugInfo.ppDeviceExtensionsVK[0] = pDeviceExtensions[0];
-      pEngine->debugInfo.deviceExtensionsCountVK = 1;
-#endif
-
-      // Logical Device Info
-      const vk::DeviceCreateInfo deviceCreateInfo{
+      const vk::DeviceCreateInfo deviceInfo{
         .queueCreateInfoCount    = 1,
         .pQueueCreateInfos       = &deviceQueueCreateInfo,
-        .enabledExtensionCount   = 1,
-        .ppEnabledExtensionNames = pDeviceExtensions,
+        .enabledExtensionCount   = deviceExtensionCount,
+        .ppEnabledExtensionNames = ppDeviceExtensions,
       };
 
-      // List Device Extensions
-      {
-        fast_io::io::println (PATACHE_FASTIO_BUFFOUT);
-
-        std::future<void> vulkanList = std::async (std::launch::async, Patache::VulkanList,
-                                                   pDeviceExtensions, 1, "Device Extensions");
-      }
-
-      result = pEngine->vulkan.physicalDevice.createDevice (&deviceCreateInfo, nullptr,
+      result = pEngine->vulkan.physicalDevice.createDevice (&deviceInfo, nullptr,
                                                             &pEngine->vulkan.device);
 
       if (result != vk::Result::eSuccess)
@@ -500,8 +981,57 @@ EXIT_CREATE_DEVICE:
       // Graphic queue associated with the logic device
       pEngine->vulkan.queue
           = pEngine->vulkan.device.getQueue (pEngine->vulkan.graphicsQueueFamilyIndex, 0);
+
+      delete[] ppDeviceExtensions;
+      ppDeviceExtensions = nullptr;
+
+      delete[] pExtensionsProperties;
+      pExtensionsProperties = nullptr;
     }
   }
+
+  // VMA Allocator
+  std::future<bool> createAllocator_Async
+      = std::async (std::launch::async, [&vmaAllocatorInfoFlags, &pEngine] (void) -> bool {
+          vk::Result result;
+
+          VmaVulkanFunctions vulkanFunctions{};
+          vulkanFunctions.vkGetInstanceProcAddr = &vkGetInstanceProcAddr;
+          vulkanFunctions.vkGetDeviceProcAddr   = &vkGetDeviceProcAddr;
+
+          VmaAllocatorCreateInfo vmaAllocatorInfo{ .flags          = vmaAllocatorInfoFlags,
+                                                   .physicalDevice = pEngine->vulkan.physicalDevice,
+                                                   .device         = pEngine->vulkan.device,
+                                                   .preferredLargeHeapBlockSize = 0,
+                                                   .pAllocationCallbacks        = nullptr,
+                                                   .pDeviceMemoryCallbacks      = nullptr,
+                                                   .pHeapSizeLimit              = nullptr,
+                                                   .pVulkanFunctions            = &vulkanFunctions,
+                                                   .instance         = pEngine->vulkan.instance,
+                                                   .vulkanApiVersion = VK_API_VERSION_1_3,
+#if VMA_EXTERNAL_MEMORY
+                                                   .pTypeExternalMemoryHandleTypes = nullptr
+#endif
+          };
+
+          result = static_cast<vk::Result> (
+              vmaCreateAllocator (&vmaAllocatorInfo, &pEngine->vulkan.allocator));
+
+          if (result != vk::Result::eSuccess)
+            {
+              std::future<void> returnVulkanCheck
+                  = std::async (std::launch::async, Patache::VulkanCheck, "allocator", result);
+
+              std::future<void> returnVulkanErr
+                  = std::async (std::launch::async, Patache::FatalErrorMessage,
+                                "Patache Engine - Raccoon Renderer", "Allocator creation fail",
+                                std::cref (pEngine->configuration));
+
+              return false;
+            }
+
+          return true;
+        });
 
 #if PATACHE_DEBUG == 1
   std::future<bool> createImguiDescriptorPool_Async
@@ -638,8 +1168,8 @@ EXIT_CREATE_DEVICE:
         // Load Shaders
         char shaderDirectoryStr[2056]{ 0 };
 
-        PATACHE_STRNCPY (shaderDirectoryStr, SDL_GetBasePath (), 2055);
-        PATACHE_STRNCAT (shaderDirectoryStr, "Shaders/", 2055);
+        PATACHE_STRNCPY (shaderDirectoryStr, SDL_GetBasePath (), 2055, 2056);
+        PATACHE_STRNCAT (shaderDirectoryStr, "Shaders/", 2055, 2056);
 
         fast_io::dir_file shaderDirectory (shaderDirectoryStr);
 
@@ -878,6 +1408,10 @@ EXIT_CREATE_DEVICE:
   if (!createCommandBuffer_Async.get ())
     return false;
 
+  createAllocator_Async.wait ();
+  if (!createAllocator_Async.get ())
+    return false;
+
   std::future<bool> createBuffer_Async
       = std::async (std::launch::async, [] (void) -> bool { return true; });
 
@@ -945,33 +1479,33 @@ RaccoonRendererClose (Patache::VulkanBackend & rVulkan)
   rVulkan.device.destroySwapchainKHR (rVulkan.swapchain);
 
   // Buffer
-/*
-  if (rVulkan.renderBuffer != nullptr)
-    {
-      for (std::uint8_t i = 0; i < rVulkan.swapchainImageCount; ++i)
-        rVulkan.device.destroyBuffer (rVulkan.renderBuffer[i], nullptr);
+  /*
+    if (rVulkan.renderBuffer != nullptr)
+      {
+        for (std::uint8_t i = 0; i < rVulkan.swapchainImageCount; ++i)
+          rVulkan.device.destroyBuffer (rVulkan.renderBuffer[i], nullptr);
 
-      delete[] rVulkan.renderBuffer;
-      rVulkan.renderBuffer = nullptr;
-    }
+        delete[] rVulkan.renderBuffer;
+        rVulkan.renderBuffer = nullptr;
+      }
 
-  if (rVulkan.renderBufferMemory != nullptr)
-    {
-      for (std::uint8_t i = 0; i < rVulkan.swapchainImageCount; ++i)
-        rVulkan.device.freeMemory (rVulkan.renderBufferMemory[i], nullptr);
+    if (rVulkan.renderBufferMemory != nullptr)
+      {
+        for (std::uint8_t i = 0; i < rVulkan.swapchainImageCount; ++i)
+          rVulkan.device.freeMemory (rVulkan.renderBufferMemory[i], nullptr);
 
-      delete[] rVulkan.renderBufferMemory;
-      rVulkan.renderBufferMemory = nullptr;
-    }
+        delete[] rVulkan.renderBufferMemory;
+        rVulkan.renderBufferMemory = nullptr;
+      }
 
-  if (rVulkan.stagingBuffer != VK_NULL_HANDLE)
-    {
-      rVulkan.device.destroyBuffer (rVulkan.stagingBuffer, nullptr);
-      rVulkan.device.freeMemory (rVulkan.stagingBufferMemory, nullptr);
-    }
-*/
+    if (rVulkan.stagingBuffer != VK_NULL_HANDLE)
+      {
+        rVulkan.device.destroyBuffer (rVulkan.stagingBuffer, nullptr);
+        rVulkan.device.freeMemory (rVulkan.stagingBufferMemory, nullptr);
+      }
+  */
 
-// Imgui
+  // Imgui
 #if PATACHE_DEBUG == 1
   ImGuiIO * pIO = nullptr;
 
@@ -1031,6 +1565,8 @@ RaccoonRendererClose (Patache::VulkanBackend & rVulkan)
         rVulkan.instance.destroyDebugUtilsMessengerEXT (rVulkan.debugMessenger);
     }
 #endif
+
+  vmaDestroyAllocator (rVulkan.allocator);
 
   rVulkan.instance.destroy ();
 }

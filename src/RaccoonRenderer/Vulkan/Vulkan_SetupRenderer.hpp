@@ -4,11 +4,12 @@
 #include <future>
 #include <functional>
 
+#include <vulkan/vulkan.hpp>
+#include "PatacheEngine/VmaUsage.hpp"
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_vulkan.h>
 #include <fast_io.h>
 #include <fast_io_device.h>
-// #include <cglm/cglm.h>
 
 // Patache Engine
 #include "PatacheEngine/PatacheEngine.hpp"

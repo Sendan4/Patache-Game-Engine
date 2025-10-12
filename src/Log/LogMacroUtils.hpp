@@ -3,7 +3,7 @@
  * Abstracts the particularities between compilers to obtain the type name.
  */
 #if PATACHE_DEBUG == 1
-#if defined(__GNUC__) || defined(__MINGW64__) || defined(__clang__) // Is GCC
+#if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__) // Is GCC
 #define PATACHE_GET_VARTYPE_STRING(STR_SRC, VAR)                                                   \
   STR_SRC = abi::__cxa_demangle (typeid (VAR).name (), nullptr, nullptr, nullptr)
 

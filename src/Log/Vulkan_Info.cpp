@@ -41,7 +41,7 @@ VulkanInfo (Patache::Engine * const pEngine, const Patache::SwapchainInfo & rSwa
   // Vulkan Device Name
   PATACHE_STRNCPY (pEngine->debugInfo.deviceNameVK,
                    physicalDeviceProperties.properties.deviceName.data (),
-                   VK_MAX_PHYSICAL_DEVICE_NAME_SIZE);
+                   VK_MAX_PHYSICAL_DEVICE_NAME_SIZE, VK_MAX_EXTENSION_NAME_SIZE);
 
   // Vulkan Device Vendor ID
   pEngine->debugInfo.deviceVendorIdVK
@@ -50,19 +50,19 @@ VulkanInfo (Patache::Engine * const pEngine, const Patache::SwapchainInfo & rSwa
   // Vulkan Device Type
   PATACHE_STRNCPY (pEngine->debugInfo.deviceTypeVK,
                    vk::to_string (physicalDeviceProperties.properties.deviceType).c_str (),
-                   PATACHE_DEVICETYPE_VK_SIZE - 1);
+                   PATACHE_DEVICETYPE_VK_SIZE - 1, PATACHE_DEVICETYPE_VK_SIZE);
 
   // Vulkan Driver Name
   PATACHE_STRNCPY (pEngine->debugInfo.driverNameVK, driver.driverName.data (),
-                   VK_MAX_DRIVER_NAME_SIZE);
+                   VK_MAX_DRIVER_NAME_SIZE, VK_MAX_EXTENSION_NAME_SIZE);
 
   // Vulkan Driver ID
   PATACHE_STRNCPY (pEngine->debugInfo.driverIdVK, vk::to_string (driver.driverID).c_str (),
-                   PATACHE_DRIVERID_VK_SIZE - 1);
+                   PATACHE_DRIVERID_VK_SIZE - 1, PATACHE_DRIVERID_VK_SIZE);
 
   // Vulkan Driver Info
   PATACHE_STRNCPY (pEngine->debugInfo.driverInfoVK, driver.driverInfo.data (),
-                   VK_MAX_DRIVER_INFO_SIZE);
+                   VK_MAX_DRIVER_INFO_SIZE, VK_MAX_EXTENSION_NAME_SIZE);
 
   // Vulkan Driver Version
   std::snprintf (pEngine->debugInfo.driverVersionVK, PATACHE_DRIVER_VERSION_VK_SIZE, "%u.%u.%u.%u",

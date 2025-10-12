@@ -1,3 +1,5 @@
+#include <vulkan/vulkan.hpp>
+#include "PatacheEngine/VmaUsage.hpp"
 #include <SDL3/SDL.h>
 
 #include "PatacheEngine/PatacheEngine.hpp"
