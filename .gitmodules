@@ -6,6 +6,10 @@
 	path = externals/Vulkan-Loader
 	url = https://github.com/KhronosGroup/Vulkan-Loader.git
 	branch = v1.4.315
+[submodule "externals/VulkanMemoryAllocator"]
+	path = externals/VulkanMemoryAllocator
+	url = https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git
+	branch = v3.3.0
 [submodule "externals/rapidyaml"]
 	path = externals/rapidyaml
 	url = https://github.com/biojppm/rapidyaml.git
