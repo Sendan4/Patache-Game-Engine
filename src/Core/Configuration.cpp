@@ -43,7 +43,6 @@ LoadConfiguration (Patache::Config & rConfiguration)
           std::future<void> err = std::async (std::launch::async, Patache::ErrorMessage, errorText);
         }
 
-      // Raccoon Renderer
       // Bool Type
       // Vsync
       if (yamlConfig["patache-engine"]["raccoon-renderer"]["vsync"].val () == "true"

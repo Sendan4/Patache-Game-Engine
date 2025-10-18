@@ -14,7 +14,43 @@ RaccoonRendererInit (Patache::Engine * pEngine, const Patache::EngineCreateInfo 
 #if PATACHE_DEBUG == 1
   bool vkEXTDebugUtilsExtensionIsEnabled = false;
 #endif
-  bool vkKHRGetPhysicalDeviceProperties2ExtensionIsEnabled = false;
+
+  // Verify vulkan version
+  {
+    PFN_vkVoidFunction PFN_vkEnumerateInstanceVersion
+        = vkGetInstanceProcAddr (nullptr, "vkEnumerateInstanceVersion");
+
+    if (PFN_vkEnumerateInstanceVersion == nullptr)
+      {
+        std::future<void> err = std::async (
+            std::launch::async, Patache::FatalErrorMessage, "Patache Engine - Raccoon Renderer",
+            "Your drivers are too old, your vulkan version is unsupported. (Vulkan 1.1 <=)",
+            std::cref (pEngine->configuration));
+
+        return false;
+      }
+
+    std::uint32_t supportedVersion = 0;
+    result                         = vk::enumerateInstanceVersion (&supportedVersion);
+
+    if (result != vk::Result::eSuccess)
+      {
+        std::future<void> returnVulkanErr = std::async (std::launch::async, Patache::WarningMessage,
+                                                        "Cannot get the supported vulkan version");
+      }
+    else
+      {
+        if (supportedVersion < 4202496)
+          {
+            std::future<void> err = std::async (
+                std::launch::async, Patache::FatalErrorMessage, "Patache Engine - Raccoon Renderer",
+                "Your drivers are too old, your vulkan version is unsupported. (Vulkan 1.1 <=)",
+                std::cref (pEngine->configuration));
+
+            return false;
+          }
+      }
+  }
 
   // Vulkan Instance
   {
@@ -24,7 +60,7 @@ RaccoonRendererInit (Patache::Engine * pEngine, const Patache::EngineCreateInfo 
                                                  .applicationVersion = rInfo.gameVersion,
                                                  .pEngineName        = PATACHE_ENGINE_NAME,
                                                  .engineVersion      = PATACHE_ENGINE_VERSION_VK,
-                                                 .apiVersion         = VK_API_VERSION_1_3 };
+                                                 .apiVersion         = VK_API_VERSION_1_2 };
 
     // The validation layers are activated with USE_VVL=ON.
     // They are for the development and testing of this backend.
@@ -51,20 +87,14 @@ RaccoonRendererInit (Patache::Engine * pEngine, const Patache::EngineCreateInfo 
     instanceExtensionCount += extensionCountSDL;
 
 #if PATACHE_DEBUG == 1
-#define INSTANCE_EXTENSION_COUNT_SEARCH 2 // ++VK_EXT_debug_utils
 #if defined(PATACHE_USE_VVL)
     ++instanceExtensionCount; // VK_EXT_layer_settings is no reported o enumerated
 #endif
-#else
-#define INSTANCE_EXTENSION_COUNT_SEARCH 1
 #endif
 
     // Search extension instance
-    std::uint32_t             propertyCount       = 0;
-    vk::ExtensionProperties * extensionProperties = nullptr;
-
-    bool          instanceExtensionIndices[INSTANCE_EXTENSION_COUNT_SEARCH]{ false };
-    std::uint32_t otherInstanceExtensionCount = 0;
+    vk::ExtensionProperties * pInstanceExtensionProperties = nullptr;
+    std::uint32_t             propertyCount                = 0;
 
     result = vk::enumerateInstanceExtensionProperties (nullptr, &propertyCount, nullptr);
 
@@ -77,10 +107,10 @@ RaccoonRendererInit (Patache::Engine * pEngine, const Patache::EngineCreateInfo 
         goto SKIP_OTHER_EXTENSIONS;
       }
 
-    extensionProperties = new vk::ExtensionProperties[propertyCount];
+    pInstanceExtensionProperties = new vk::ExtensionProperties[propertyCount];
 
-    result
-        = vk::enumerateInstanceExtensionProperties (nullptr, &propertyCount, extensionProperties);
+    result = vk::enumerateInstanceExtensionProperties (nullptr, &propertyCount,
+                                                       pInstanceExtensionProperties);
 
     if (result != vk::Result::eSuccess)
       {
@@ -88,40 +118,28 @@ RaccoonRendererInit (Patache::Engine * pEngine, const Patache::EngineCreateInfo 
             = std::async (std::launch::async, Patache::WarningMessage,
                           "Cannot get the instance extensions. continuing without some extensions");
 
-        if (extensionProperties != nullptr)
-          delete[] extensionProperties;
+        if (pInstanceExtensionProperties != nullptr)
+          delete[] pInstanceExtensionProperties;
 
         goto SKIP_OTHER_EXTENSIONS;
       }
 
-    for (std::uint32_t i = 0; i < propertyCount; ++i)
-      {
-        if (std::strcmp (extensionProperties[i].extensionName,
-                         vk::KHRGetPhysicalDeviceProperties2ExtensionName)
-            == 0)
-          {
-            ++otherInstanceExtensionCount;
-            instanceExtensionIndices[0] = true;
-          }
-
 #if PATACHE_DEBUG == 1
 #if defined(PATACHE_USE_VVL)
-        if (std::strcmp (extensionProperties[i].extensionName, vk::EXTDebugUtilsExtensionName) == 0)
+    for (std::uint32_t i = 0; i < propertyCount; ++i)
+      {
+        if (std::strcmp (pInstanceExtensionProperties[i].extensionName,
+                         vk::EXTDebugUtilsExtensionName)
+            == 0)
           {
-            ++otherInstanceExtensionCount;
-            instanceExtensionIndices[1] = true;
+            ++instanceExtensionCount;
+            vkEXTDebugUtilsExtensionIsEnabled = true;
           }
-#endif
-#endif
       }
-
-#if defined(INSTANCE_EXTENSION_COUNT_SEARCH)
-#undef INSTANCE_EXTENSION_COUNT_SEARCH
+#endif
 #endif
 
-    delete[] extensionProperties;
-
-    instanceExtensionCount += otherInstanceExtensionCount;
+    delete[] pInstanceExtensionProperties;
 
   SKIP_OTHER_EXTENSIONS:
 
@@ -136,29 +154,21 @@ RaccoonRendererInit (Patache::Engine * pEngine, const Patache::EngineCreateInfo 
                         extensionCountSDL * sizeof (const char *),
                         extensionCountSDL * sizeof (const char *));
 
-        otherInstanceExtensionCount = extensionCountSDL;
-
-        if (instanceExtensionIndices[0])
+#if PATACHE_DEBUG == 1
+        // extensionCountSDL is the last element in the index of SDL extensions. here is used as a
+        // index for other extensions.
+        if (ppAllExtensionInstance[extensionCountSDL] != nullptr)
           {
-            ppAllExtensionInstance[otherInstanceExtensionCount]
-                = vk::KHRGetPhysicalDeviceProperties2ExtensionName;
-
-            vkKHRGetPhysicalDeviceProperties2ExtensionIsEnabled = true;
+            ++extensionCountSDL;
           }
 
-#if PATACHE_DEBUG == 1
-        if (instanceExtensionIndices[1])
+        if (vkEXTDebugUtilsExtensionIsEnabled)
           {
-            if (instanceExtensionIndices[0])
-              ++otherInstanceExtensionCount;
-
-            ppAllExtensionInstance[otherInstanceExtensionCount] = vk::EXTDebugUtilsExtensionName;
-
-            vkEXTDebugUtilsExtensionIsEnabled = true;
+            ppAllExtensionInstance[extensionCountSDL] = vk::EXTDebugUtilsExtensionName;
           }
 
 #if defined(PATACHE_USE_VVL)
-        ppAllExtensionInstance[(++otherInstanceExtensionCount)] = vk::EXTLayerSettingsExtensionName;
+        ppAllExtensionInstance[(++extensionCountSDL)] = vk::EXTLayerSettingsExtensionName;
 #endif
 #endif
 
@@ -582,11 +592,11 @@ EXIT_CREATE_DEVICE:
           return false;
         }
 
-      // Find extensions
+        // Find extensions
 #if defined(_WIN64) && defined(VK_USE_PLATFORM_WIN32_KHR)
-#define DEVICE_EXTENSION_COUNT_SEARCH 17 // ++VK_KHR_external_memory_win32
+#define DEVICE_EXTENSION_COUNT_SEARCH 7 // ++VK_KHR_external_memory_win32
 #else
-#define DEVICE_EXTENSION_COUNT_SEARCH 14
+#define DEVICE_EXTENSION_COUNT_SEARCH 6
 #endif
 
       std::uint8_t deviceExtensionCount = 1;
@@ -598,216 +608,58 @@ EXIT_CREATE_DEVICE:
 
       for (std::uint32_t i = 0; i < propertyCount; ++i)
         {
-          if (std::strcmp (pExtensionsProperties[i].extensionName, vk::KHRBindMemory2ExtensionName)
+          if (std::strcmp (pExtensionsProperties[i].extensionName, vk::KHRMaintenance4ExtensionName)
               == 0)
             {
               deviceExtensionIndices[0] = true;
               ++deviceExtensionCount;
             }
 
-          if (std::strcmp (pExtensionsProperties[i].extensionName, vk::KHRMaintenance4ExtensionName)
+          if (std::strcmp (pExtensionsProperties[i].extensionName,
+                           vk::KHRDynamicRenderingExtensionName)
               == 0)
             {
               deviceExtensionIndices[1] = true;
               ++deviceExtensionCount;
             }
 
-          if (std::strcmp (pExtensionsProperties[i].extensionName,
-                           vk::KHRGetMemoryRequirements2ExtensionName)
+          if (std::strcmp (pExtensionsProperties[i].extensionName, vk::KHRMaintenance5ExtensionName)
               == 0)
             {
               deviceExtensionIndices[2] = true;
               ++deviceExtensionCount;
             }
 
-          if (std::strcmp (pExtensionsProperties[i].extensionName,
-                           vk::KHRDedicatedAllocationExtensionName)
+          if (std::strcmp (pExtensionsProperties[i].extensionName, vk::EXTMemoryBudgetExtensionName)
               == 0)
             {
               deviceExtensionIndices[3] = true;
               ++deviceExtensionCount;
             }
 
-          if (vkKHRGetPhysicalDeviceProperties2ExtensionIsEnabled)
+          if (std::strcmp (pExtensionsProperties[i].extensionName,
+                           vk::EXTMemoryPriorityExtensionName)
+              == 0)
             {
-              if (std::strcmp (pExtensionsProperties[i].extensionName,
-                               vk::KHRDynamicRenderingExtensionName)
-                  == 0)
-                {
-                  deviceExtensionIndices[4] = true;
-                  ++deviceExtensionCount;
-                }
-
-              if (std::strcmp (pExtensionsProperties[i].extensionName,
-                               vk::KHRDepthStencilResolveExtensionName)
-                  == 0)
-                {
-                  deviceExtensionIndices[5] = true;
-                  ++deviceExtensionCount;
-                }
-
-              if (std::strcmp (pExtensionsProperties[i].extensionName,
-                               vk::KHRCreateRenderpass2ExtensionName)
-                  == 0)
-                {
-                  deviceExtensionIndices[6] = true;
-                  ++deviceExtensionCount;
-                }
-
-              if (std::strcmp (pExtensionsProperties[i].extensionName,
-                               vk::KHRMultiviewExtensionName)
-                  == 0)
-                {
-                  deviceExtensionIndices[7] = true;
-                  ++deviceExtensionCount;
-                }
-
-              if (std::strcmp (pExtensionsProperties[i].extensionName,
-                               vk::KHRMaintenance2ExtensionName)
-                  == 0)
-                {
-                  deviceExtensionIndices[8] = true;
-                  ++deviceExtensionCount;
-                }
-
-              if (std::strcmp (pExtensionsProperties[i].extensionName,
-                               vk::KHRMaintenance5ExtensionName)
-                  == 0)
-                {
-                  deviceExtensionIndices[9] = true;
-                  ++deviceExtensionCount;
-                }
-
-              if (std::strcmp (pExtensionsProperties[i].extensionName,
-                               vk::KHRBufferDeviceAddressExtensionName)
-                  == 0)
-                {
-                  deviceExtensionIndices[10] = true;
-                  ++deviceExtensionCount;
-                }
-
-              if (std::strcmp (pExtensionsProperties[i].extensionName,
-                               vk::EXTMemoryPriorityExtensionName)
-                  == 0)
-                {
-                  deviceExtensionIndices[11] = true;
-                  ++deviceExtensionCount;
-                }
-
-              if (std::strcmp (pExtensionsProperties[i].extensionName,
-                               vk::EXTMemoryBudgetExtensionName)
-                  == 0)
-                {
-                  deviceExtensionIndices[12] = true;
-                  ++deviceExtensionCount;
-                }
-
-              if (std::strcmp (pExtensionsProperties[i].extensionName,
-                               vk::AMDDeviceCoherentMemoryExtensionName)
-                  == 0)
-                {
-                  deviceExtensionIndices[13] = true;
-                  ++deviceExtensionCount;
-                }
-
-#if defined(_WIN64) && defined(VK_USE_PLATFORM_WIN32_KHR)
-              if (std::strcmp (pExtensionsProperties[i].extensionName,
-                               vk::KHRExternalMemoryCapabilitiesExtensionName)
-                  == 0)
-                {
-                  deviceExtensionIndices[14] = true;
-                  ++deviceExtensionCount;
-                }
-
-              if (std::strcmp (pExtensionsProperties[i].extensionName,
-                               vk::KHRExternalMemoryExtensionName)
-                  == 0)
-                {
-                  deviceExtensionIndices[15] = true;
-                  ++deviceExtensionCount;
-                }
-
-              if (std::strcmp (pExtensionsProperties[i].extensionName,
-                               vk::KHRExternalMemoryWin32ExtensionName)
-                  == 0)
-                {
-                  deviceExtensionIndices[16] = true;
-                  ++deviceExtensionCount;
-                }
-#endif
+              deviceExtensionIndices[4] = true;
+              ++deviceExtensionCount;
             }
-        }
 
-      // Extensions dependents
-      // VK_KHR_get_memory_requirements2 dependent
-      if (deviceExtensionIndices[2])
-        {
-          // VK_KHR_dedicated_allocation
-          if (!deviceExtensionIndices[3])
+          if (std::strcmp (pExtensionsProperties[i].extensionName,
+                           vk::AMDDeviceCoherentMemoryExtensionName)
+              == 0)
             {
-              --deviceExtensionCount;
-            }
-        }
-      else
-        {
-          // VK_KHR_dedicated_allocation
-          if (deviceExtensionIndices[3])
-            {
-              --deviceExtensionCount;
-            }
-        }
-
-      if (vkKHRGetPhysicalDeviceProperties2ExtensionIsEnabled)
-        {
-          // VK_KHR_dynamic_rendering dependents
-          if (!deviceExtensionIndices[4])
-            {
-              // VK_KHR_depth_stencil_resolve
-              if (deviceExtensionIndices[5])
-                {
-                  --deviceExtensionCount;
-                }
-
-              // VK_KHR_create_renderpass2
-              if (deviceExtensionIndices[6])
-                {
-                  --deviceExtensionCount;
-                }
-
-              // VK_KHR_multiview
-              if (deviceExtensionIndices[7])
-                {
-                  --deviceExtensionCount;
-
-                  // VK_KHR_maintenance2
-                  if (deviceExtensionIndices[8])
-                    {
-                      --deviceExtensionCount;
-
-                      // VK_KHR_maintenance5
-                      if (deviceExtensionIndices[9])
-                        {
-                          --deviceExtensionCount;
-                        }
-                    }
-                }
+              deviceExtensionIndices[5] = true;
+              ++deviceExtensionCount;
             }
 
 #if defined(_WIN64) && defined(VK_USE_PLATFORM_WIN32_KHR)
-          // VK_KHR_external_memory_capabilities
-          if (!deviceExtensionIndices[14])
+          if (std::strcmp (pExtensionsProperties[i].extensionName,
+                           vk::KHRExternalMemoryWin32ExtensionName)
+              == 0)
             {
-              // VK_KHR_external_memory
-              if (deviceExtensionIndices[15])
-                {
-                  --deviceExtensionCount;
-
-                  // VK_KHR_external_memory_win32
-                  if (deviceExtensionIndices[16])
-                    {
-                      --deviceExtensionCount;
-                    }
-                }
+              deviceExtensionIndices[6] = true;
+              ++deviceExtensionCount;
             }
 #endif
         }
@@ -821,114 +673,52 @@ EXIT_CREATE_DEVICE:
 
       if (deviceExtensionIndices[0])
         {
-          ppDeviceExtensions[(++deviceAddExtensionIndexCount)] = vk::KHRBindMemory2ExtensionName;
-          vmaAllocatorInfoFlags |= VMA_ALLOCATOR_CREATE_KHR_BIND_MEMORY2_BIT;
-        }
-
-      if (deviceExtensionIndices[1])
-        {
           ppDeviceExtensions[(++deviceAddExtensionIndexCount)] = vk::KHRMaintenance4ExtensionName;
           vmaAllocatorInfoFlags |= VMA_ALLOCATOR_CREATE_KHR_MAINTENANCE4_BIT;
         }
 
-      if (deviceExtensionIndices[2] && deviceExtensionIndices[3])
+      if (deviceExtensionIndices[1])
         {
           ppDeviceExtensions[(++deviceAddExtensionIndexCount)]
-              = vk::KHRGetMemoryRequirements2ExtensionName;
+              = vk::KHRDynamicRenderingExtensionName;
 
-          ppDeviceExtensions[(++deviceAddExtensionIndexCount)]
-              = vk::KHRDedicatedAllocationExtensionName;
-
-          vmaAllocatorInfoFlags |= VMA_ALLOCATOR_CREATE_KHR_DEDICATED_ALLOCATION_BIT;
+          if (deviceExtensionIndices[2])
+            {
+              ppDeviceExtensions[(++deviceAddExtensionIndexCount)]
+                  = vk::KHRMaintenance5ExtensionName;
+              vmaAllocatorInfoFlags |= VMA_ALLOCATOR_CREATE_KHR_MAINTENANCE5_BIT;
+            }
         }
 
-      if (vkKHRGetPhysicalDeviceProperties2ExtensionIsEnabled)
+      if (deviceExtensionIndices[3])
         {
-          if (deviceExtensionIndices[4])
-            {
-              ppDeviceExtensions[(++deviceAddExtensionIndexCount)]
-                  = vk::KHRDynamicRenderingExtensionName;
+          ppDeviceExtensions[(++deviceAddExtensionIndexCount)] = vk::EXTMemoryBudgetExtensionName;
+          vmaAllocatorInfoFlags |= VMA_ALLOCATOR_CREATE_EXT_MEMORY_BUDGET_BIT;
+        }
 
-              if (deviceExtensionIndices[5])
-                {
-                  ppDeviceExtensions[(++deviceAddExtensionIndexCount)]
-                      = vk::KHRDepthStencilResolveExtensionName;
+      if (deviceExtensionIndices[4])
+        {
+          ppDeviceExtensions[(++deviceAddExtensionIndexCount)] = vk::EXTMemoryPriorityExtensionName;
+          vmaAllocatorInfoFlags |= VMA_ALLOCATOR_CREATE_EXT_MEMORY_PRIORITY_BIT;
+        }
 
-                  if (deviceExtensionIndices[6])
-                    {
-                      ppDeviceExtensions[(++deviceAddExtensionIndexCount)]
-                          = vk::KHRCreateRenderpass2ExtensionName;
+      if (deviceExtensionIndices[5])
+        {
+          ppDeviceExtensions[(++deviceAddExtensionIndexCount)]
+              = vk::AMDDeviceCoherentMemoryExtensionName;
 
-                      if (deviceExtensionIndices[7] && deviceExtensionIndices[8])
-                        {
-                          ppDeviceExtensions[(++deviceAddExtensionIndexCount)]
-                              = vk::KHRMultiviewExtensionName;
-
-                          ppDeviceExtensions[(++deviceAddExtensionIndexCount)]
-                              = vk::KHRMaintenance2ExtensionName;
-
-                          if (deviceExtensionIndices[9])
-                            {
-                              ppDeviceExtensions[(++deviceAddExtensionIndexCount)]
-                                  = vk::KHRMaintenance5ExtensionName;
-                              vmaAllocatorInfoFlags |= VMA_ALLOCATOR_CREATE_KHR_MAINTENANCE5_BIT;
-                            }
-                        }
-                    }
-                }
-            }
-
-          if (deviceExtensionIndices[10])
-            {
-              ppDeviceExtensions[(++deviceAddExtensionIndexCount)]
-                  = vk::KHRBufferDeviceAddressExtensionName;
-              vmaAllocatorInfoFlags |= VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT;
-            }
-
-          if (deviceExtensionIndices[11])
-            {
-              ppDeviceExtensions[(++deviceAddExtensionIndexCount)]
-                  = vk::EXTMemoryPriorityExtensionName;
-              vmaAllocatorInfoFlags |= VMA_ALLOCATOR_CREATE_EXT_MEMORY_PRIORITY_BIT;
-            }
-
-          if (deviceExtensionIndices[12])
-            {
-              ppDeviceExtensions[(++deviceAddExtensionIndexCount)]
-                  = vk::EXTMemoryBudgetExtensionName;
-              vmaAllocatorInfoFlags |= VMA_ALLOCATOR_CREATE_EXT_MEMORY_BUDGET_BIT;
-            }
-
-          if (deviceExtensionIndices[13])
-            {
-              ppDeviceExtensions[(++deviceAddExtensionIndexCount)]
-                  = vk::AMDDeviceCoherentMemoryExtensionName;
-
-              vmaAllocatorInfoFlags |= VMA_ALLOCATOR_CREATE_AMD_DEVICE_COHERENT_MEMORY_BIT;
-            }
+          vmaAllocatorInfoFlags |= VMA_ALLOCATOR_CREATE_AMD_DEVICE_COHERENT_MEMORY_BIT;
+        }
 
 #if defined(_WIN64) && defined(VK_USE_PLATFORM_WIN32_KHR)
-          if (deviceExtensionIndices[14])
-            {
-              ppDeviceExtensions[(++deviceAddExtensionIndexCount)]
-                  = vk::KHRExternalMemoryCapabilitiesExtensionName;
+      if (deviceExtensionIndices[6])
+        {
+          ppDeviceExtensions[(++deviceAddExtensionIndexCount)]
+              = vk::KHRExternalMemoryWin32ExtensionName;
 
-              if (deviceExtensionIndices[15])
-                {
-                  ppDeviceExtensions[(++deviceAddExtensionIndexCount)]
-                      = vk::KHRExternalMemoryExtensionName;
-
-                  if (deviceExtensionIndices[16])
-                    {
-                      ppDeviceExtensions[(++deviceAddExtensionIndexCount)]
-                          = vk::KHRExternalMemoryWin32ExtensionName;
-
-                      vmaAllocatorInfoFlags |= VMA_ALLOCATOR_CREATE_KHR_EXTERNAL_MEMORY_WIN32_BIT;
-                    }
-                }
-            }
-#endif
+          vmaAllocatorInfoFlags |= VMA_ALLOCATOR_CREATE_KHR_EXTERNAL_MEMORY_WIN32_BIT;
         }
+#endif
 
 #if PATACHE_DEBUG == 1
       // Copy to debug info
@@ -950,7 +740,7 @@ EXIT_CREATE_DEVICE:
       }
 
       // Logical device creation
-			const vk::DeviceQueueCreateInfo deviceQueueCreateInfo{
+      const vk::DeviceQueueCreateInfo deviceQueueCreateInfo{
         .queueFamilyIndex = pEngine->vulkan.graphicsQueueFamilyIndex,
         .queueCount       = 1,
         .pQueuePriorities = &queuePriority,

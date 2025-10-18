@@ -301,6 +301,12 @@ Patache::DrawDebugUI (Patache::Engine * const pEngine)
       // Only vulkan for now. OpenGL as compability option maybe in the future
       ImGui::Text ("API : vulkan %s", pEngine->debugInfo.versionVK);
 
+      if (ImGui::IsItemHovered ())
+        {
+          ImGui::SetTooltip ("In Use %d.%d", VK_VERSION_MAJOR (VK_API_VERSION_1_2),
+                             VK_VERSION_MINOR (VK_API_VERSION_1_2));
+        }
+
       if (ImGui::CollapsingHeader ("LAYERS AND EXTENSIONS"))
         {
           // vulkan Instance Extensions list

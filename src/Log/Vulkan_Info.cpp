@@ -112,16 +112,18 @@ VulkanInfo (Patache::Engine * const pEngine, const Patache::SwapchainInfo & rSwa
   PATACHE_GET_VARTYPE_STRING (pVarTypeRealName, physicalDeviceProperties.properties.apiVersion);
 #endif
 
-  fast_io::io::println (PATACHE_FASTIO_BUFFOUT,
+  fast_io::io::println (
+      PATACHE_FASTIO_BUFFOUT,
 #if defined(PATACHE_DEBUG)
-                        PATACHE_FASTIO_SHOW_VARTYPE_STRING (pVarTypeRealName, 3, 2, 2),
+      PATACHE_FASTIO_SHOW_VARTYPE_STRING (pVarTypeRealName, 3, 2, 2),
 #endif
-                        PATACHE_TERM_RESET, PATACHE_TERM_BOLD, "Vulkan : ", PATACHE_TERM_RESET,
-                        VK_VERSION_MAJOR (physicalDeviceProperties.properties.apiVersion), ".",
-                        VK_VERSION_MINOR (physicalDeviceProperties.properties.apiVersion), ".",
-                        VK_VERSION_PATCH (physicalDeviceProperties.properties.apiVersion), ".",
-                        VK_API_VERSION_VARIANT (physicalDeviceProperties.properties.apiVersion),
-                        "\n");
+      PATACHE_TERM_RESET, PATACHE_TERM_BOLD, "Vulkan Version : ", PATACHE_TERM_RESET,
+      VK_VERSION_MAJOR (physicalDeviceProperties.properties.apiVersion), ".",
+      VK_VERSION_MINOR (physicalDeviceProperties.properties.apiVersion), ".",
+      VK_VERSION_PATCH (physicalDeviceProperties.properties.apiVersion), ".",
+      VK_API_VERSION_VARIANT (physicalDeviceProperties.properties.apiVersion), " | ",
+      PATACHE_TERM_BOLD, "In Use ", PATACHE_TERM_RESET, VK_VERSION_MAJOR (VK_API_VERSION_1_2), ".",
+      VK_VERSION_MINOR (VK_API_VERSION_1_2), "\n");
 
 #if defined(PATACHE_DEBUG)
   PATACHE_FREE_VARTYPE_STRING (pVarTypeRealName);
