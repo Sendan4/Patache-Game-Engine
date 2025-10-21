@@ -134,6 +134,7 @@ RaccoonRendererInit (Patache::Engine * pEngine, const Patache::EngineCreateInfo 
           {
             ++instanceExtensionCount;
             vkEXTDebugUtilsExtensionIsEnabled = true;
+				    break;
           }
       }
 #endif
@@ -430,12 +431,13 @@ EXIT_CREATE_DEBUG_UTILS_MESSENGER:
             pGpuScore[i] += 1000;
             break;
           case vk::PhysicalDeviceType::eIntegratedGpu:
-            pGpuScore[i] += 50;
+            pGpuScore[i] += 100;
             break;
 
           case vk::PhysicalDeviceType::eCpu:
           case vk::PhysicalDeviceType::eOther:
           case vk::PhysicalDeviceType::eVirtualGpu:
+					  pGpuScore[i] += 50;
             break;
           }
 
@@ -613,6 +615,7 @@ EXIT_CREATE_DEVICE:
             {
               deviceExtensionIndices[0] = true;
               ++deviceExtensionCount;
+					    continue;
             }
 
           if (std::strcmp (pExtensionsProperties[i].extensionName,
@@ -621,6 +624,7 @@ EXIT_CREATE_DEVICE:
             {
               deviceExtensionIndices[1] = true;
               ++deviceExtensionCount;
+					    continue;
             }
 
           if (std::strcmp (pExtensionsProperties[i].extensionName, vk::KHRMaintenance5ExtensionName)
@@ -628,6 +632,7 @@ EXIT_CREATE_DEVICE:
             {
               deviceExtensionIndices[2] = true;
               ++deviceExtensionCount;
+					    continue;
             }
 
           if (std::strcmp (pExtensionsProperties[i].extensionName, vk::EXTMemoryBudgetExtensionName)
@@ -635,6 +640,7 @@ EXIT_CREATE_DEVICE:
             {
               deviceExtensionIndices[3] = true;
               ++deviceExtensionCount;
+					    continue;
             }
 
           if (std::strcmp (pExtensionsProperties[i].extensionName,
@@ -643,6 +649,7 @@ EXIT_CREATE_DEVICE:
             {
               deviceExtensionIndices[4] = true;
               ++deviceExtensionCount;
+					    continue;
             }
 
           if (std::strcmp (pExtensionsProperties[i].extensionName,
@@ -651,6 +658,7 @@ EXIT_CREATE_DEVICE:
             {
               deviceExtensionIndices[5] = true;
               ++deviceExtensionCount;
+					    continue;
             }
 
 #if defined(_WIN64) && defined(VK_USE_PLATFORM_WIN32_KHR)

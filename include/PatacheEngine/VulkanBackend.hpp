@@ -85,6 +85,8 @@ struct VulkanBackend
   vk::DeviceMemory stagingBufferMemory = VK_NULL_HANDLE;
 
   void * renderData = nullptr;
+
+	vk::Result renderResult;
 };
 
 struct SwapchainInfo

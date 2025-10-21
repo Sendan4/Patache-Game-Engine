@@ -104,7 +104,7 @@ Patache::Engine::Init (const Patache::EngineCreateInfo & rInfo)
     pWindowTitle = PATACHE_ENGINE_NAME;
 #endif
 
-  // Init Window for linux wayland. this to do before SDL init
+  // Init Window for linux wayland. do this before SDL init
 #if defined(__linux__)
   if (!CreateWaylandWindow (854, 480, PATACHE_WINDOW_TITLE, this))
     return false;
