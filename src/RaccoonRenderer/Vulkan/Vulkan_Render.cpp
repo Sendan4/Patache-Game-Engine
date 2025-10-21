@@ -4,8 +4,8 @@ bool
 Patache::Engine::BeginRender (SDL_Event & rEvent)
 {
   // Wait Fences
-  vulkan.renderResult = vulkan.device.waitForFences (1, &vulkan.pInFlightFences[vulkan.currentFrame],
-                                                   VK_FALSE, UINT64_MAX);
+  vulkan.renderResult = vulkan.device.waitForFences (
+      1, &vulkan.pInFlightFences[vulkan.currentFrame], VK_FALSE, UINT64_MAX);
 
   /*
    * Resizing Window is diferent in Linux with wayland
@@ -117,8 +117,8 @@ Patache::Engine::BeginRender (SDL_Event & rEvent)
 
 #if PATACHE_DEBUG == 1
   if (vulkan.renderResult != vk::Result::eSuccess)
-    std::future<void> returnVulkanCheck
-        = std::async (std::launch::async, Patache::VulkanCheck, "Command Buffer Begin", vulkan.renderResult);
+    std::future<void> returnVulkanCheck = std::async (std::launch::async, Patache::VulkanCheck,
+                                                      "Command Buffer Begin", vulkan.renderResult);
 #endif
 
   // Begin RenderPass
@@ -224,7 +224,8 @@ Patache::Engine::EndRender (SDL_Event & rEvent)
                                      .pSignalSemaphores
                                      = &vulkan.pImageFinishedSemaphores[vulkan.currentFrame] };
 
-    vulkan.renderResult = vulkan.queue.submit (1, &submitInfo, vulkan.pInFlightFences[vulkan.currentFrame]);
+    vulkan.renderResult
+        = vulkan.queue.submit (1, &submitInfo, vulkan.pInFlightFences[vulkan.currentFrame]);
   }
 
 #if PATACHE_DEBUG == 1
@@ -251,7 +252,8 @@ Patache::Engine::EndRender (SDL_Event & rEvent)
 #endif
 
   // Resize
-  if (vulkan.renderResult == vk::Result::eErrorOutOfDateKHR || vulkan.renderResult == vk::Result::eSuboptimalKHR)
+  if (vulkan.renderResult == vk::Result::eErrorOutOfDateKHR
+      || vulkan.renderResult == vk::Result::eSuboptimalKHR)
     {
       // Minimization
       vk::SurfaceCapabilitiesKHR sc;
