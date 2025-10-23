@@ -22,9 +22,9 @@ _Dumb and simple 2D game engine made in C++. The goal is to do fast, lightweight
 
 ## Platforms
 <b>PC</b>
-|    Windows   |  GNU/Linux   |         Unix BSD          |
-| :----------: | :----------: | :-----------------------: |
-| x86_64/AMD64 | x86_64/AMD64 | x86_64/AMD _Only GNU GCC_ |
+|     Windows    |   GNU/Linux    |            Unix BSD           |
+| :------------: | :------------: | :---------------------------: |
+| x86_64 / AMD64 | x86_64 / AMD64 | x86_64 / AMD64 _Only GNU GCC_ |
 
 ## System requirements
 - Multi-core CPU with instructions AVX y SSE4.2 (MMX if you use GCC). basically a second-generation Intel Sandy Bridge CPU or AMD Bulldozer known as FX.
