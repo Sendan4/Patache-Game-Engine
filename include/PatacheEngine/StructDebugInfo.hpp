@@ -1,34 +1,34 @@
 #if PATACHE_DEBUG == 1
-#pragma once
+  #pragma once
 
-#include <imgui.h>
+  #include <imgui.h>
 
-#define PATACHE_LAYER_VK_COUNT         1
-#define PATACHE_VERSION_VK_SIZE        20
-#define PATACHE_DRIVER_VERSION_VK_SIZE 100
-#define PATACHE_DRIVERID_VK_SIZE       256
-#define PATACHE_DEVICETYPE_VK_SIZE     32
+  #define PATACHE_LAYER_VK_COUNT         1
+  #define PATACHE_VERSION_VK_SIZE        20
+  #define PATACHE_DRIVER_VERSION_VK_SIZE 100
+  #define PATACHE_DRIVERID_VK_SIZE       256
+  #define PATACHE_DEVICETYPE_VK_SIZE     32
 
 namespace Patache
 {
-#if __unix__ || __linux__ || __FreeBSD__ || __NetBSD__ || __NetBSD__ || __OpenBSD__ || __bsdi__    \
-    || __DragonFly__ || __MidnightBSD__
+  #if __unix__ || __linux__ || __FreeBSD__ || __NetBSD__ || __NetBSD__ || __OpenBSD__ || __bsdi__  \
+      || __DragonFly__ || __MidnightBSD__
 enum class WindowDecorationType : std::uint8_t
 {
   eNone,
   eClientSideDecoration,
   eServerSideDecoration
 };
-#endif
+  #endif
 
 struct EngineInfo
 {
   // Window
   std::uint64_t windowCreationFlags = 0;
-#if __unix__ || __linux__ || __FreeBSD__ || __NetBSD__ || __NetBSD__ || __OpenBSD__ || __bsdi__    \
-    || __DragonFly__ || __MidnightBSD__
+  #if __unix__ || __linux__ || __FreeBSD__ || __NetBSD__ || __NetBSD__ || __OpenBSD__ || __bsdi__  \
+      || __DragonFly__ || __MidnightBSD__
   Patache::WindowDecorationType windowDecorationType = Patache::WindowDecorationType::eNone;
-#endif
+  #endif
 
   // RaccoonRenderer
   // Vulkan

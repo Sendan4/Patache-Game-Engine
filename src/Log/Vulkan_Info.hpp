@@ -1,10 +1,10 @@
 #if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
-#include <cxxabi.h>
+  #include <cxxabi.h>
 #endif
 #if PATACHE_DEBUG == 1
-#include <cstdio>
-#include <future>
-#include <cstring>
+  #include <cstdio>
+  #include <future>
+  #include <cstring>
 #endif
 
 #include <fast_io.h>
@@ -12,7 +12,7 @@
 #include "PatacheEngine/VmaUsage.hpp"
 #include <SDL3/SDL.h>
 #if PATACHE_DEBUG == 1
-#include <imgui_impl_vulkan.h>
+  #include <imgui_impl_vulkan.h>
 #endif
 
 // Patache Engine

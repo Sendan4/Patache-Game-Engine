@@ -87,9 +87,9 @@ RaccoonRendererInit (Patache::Engine * pEngine, const Patache::EngineCreateInfo 
     instanceExtensionCount += extensionCountSDL;
 
 #if PATACHE_DEBUG == 1
-#if defined(PATACHE_USE_VVL)
+  #if defined(PATACHE_USE_VVL)
     ++instanceExtensionCount; // VK_EXT_layer_settings is no reported o enumerated
-#endif
+  #endif
 #endif
 
     // Search extension instance
@@ -125,7 +125,7 @@ RaccoonRendererInit (Patache::Engine * pEngine, const Patache::EngineCreateInfo 
       }
 
 #if PATACHE_DEBUG == 1
-#if defined(PATACHE_USE_VVL)
+  #if defined(PATACHE_USE_VVL)
     for (std::uint32_t i = 0; i < propertyCount; ++i)
       {
         if (std::strcmp (pInstanceExtensionProperties[i].extensionName,
@@ -137,7 +137,7 @@ RaccoonRendererInit (Patache::Engine * pEngine, const Patache::EngineCreateInfo 
             break;
           }
       }
-#endif
+  #endif
 #endif
 
     delete[] pInstanceExtensionProperties;
@@ -168,9 +168,9 @@ RaccoonRendererInit (Patache::Engine * pEngine, const Patache::EngineCreateInfo 
             ppAllExtensionInstance[extensionCountSDL] = vk::EXTDebugUtilsExtensionName;
           }
 
-#if defined(PATACHE_USE_VVL)
+  #if defined(PATACHE_USE_VVL)
         ppAllExtensionInstance[(++extensionCountSDL)] = vk::EXTLayerSettingsExtensionName;
-#endif
+  #endif
 #endif
 
 #if PATACHE_DEBUG == 1
@@ -223,13 +223,13 @@ RaccoonRendererInit (Patache::Engine * pEngine, const Patache::EngineCreateInfo 
                                                      .pValues    = &enableSetting,
                                                  } };
 
-#define EXTENT_STRUCT &layerSettingsInfo
+  #define EXTENT_STRUCT &layerSettingsInfo
     const vk::LayerSettingsCreateInfoEXT layerSettingsInfo{ .settingCount = 3,
                                                             .pSettings    = settings };
 #endif
 
 #if !defined(EXTENT_STRUCT)
-#define EXTENT_STRUCT nullptr
+  #define EXTENT_STRUCT nullptr
 #endif
 
     // Create Instance
@@ -252,7 +252,7 @@ RaccoonRendererInit (Patache::Engine * pEngine, const Patache::EngineCreateInfo 
     result = vk::createInstance (&instanceInfo, nullptr, &pEngine->vulkan.instance);
 
 #if defined(EXTENT_STRUCT)
-#undef EXTENT_STRUCT
+  #undef EXTENT_STRUCT
 #endif
 
     delete[] ppAllExtensionInstance;
@@ -596,16 +596,16 @@ EXIT_CREATE_DEVICE:
 
         // Find extensions
 #if defined(_WIN64) && defined(VK_USE_PLATFORM_WIN32_KHR)
-#define DEVICE_EXTENSION_COUNT_SEARCH 7 // ++VK_KHR_external_memory_win32
+  #define DEVICE_EXTENSION_COUNT_SEARCH 7 // ++VK_KHR_external_memory_win32
 #else
-#define DEVICE_EXTENSION_COUNT_SEARCH 6
+  #define DEVICE_EXTENSION_COUNT_SEARCH 6
 #endif
 
       std::uint8_t deviceExtensionCount = 1;
       bool         deviceExtensionIndices[DEVICE_EXTENSION_COUNT_SEARCH]{ false };
 
 #if defined(DEVICE_EXTENSION_COUNT_SEARCH)
-#undef DEVICE_EXTENSION_COUNT_SEARCH
+  #undef DEVICE_EXTENSION_COUNT_SEARCH
 #endif
 
       for (std::uint32_t i = 0; i < propertyCount; ++i)
@@ -1233,7 +1233,7 @@ EXIT_CREATE_DEVICE:
 }
 
 #if PATACHE_DEBUG == 1
-#include <imgui_impl_vulkan.h>
+  #include <imgui_impl_vulkan.h>
 #endif
 
 void

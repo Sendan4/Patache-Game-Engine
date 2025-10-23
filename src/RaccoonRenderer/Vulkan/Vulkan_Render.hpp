@@ -1,5 +1,5 @@
 #if defined(__GNUC__) || defined(__MINGW64__)
-#include <cxxabi.h>
+  #include <cxxabi.h>
 #endif
 #include <future>
 #include <functional>
@@ -9,9 +9,9 @@
 #include "PatacheEngine/VmaUsage.hpp"
 #include <SDL3/SDL.h>
 #if PATACHE_DEBUG == 1
-#include <imgui.h>
-#include <imgui_impl_sdl3.h>
-#include <imgui_impl_vulkan.h>
+  #include <imgui.h>
+  #include <imgui_impl_sdl3.h>
+  #include <imgui_impl_vulkan.h>
 #endif
 
 // Patache Engine

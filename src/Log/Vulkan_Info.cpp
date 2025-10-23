@@ -494,11 +494,11 @@ VulkanInfo (Patache::Engine * const pEngine, const Patache::SwapchainInfo & rSwa
 
   // =================== Debug ====================================
 #if PATACHE_DEBUG == 1
-#if defined(PATACHE_IMGUI_VERSION)
+  #if defined(PATACHE_IMGUI_VERSION)
   fast_io::io::println (PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_BOLD,
                         fast_io::mnp::right ("ImGui Version : ", 18), PATACHE_TERM_RESET,
                         PATACHE_IMGUI_VERSION);
-#endif
+  #endif
 #endif
 
   fast_io::io::println (PATACHE_FASTIO_BUFFOUT);

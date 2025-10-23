@@ -172,7 +172,7 @@ Patache::Engine::BeginRender (SDL_Event & rEvent)
 }
 
 #if PATACHE_DEBUG == 1
-#include "DebugUI.hpp"
+  #include "DebugUI.hpp"
 #endif
 
 void

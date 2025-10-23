@@ -144,9 +144,9 @@ Patache::DrawDebugUI (Patache::Engine * const pEngine)
         {
           ImGui::Text ("COMPILER : %s %s", PATACHE_COMPILER, PATACHE_COMPILER_VERSION);
 
-#if defined(PATACHE_COMPILER_PROGRAM)
+  #if defined(PATACHE_COMPILER_PROGRAM)
           ImGui::SetItemTooltip ("PROGRAM : %s", PATACHE_COMPILER_PROGRAM);
-#endif
+  #endif
 
           if (ImGui::TreeNode ("###BUILD_SYSTEM", "BUILD SYSTEM : %s %s", PATACHE_BUILD_SYSTEM,
                                PATACHE_BUILD_SYSTEM_VERSION))
@@ -159,15 +159,15 @@ Patache::DrawDebugUI (Patache::Engine * const pEngine)
               ImGui::TreePop ();
             }
 
-#if defined(PATACHE_BUILD_TYPE)
+  #if defined(PATACHE_BUILD_TYPE)
           ImGui::Text ("BUILD TYPE : %s", PATACHE_BUILD_TYPE);
-#endif
-#if defined(__GLIBC__) && defined(__GLIBC_MINOR__)
+  #endif
+  #if defined(__GLIBC__) && defined(__GLIBC_MINOR__)
           ImGui::Text ("LIBC LINKED VERSION : %u.%u", __GLIBC__, __GLIBC_MINOR__);
-#endif
-#if defined(PATACHE_ARCH)
+  #endif
+  #if defined(PATACHE_ARCH)
           ImGui::Text ("CPU ARCH TARGET : %s", PATACHE_ARCH);
-#endif
+  #endif
           ImGui::Spacing ();
         }
 #endif

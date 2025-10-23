@@ -1,6 +1,10 @@
-clang-format -i src/Core/*
-clang-format -i src/Core/WaylandCSD/*
-clang-format -i src/ImGui/*
-clang-format -i src/Log/*
-clang-format -i src/RaccoonRenderer/Vulkan/*
-clang-format -i include/PatacheEngine/*
+clang-format -i src/Core/*.cpp
+clang-format -i src/Core/*.hpp
+clang-format -i src/Core/WaylandCSD/*.hpp
+clang-format -i src/ImGui/*.cpp
+clang-format -i src/ImGui/*.hpp
+clang-format -i src/Log/*.cpp
+clang-format -i src/Log/*.hpp
+clang-format -i src/RaccoonRenderer/Vulkan/*.cpp
+clang-format -i src/RaccoonRenderer/Vulkan/*.hpp
+clang-format -i include/PatacheEngine/*.hpp

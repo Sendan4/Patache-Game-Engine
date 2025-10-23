@@ -1,11 +1,11 @@
 #if PATACHE_DEBUG == 1 && !defined(_WIN64)
-#include <cstdlib>
+  #include <cstdlib>
 #endif
 #include <future>
 #include <cstring>
 
 #if defined(_WIN64)
-#include <windows.h> // wincon.h
+  #include <windows.h> // wincon.h
 #endif
 #include <vulkan/vulkan.hpp>
 #include "PatacheEngine/VmaUsage.hpp"
@@ -15,15 +15,15 @@
 #include "PatacheEngine/PatacheEngine.hpp"
 #include "CstringWrapped.hpp"
 #if PATACHE_DEBUG == 1
-#include "CstdlibWrapped.hpp"
+  #include "CstdlibWrapped.hpp"
 #endif
 #include "StartLogInfo.hpp"
 #include "Message.hpp"
 // Icon
 #if PATACHE_DEBUG == 1
-#include "PatacheDebugIcon.hpp"
+  #include "PatacheDebugIcon.hpp"
 #else
-#include "PatacheReleaseIcon.hpp"
+  #include "PatacheReleaseIcon.hpp"
 #endif
 
 #if defined(_WIN64)
@@ -33,17 +33,17 @@ static DWORD  sMode     = 0;
 
 // VVL Path macros
 #if defined(PATACHE_FIND_VVL_IN_THE_CURRENT_PATH)
-#define PATACHE_VVL_PATH SDL_GetBasePath ()
+  #define PATACHE_VVL_PATH SDL_GetBasePath ()
 #endif
 #if defined(PATACHE_FIND_VVL_FROM_SDK)
-#define PATACHE_VVL_PATH PATACHE_VVL_SDK_PATH
+  #define PATACHE_VVL_PATH PATACHE_VVL_SDK_PATH
 #endif
 
 #include "Configuration_Funcs.hpp"
 
 #if __unix__ || __linux__ || __FreeBSD__ || __NetBSD__ || __NetBSD__ || __OpenBSD__ || __bsdi__    \
     || __DragonFly__ || __MidnightBSD__
-#include "WaylandWindow_Funcs.hpp"
+  #include "WaylandWindow_Funcs.hpp"
 #else
 // Event Filter for Window Resize | Input.cpp Func
 bool SDLCALL HandleResize (void *, SDL_Event *);
@@ -78,7 +78,7 @@ Patache::Engine::Init (const Patache::EngineCreateInfo & rInfo)
     // Make a window title
 #if PATACHE_DEBUG == 1
     // Debug
-#define PATACHE_WINDOW_TITLE windowTitle
+  #define PATACHE_WINDOW_TITLE windowTitle
   char windowTitle[64]{ 0 };
 
   if (rInfo.pWindowTitle != nullptr)
@@ -97,7 +97,7 @@ Patache::Engine::Init (const Patache::EngineCreateInfo & rInfo)
   PATACHE_STRNCAT (windowTitle, " (Debug / Development)", 63, 64);
 #else
   // Release
-#define PATACHE_WINDOW_TITLE pWindowTitle
+  #define PATACHE_WINDOW_TITLE pWindowTitle
   const char * pWindowTitle
       = (rInfo.pWindowTitle != nullptr) ? rInfo.pWindowTitle : rInfo.pGameName;
 
@@ -221,8 +221,8 @@ Patache::Engine::Engine (const Patache::EngineCreateInfo & rInfo, bool * pErr)
 }
 
 #if PATACHE_DEBUG == 1
-#include <imgui.h>
-#include <imgui_impl_sdl3.h>
+  #include <imgui.h>
+  #include <imgui_impl_sdl3.h>
 #endif
 
 Patache::Engine::~Engine (void)

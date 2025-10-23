@@ -4,29 +4,29 @@
 
 // cglm warnings
 #if defined(__GNUC__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-parameter"
-#include <cglm/cglm.h>
-#include <cglm/call.h>
-#pragma GCC diagnostic pop
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wunused-parameter"
+  #include <cglm/cglm.h>
+  #include <cglm/call.h>
+  #pragma GCC diagnostic pop
 #endif
 
 #if defined(_MSC_VER)
-#pragma warning(push)
-#pragma warning(disable : 4100)
-#include <cglm/cglm.h>
-#include <cglm/call.h>
-#pragma warning(pop)
+  #pragma warning(push)
+  #pragma warning(disable : 4100)
+  #include <cglm/cglm.h>
+  #include <cglm/call.h>
+  #pragma warning(pop)
 #endif
 
 #if __unix__ || __linux__ || __FreeBSD__ || __NetBSD__ || __NetBSD__ || __OpenBSD__ || __bsdi__    \
     || __DragonFly__ || __MidnightBSD__
-#include <wayland-client.h>
-#include <wayland-cursor.h>
+  #include <wayland-client.h>
+  #include <wayland-cursor.h>
 
-// Wayland Protocols
-#include <xdg-shell.h>
-#include <xdg-decoration-unstable-v1.h>
+  // Wayland Protocols
+  #include <xdg-shell.h>
+  #include <xdg-decoration-unstable-v1.h>
 #endif
 
 #include "PatacheEngine/Libexport.h"
@@ -34,7 +34,7 @@
 #include "PatacheEngine/VulkanBackend.hpp"
 #include "PatacheEngine/StructConfig.hpp"
 #if PATACHE_DEBUG == 1
-#include "PatacheEngine/StructDebugInfo.hpp"
+  #include "PatacheEngine/StructDebugInfo.hpp"
 #endif
 
 namespace Patache
@@ -147,11 +147,11 @@ struct WaylandWindow
   wl_cursor_theme * pCursorTheme   = nullptr;
 };
 
-/*
- * CSD Buttons Layout
- * [MINIMIZE | MAXIMIZE | CLOSE]
- */
-#define PATACHE_BUTTON_CSD_SIZE 3
+  /*
+   * CSD Buttons Layout
+   * [MINIMIZE | MAXIMIZE | CLOSE]
+   */
+  #define PATACHE_BUTTON_CSD_SIZE 3
 
 enum ButtonIndexCSD : std::uint8_t
 {
@@ -160,20 +160,20 @@ enum ButtonIndexCSD : std::uint8_t
   eClose
 };
 
-/*
- * CSD Borders Layout
- * TOP
- * BOTTOM
- * LEFT
- * RIGHT
- * TOP LEFT
- * TOP RIGHT
- * BOTTOM LEFT
- * BOTTOM RIGHT
- */
-#define PATACHE_BORDER_HORIZONTAL_CSD_SIZE 2
-#define PATACHE_BORDER_VERTICAL_CSD_SIZE   4
-#define PATACHE_BORDER_CSD_SIZE            8
+  /*
+   * CSD Borders Layout
+   * TOP
+   * BOTTOM
+   * LEFT
+   * RIGHT
+   * TOP LEFT
+   * TOP RIGHT
+   * BOTTOM LEFT
+   * BOTTOM RIGHT
+   */
+  #define PATACHE_BORDER_HORIZONTAL_CSD_SIZE 2
+  #define PATACHE_BORDER_VERTICAL_CSD_SIZE   4
+  #define PATACHE_BORDER_CSD_SIZE            8
 
 enum BorderIndexCSD : std::uint8_t
 {

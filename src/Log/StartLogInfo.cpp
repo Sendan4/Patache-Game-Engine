@@ -12,27 +12,27 @@ StartLogInfo (void)
                         PATACHE_TERM_RESET, " INFO");
 
 #if PATACHE_DEBUG == 1
-#if defined(PATACHE_USE_GIT)
+  #if defined(PATACHE_USE_GIT)
   fast_io::io::println (PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_BOLD,
                         fast_io::mnp::right ("Branch : ", 11), PATACHE_TERM_RESET,
                         PATACHE_GIT_BRANCH, "\n", PATACHE_TERM_BOLD,
                         fast_io::mnp::right ("Commit Hash : ", 16), "\n", PATACHE_TERM_RESET,
                         "    ", PATACHE_GIT_HASH_LONG, "\n    ", PATACHE_GIT_HASH_SHORT, "\n",
-#if PATACHE_GIT_DIRTY == 1
+    #if PATACHE_GIT_DIRTY == 1
                         PATACHE_TERM_COLOR_YELLOW, fast_io::mnp::right ("Dirty", 9),
-#else
+    #else
                         PATACHE_TERM_COLOR_GREEN, fast_io::mnp::right ("Clean", 10),
-#endif
+    #endif
                         PATACHE_TERM_RESET, " | ",
-#if PATACHE_GIT_STAGE == 1
+    #if PATACHE_GIT_STAGE == 1
                         PATACHE_TERM_COLOR_GREEN,
                         "In stage area"
-#else
+    #else
                         PATACHE_TERM_COLOR_YELLOW,
                         "Un-staged changes"
-#endif
+    #endif
                         PATACHE_TERM_RESET);
-#endif
+  #endif
 #endif // PATACHE_DEBUG
 
   fast_io::io::println (
