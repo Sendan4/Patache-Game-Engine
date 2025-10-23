@@ -41,7 +41,8 @@ static DWORD  sMode     = 0;
 
 #include "Configuration_Funcs.hpp"
 
-#if defined(__linux__)
+#if __unix__ || __linux__ || __FreeBSD__ || __NetBSD__ || __NetBSD__ || __OpenBSD__ || __bsdi__    \
+    || __DragonFly__ || __MidnightBSD__
 #include "WaylandWindow_Funcs.hpp"
 #else
 // Event Filter for Window Resize | Input.cpp Func
@@ -105,7 +106,8 @@ Patache::Engine::Init (const Patache::EngineCreateInfo & rInfo)
 #endif
 
   // Init Window for linux wayland. do this before SDL init
-#if defined(__linux__)
+#if __unix__ || __linux__ || __FreeBSD__ || __NetBSD__ || __NetBSD__ || __OpenBSD__ || __bsdi__    \
+    || __DragonFly__ || __MidnightBSD__
   if (!CreateWaylandWindow (854, 480, PATACHE_WINDOW_TITLE, this))
     return false;
 #endif
@@ -120,7 +122,7 @@ Patache::Engine::Init (const Patache::EngineCreateInfo & rInfo)
     }
 
     // Init Window for other Systems
-#if !defined(__linux__)
+#if defined(_WIN64)
   {
     // Window Initial Size
     std::uint32_t width = 0, height = 0;
@@ -270,7 +272,8 @@ Patache::Engine::~Engine (void)
   SDL_DestroyWindow (pGameWindow);
 
   // Wayland
-#if defined(__linux__)
+#if __unix__ || __linux__ || __FreeBSD__ || __NetBSD__ || __NetBSD__ || __OpenBSD__ || __bsdi__    \
+    || __DragonFly__ || __MidnightBSD__
   if (waylandWindow.pCursorTheme != nullptr)
     {
       wl_cursor_theme_destroy (waylandWindow.pCursorTheme);

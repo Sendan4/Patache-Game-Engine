@@ -42,12 +42,17 @@ target_include_directories(${PROJECT_NAME} PUBLIC ".")
 target_include_directories(${PROJECT_NAME} PUBLIC "backends/")
 target_include_directories(${PROJECT_NAME} PUBLIC "misc/freetype")
 
-# Link Vulkan from SDK
 # Link Libraries
-if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" OR CMAKE_SYSTEM_NAME STREQUAL "Linux")
+if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" OR
+    CMAKE_SYSTEM_NAME STREQUAL "Linux" OR
+    CMAKE_SYSTEM_NAME STREQUAL "FreeBSD" OR
+    CMAKE_SYSTEM_NAME STREQUAL "OpenBSD" OR
+    CMAKE_SYSTEM_NAME STREQUAL "DragonFly" OR
+    CMAKE_SYSTEM_NAME STREQUAL "NetBSD")
 	# build Vulkan
 	target_link_libraries(${PROJECT_NAME} PRIVATE vulkan Vulkan::Headers)
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    # Link Vulkan from SDK
 	find_package(Vulkan REQUIRED)
 
 	set (VULKANSDK_LIBS_PATH "${Vulkan_LIBRARIES}")
@@ -61,12 +66,13 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
     target_include_directories(${PROJECT_NAME} PRIVATE "${Vulkan_INCLUDE_DIRS}")
 endif()
 
+# Move this binaries to a build dir instead of bin build
 if (TARGET asm_offset)
     set_target_properties(asm_offset
-	    PROPERTIES
-		ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}
-		LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}
-		RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+        PROPERTIES
+        ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}
+        LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}
+        RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 endif()
 
 target_link_libraries(${PROJECT_NAME} PRIVATE freetype SDL3::SDL3)

@@ -3,8 +3,11 @@
 #define PATACHE_OS "GNU/Linux"
 #elif _WIN64 || _WIN32
 #define PATACHE_OS "Windows"
+#elif __unix__ || __linux__ || __FreeBSD__ || __NetBSD__ || __NetBSD__ || __OpenBSD__ || __bsdi__  \
+    || __DragonFly__ || __MidnightBSD__
+#define PATACHE_OS "Unix BSD"
 #else
-#define PATACHE_OS ""
+#define PATACHE_OS "undefined"
 #endif
 
 // Compiler
@@ -21,7 +24,7 @@
 #elif _MSC_VER >= 1930
 #define PATACHE_COMPILER "Microsoft Visual C++ (MSVC)"
 #else
-#define PATACHE_COMPILER ""
+#define PATACHE_COMPILER "undefined"
 #endif
 
 void StartLogInfo (void);

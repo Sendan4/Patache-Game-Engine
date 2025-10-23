@@ -11,7 +11,8 @@
 
 namespace Patache
 {
-#if defined(__linux__)
+#if __unix__ || __linux__ || __FreeBSD__ || __NetBSD__ || __NetBSD__ || __OpenBSD__ || __bsdi__    \
+    || __DragonFly__ || __MidnightBSD__
 enum class WindowDecorationType : std::uint8_t
 {
   eNone,
@@ -24,7 +25,8 @@ struct EngineInfo
 {
   // Window
   std::uint64_t windowCreationFlags = 0;
-#if defined(__linux__)
+#if __unix__ || __linux__ || __FreeBSD__ || __NetBSD__ || __NetBSD__ || __OpenBSD__ || __bsdi__    \
+    || __DragonFly__ || __MidnightBSD__
   Patache::WindowDecorationType windowDecorationType = Patache::WindowDecorationType::eNone;
 #endif
 

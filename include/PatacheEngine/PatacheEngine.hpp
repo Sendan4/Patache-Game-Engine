@@ -19,7 +19,8 @@
 #pragma warning(pop)
 #endif
 
-#if defined(__linux__)
+#if __unix__ || __linux__ || __FreeBSD__ || __NetBSD__ || __NetBSD__ || __OpenBSD__ || __bsdi__    \
+    || __DragonFly__ || __MidnightBSD__
 #include <wayland-client.h>
 #include <wayland-cursor.h>
 
@@ -103,7 +104,8 @@ struct Triangle
   }
 };
 
-#if defined(__linux__)
+#if __unix__ || __linux__ || __FreeBSD__ || __NetBSD__ || __NetBSD__ || __OpenBSD__ || __bsdi__    \
+    || __DragonFly__ || __MidnightBSD__
 struct WaylandWindow
 {
   // Globals
@@ -223,7 +225,8 @@ struct Engine
   // Window
   SDL_Window * pGameWindow = nullptr;
 
-#if defined(__linux__)
+#if __unix__ || __linux__ || __FreeBSD__ || __NetBSD__ || __NetBSD__ || __OpenBSD__ || __bsdi__    \
+    || __DragonFly__ || __MidnightBSD__
   Patache::WaylandWindow waylandWindow{};
 #endif
 

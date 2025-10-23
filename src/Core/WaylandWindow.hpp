@@ -6,7 +6,9 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <sys/mman.h>
+#include <unistd.h>
 
+#include <fast_io.h>
 #include <wayland-client.h>
 #include <wayland-cursor.h>
 

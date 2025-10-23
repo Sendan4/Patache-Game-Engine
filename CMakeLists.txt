@@ -3,10 +3,6 @@ message("  - Patache Engine -")
 
 cmake_minimum_required(VERSION 3.18)
 
-if (NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE Release)
-endif()
-
 if (${CMAKE_BUILD_TYPE} STREQUAL "Release")
     set(DEFAULT_USE_LTO_OPT ON)
 else()
@@ -34,6 +30,13 @@ project("PatacheEngine"
     LANGUAGES CXX
     VERSION 1 
     HOMEPAGE_URL "https://gitlab.com/PatacheEngine/Patache.git")
+
+if (${CMAKE_SYSTEM_NAME} STREQUAL "FreeBSD" OR
+    ${CMAKE_SYSTEM_NAME} STREQUAL "OpenBSD" OR
+    ${CMAKE_SYSTEM_NAME} STREQUAL "DragonFly" OR
+    ${CMAKE_SYSTEM_NAME} STREQUAL "NetBSD")
+    set(CMAKE_DISABLE_PRECOMPILE_HEADERS ON CACHE INTERNAL "..." FORCE)
+endif()
 
 set (PATACHE_ENGINE_VERSION_MAYOR 1)
 set (PATACHE_ENGINE_VERSION_MINOR 0)
@@ -64,7 +67,7 @@ if (${CMAKE_BUILD_TYPE} STREQUAL "Release" AND USE_LTO)
 endif()
 
 
-if (WIN32 OR CMAKE_SYSTEM_NAME STREQUAL "Windows")
+if (WIN32 OR ${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
     enable_language(C)
     include(CheckIncludeFile)
 endif()
@@ -84,13 +87,13 @@ if (NOT MSVC)
     check_cxx_compiler_flag("-fno-strict-aliasing" COMPILER_SUPPORTS_NO_STRICT_ALIASING)
     check_cxx_compiler_flag("-ffast-math" COMPILER_SUPPORTS_FAST_MATH) # Obligatory
 
-    if (CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64" OR CMAKE_SYSTEM_PROCESSOR STREQUAL "AMD64")
+    if (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "x86_64" OR ${CMAKE_SYSTEM_PROCESSOR} STREQUAL "AMD64")
         check_cxx_compiler_flag("-mmmx" COMPILER_SUPPORTS_MMX) # Obligatory
         check_cxx_compiler_flag("-msse4.2" COMPILER_SUPPORTS_SSE4.2) # Obligatory
         check_cxx_compiler_flag("-mavx" COMPILER_SUPPORTS_AVX) # Obligatory
     endif()
 
-    if (CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "MinSizeRel")
+    if (${CMAKE_BUILD_TYPE} STREQUAL "Release" OR ${CMAKE_BUILD_TYPE} STREQUAL "MinSizeRel")
         check_cxx_compiler_flag("-fno-rtti" COMPILER_SUPPORTS_NO_RTTI) # Obligatory
 
         if (NOT COMPILER_SUPPORTS_NO_RTTI) # Obligatory
@@ -130,12 +133,12 @@ else()
     check_cxx_compiler_flag("/fp:fast" COMPILER_SUPPORTS_FLOATING_POINT_FAST) # Obligatory
     check_cxx_compiler_flag("/fp:except-" COMPILER_SUPPORTS_NO_EXCEPCTION_FLOATING_POINT) # Obligatory
 
-    if (CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64" OR CMAKE_SYSTEM_PROCESSOR STREQUAL "AMD64")
+    if (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "x86_64" OR ${CMAKE_SYSTEM_PROCESSOR} STREQUAL "AMD64")
         check_cxx_compiler_flag("/arch:SSE4.2" COMPILER_SUPPORTS_SSE4.2) # Obligatory
         check_cxx_compiler_flag("/arch:AVX" COMPILER_SUPPORTS_AVX) # Obligatory
     endif()
 
-    if (CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "MinSizeRel")
+    if (${CMAKE_BUILD_TYPE} STREQUAL "Release" OR ${CMAKE_BUILD_TYPE} STREQUAL "MinSizeRel")
         check_cxx_compiler_flag("/GR-" COMPILER_SUPPORTS_NO_RTTI) # Obligatory
 
         if (NOT COMPILER_SUPPORTS_NO_RTTI) # Obligatory
@@ -166,10 +169,10 @@ else()
     endif()
 endif()
 
-if (WIN32 OR CMAKE_SYSTEM_NAME STREQUAL "Windows")
+if (WIN32 OR ${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
     CHECK_INCLUDE_FILE("windows.h" HAVE_WINDOWS_H)
 
-    if (NOT HAVE_WINDOWS_H AND (WIN32 OR CMAKE_SYSTEM_NAME STREQUAL "Windows"))
+    if (NOT HAVE_WINDOWS_H)
         message(FATAL_ERROR "missing windows.h")
     endif()
 endif()
@@ -177,7 +180,7 @@ endif()
 # Check Headers
 include(CheckCXXSymbolExists)
 if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo")
-    if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    if (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
         CHECK_INCLUDE_FILE_CXX("cxxabi.h" HAVE_CXXABI_H LANGUAGE CXX)
         
         if (NOT HAVE_CXXABI_H)
@@ -295,15 +298,18 @@ if (NOT HAVE_FUNCTIONAL)
     message(FATAL_ERROR "missing functional header")
 endif()
 
-set(CMAKE_REQUIRED_FLAGS_BACKUP ${CMAKE_REQUIRED_FLAGS})
+if ("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows" OR
+    "${CMAKE_SYSTEM_NAME}" STREQUAL "Linux")
+    set(CMAKE_REQUIRED_FLAGS_BACKUP ${CMAKE_REQUIRED_FLAGS})
 
-# Check std::async
-if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-    string(APPEND CMAKE_REQUIRED_FLAGS "-std=c++20")
-elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-    string(APPEND CMAKE_REQUIRED_FLAGS "/std:c++20")
-endif()
-check_cxx_source_compiles("
+    # Check std::async
+    if (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU" OR ${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
+        string(APPEND CMAKE_REQUIRED_FLAGS "-std=c++20")
+    elseif(${CMAKE_CXX_COMPILER_ID} STREQUAL "MSVC")
+        string(APPEND CMAKE_REQUIRED_FLAGS "/std:c++20")
+    endif()
+
+    check_cxx_source_compiles("
 #include <future>
 #include <cstdint>
 void test(void);
@@ -313,11 +319,12 @@ int main(void) {
 }
 void test(void) { uint8_t c = 0; c++;};
 " std_async)
-if (NOT std_async)
-    message(FATAL_ERROR "missing std::async function")
-endif()
+    if (NOT std_async)
+        message(FATAL_ERROR "missing std::async function")
+    endif()
 
-set(CMAKE_REQUIRED_FLAGS ${CMAKE_REQUIRED_FLAGS_BACKUP})
+    set(CMAKE_REQUIRED_FLAGS ${CMAKE_REQUIRED_FLAGS_BACKUP})
+endif()
 
 find_program(GIT NAMES git)
 
@@ -390,7 +397,11 @@ elseif ("${CMAKE_GENERATOR}" STREQUAL "Borland Makefiles" OR
         OUTPUT_VARIABLE CMAKE_GENERATOR_VERSION
         OUTPUT_STRIP_TRAILING_WHITESPACE)
 
-    string(REGEX MATCH "[0-9]+\.[0-9]+\.[0-9]" CMAKE_GENERATOR_VERSION ${CMAKE_GENERATOR_VERSION})
+    if (NOT ${CMAKE_GENERATOR_VERSION} STREQUAL "")
+        string(REGEX MATCH "[0-9]+\.[0-9]+\.[0-9]"
+            CMAKE_GENERATOR_VERSION
+            ${CMAKE_GENERATOR_VERSION})
+    endif()
 else()
     set (CMAKE_GENERATOR_VERSION "")
 endif()
@@ -408,7 +419,7 @@ if (USE_BIN_DIR)
     get_filename_component(BUILDDIR_NAME ${CMAKE_BINARY_DIR} NAME)
 
     set(BIN_DIR ${CMAKE_SOURCE_DIR}/bin/${BUILDDIR_NAME})
-	  set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin/${BUILDDIR_NAME})
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin/${BUILDDIR_NAME})
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin/${BUILDDIR_NAME})
 else()
     set(BIN_DIR ${CMAKE_BINARY_DIR})
@@ -443,5 +454,11 @@ if (USE_GIT AND GIT)
     message(STATUS "Git Branch : ${GIT_BRANCH}")
     message(STATUS "Git Commit : ${GIT_HASH_LONG}")
     message(STATUS "Version : ${PATACHE_ENGINE_VERSION}")
+endif()
+if (${CMAKE_SYSTEM_NAME} STREQUAL "FreeBSD" OR
+    ${CMAKE_SYSTEM_NAME} STREQUAL "OpenBSD" OR
+    ${CMAKE_SYSTEM_NAME} STREQUAL "DragonFly" OR
+    ${CMAKE_SYSTEM_NAME} STREQUAL "NetBSD")
+    message(STATUS "CMAKE_DISABLE_PRECOMPILE_HEADERS has been enabled")
 endif()
 message("")

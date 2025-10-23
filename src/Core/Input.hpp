@@ -19,7 +19,8 @@
 #include "PatacheEngine/PatacheEngine.hpp"
 #include "Message.hpp"
 
-#if defined(__linux__)
+#if __unix__ || __linux__ || __FreeBSD__ || __NetBSD__ || __NetBSD__ || __OpenBSD__ || __bsdi__    \
+    || __DragonFly__ || __MidnightBSD__
 extern bool isMaximized;
 #else
 bool SDLCALL HandleResize (void *, SDL_Event *);

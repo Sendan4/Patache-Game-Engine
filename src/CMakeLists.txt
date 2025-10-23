@@ -37,27 +37,34 @@ if (MSVC)
     target_sources(${PROJECT_NAME} PRIVATE ${Include} ${IncludeInternal})
 endif()
 
+# Windows resource file
 if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows" OR WIN32)
     enable_language(RC)
 
     target_sources (${PROJECT_NAME} PRIVATE "PatacheEngine.rc")
 endif()
 
-if (${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+# Wayland impl for unix
+if (${CMAKE_SYSTEM_NAME} STREQUAL "Linux" OR
+    ${CMAKE_SYSTEM_NAME} STREQUAL "FreeBSD" OR
+    ${CMAKE_SYSTEM_NAME} STREQUAL "OpenBSD" OR
+    ${CMAKE_SYSTEM_NAME} STREQUAL "DragonFly" OR
+    ${CMAKE_SYSTEM_NAME} STREQUAL "NetBSD")
     enable_language(C)
 
     target_sources (${PROJECT_NAME} PRIVATE
         "Core/WaylandWindow.cpp"
-	${CMAKE_BINARY_DIR}/WaylandProtocols/xdg-shell.h
-	${CMAKE_BINARY_DIR}/WaylandProtocols/xdg-shell.c
-	${CMAKE_BINARY_DIR}/WaylandProtocols/xdg-decoration-unstable-v1.h
-	${CMAKE_BINARY_DIR}/WaylandProtocols/xdg-decoration-unstable-v1.c)
+        ${CMAKE_BINARY_DIR}/WaylandProtocols/xdg-shell.h
+        ${CMAKE_BINARY_DIR}/WaylandProtocols/xdg-shell.c
+        ${CMAKE_BINARY_DIR}/WaylandProtocols/xdg-decoration-unstable-v1.h
+        ${CMAKE_BINARY_DIR}/WaylandProtocols/xdg-decoration-unstable-v1.c)
 		
     target_include_directories(${PROJECT_NAME} PRIVATE "Core/WaylandCSD/")
 
     target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_BINARY_DIR}/WaylandProtocols/)
 endif()
 
+# ImGui
 if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo")
     target_sources(${PROJECT_NAME} PRIVATE
         "ImGui/SetupImgui.cpp"
@@ -67,6 +74,7 @@ if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWit
         "${CMAKE_CURRENT_SOURCE_DIR}/ImGui/")
 endif()
 
+# Engine includes
 target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../include/")
 target_include_directories(${PROJECT_NAME} PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/Core/"
@@ -76,7 +84,8 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 # Compiler Flags
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     # GNU & Clang
-    if (MINGW AND (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo") AND COMPILER_SUPPORTS_FPERMISSIVE)
+    if (MINGW AND (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR
+        ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo") AND COMPILER_SUPPORTS_FPERMISSIVE)
         # Mingw specific function conversion in vulkan
         target_compile_options(${PROJECT_NAME} PRIVATE "-fpermissive")
     endif()
@@ -135,10 +144,11 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
         endif()
     endif()
 
+    # Disable MSVC C++ STL exceptions
     target_compile_definitions(${PROJECT_NAME} PRIVATE _HAS_EXCEPTIONS=0)
 endif()
 
-# Macros
+# Main engine macros
 if (${CMAKE_BUILD_TYPE} STREQUAL "Release")
     target_compile_definitions(${PROJECT_NAME} PRIVATE PATACHE_BUILD_TYPE="Release")
     target_compile_definitions(${PROJECT_NAME} PUBLIC PATACHE_DEBUG=0)
@@ -153,12 +163,13 @@ elseif(${CMAKE_BUILD_TYPE} STREQUAL "MinSizeRel")
     target_compile_definitions(${PROJECT_NAME} PUBLIC PATACHE_DEBUG=0)
 endif()
 
+# Build info macros
 if (NOT "${CMAKE_GENERATOR_VERSION}" STREQUAL "")
     target_compile_definitions(${PROJECT_NAME} PRIVATE
         PATACHE_BUILD_SYSTEM_GENERATOR_VERSION="${CMAKE_GENERATOR_VERSION}")
 else()
     target_compile_definitions(${PROJECT_NAME} PRIVATE
-        PATACHE_BUILD_SYSTEM_GENERATOR_VERSION="0")
+        PATACHE_BUILD_SYSTEM_GENERATOR_VERSION="")
 endif()
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE
@@ -178,11 +189,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     VULKAN_HPP_NO_SMART_HANDLE
     VULKAN_HPP_NO_CONSTRUCTORS)
 
-if (MSVC OR CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-    target_compile_definitions(${PROJECT_NAME} PRIVATE _HAS_EXCEPTIONS=0)
-endif()
-
-# Git
+# Git info macros
 if (USE_GIT AND GIT)
 target_compile_definitions(${PROJECT_NAME} PRIVATE
     PATACHE_USE_GIT
@@ -197,18 +204,39 @@ if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWit
     target_compile_definitions(${PROJECT_NAME} PRIVATE PATACHE_IMGUI_VERSION="${Imgui_VERSION}")
 endif()
 
+# Vulkan Validation Layer macro
 if (USE_VVL)
     target_compile_definitions(${PROJECT_NAME} PRIVATE PATACHE_USE_VVL)
 endif()
 
 # Link Libraries
 # Wayland
-if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    target_link_libraries(${PROJECT_NAME} PRIVATE ${WAYLAND_LIBRARIES} ${WAYLAND_CURSOR_LIBRARIES})
-    target_include_directories(${PROJECT_NAME} PRIVATE ${WAYLAND_INCLUDE_DIRS} ${WAYLAND_CURSOR_INCLUDE_DIRS})
+if (${CMAKE_SYSTEM_NAME} STREQUAL "Linux" OR
+    ${CMAKE_SYSTEM_NAME} STREQUAL "FreeBSD" OR
+    ${CMAKE_SYSTEM_NAME} STREQUAL "OpenBSD" OR
+    ${CMAKE_SYSTEM_NAME} STREQUAL "DragonFly" OR
+    ${CMAKE_SYSTEM_NAME} STREQUAL "NetBSD")
+    if (${WAYLAND_FOUND} AND ${WAYLAND_CURSOR_FOUND})
+        target_link_libraries(${PROJECT_NAME} PUBLIC
+            ${WAYLAND_LIBRARIES}
+            ${WAYLAND_CURSOR_LIBRARIES})
+
+        target_include_directories(${PROJECT_NAME} PUBLIC
+            ${WAYLAND_INCLUDE_DIRS}
+            ${WAYLAND_CURSOR_INCLUDE_DIRS})
+    endif()
+
+    # Always define wayland macro for SDL
+    target_compile_definitions(${PROJECT_NAME} PRIVATE SDL_VIDEO_DRIVER_WAYLAND)
 endif()
 
-if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" OR CMAKE_SYSTEM_NAME STREQUAL "Linux")
+# Vulkan
+if (${CMAKE_CXX_COMPILER_ID} STREQUAL "MSVC" OR
+    ${CMAKE_SYSTEM_NAME} STREQUAL "Linux" OR
+    ${CMAKE_SYSTEM_NAME} STREQUAL "FreeBSD" OR
+    ${CMAKE_SYSTEM_NAME} STREQUAL "OpenBSD" OR
+    ${CMAKE_SYSTEM_NAME} STREQUAL "DragonFly" OR
+    ${CMAKE_SYSTEM_NAME} STREQUAL "NetBSD")
     # Using VVL
     if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo" AND USE_VVL)
         target_compile_definitions(${PROJECT_NAME} PRIVATE PATACHE_FIND_VVL_IN_THE_CURRENT_PATH)
@@ -247,10 +275,7 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
     endif()
 endif()
 
-if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    target_compile_definitions(${PROJECT_NAME} PRIVATE SDL_VIDEO_DRIVER_WAYLAND)
-endif()
-
+# Move this binaries to a build dir instead of bin build
 if (TARGET asm_offset)
     set_target_properties(asm_offset
         PROPERTIES
@@ -259,6 +284,7 @@ if (TARGET asm_offset)
         RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 endif()
 
+# Link libraries
 target_link_libraries(${PROJECT_NAME} PUBLIC Fast_io SDL3::SDL3 cglm VulkanMemoryAllocator)
 target_link_libraries(${PROJECT_NAME} PRIVATE ryml::ryml freetype)
 target_include_directories(${PROJECT_NAME} PRIVATE ${FREETYPE_INCLUDE_DIRS})

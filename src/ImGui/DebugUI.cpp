@@ -259,7 +259,8 @@ Patache::DrawDebugUI (Patache::Engine * const pEngine)
               ImGui::TreePop ();
             }
 
-#if defined(__linux__)
+#if __unix__ || __linux__ || __FreeBSD__ || __NetBSD__ || __NetBSD__ || __OpenBSD__ || __bsdi__    \
+    || __DragonFly__ || __MidnightBSD__
           ImGui::Text ("WINDOW DECORATION :");
 
           switch (pEngine->debugInfo.windowDecorationType)

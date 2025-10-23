@@ -23,7 +23,8 @@ void RecreateSwapchain (Patache::Engine * const);
 
 #define PATACHE_ERROR_TEXT_SIZE 128
 
-#if defined(__linux__)
+#if __unix__ || __linux__ || __FreeBSD__ || __NetBSD__ || __NetBSD__ || __OpenBSD__ || __bsdi__    \
+    || __DragonFly__ || __MidnightBSD__
 // Input.hpp
 extern bool resize;
 extern bool resizingPending;

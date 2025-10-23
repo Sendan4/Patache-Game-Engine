@@ -29,6 +29,7 @@
 
 #if PATACHE_DEBUG == 1
 // Function pointers
+
 // vkCreateDebugUtilsMessengerEXT
 PFN_vkCreateDebugUtilsMessengerEXT pfnVkCreateDebugUtilsMessengerEXT = nullptr;
 

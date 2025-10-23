@@ -22,9 +22,9 @@ _Dumb and simple 2D game engine made in C++. The goal is to do fast, lightweight
 
 ## Platforms
 <b>PC</b>
-|    Windows   |  GNU/Linux   |
-| :----------: | :----------: |
-| x86_64/AMD64 | x86_64/AMD64 |
+|    Windows   |  GNU/Linux   |         Unix BSD          |
+| :----------: | :----------: | :-----------------------: |
+| x86_64/AMD64 | x86_64/AMD64 | x86_64/AMD _Only GNU GCC_ |
 
 ## System requirements
 - Multi-core CPU with instructions AVX y SSE4.2 (MMX if you use GCC). basically a second-generation Intel Sandy Bridge CPU or AMD Bulldozer known as FX.
@@ -46,7 +46,7 @@ _Dumb and simple 2D game engine made in C++. The goal is to do fast, lightweight
 - [ImGui](https://github.com/ocornut/imgui.git)
 - [cglm](https://github.com/recp/cglm.git)
 
-#### GNU/Linux
+#### GNU/Linux | Unix BSD
  - [Wayland](https://wayland.freedesktop.org/)
 	- [Wayland Client](https://gitlab.freedesktop.org/wayland/wayland)
 	- [Wayland Protocols](https://gitlab.freedesktop.org/wayland/wayland-protocols.git)

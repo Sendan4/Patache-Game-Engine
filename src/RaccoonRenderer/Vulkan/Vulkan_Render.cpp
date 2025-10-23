@@ -13,7 +13,8 @@ Patache::Engine::BeginRender (SDL_Event & rEvent)
    * The compositor throw the new size of window
    * and advise when you should resize.
    * */
-#if defined(__linux__)
+#if __unix__ || __linux__ || __FreeBSD__ || __NetBSD__ || __NetBSD__ || __OpenBSD__ || __bsdi__    \
+    || __DragonFly__ || __MidnightBSD__
   if (resizingPending && resize)
     {
       RecreateSwapchain (this);
@@ -54,8 +55,8 @@ Patache::Engine::BeginRender (SDL_Event & rEvent)
 
 #if PATACHE_DEBUG == 1
   if (vulkan.renderResult != vk::Result::eSuccess)
-    std::future<void> returnVulkanCheck
-        = std::async (std::launch::async, Patache::VulkanCheck, "Acquire Next Image 2 KHR", result);
+    std::future<void> returnVulkanCheck = std::async (
+        std::launch::async, Patache::VulkanCheck, "Acquire Next Image 2 KHR", vulkan.renderResult);
 #endif
 
   // Resize
@@ -96,7 +97,7 @@ Patache::Engine::BeginRender (SDL_Event & rEvent)
   vulkan.renderResult = vulkan.device.resetFences (1, &vulkan.pInFlightFences[vulkan.currentFrame]);
 
 #if PATACHE_DEBUG == 1
-  if (result != vk::Result::eSuccess)
+  if (vulkan.renderResult != vk::Result::eSuccess)
     {
       char errorText[PATACHE_ERROR_TEXT_SIZE]{ 0 };
 
@@ -104,7 +105,7 @@ Patache::Engine::BeginRender (SDL_Event & rEvent)
                      vulkan.currentFrame);
 
       std::future<void> returnVulkanCheck
-          = std::async (std::launch::async, Patache::VulkanCheck, errorText, result);
+          = std::async (std::launch::async, Patache::VulkanCheck, errorText, vulkan.renderResult);
     }
 #endif
 
@@ -205,7 +206,7 @@ Patache::Engine::EndRender (SDL_Event & rEvent)
                      vulkan.currentFrame);
 
       std::future<void> returnVulkanCheck
-          = std::async (std::launch::async, Patache::VulkanCheck, errorText, result2);
+          = std::async (std::launch::async, Patache::VulkanCheck, errorText, vulkan.renderResult);
     }
 #endif
 
@@ -230,8 +231,8 @@ Patache::Engine::EndRender (SDL_Event & rEvent)
 
 #if PATACHE_DEBUG == 1
   if (vulkan.renderResult != vk::Result::eSuccess)
-    std::future<void> returnVulkanCheck
-        = std::async (std::launch::async, Patache::VulkanCheck, "Queue Submit 2", result2);
+    std::future<void> returnVulkanCheck = std::async (std::launch::async, Patache::VulkanCheck,
+                                                      "Queue Submit 2", vulkan.renderResult);
 #endif
 
   // Present to surface

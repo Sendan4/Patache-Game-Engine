@@ -15,25 +15,32 @@ set (RYML_DEFAULT_CALLBACK_USES_EXCEPTIONS OFF CACHE INTERNAL "..." FORCE)
 set (RYML_INSTALL OFF CACHE INTERNAL "..." FORCE)
 
 if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/rapidyaml/)
-    add_subdirectory(rapidyaml)
+        add_subdirectory(rapidyaml)
 else()
     FetchContent_Declare(
         RapidYaml
-    	GIT_REPOSITORY https://github.com/biojppm/rapidyaml.git
-    	GIT_TAG v0.9.0
+        GIT_REPOSITORY https://github.com/biojppm/rapidyaml.git
+        GIT_TAG v0.9.0
     )
     FetchContent_MakeAvailable(RapidYaml)
 endif()
 
-if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    # Linux Wayland / Xorg
-    # Wayland Enable by default
+if (CMAKE_SYSTEM_NAME STREQUAL "Linux" OR
+    CMAKE_SYSTEM_NAME STREQUAL "FreeBSD" OR
+    CMAKE_SYSTEM_NAME STREQUAL "OpenBSD" OR
+    CMAKE_SYSTEM_NAME STREQUAL "DragonFly" OR
+    CMAKE_SYSTEM_NAME STREQUAL "NetBSD")
+    # Linux and Unix Wayland only
     set (BUILD_WSI_WAYLAND_SUPPORT ON CACHE INTERNAL "..." FORCE)
     set (BUILD_WSI_XCB_SUPPORT OFF CACHE BOOL "..." FORCE)
     set (BUILD_WSI_XLIB_SUPPORT OFF CACHE BOOL "..." FORCE)
 endif()
 
-if (MSVC OR LINUX)
+if (MSVC OR CMAKE_SYSTEM_NAME STREQUAL "Linux" OR
+    CMAKE_SYSTEM_NAME STREQUAL "FreeBSD" OR
+    CMAKE_SYSTEM_NAME STREQUAL "OpenBSD" OR
+    CMAKE_SYSTEM_NAME STREQUAL "DragonFly" OR
+    CMAKE_SYSTEM_NAME STREQUAL "NetBSD")
     set (BUILD_TESTS OFF CACHE INTERNAL "..." FORCE)
     set (UPDATE_DEPS ON CACHE INTERNAL "..." FORCE)
     set (VULKAN_HEADERS_ENABLE_MODULE OFF CACHE INTERNAL "..." FORCE)
@@ -110,12 +117,14 @@ set (ALLOW_EXTERNAL_SPIRV_TOOLS OFF CACHE INTERNAL "..." FORCE)
 set (BUILD_EXTERNAL ON CACHE INTERNAL "..." FORCE)
 
 if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/glslang)
+   find_package(Python 3 REQUIRED COMPONENTS Interpreter)
+
     execute_process(
-        COMMAND python update_glslang_sources.py
+        COMMAND ${Python_EXECUTABLE} update_glslang_sources.py
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/glslang)
 
     add_subdirectory(glslang)
-else() 
+else()
     set (BUILD_EXTERNAL OFF CACHE INTERNAL "..." FORCE)
     set (ENABLE_OPT OFF CACHE INTERNAL "..." FORCE)
 
@@ -156,14 +165,19 @@ else()
     FetchContent_MakeAvailable(cglm)
 endif()
 
-# Wayland Client
-if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+# Wayland Client and Cursor
+if (CMAKE_SYSTEM_NAME STREQUAL "Linux" OR
+    CMAKE_SYSTEM_NAME STREQUAL "FreeBSD" OR
+    CMAKE_SYSTEM_NAME STREQUAL "OpenBSD" OR
+    CMAKE_SYSTEM_NAME STREQUAL "DragonFly" OR
+    CMAKE_SYSTEM_NAME STREQUAL "NetBSD")
     message("")
     message("  - Wayland -")
   
     find_package(PkgConfig REQUIRED)
-    pkg_check_modules(WAYLAND wayland-client)
-    pkg_check_modules(WAYLAND_CURSOR wayland-cursor)
+    pkg_check_modules(WAYLAND wayland-client REQUIRED)
+    pkg_check_modules(WAYLAND_CURSOR wayland-cursor REQUIRED)
+
     find_program(WaylandScanner
         wayland-scanner
         REQUIRED)
@@ -287,7 +301,11 @@ set (SDL_DBUS OFF CACHE INTERNAL "..." FORCE)
 set (SDL_IBUS OFF CACHE INTERNAL "..." FORCE)
 set (SDL_VENDOR_INFO ${PROJECT_NAME} CACHE STRING "Vendor name and/or version to add to SDL_REVISION")
 
-if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+if (CMAKE_SYSTEM_NAME STREQUAL "Linux" OR
+    CMAKE_SYSTEM_NAME STREQUAL "FreeBSD" OR
+    CMAKE_SYSTEM_NAME STREQUAL "OpenBSD" OR
+    CMAKE_SYSTEM_NAME STREQUAL "DragonFly" OR
+    CMAKE_SYSTEM_NAME STREQUAL "NetBSD")
     set (SDL_X11 OFF CACHE INTERNAL "..." FORCE)
     set (SDL_X11_SHARED OFF CACHE INTERNAL "..." FORCE)
 endif ()

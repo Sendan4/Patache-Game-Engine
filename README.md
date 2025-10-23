@@ -22,9 +22,9 @@ _Motor de videojuegos 2D tonto y simple hecho con C++. El objetivo es hacerlo ra
 
 ## Plataformas
 <b>PC</b>
-|    Windows   |  GNU/Linux   |
-| :----------: | :----------: |
-| x86_64/AMD64 | x86_64/AMD64 |
+|    Windows   |  GNU/Linux   |         Unix BSD          |
+| :----------: | :----------: | :-----------------------: |
+| x86_64/AMD64 | x86_64/AMD64 | x86_64/AMD _Solo GNU GCC_ |
 
 ## Requerimentos de sistema
 - CPU multinucleo x86_64 con las extensiones AVX y SSE4.2 (MMX si usas GCC). basicamente una CPU Intel Sandy Bridge de segunda generacion o AMD Bulldozer conocido como FX.
@@ -46,7 +46,7 @@ _Motor de videojuegos 2D tonto y simple hecho con C++. El objetivo es hacerlo ra
 - [ImGui](https://github.com/ocornut/imgui.git)
 - [cglm](https://github.com/recp/cglm.git)
 
-#### GNU/Linux
+#### GNU/Linux | Unix BSD
  - [Wayland](https://wayland.freedesktop.org/)
 	- [Wayland Client](https://gitlab.freedesktop.org/wayland/wayland)
 	- [Wayland Protocols](https://gitlab.freedesktop.org/wayland/wayland-protocols.git)

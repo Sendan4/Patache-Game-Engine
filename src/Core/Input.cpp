@@ -18,7 +18,8 @@ Patache::Engine::HandleEvent (const SDL_Event & rEvent)
                 {
                   isFullScreen = true;
 
-#if defined(__linux__)
+#if __unix__ || __linux__ || __FreeBSD__ || __NetBSD__ || __NetBSD__ || __OpenBSD__ || __bsdi__    \
+    || __DragonFly__ || __MidnightBSD__
                   // Wayland Client Side Decoration
                   if (waylandWindow.pDecorationMananger == nullptr)
                     {
@@ -63,7 +64,8 @@ Patache::Engine::HandleEvent (const SDL_Event & rEvent)
                 }
               else
                 {
-#if defined(__linux__)
+#if __unix__ || __linux__ || __FreeBSD__ || __NetBSD__ || __NetBSD__ || __OpenBSD__ || __bsdi__    \
+    || __DragonFly__ || __MidnightBSD__
                   // Wayland Client Side Decoration
                   xdg_toplevel_unset_fullscreen (waylandWindow.pDesktopWindow);
 
@@ -119,7 +121,7 @@ Patache::Engine::HandleEvent (const SDL_Event & rEvent)
 #endif
 }
 
-#if !defined(__linux__)
+#if defined(__WIN64)
 // SDL Event Filter for Window Resize
 bool SDLCALL
 HandleResize (void * pUserdata, SDL_Event * pEvent)
