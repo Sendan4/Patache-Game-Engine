@@ -58,7 +58,7 @@ CreateSwapchain (Patache::Engine * const pEngine, Patache::SwapchainInfo & rSwap
     Extent2D
     */
 
-#if !defined(__linux__)
+#if defined(_WIN64)
   std::future<void> getDrawableSize_Async = std::async (std::launch::async, [&pEngine] (void) {
     int w = 1, h = 1;
     SDL_GetWindowSizeInPixels (pEngine->pGameWindow, &w, &h);
@@ -189,7 +189,7 @@ CreateSwapchain (Patache::Engine * const pEngine, Patache::SwapchainInfo & rSwap
       return false;
     }
 
-#if !defined(__linux__)
+#if defined(_WIN64)
   getDrawableSize_Async.wait ();
 #endif
 

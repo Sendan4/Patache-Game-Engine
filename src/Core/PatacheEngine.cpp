@@ -264,6 +264,62 @@ Patache::Engine::~Engine (void)
       debugInfo.deviceExtensionsCountVK = 0;
     }
 
+  if (debugInfo.ppVramMemoryDeviceSize != nullptr)
+    {
+      for (std::uint8_t i = 0; i < vulkan.swapchainImageCount; ++i)
+        {
+          if (debugInfo.ppVramMemoryDeviceSize[i] != nullptr)
+            {
+              std::free (debugInfo.ppVramMemoryDeviceSize[i]);
+            }
+        }
+
+      std::free (debugInfo.ppVramMemoryDeviceSize);
+      debugInfo.ppVramMemoryDeviceSize = nullptr;
+    }
+
+  if (debugInfo.ppVramMemoryDeviceSizeUnit != nullptr)
+    {
+      for (std::uint8_t i = 0; i < vulkan.swapchainImageCount; ++i)
+        {
+          if (debugInfo.ppVramMemoryDeviceSizeUnit[i] != nullptr)
+            {
+              std::free (debugInfo.ppVramMemoryDeviceSizeUnit[i]);
+            }
+        }
+
+      std::free (debugInfo.ppVramMemoryDeviceSizeUnit);
+      debugInfo.ppVramMemoryDeviceSizeUnit = nullptr;
+    }
+
+  if (debugInfo.ppVramMemoryDeviceHeap != nullptr)
+    {
+      for (std::uint8_t i = 0; i < vulkan.swapchainImageCount; ++i)
+        {
+          if (debugInfo.ppVramMemoryDeviceHeap[i] != nullptr)
+            {
+              std::free (debugInfo.ppVramMemoryDeviceHeap[i]);
+            }
+        }
+
+      std::free (debugInfo.ppVramMemoryDeviceHeap);
+      debugInfo.ppVramMemoryDeviceHeap = nullptr;
+    }
+
+  if (debugInfo.ppVramMemoryDeviceType != nullptr)
+    {
+      for (std::uint8_t i = 0; i < vulkan.swapchainImageCount; ++i)
+        {
+          if (debugInfo.ppVramMemoryDeviceType[i] != nullptr)
+            {
+              std::free (debugInfo.ppVramMemoryDeviceType[i]);
+            }
+        }
+
+      std::free (debugInfo.ppVramMemoryDeviceType);
+      debugInfo.ppVramMemoryDeviceType = nullptr;
+    }
+
   debugInfo.deviceVendorIdVK    = 0;
   debugInfo.windowCreationFlags = 0;
 #endif

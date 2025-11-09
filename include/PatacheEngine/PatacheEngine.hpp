@@ -60,23 +60,23 @@ struct EngineCreateInfo
   const char * const pWindowIconPath = nullptr;
   // Initial icon of the window. // It is optional.
   // Use bitmap (.bmp) format/codec. // It is optional.
-  const std::uint32_t bufferRenderSize  = 262144;
-  const std::uint32_t bufferStagingSize = 262144;
+  const std::uint32_t memRenderSizePerImage = 262144U;
+  const std::uint32_t buffStagingSize       = 262144U;
 };
 
 // Float32 format
 struct ClearColor
 {
-  float r = 0.0f; // Red
-  float g = 0.0f; // Green
-  float b = 0.0f; // Blue
-  float a = 1.0f; // Alpha
+  float r = 0.0F; // Red
+  float g = 0.0F; // Green
+  float b = 0.0F; // Blue
+  float a = 1.0F; // Alpha
 };
 
 struct Vertex2D
 {
-  vec2 pos   = { 0.0f, 0.0f };
-  vec3 color = { 1.0f, 1.0f, 1.0f };
+  vec2 pos   = { 0.0f, 0.0F };
+  vec3 color = { 1.0F, 1.0F, 1.0F };
   // Default color white
 };
 
@@ -85,18 +85,18 @@ struct Engine;
 // Triangle
 struct Triangle
 {
-  Vertex2D vertex[3] = { { { 0.0f, -0.5f }, { 1.0f, 1.0f, 1.0f } },
-                         { { 0.5f, 0.5f }, { 1.0f, 1.0f, 1.0f } },
-                         { { -0.5f, 0.5f }, { 1.0f, 1.0f, 1.0f } } };
+  Vertex2D vertex[3] = { { { 0.0F, -0.5F }, { 1.0F, 1.0F, 1.0F } },
+                         { { 0.5F, 0.5F }, { 1.0F, 1.0F, 1.0F } },
+                         { { -0.5F, 0.5F }, { 1.0F, 1.0F, 1.0F } } };
 
   vk::Device *   pDevice = nullptr;
-  vk::DeviceSize offset  = 0;
+  vk::DeviceSize offset  = 0U;
 
   PATACHE_API constexpr void
   SetColorRGB (const std::uint8_t & rSide, const float & rRed, const float & rBlue,
                const float & rGreen)
   {
-    assert ("A triangle only have 3 sides (0 - 3)" && (rSide <= 2));
+    assert ("A triangle only have 3 sides (0 - 3)" && (rSide <= 2U));
 
     vertex[rSide].color[0] = rRed;
     vertex[rSide].color[1] = rBlue;
@@ -129,19 +129,19 @@ struct WaylandWindow
   std::uint32_t * pMainBarPixels     = nullptr;
   wl_buffer *     pMainBarBuffer     = nullptr;
   // Border
-  wl_surface * pBorderSurface[8]
+  wl_surface * pBorderSurface[8U]
       = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
-  wl_subsurface * pBorderSubSurface[8]
+  wl_subsurface * pBorderSubSurface[8U]
       = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
-  std::uint32_t * pBorderPixels[8]
+  std::uint32_t * pBorderPixels[8U]
       = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
-  wl_buffer * pBorderBuffer[8]
+  wl_buffer * pBorderBuffer[8U]
       = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
   // Buttons
-  wl_surface *    pButtonSurface[3]          = { nullptr, nullptr, nullptr };
-  wl_subsurface * pButtonSubSurface[3]       = { nullptr, nullptr, nullptr };
-  std::uint32_t * pDecorationButtonPixels[3] = { nullptr, nullptr, nullptr };
-  wl_buffer *     pDecorationButtonBuffer[3] = { nullptr, nullptr, nullptr };
+  wl_surface *    pButtonSurface[3U]          = { nullptr, nullptr, nullptr };
+  wl_subsurface * pButtonSubSurface[3U]       = { nullptr, nullptr, nullptr };
+  std::uint32_t * pDecorationButtonPixels[3U] = { nullptr, nullptr, nullptr };
+  wl_buffer *     pDecorationButtonBuffer[3U] = { nullptr, nullptr, nullptr };
   // Cursor
   wl_surface *      pCursorSurface = nullptr;
   wl_cursor_theme * pCursorTheme   = nullptr;
@@ -151,7 +151,7 @@ struct WaylandWindow
    * CSD Buttons Layout
    * [MINIMIZE | MAXIMIZE | CLOSE]
    */
-  #define PATACHE_BUTTON_CSD_SIZE 3
+  #define PATACHE_BUTTON_CSD_SIZE 3U
 
 enum ButtonIndexCSD : std::uint8_t
 {
@@ -171,9 +171,9 @@ enum ButtonIndexCSD : std::uint8_t
    * BOTTOM LEFT
    * BOTTOM RIGHT
    */
-  #define PATACHE_BORDER_HORIZONTAL_CSD_SIZE 2
-  #define PATACHE_BORDER_VERTICAL_CSD_SIZE   4
-  #define PATACHE_BORDER_CSD_SIZE            8
+  #define PATACHE_BORDER_HORIZONTAL_CSD_SIZE 2U
+  #define PATACHE_BORDER_VERTICAL_CSD_SIZE   4U
+  #define PATACHE_BORDER_CSD_SIZE            8U
 
 enum BorderIndexCSD : std::uint8_t
 {

@@ -4,7 +4,6 @@ namespace Patache
 struct VulkanBackend
 {
   vk::Instance instance = VK_NULL_HANDLE;
-  VmaAllocator allocator;
 
   // Hardware
   vk::PhysicalDevice physicalDevice           = VK_NULL_HANDLE;
@@ -77,12 +76,15 @@ struct VulkanBackend
   vk::Viewport viewport{};
   vk::Rect2D   scissor{};
 
+  VmaAllocator allocator;
+
   // Buffer (GPU)
-  vk::Buffer *       pRenderBuffer       = nullptr;
-  vk::DeviceMemory * pRenderBufferMemory = nullptr;
+  vk::Buffer *    pRenderBuffer     = nullptr;
+  VmaAllocation * pRenderAllocation = nullptr;
   // Buffer (CPU) CPU -> GPU
-  vk::Buffer       stagingBuffer       = VK_NULL_HANDLE;
-  vk::DeviceMemory stagingBufferMemory = VK_NULL_HANDLE;
+  vk::Buffer    stagingBuffer = VK_NULL_HANDLE;
+  VmaAllocation stagingAllocation;
+  VmaPool       renderPool;
 
   void * renderData = nullptr;
 

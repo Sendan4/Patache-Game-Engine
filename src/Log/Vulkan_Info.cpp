@@ -12,8 +12,8 @@ VulkanInfo (Patache::Engine * const pEngine, const Patache::SwapchainInfo & rSwa
   physicalDeviceProperties.pNext = &driver;
   pEngine->vulkan.physicalDevice.getProperties2 (&physicalDeviceProperties);
 
-  std::uint64_t vramSizeTmp  = 0;
-  double        vramSize     = 0;
+  std::uint64_t vramSizeTmp  = 0U;
+  double        vramSize     = 0.0F;
   const char *  vramSizeUnit = "Byte";
 
   vk::PhysicalDeviceMemoryProperties memProperties{};
@@ -73,35 +73,41 @@ VulkanInfo (Patache::Engine * const pEngine, const Patache::SwapchainInfo & rSwa
 #endif
 
   // VRAM HEAP size
-  if (vramSizeTmp >= 1024U)
-    {
-#if PATACHE_DEBUG == 1
-      pEngine->debugInfo.vramSizeUnitVK = "KiB";
-      pEngine->debugInfo.vramSizeVK     = vramSizeTmp / 1024.0f;
-#endif
-      vramSizeUnit = "KiB";
-      vramSize     = vramSizeTmp / 1024.0f;
-    }
-
-  if (vramSizeTmp >= 1024U)
-    {
-#if PATACHE_DEBUG == 1
-      pEngine->debugInfo.vramSizeUnitVK = "MiB";
-      pEngine->debugInfo.vramSizeVK     = vramSizeTmp / 1048576.0f;
-#endif
-      vramSizeUnit = "MiB";
-      vramSize     = vramSizeTmp / 1048576.0f;
-    }
-
   if (vramSizeTmp >= 1073741824U)
     {
 #if PATACHE_DEBUG == 1
-      pEngine->debugInfo.vramSizeUnitVK = "GiB";
-      pEngine->debugInfo.vramSizeVK     = vramSizeTmp / 1073741824.0f;
+      pEngine->debugInfo.vramSizeUnit = "GiB";
+      pEngine->debugInfo.vramSize     = vramSizeTmp / 1073741824.0F;
 #endif
       vramSizeUnit = "GiB";
-      vramSize     = vramSizeTmp / 1073741824.0f;
+      vramSize     = vramSizeTmp / 1073741824.0F;
+
+      goto END_CHECK_SIZE_UNIT;
     }
+
+  if (vramSizeTmp >= 1048576U)
+    {
+#if PATACHE_DEBUG == 1
+      pEngine->debugInfo.vramSizeUnit = "MiB";
+      pEngine->debugInfo.vramSize     = vramSizeTmp / 1048576.0F;
+#endif
+      vramSizeUnit = "MiB";
+      vramSize     = vramSizeTmp / 1048576.0F;
+
+      goto END_CHECK_SIZE_UNIT;
+    }
+
+  if (vramSizeTmp >= 1024U)
+    {
+#if PATACHE_DEBUG == 1
+      pEngine->debugInfo.vramSizeUnit = "KiB";
+      pEngine->debugInfo.vramSize     = vramSizeTmp / 1024.0F;
+#endif
+      vramSizeUnit = "KiB";
+      vramSize     = vramSizeTmp / 1024.0F;
+    }
+
+END_CHECK_SIZE_UNIT:
 
 #if PATACHE_DEBUG == 1
   PATACHE_VARTYPE_STRING_PTR pVarTypeRealName = nullptr;
@@ -115,7 +121,7 @@ VulkanInfo (Patache::Engine * const pEngine, const Patache::SwapchainInfo & rSwa
   fast_io::io::println (
       PATACHE_FASTIO_BUFFOUT,
 #if defined(PATACHE_DEBUG)
-      PATACHE_FASTIO_SHOW_VARTYPE_STRING (pVarTypeRealName, 3, 2, 2),
+      PATACHE_FASTIO_SHOW_VARTYPE_STRING (pVarTypeRealName, 3, 2U, 2),
 #endif
       PATACHE_TERM_RESET, PATACHE_TERM_BOLD, "Vulkan Version : ", PATACHE_TERM_RESET,
       VK_VERSION_MAJOR (physicalDeviceProperties.properties.apiVersion), ".",
@@ -136,7 +142,7 @@ VulkanInfo (Patache::Engine * const pEngine, const Patache::SwapchainInfo & rSwa
 
   fast_io::io::println (PATACHE_FASTIO_BUFFOUT,
 #if defined(PATACHE_DEBUG)
-                        PATACHE_FASTIO_SHOW_VARTYPE_STRING (pVarTypeRealName, 3, 2, 2),
+                        PATACHE_FASTIO_SHOW_VARTYPE_STRING (pVarTypeRealName, 3, 2U, 2),
 #endif
                         PATACHE_TERM_RESET, PATACHE_TERM_BOLD, "Device", PATACHE_TERM_RESET);
 
@@ -152,7 +158,7 @@ VulkanInfo (Patache::Engine * const pEngine, const Patache::SwapchainInfo & rSwa
 
     fast_io::io::print (PATACHE_FASTIO_BUFFOUT,
 #if defined(PATACHE_DEBUG)
-                        PATACHE_FASTIO_SHOW_VARTYPE_STRING (pVarTypeRealName, 5, 2, 4),
+                        PATACHE_FASTIO_SHOW_VARTYPE_STRING (pVarTypeRealName, 5U, 2U, 4U),
 #endif
                         PATACHE_TERM_RESET, PATACHE_TERM_BOLD, "Name : ", PATACHE_TERM_RESET);
 
@@ -213,7 +219,7 @@ VulkanInfo (Patache::Engine * const pEngine, const Patache::SwapchainInfo & rSwa
 
     fast_io::io::print (PATACHE_FASTIO_BUFFOUT,
 #if defined(PATACHE_DEBUG)
-                        PATACHE_FASTIO_SHOW_VARTYPE_STRING (pVarTypeRealName, 5, 2, 4),
+                        PATACHE_FASTIO_SHOW_VARTYPE_STRING (pVarTypeRealName, 5U, 2U, 4U),
 #endif
                         PATACHE_TERM_RESET, PATACHE_TERM_BOLD, "Vendor : ", PATACHE_TERM_RESET);
 
@@ -302,7 +308,7 @@ VulkanInfo (Patache::Engine * const pEngine, const Patache::SwapchainInfo & rSwa
   // Device Type
   fast_io::io::println (PATACHE_FASTIO_BUFFOUT,
 #if defined(PATACHE_DEBUG)
-                        PATACHE_FASTIO_SHOW_VARTYPE_STRING (pVarTypeRealName, 5, 2, 4),
+                        PATACHE_FASTIO_SHOW_VARTYPE_STRING (pVarTypeRealName, 5U, 2U, 4U),
 #endif
                         PATACHE_TERM_RESET, PATACHE_TERM_BOLD, "Type : ", PATACHE_TERM_RESET,
                         vk::to_string (physicalDeviceProperties.properties.deviceType));
@@ -313,8 +319,8 @@ VulkanInfo (Patache::Engine * const pEngine, const Patache::SwapchainInfo & rSwa
 
   // =================== Device Vram Size =========================
   fast_io::io::println (PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_RESET, PATACHE_TERM_BOLD,
-                        fast_io::mnp::right ("Vram Size : ", 16), PATACHE_TERM_RESET, vramSize, " ",
-                        fast_io::mnp::os_c_str (vramSizeUnit), "\n");
+                        fast_io::mnp::right ("Vram Size : ", 16U), PATACHE_TERM_RESET, vramSize,
+                        " ", fast_io::mnp::os_c_str (vramSizeUnit), "\n");
 
   // =================== Driver ===================================
 #if defined(PATACHE_DEBUG)
@@ -324,7 +330,7 @@ VulkanInfo (Patache::Engine * const pEngine, const Patache::SwapchainInfo & rSwa
   // Vulkan Driver
   fast_io::io::println (PATACHE_FASTIO_BUFFOUT,
 #if defined(PATACHE_DEBUG)
-                        PATACHE_FASTIO_SHOW_VARTYPE_STRING (pVarTypeRealName, 3, 2, 2),
+                        PATACHE_FASTIO_SHOW_VARTYPE_STRING (pVarTypeRealName, 3U, 2U, 2U),
 #endif
                         PATACHE_TERM_RESET, PATACHE_TERM_BOLD, "Driver", PATACHE_TERM_RESET);
 
@@ -339,7 +345,7 @@ VulkanInfo (Patache::Engine * const pEngine, const Patache::SwapchainInfo & rSwa
 
   fast_io::io::println (PATACHE_FASTIO_BUFFOUT,
 #if defined(PATACHE_DEBUG)
-                        PATACHE_FASTIO_SHOW_VARTYPE_STRING (pVarTypeRealName, 5, 2, 4),
+                        PATACHE_FASTIO_SHOW_VARTYPE_STRING (pVarTypeRealName, 5U, 2U, 4U),
 #endif
                         PATACHE_TERM_RESET, PATACHE_TERM_BOLD, "Name : ", PATACHE_TERM_RESET,
                         fast_io::mnp::os_c_str (driver.driverName));
@@ -355,7 +361,7 @@ VulkanInfo (Patache::Engine * const pEngine, const Patache::SwapchainInfo & rSwa
 
   fast_io::io::println (PATACHE_FASTIO_BUFFOUT,
 #if defined(PATACHE_DEBUG)
-                        PATACHE_FASTIO_SHOW_VARTYPE_STRING (pVarTypeRealName, 5, 2, 4),
+                        PATACHE_FASTIO_SHOW_VARTYPE_STRING (pVarTypeRealName, 5U, 2U, 4U),
 #endif
                         PATACHE_TERM_RESET, PATACHE_TERM_BOLD, "ID : ", PATACHE_TERM_RESET,
                         vk::to_string (driver.driverID));
@@ -371,7 +377,7 @@ VulkanInfo (Patache::Engine * const pEngine, const Patache::SwapchainInfo & rSwa
 
   fast_io::io::println (PATACHE_FASTIO_BUFFOUT,
 #if defined(PATACHE_DEBUG)
-                        PATACHE_FASTIO_SHOW_VARTYPE_STRING (pVarTypeRealName, 5, 2, 4),
+                        PATACHE_FASTIO_SHOW_VARTYPE_STRING (pVarTypeRealName, 5U, 2U, 4U),
 #endif
                         PATACHE_TERM_RESET, PATACHE_TERM_BOLD, "Info : ", PATACHE_TERM_RESET,
                         fast_io::mnp::os_c_str (driver.driverInfo));
@@ -387,7 +393,7 @@ VulkanInfo (Patache::Engine * const pEngine, const Patache::SwapchainInfo & rSwa
 
   fast_io::io::println (PATACHE_FASTIO_BUFFOUT,
 #if defined(PATACHE_DEBUG)
-                        PATACHE_FASTIO_SHOW_VARTYPE_STRING (pVarTypeRealName, 5, 2, 4),
+                        PATACHE_FASTIO_SHOW_VARTYPE_STRING (pVarTypeRealName, 5U, 2U, 4U),
 #endif
                         PATACHE_TERM_RESET, PATACHE_TERM_BOLD, "Version : ", PATACHE_TERM_RESET,
                         VK_VERSION_MAJOR (physicalDeviceProperties.properties.driverVersion), ".",
@@ -407,7 +413,7 @@ VulkanInfo (Patache::Engine * const pEngine, const Patache::SwapchainInfo & rSwa
 
   fast_io::io::println (PATACHE_FASTIO_BUFFOUT,
 #if defined(PATACHE_DEBUG)
-                        PATACHE_FASTIO_SHOW_VARTYPE_STRING (pVarTypeRealName, 3, 2, 2),
+                        PATACHE_FASTIO_SHOW_VARTYPE_STRING (pVarTypeRealName, 3U, 2U, 2U),
 #endif
                         PATACHE_TERM_RESET, PATACHE_TERM_BOLD, "Swapchain", PATACHE_TERM_RESET);
 
@@ -423,7 +429,7 @@ VulkanInfo (Patache::Engine * const pEngine, const Patache::SwapchainInfo & rSwa
   // SwapChain Present Mode
   fast_io::io::print (PATACHE_FASTIO_BUFFOUT,
 #if defined(PATACHE_DEBUG)
-                      PATACHE_FASTIO_SHOW_VARTYPE_STRING (pVarTypeRealName, 5, 2, 4),
+                      PATACHE_FASTIO_SHOW_VARTYPE_STRING (pVarTypeRealName, 5U, 2U, 4U),
 #endif
                       PATACHE_TERM_RESET, PATACHE_TERM_BOLD, "Present Mode : ", PATACHE_TERM_RESET,
                       vk::to_string (rSwapchainInfo.presentMode), " ");
@@ -448,7 +454,7 @@ VulkanInfo (Patache::Engine * const pEngine, const Patache::SwapchainInfo & rSwa
 
   fast_io::io::println (PATACHE_FASTIO_BUFFOUT,
 #if defined(PATACHE_DEBUG)
-                        PATACHE_FASTIO_SHOW_VARTYPE_STRING (pVarTypeRealName, 5, 2, 4),
+                        PATACHE_FASTIO_SHOW_VARTYPE_STRING (pVarTypeRealName, 5U, 2U, 4U),
 #endif
                         PATACHE_TERM_RESET, PATACHE_TERM_BOLD, "Image Count : ", PATACHE_TERM_RESET,
                         pEngine->vulkan.swapchainImageCount);
@@ -464,7 +470,7 @@ VulkanInfo (Patache::Engine * const pEngine, const Patache::SwapchainInfo & rSwa
 
   fast_io::io::println (PATACHE_FASTIO_BUFFOUT,
 #if defined(PATACHE_DEBUG)
-                        PATACHE_FASTIO_SHOW_VARTYPE_STRING (pVarTypeRealName, 5, 2, 4),
+                        PATACHE_FASTIO_SHOW_VARTYPE_STRING (pVarTypeRealName, 5U, 2U, 4U),
 #endif
                         PATACHE_TERM_RESET, PATACHE_TERM_BOLD,
                         "Surface Color Format : ", PATACHE_TERM_RESET,
@@ -482,7 +488,7 @@ VulkanInfo (Patache::Engine * const pEngine, const Patache::SwapchainInfo & rSwa
 
   fast_io::io::println (PATACHE_FASTIO_BUFFOUT,
 #if defined(PATACHE_DEBUG)
-                        PATACHE_FASTIO_SHOW_VARTYPE_STRING (pVarTypeRealName, 5, 2, 4),
+                        PATACHE_FASTIO_SHOW_VARTYPE_STRING (pVarTypeRealName, 5U, 2U, 4U),
 #endif
                         PATACHE_TERM_RESET, PATACHE_TERM_BOLD,
                         "Surface Color Space : ", PATACHE_TERM_RESET,
@@ -496,7 +502,7 @@ VulkanInfo (Patache::Engine * const pEngine, const Patache::SwapchainInfo & rSwa
 #if PATACHE_DEBUG == 1
   #if defined(PATACHE_IMGUI_VERSION)
   fast_io::io::println (PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_BOLD,
-                        fast_io::mnp::right ("ImGui Version : ", 18), PATACHE_TERM_RESET,
+                        fast_io::mnp::right ("ImGui Version : ", 18U), PATACHE_TERM_RESET,
                         PATACHE_IMGUI_VERSION);
   #endif
 #endif

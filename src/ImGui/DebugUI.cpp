@@ -480,10 +480,66 @@ Patache::DrawDebugUI (Patache::Engine * const pEngine)
         ImGui::Text ("DEVICE TYPE : %s", pEngine->debugInfo.deviceTypeVK);
 
       // Device Memory Size (VRAM size)
-      ImGui::Text ("DEVICE VRAM : %.2f %s", pEngine->debugInfo.vramSizeVK,
-                   pEngine->debugInfo.vramSizeUnitVK);
+      ImGui::Text ("DEVICE VRAM : %.2f %s", pEngine->debugInfo.vramSize,
+                   pEngine->debugInfo.vramSizeUnit);
 
       ImGui::Spacing ();
+
+      if (ImGui::CollapsingHeader ("DEVICE MEMORY"))
+        {
+          if (ImGui::BeginTable ("DeviceMemory##AboutDeviceMemory", 3, PATACHE_IMGUI_TABLE_FLAGS))
+            {
+              ImGui::TableSetupColumn ("TYPE PROPERTY", ImGuiTableColumnFlags_WidthFixed);
+              ImGui::TableSetupColumn ("HEAP", ImGuiTableColumnFlags_WidthFixed);
+              ImGui::TableSetupColumn ("SIZE", ImGuiTableColumnFlags_WidthFixed);
+
+              ImGui::TableHeadersRow ();
+
+              for (std::uint8_t i = 0; i < pEngine->vulkan.swapchainImageCount; ++i)
+                {
+                  ImGui::TableNextRow ();
+
+                  if (pEngine->debugInfo.physicalDeviceProperties.properties.deviceType
+                      == vk::PhysicalDeviceType::eDiscreteGpu)
+                    {
+                      ImGui::TableSetColumnIndex (0);
+                      ImGui::Text ("%s", pEngine->debugInfo.ppVramMemoryDeviceType[i]);
+
+                      ImGui::TableSetColumnIndex (1);
+                      ImGui::Text ("%s", pEngine->debugInfo.ppVramMemoryDeviceHeap[i]);
+
+                      ImGui::TableSetColumnIndex (2);
+                      ImGui::Text ("%.2f %s", *pEngine->debugInfo.ppVramMemoryDeviceSize[i],
+                                   pEngine->debugInfo.ppVramMemoryDeviceSizeUnit[i]);
+                    }
+                }
+
+              // Host memory
+              ImGui::TableNextRow ();
+
+              ImGui::TableSetColumnIndex (0);
+              ImGui::Text ("%s", pEngine->debugInfo.vramMemoryHostType);
+
+              ImGui::TableSetColumnIndex (1);
+              ImGui::Text ("%s", pEngine->debugInfo.vramMemoryHostHeap);
+
+              ImGui::TableSetColumnIndex (2);
+              ImGui::Text ("%.2f %s", pEngine->debugInfo.vramMemoryHostSize,
+                           pEngine->debugInfo.pVramMemoryHostSizeUnit);
+
+              ImGui::EndTable ();
+            }
+
+          ImGui::Text (
+              "vma Pool Size Per Block : %.4f %s * %d", pEngine->debugInfo.vramPoolSizePerBlock,
+              pEngine->debugInfo.pVramPoolSizePerBlockUnit, pEngine->vulkan.swapchainImageCount);
+
+          ImGui::Text ("vma Pool Size of all blocks : %.4f %s",
+                       pEngine->debugInfo.vramPoolSizeAllBlocks,
+                       pEngine->debugInfo.pVramPoolSizeAllBlocksUnit);
+
+          ImGui::Spacing ();
+        }
 
       // Queues in use
       if (ImGui::CollapsingHeader ("DEVICE QUEUES"))
@@ -674,7 +730,7 @@ Patache::DrawDebugUI (Patache::Engine * const pEngine)
     }
   // End Patache Window configuration
 
-  // Reset style outside of pEngine core
+  // Reset style outside of Engine
   ImGui::GetStyle ().Colors[ImGuiCol_TitleBgActive]     = pEngine->debugInfo.engineStyles[0];
   ImGui::GetStyle ().Colors[ImGuiCol_ResizeGrip]        = pEngine->debugInfo.engineStyles[1];
   ImGui::GetStyle ().Colors[ImGuiCol_ResizeGripActive]  = pEngine->debugInfo.engineStyles[2];

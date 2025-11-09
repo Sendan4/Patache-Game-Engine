@@ -121,7 +121,7 @@ Patache::Engine::HandleEvent (const SDL_Event & rEvent)
 #endif
 }
 
-#if defined(__WIN64)
+#if defined(_WIN64)
 // SDL Event Filter for Window Resize
 bool SDLCALL
 HandleResize (void * pUserdata, SDL_Event * pEvent)
