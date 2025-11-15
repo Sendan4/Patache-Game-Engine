@@ -56,4 +56,4 @@ Si el motor o juego no inicia dentro de gamescope, prueba con ```--expose-waylan
 
 <hr>
 
-Patache esta bajo la licencia [LGPLv3.0](LICENSE)
+Patache esta bajo la licencia [GPLv3.0](LICENSE)
