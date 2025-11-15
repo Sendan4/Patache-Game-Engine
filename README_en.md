@@ -56,4 +56,4 @@ If the engine or game does not run inside gamescope, try with ```--expose-waylan
 
 <hr>
 
-Patache is under the [MIT](LICENSE.txt) license
+Patache is under the [LGPLv3.0](LICENSE) license
