@@ -39,9 +39,9 @@ struct VulkanBackend
   vk::Framebuffer * pSwapchainFrameBuffers = nullptr;
 
   // Commands
-  vk::CommandPool     commandPool = VK_NULL_HANDLE;
-  vk::CommandBuffer * pCmd        = nullptr;
-  vk::CommandBuffer   cmdTransfer = VK_NULL_HANDLE;
+  vk::CommandPool *   pCommandPools = nullptr;
+  vk::CommandBuffer * pCmd          = nullptr;
+  vk::CommandBuffer * pSubmitCmd    = nullptr;
 
   vk::RenderPass renderPass = VK_NULL_HANDLE;
 

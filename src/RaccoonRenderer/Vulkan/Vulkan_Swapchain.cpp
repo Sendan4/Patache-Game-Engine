@@ -59,13 +59,16 @@ CreateSwapchain (Patache::Engine * const pEngine, Patache::SwapchainInfo & rSwap
     */
 
 #if defined(_WIN64)
-  std::future<void> getDrawableSize_Async = std::async (std::launch::async, [&pEngine] (void) {
-    int w = 1, h = 1;
-    SDL_GetWindowSizeInPixels (pEngine->pGameWindow, &w, &h);
+  std::future<void> getDrawableSize_Async
+      = std::async (std::launch::async,
+                    [&pEngine] (void)
+                      {
+                        int w = 1, h = 1;
+                        SDL_GetWindowSizeInPixels (pEngine->pGameWindow, &w, &h);
 
-    pEngine->vulkan.swapchainExtent.width  = w;
-    pEngine->vulkan.swapchainExtent.height = h;
-  });
+                        pEngine->vulkan.swapchainExtent.width  = w;
+                        pEngine->vulkan.swapchainExtent.height = h;
+                      });
 #endif
   /*
   Two presentation modes are discarded depending on the configuration.
@@ -227,12 +230,14 @@ CreateSwapchain (Patache::Engine * const pEngine, Patache::SwapchainInfo & rSwap
       return false;
     }
 
-  std::future<void> storeSwapchainInfo_Async = std::async (
-      std::launch::async, [&rSwapchainInfo, &selectedPresentMode, &selectedSurfaceFormat] (void) {
-        rSwapchainInfo.presentMode      = selectedPresentMode;
-        rSwapchainInfo.imageColorFormat = selectedSurfaceFormat.format;
-        rSwapchainInfo.imageColorSpace  = vk::ColorSpaceKHR::eSrgbNonlinear;
-      });
+  std::future<void> storeSwapchainInfo_Async
+      = std::async (std::launch::async,
+                    [&rSwapchainInfo, &selectedPresentMode, &selectedSurfaceFormat] (void)
+                      {
+                        rSwapchainInfo.presentMode      = selectedPresentMode;
+                        rSwapchainInfo.imageColorFormat = selectedSurfaceFormat.format;
+                        rSwapchainInfo.imageColorSpace  = vk::ColorSpaceKHR::eSrgbNonlinear;
+                      });
 
   // SwapChain Images
   result = pEngine->vulkan.device.getSwapchainImagesKHR (
@@ -282,15 +287,20 @@ RecreateSwapchain (Patache::Engine * const pEngine)
       return;
     }
 
-  std::future<void> destroyObjects_Async = std::async (std::launch::async, [&pEngine] (void) {
-    for (std::uint8_t i = 0; i < pEngine->vulkan.swapchainImageCount; ++i)
-      {
-        pEngine->vulkan.device.destroyFramebuffer (pEngine->vulkan.pSwapchainFrameBuffers[i]);
-        pEngine->vulkan.device.destroyImageView (pEngine->vulkan.pSwapchainColorImageViews[i]);
-        pEngine->vulkan.device.destroySemaphore (pEngine->vulkan.pImageAvailableSemaphores[i]);
-        pEngine->vulkan.device.destroySemaphore (pEngine->vulkan.pImageFinishedSemaphores[i]);
-      }
-  });
+  std::future<void> destroyObjects_Async = std::async (
+      std::launch::async,
+      [&pEngine] (void)
+        {
+          for (std::uint8_t i = 0; i < pEngine->vulkan.swapchainImageCount; ++i)
+            {
+              pEngine->vulkan.device.destroyFramebuffer (pEngine->vulkan.pSwapchainFrameBuffers[i]);
+              pEngine->vulkan.device.destroyImageView (
+                  pEngine->vulkan.pSwapchainColorImageViews[i]);
+              pEngine->vulkan.device.destroySemaphore (
+                  pEngine->vulkan.pImageAvailableSemaphores[i]);
+              pEngine->vulkan.device.destroySemaphore (pEngine->vulkan.pImageFinishedSemaphores[i]);
+            }
+        });
 
   pEngine->vulkan.oldSwapchain = pEngine->vulkan.swapchain;
 

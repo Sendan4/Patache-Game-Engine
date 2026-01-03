@@ -807,8 +807,10 @@ EXIT_CREATE_DEVICE:
   }
 
   // VMA Allocator
-  std::future<bool> createAllocator_Async
-      = std::async (std::launch::async, [&vmaAllocatorInfoFlags, &pEngine] (void) -> bool {
+  std::future<bool> createAllocator_Async = std::async (
+      std::launch::async,
+      [&vmaAllocatorInfoFlags, &pEngine] (void) -> bool
+        {
           vk::Result result;
 
           VmaVulkanFunctions vulkanFunctions{};
@@ -942,22 +944,46 @@ EXIT_CREATE_DEVICE:
   }
 
   // Command Pool
-  std::future<bool> createCommandPool_Async
-      = std::async (std::launch::async, [&pEngine] (void) -> bool {
+  std::future<bool> createCommandPool_Async = std::async (
+      std::launch::async,
+      [&pEngine] (void) -> bool
+        {
           const vk::CommandPoolCreateInfo commandPoolInfo{
-            .flags            = vk::CommandPoolCreateFlagBits::eResetCommandBuffer,
+				    .flags = vk::CommandPoolCreateFlagBits::eTransient,
             .queueFamilyIndex = pEngine->vulkan.graphicsQueueFamilyIndex,
           };
 
-          vk::Result result = pEngine->vulkan.device.createCommandPool (
-              &commandPoolInfo, nullptr, &pEngine->vulkan.commandPool);
+          pEngine->vulkan.pCommandPools = static_cast<vk::CommandPool *> (
+              std::malloc (sizeof (vk::CommandPool) * pEngine->vulkan.swapchainImageCount));
 
-          if (result != vk::Result::eSuccess)
+          if (pEngine->vulkan.pCommandPools == nullptr)
             {
-              std::future<void> returnVulkanCheck
-                  = std::async (std::launch::async, Patache::VulkanCheck, "Command Pool", result);
+              std::future<void> fatalErr
+                  = std::async (std::launch::async, Patache::FatalErrorMessage, "Raccoon Renderer",
+                                "malloc fail to allocate memory heap for vulkan command pools",
+                                std::cref (pEngine->configuration));
 
               return false;
+            }
+
+          vk::Result result;
+
+          for (std::uint_fast32_t i = 0; i < pEngine->vulkan.swapchainImageCount; ++i)
+            {
+              result = pEngine->vulkan.device.createCommandPool (&commandPoolInfo, nullptr,
+                                                                 &pEngine->vulkan.pCommandPools[i]);
+
+              if (result != vk::Result::eSuccess)
+                {
+                  char errorText[PATACHE_ERROR_TEXT_SIZE]{};
+
+                  std::snprintf (errorText, PATACHE_ERROR_TEXT_SIZE - 1, "Command Pool #%.3lu", i);
+
+                  std::future<void> returnVulkanCheck
+                      = std::async (std::launch::async, Patache::VulkanCheck, errorText, result);
+
+                  return false;
+                }
             }
 
           return true;
@@ -980,221 +1006,224 @@ EXIT_CREATE_DEVICE:
       = std::async (std::launch::async, CreateSemaphores, std::ref (pEngine->vulkan));
 
   std::future<bool> createPipeline_Async = std::async (
-      std::launch::async, [&pEngine] (void) -> bool {
-        // Load Shaders
-        char shaderDirectoryStr[2056]{ 0 };
+      std::launch::async,
+      [&pEngine] (void) -> bool
+        {
+          // Load Shaders
+          char shaderDirectoryStr[2056]{ 0 };
 
-        PATACHE_STRNCPY (shaderDirectoryStr, SDL_GetBasePath (), 2055, 2056);
-        PATACHE_STRNCAT (shaderDirectoryStr, "Shaders/", 2055, 2056);
+          PATACHE_STRNCPY (shaderDirectoryStr, SDL_GetBasePath (), 2055, 2056);
+          PATACHE_STRNCAT (shaderDirectoryStr, "Shaders/", 2055, 2056);
 
-        fast_io::dir_file shaderDirectory (shaderDirectoryStr);
+          fast_io::dir_file shaderDirectory (shaderDirectoryStr);
 
-        fast_io::native_file_loader vertexShader (at (shaderDirectory), "Triangle.vert.spv");
+          fast_io::native_file_loader vertexShader (at (shaderDirectory), "Triangle.vert.spv");
 
-        fast_io::native_file_loader fragmentShader (at (shaderDirectory), "Triangle.frag.spv");
+          fast_io::native_file_loader fragmentShader (at (shaderDirectory), "Triangle.frag.spv");
 
-        if (vertexShader.data () == nullptr)
-          return false;
-
-        if (fragmentShader.data () == nullptr)
-          return false;
-
-        vk::ShaderModule vertexShaderModule{ VK_NULL_HANDLE },
-            fragmentShaderModule{ VK_NULL_HANDLE };
-
-        // Create Shader Modules
-        const vk::ShaderModuleCreateInfo shaderModuleInfo[2]{
-          { .codeSize = vertexShader.size (),
-            .pCode    = reinterpret_cast<const std::uint32_t *> (vertexShader.data ()) },
-          { .codeSize = fragmentShader.size (),
-            .pCode    = reinterpret_cast<const std::uint32_t *> (fragmentShader.data ()) }
-        };
-
-        // Vertex Shader Module
-        vk::Result result = pEngine->vulkan.device.createShaderModule (
-            &shaderModuleInfo[0], nullptr, &vertexShaderModule);
-
-        if (result != vk::Result::eSuccess)
-          {
-            std::future<void> returnVulkanCheck = std::async (
-                std::launch::async, Patache::VulkanCheck, "Vertex Shader Module", result);
-
+          if (vertexShader.data () == nullptr)
             return false;
-          }
 
-        // Fragment Shader Module
-        result = pEngine->vulkan.device.createShaderModule (&shaderModuleInfo[1], nullptr,
-                                                            &fragmentShaderModule);
-
-        if (result != vk::Result::eSuccess)
-          {
-            std::future<void> returnVulkanCheck = std::async (
-                std::launch::async, Patache::VulkanCheck, "Fragment Shader Module", result);
-
+          if (fragmentShader.data () == nullptr)
             return false;
-          }
 
-        // Create Pipeline
-        const vk::PipelineShaderStageCreateInfo shaderStageInfo[2]{
-          { .stage  = vk::ShaderStageFlagBits::eVertex,
-            .module = vertexShaderModule,
-            .pName  = "main" },
-          { .stage  = vk::ShaderStageFlagBits::eFragment,
-            .module = fragmentShaderModule,
-            .pName  = "main" }
-        };
+          vk::ShaderModule vertexShaderModule{ VK_NULL_HANDLE },
+              fragmentShaderModule{ VK_NULL_HANDLE };
 
-        // Vertex Input & Input Assembly
-        const vk::VertexInputBindingDescription bindingDescription{
-          .binding   = 0,
-          .stride    = sizeof (Patache::Vertex2D),
-          .inputRate = vk::VertexInputRate::eVertex
-        };
+          // Create Shader Modules
+          const vk::ShaderModuleCreateInfo shaderModuleInfo[2]{
+            { .codeSize = vertexShader.size (),
+              .pCode    = reinterpret_cast<const std::uint32_t *> (vertexShader.data ()) },
+            { .codeSize = fragmentShader.size (),
+              .pCode    = reinterpret_cast<const std::uint32_t *> (fragmentShader.data ()) }
+          };
 
-        const vk::VertexInputAttributeDescription vertexInputAttrib[2]{
-          // Position
-          { .location = 0,
-            .binding  = 0,
-            .format   = vk::Format::eR32G32Sfloat,
-            .offset   = offsetof (Patache::Vertex2D, pos) },
-          // Color
-          { .location = 1,
-            .binding  = 0,
-            .format   = vk::Format::eR32G32B32Sfloat,
-            .offset   = offsetof (Patache::Vertex2D, color) }
-        };
+          // Vertex Shader Module
+          vk::Result result = pEngine->vulkan.device.createShaderModule (
+              &shaderModuleInfo[0], nullptr, &vertexShaderModule);
 
-        const vk::PipelineVertexInputStateCreateInfo vertexInputStateInfo{
-          .vertexBindingDescriptionCount   = 1,
-          .pVertexBindingDescriptions      = &bindingDescription,
-          .vertexAttributeDescriptionCount = 2,
-          .pVertexAttributeDescriptions    = vertexInputAttrib
-        };
+          if (result != vk::Result::eSuccess)
+            {
+              std::future<void> returnVulkanCheck = std::async (
+                  std::launch::async, Patache::VulkanCheck, "Vertex Shader Module", result);
 
-        constexpr vk::PipelineInputAssemblyStateCreateInfo inputAssemblyStateInfo{
-          .topology = vk::PrimitiveTopology::eTriangleList, .primitiveRestartEnable = VK_FALSE
-        };
+              return false;
+            }
 
-        // Dynamic State
-        static constexpr vk::DynamicState dynamicStates[2]{ vk::DynamicState::eViewport,
-                                                            vk::DynamicState::eScissor };
+          // Fragment Shader Module
+          result = pEngine->vulkan.device.createShaderModule (&shaderModuleInfo[1], nullptr,
+                                                              &fragmentShaderModule);
 
-        const vk::PipelineDynamicStateCreateInfo dynamicStateInfo{ .dynamicStateCount = 2,
-                                                                   .pDynamicStates
-                                                                   = dynamicStates };
+          if (result != vk::Result::eSuccess)
+            {
+              std::future<void> returnVulkanCheck = std::async (
+                  std::launch::async, Patache::VulkanCheck, "Fragment Shader Module", result);
 
-        // Viewport and Scissor
-        pEngine->vulkan.viewport.x     = 0;
-        pEngine->vulkan.viewport.y     = 0;
-        pEngine->vulkan.viewport.width = static_cast<float> (pEngine->vulkan.swapchainExtent.width);
-        pEngine->vulkan.viewport.height
-            = static_cast<float> (pEngine->vulkan.swapchainExtent.height);
-        pEngine->vulkan.viewport.minDepth = 0.0f;
-        pEngine->vulkan.viewport.maxDepth = 1.0f;
+              return false;
+            }
 
-        pEngine->vulkan.scissor.offset = vk::Offset2D (0, 0);
-        pEngine->vulkan.scissor.extent = pEngine->vulkan.swapchainExtent;
+          // Create Pipeline
+          const vk::PipelineShaderStageCreateInfo shaderStageInfo[2]{
+            { .stage  = vk::ShaderStageFlagBits::eVertex,
+              .module = vertexShaderModule,
+              .pName  = "main" },
+            { .stage  = vk::ShaderStageFlagBits::eFragment,
+              .module = fragmentShaderModule,
+              .pName  = "main" }
+          };
 
-        const vk::PipelineViewportStateCreateInfo viewportStateInfo{ .viewportCount = 1,
-                                                                     .pViewports
-                                                                     = &pEngine->vulkan.viewport,
-                                                                     .scissorCount = 1,
-                                                                     .pScissors
-                                                                     = &pEngine->vulkan.scissor };
+          // Vertex Input & Input Assembly
+          const vk::VertexInputBindingDescription bindingDescription{
+            .binding   = 0,
+            .stride    = sizeof (Patache::Vertex2D),
+            .inputRate = vk::VertexInputRate::eVertex
+          };
 
-        // Rasterizer
-        constexpr const vk::PipelineRasterizationStateCreateInfo rasterizerStateInfo{
-          .depthClampEnable        = VK_FALSE,
-          .rasterizerDiscardEnable = VK_FALSE,
-          .polygonMode             = vk::PolygonMode::eFill,
-          .cullMode                = vk::CullModeFlagBits::eBack,
-          .frontFace               = vk::FrontFace::eClockwise,
-          .depthBiasEnable         = VK_FALSE,
-          .depthBiasConstantFactor = 0.0f,
-          .depthBiasClamp          = 0.0f,
-          .depthBiasSlopeFactor    = 0.0f,
-          .lineWidth               = 1.0f
-        };
+          const vk::VertexInputAttributeDescription vertexInputAttrib[2]{
+            // Position
+            { .location = 0,
+              .binding  = 0,
+              .format   = vk::Format::eR32G32Sfloat,
+              .offset   = offsetof (Patache::Vertex2D, pos) },
+            // Color
+            { .location = 1,
+              .binding  = 0,
+              .format   = vk::Format::eR32G32B32Sfloat,
+              .offset   = offsetof (Patache::Vertex2D, color) }
+          };
 
-        // MSAA Multisampling
-        const vk::PipelineMultisampleStateCreateInfo multisamplingStateInfo{
-          .rasterizationSamples  = vk::SampleCountFlagBits::e1,
-          .sampleShadingEnable   = VK_FALSE,
-          .minSampleShading      = 1.0f,
-          .pSampleMask           = nullptr,
-          .alphaToCoverageEnable = VK_FALSE,
-          .alphaToOneEnable      = VK_FALSE
-        };
+          const vk::PipelineVertexInputStateCreateInfo vertexInputStateInfo{
+            .vertexBindingDescriptionCount   = 1,
+            .pVertexBindingDescriptions      = &bindingDescription,
+            .vertexAttributeDescriptionCount = 2,
+            .pVertexAttributeDescriptions    = vertexInputAttrib
+          };
 
-        // Depth and stencil testing
-        // Not Yet
+          constexpr vk::PipelineInputAssemblyStateCreateInfo inputAssemblyStateInfo{
+            .topology = vk::PrimitiveTopology::eTriangleList, .primitiveRestartEnable = VK_FALSE
+          };
 
-        // Color Blending
-        constexpr const vk::PipelineColorBlendAttachmentState colorBlendAttachmentState{
-          .blendEnable         = VK_FALSE,
-          .srcColorBlendFactor = vk::BlendFactor::eSrcAlpha,
-          .dstColorBlendFactor = vk::BlendFactor::eOneMinusSrcAlpha,
-          .colorBlendOp        = vk::BlendOp::eAdd,
-          .srcAlphaBlendFactor = vk::BlendFactor::eOne,
-          .dstAlphaBlendFactor = vk::BlendFactor::eZero,
-          .alphaBlendOp        = vk::BlendOp::eAdd,
-          .colorWriteMask      = vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eG
-                            | vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eA
-        };
+          // Dynamic State
+          static constexpr vk::DynamicState dynamicStates[2]{ vk::DynamicState::eViewport,
+                                                              vk::DynamicState::eScissor };
 
-        const vk::PipelineColorBlendStateCreateInfo colorBlendStateInfo{
-          .logicOpEnable   = VK_FALSE,
-          .logicOp         = vk::LogicOp::eCopy,
-          .attachmentCount = 1,
-          .pAttachments    = &colorBlendAttachmentState
-        };
+          const vk::PipelineDynamicStateCreateInfo dynamicStateInfo{ .dynamicStateCount = 2,
+                                                                     .pDynamicStates
+                                                                     = dynamicStates };
 
-        const vk::PipelineLayoutCreateInfo pipelineLayoutInfo{ .setLayoutCount         = 0,
-                                                               .pSetLayouts            = nullptr,
-                                                               .pushConstantRangeCount = 0,
-                                                               .pPushConstantRanges    = nullptr };
+          // Viewport and Scissor
+          pEngine->vulkan.viewport.x = 0;
+          pEngine->vulkan.viewport.y = 0;
+          pEngine->vulkan.viewport.width
+              = static_cast<float> (pEngine->vulkan.swapchainExtent.width);
+          pEngine->vulkan.viewport.height
+              = static_cast<float> (pEngine->vulkan.swapchainExtent.height);
+          pEngine->vulkan.viewport.minDepth = 0.0f;
+          pEngine->vulkan.viewport.maxDepth = 1.0f;
 
-        result = pEngine->vulkan.device.createPipelineLayout (&pipelineLayoutInfo, nullptr,
-                                                              &pEngine->vulkan.pipelineLayout);
-        if (result != vk::Result::eSuccess)
-          {
-            std::future<void> returnVulkanCheck
-                = std::async (std::launch::async, Patache::VulkanCheck, "Pipeline Layout", result);
+          pEngine->vulkan.scissor.offset = vk::Offset2D (0, 0);
+          pEngine->vulkan.scissor.extent = pEngine->vulkan.swapchainExtent;
 
-            return false;
-          }
+          const vk::PipelineViewportStateCreateInfo viewportStateInfo{ .viewportCount = 1,
+                                                                       .pViewports
+                                                                       = &pEngine->vulkan.viewport,
+                                                                       .scissorCount = 1,
+                                                                       .pScissors
+                                                                       = &pEngine->vulkan.scissor };
 
-        const vk::GraphicsPipelineCreateInfo graphicsPipelineInfo{
-          .stageCount          = 2,
-          .pStages             = shaderStageInfo,
-          .pVertexInputState   = &vertexInputStateInfo,
-          .pInputAssemblyState = &inputAssemblyStateInfo,
-          .pViewportState      = &viewportStateInfo,
-          .pRasterizationState = &rasterizerStateInfo,
-          .pMultisampleState   = &multisamplingStateInfo,
-          .pDepthStencilState  = nullptr,
-          .pColorBlendState    = &colorBlendStateInfo,
-          .pDynamicState       = &dynamicStateInfo,
-          .layout              = pEngine->vulkan.pipelineLayout,
-          .renderPass          = pEngine->vulkan.renderPass
-        };
+          // Rasterizer
+          constexpr const vk::PipelineRasterizationStateCreateInfo rasterizerStateInfo{
+            .depthClampEnable        = VK_FALSE,
+            .rasterizerDiscardEnable = VK_FALSE,
+            .polygonMode             = vk::PolygonMode::eFill,
+            .cullMode                = vk::CullModeFlagBits::eBack,
+            .frontFace               = vk::FrontFace::eClockwise,
+            .depthBiasEnable         = VK_FALSE,
+            .depthBiasConstantFactor = 0.0f,
+            .depthBiasClamp          = 0.0f,
+            .depthBiasSlopeFactor    = 0.0f,
+            .lineWidth               = 1.0f
+          };
 
-        result = pEngine->vulkan.device.createGraphicsPipelines (
-            VK_NULL_HANDLE, 1, &graphicsPipelineInfo, nullptr, &pEngine->vulkan.graphicsPipeline);
+          // MSAA Multisampling
+          const vk::PipelineMultisampleStateCreateInfo multisamplingStateInfo{
+            .rasterizationSamples  = vk::SampleCountFlagBits::e1,
+            .sampleShadingEnable   = VK_FALSE,
+            .minSampleShading      = 1.0f,
+            .pSampleMask           = nullptr,
+            .alphaToCoverageEnable = VK_FALSE,
+            .alphaToOneEnable      = VK_FALSE
+          };
 
-        if (result != vk::Result::eSuccess)
-          {
-            std::future<void> returnVulkanCheck = std::async (
-                std::launch::async, Patache::VulkanCheck, "Graphics Pipeline", result);
+          // Depth and stencil testing
+          // Not Yet
 
-            return false;
-          }
+          // Color Blending
+          constexpr const vk::PipelineColorBlendAttachmentState colorBlendAttachmentState{
+            .blendEnable         = VK_FALSE,
+            .srcColorBlendFactor = vk::BlendFactor::eSrcAlpha,
+            .dstColorBlendFactor = vk::BlendFactor::eOneMinusSrcAlpha,
+            .colorBlendOp        = vk::BlendOp::eAdd,
+            .srcAlphaBlendFactor = vk::BlendFactor::eOne,
+            .dstAlphaBlendFactor = vk::BlendFactor::eZero,
+            .alphaBlendOp        = vk::BlendOp::eAdd,
+            .colorWriteMask      = vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eG
+                              | vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eA
+          };
 
-        pEngine->vulkan.device.destroyShaderModule (vertexShaderModule);
-        pEngine->vulkan.device.destroyShaderModule (fragmentShaderModule);
+          const vk::PipelineColorBlendStateCreateInfo colorBlendStateInfo{
+            .logicOpEnable   = VK_FALSE,
+            .logicOp         = vk::LogicOp::eCopy,
+            .attachmentCount = 1,
+            .pAttachments    = &colorBlendAttachmentState
+          };
 
-        return true;
-      });
+          const vk::PipelineLayoutCreateInfo pipelineLayoutInfo{ .setLayoutCount         = 0,
+                                                                 .pSetLayouts            = nullptr,
+                                                                 .pushConstantRangeCount = 0,
+                                                                 .pPushConstantRanges = nullptr };
+
+          result = pEngine->vulkan.device.createPipelineLayout (&pipelineLayoutInfo, nullptr,
+                                                                &pEngine->vulkan.pipelineLayout);
+          if (result != vk::Result::eSuccess)
+            {
+              std::future<void> returnVulkanCheck = std::async (
+                  std::launch::async, Patache::VulkanCheck, "Pipeline Layout", result);
+
+              return false;
+            }
+
+          const vk::GraphicsPipelineCreateInfo graphicsPipelineInfo{
+            .stageCount          = 2,
+            .pStages             = shaderStageInfo,
+            .pVertexInputState   = &vertexInputStateInfo,
+            .pInputAssemblyState = &inputAssemblyStateInfo,
+            .pViewportState      = &viewportStateInfo,
+            .pRasterizationState = &rasterizerStateInfo,
+            .pMultisampleState   = &multisamplingStateInfo,
+            .pDepthStencilState  = nullptr,
+            .pColorBlendState    = &colorBlendStateInfo,
+            .pDynamicState       = &dynamicStateInfo,
+            .layout              = pEngine->vulkan.pipelineLayout,
+            .renderPass          = pEngine->vulkan.renderPass
+          };
+
+          result = pEngine->vulkan.device.createGraphicsPipelines (
+              VK_NULL_HANDLE, 1, &graphicsPipelineInfo, nullptr, &pEngine->vulkan.graphicsPipeline);
+
+          if (result != vk::Result::eSuccess)
+            {
+              std::future<void> returnVulkanCheck = std::async (
+                  std::launch::async, Patache::VulkanCheck, "Graphics Pipeline", result);
+
+              return false;
+            }
+
+          pEngine->vulkan.device.destroyShaderModule (vertexShaderModule);
+          pEngine->vulkan.device.destroyShaderModule (fragmentShaderModule);
+
+          return true;
+        });
 
   std::future<void> vulkanInfo_Async
       = std::async (std::launch::async, VulkanInfo, std::ref (pEngine), std::ref (swapchainInfo));
@@ -1229,382 +1258,393 @@ EXIT_CREATE_DEVICE:
     return false;
 
   std::future<bool> createBuffer_Async = std::async (
-      std::launch::async, [&pEngine, &physicalDeviceProperties, &rInfo] (void) -> bool {
-        vk::Result                         result;
-        vk::PhysicalDeviceMemoryProperties memProps{};
+      std::launch::async,
+      [&pEngine, &physicalDeviceProperties, &rInfo] (void) -> bool
+        {
+          vk::Result                         result;
+          vk::PhysicalDeviceMemoryProperties memProps{};
 #if PATACHE_DEBUG == 1
-        VmaAllocationInfo memAllocInfo{};
+          VmaAllocationInfo memAllocInfo{};
 #endif
 
-        if (rInfo.buffStagingSize < 262144U)
-          {
-            std::future<void> err = std::async (
-                std::launch::async, Patache::FatalErrorMessage, "Patache Engine - Raccoon Renderer",
-                "buffStagingSize cannot be < (262144 bytes)", std::cref (pEngine->configuration));
+          if (rInfo.buffStagingSize < 262144U)
+            {
+              std::future<void> err = std::async (std::launch::async, Patache::FatalErrorMessage,
+                                                  "Patache Engine - Raccoon Renderer",
+                                                  "buffStagingSize cannot be < (262144 bytes)",
+                                                  std::cref (pEngine->configuration));
 
-            return false;
-          }
+              return false;
+            }
 
-        // GPU-CPU visible transfer buffer
-        const VkBufferCreateInfo buffStagingInfo{
-          .sType       = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
-          .pNext       = nullptr,
-          .flags       = 0U,
-          .size        = rInfo.buffStagingSize,
-          .usage       = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-          .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
-          .queueFamilyIndexCount = 1U,
-          .pQueueFamilyIndices   = &pEngine->vulkan.graphicsQueueFamilyIndex
-        };
+          // GPU-CPU visible transfer buffer
+          const VkBufferCreateInfo buffStagingInfo{
+            .sType       = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
+            .pNext       = nullptr,
+            .flags       = 0U,
+            .size        = rInfo.buffStagingSize,
+            .usage       = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+            .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
+            .queueFamilyIndexCount = 1U,
+            .pQueueFamilyIndices   = &pEngine->vulkan.graphicsQueueFamilyIndex
+          };
 
-        constexpr VmaAllocationCreateInfo allocInfo{
-          .flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT
-                   | VMA_ALLOCATION_CREATE_WITHIN_BUDGET_BIT,
-          .usage = VMA_MEMORY_USAGE_AUTO_PREFER_HOST,
-          .requiredFlags
-          = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-          .preferredFlags = VK_MEMORY_PROPERTY_HOST_CACHED_BIT,
-          .memoryTypeBits = 0U,
-          .pool           = nullptr,
-          .pUserData      = nullptr,
-          .priority       = 1.0F
-        };
+          constexpr VmaAllocationCreateInfo allocInfo{
+            .flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT
+                     | VMA_ALLOCATION_CREATE_WITHIN_BUDGET_BIT,
+            .usage = VMA_MEMORY_USAGE_AUTO_PREFER_HOST,
+            .requiredFlags
+            = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+            .preferredFlags = VK_MEMORY_PROPERTY_HOST_CACHED_BIT,
+            .memoryTypeBits = 0U,
+            .pool           = nullptr,
+            .pUserData      = nullptr,
+            .priority       = 1.0F
+          };
 
-        result = static_cast<vk::Result> (
-            vmaCreateBuffer (pEngine->vulkan.allocator, &buffStagingInfo, &allocInfo,
-                             reinterpret_cast<VkBuffer *> (&pEngine->vulkan.stagingBuffer),
-                             &pEngine->vulkan.stagingAllocation, nullptr));
+          result = static_cast<vk::Result> (
+              vmaCreateBuffer (pEngine->vulkan.allocator, &buffStagingInfo, &allocInfo,
+                               reinterpret_cast<VkBuffer *> (&pEngine->vulkan.stagingBuffer),
+                               &pEngine->vulkan.stagingAllocation, nullptr));
 
-        if (result != vk::Result::eSuccess)
-          {
-            std::future<void> checkVulkanReturn = std::async (
-                std::launch::async, Patache::VulkanCheck, "vmaCreateBuffer()", result);
+          if (result != vk::Result::eSuccess)
+            {
+              std::future<void> checkVulkanReturn = std::async (
+                  std::launch::async, Patache::VulkanCheck, "vmaCreateBuffer()", result);
 
-            return false;
-          }
-
-#if PATACHE_DEBUG == 1
-        // Host memory type and heaps Info
-        vmaGetAllocationInfo (pEngine->vulkan.allocator, pEngine->vulkan.stagingAllocation,
-                              &memAllocInfo);
-
-        pEngine->vulkan.physicalDevice.getMemoryProperties (&memProps);
-
-        PATACHE_STRNCPY (
-            pEngine->debugInfo.vramMemoryHostType,
-            vk::to_string (memProps.memoryTypes[memAllocInfo.memoryType].propertyFlags).c_str (),
-            PATACHE_MEMORY_HOST_VK_SIZE - 1, PATACHE_MEMORY_HOST_VK_SIZE);
-
-        PATACHE_STRNCPY (
-            pEngine->debugInfo.vramMemoryHostHeap,
-            vk::to_string (memProps.memoryHeaps[memAllocInfo.memoryType].flags).c_str (),
-            PATACHE_MEMORY_HOST_VK_SIZE - 1, PATACHE_MEMORY_HOST_VK_SIZE);
-
-        pEngine->debugInfo.vramMemoryHostSize = memAllocInfo.size;
-
-        if (pEngine->debugInfo.vramMemoryHostSize >= 1024U)
-          {
-            pEngine->debugInfo.pVramMemoryHostSizeUnit = "KiB";
-            pEngine->debugInfo.vramMemoryHostSize      = memAllocInfo.size / 1024.0F;
-            goto SKIP_CALC_SIZE_UNIT1;
-          }
-
-        if (pEngine->debugInfo.vramMemoryHostSize >= 1048576U)
-          {
-            pEngine->debugInfo.pVramMemoryHostSizeUnit = "MiB";
-            pEngine->debugInfo.vramMemoryHostSize      = memAllocInfo.size / 1048576.0F;
-            goto SKIP_CALC_SIZE_UNIT1;
-          }
-
-        if (pEngine->debugInfo.vramMemoryHostSize >= 1073741824U)
-          {
-            pEngine->debugInfo.pVramMemoryHostSizeUnit = "GiB";
-            pEngine->debugInfo.vramMemoryHostSize      = memAllocInfo.size / 1073741824.0F;
-          }
-
-      SKIP_CALC_SIZE_UNIT1:
-#endif
-
-        // GPU-device
-        if (physicalDeviceProperties.properties.deviceType == vk::PhysicalDeviceType::eDiscreteGpu)
-          {
-            if (rInfo.memRenderSizePerImage < 262144U)
-              {
-                std::future<void> err
-                    = std::async (std::launch::async, Patache::FatalErrorMessage,
-                                  "Patache Engine - Raccoon Renderer",
-                                  "memRenderSizePerImage cannot be < (262144 bytes)",
-                                  std::cref (pEngine->configuration));
-
-                return false;
-              }
-
-            const VkBufferCreateInfo buffRenderInfo{
-              .sType       = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
-              .pNext       = nullptr,
-              .flags       = 0U,
-              .size        = rInfo.memRenderSizePerImage,
-              .usage       = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-              .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
-              .queueFamilyIndexCount = 1U,
-              .pQueueFamilyIndices   = &pEngine->vulkan.graphicsQueueFamilyIndex
-            };
-
-            const VmaAllocationCreateInfo allocInfo{
-              .flags = VMA_ALLOCATION_CREATE_STRATEGY_MIN_MEMORY_BIT
-                       | VMA_ALLOCATION_CREATE_WITHIN_BUDGET_BIT,
-              .usage          = VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE,
-              .requiredFlags  = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-              .preferredFlags = VK_MEMORY_PROPERTY_DEVICE_COHERENT_BIT_AMD,
-              .memoryTypeBits = 0U,
-              .pool           = pEngine->vulkan.renderPool,
-              .pUserData      = nullptr,
-              .priority       = 1.0F
-            };
-
-            // Memory pool
-            std::uint32_t memoryTypeIndex = 0U;
-
-            result = static_cast<vk::Result> (vmaFindMemoryTypeIndexForBufferInfo (
-                pEngine->vulkan.allocator, &buffRenderInfo, &allocInfo, &memoryTypeIndex));
-
-            if (result != vk::Result::eSuccess)
-              {
-                std::future<void> checkVulkanReturn
-                    = std::async (std::launch::async, Patache::VulkanCheck,
-                                  "vmaFindMemoryTypeIndexForBufferInfo()", result);
-
-                return false;
-              }
-
-            const VmaPoolCreateInfo poolCreateInfo{ .memoryTypeIndex = memoryTypeIndex,
-                                                    .flags = VMA_POOL_CREATE_LINEAR_ALGORITHM_BIT,
-                                                    .blockSize = rInfo.memRenderSizePerImage + 1,
-                                                    .minBlockCount
-                                                    = pEngine->vulkan.swapchainImageCount,
-                                                    .maxBlockCount
-                                                    = pEngine->vulkan.swapchainImageCount + 1,
-                                                    .priority = 1.0F };
-
-            result = static_cast<vk::Result> (vmaCreatePool (
-                pEngine->vulkan.allocator, &poolCreateInfo, &pEngine->vulkan.renderPool));
-
-            if (result != vk::Result::eSuccess)
-              {
-                std::future<void> checkVulkanReturn = std::async (
-                    std::launch::async, Patache::VulkanCheck, "vmaCreatePool()", result);
-
-                return false;
-              }
+              return false;
+            }
 
 #if PATACHE_DEBUG == 1
-            // VMA pool info
-            pEngine->debugInfo.vramPoolSizePerBlock = poolCreateInfo.blockSize;
+          // Host memory type and heaps Info
+          vmaGetAllocationInfo (pEngine->vulkan.allocator, pEngine->vulkan.stagingAllocation,
+                                &memAllocInfo);
 
-            if (poolCreateInfo.blockSize >= 1024U)
-              {
-                pEngine->debugInfo.pVramPoolSizePerBlockUnit = "KiB";
-                pEngine->debugInfo.vramPoolSizePerBlock      = poolCreateInfo.blockSize / 1024.0F;
-                goto SKIP_CALC_SIZE_UNIT2;
-              }
+          pEngine->vulkan.physicalDevice.getMemoryProperties (&memProps);
 
-            if (poolCreateInfo.blockSize >= 1048576U)
-              {
-                pEngine->debugInfo.pVramPoolSizePerBlockUnit = "MiB";
-                pEngine->debugInfo.vramPoolSizePerBlock = poolCreateInfo.blockSize / 1048576.0F;
-                goto SKIP_CALC_SIZE_UNIT2;
-              }
+          PATACHE_STRNCPY (
+              pEngine->debugInfo.vramMemoryHostType,
+              vk::to_string (memProps.memoryTypes[memAllocInfo.memoryType].propertyFlags).c_str (),
+              PATACHE_MEMORY_HOST_VK_SIZE - 1, PATACHE_MEMORY_HOST_VK_SIZE);
 
-            if (poolCreateInfo.blockSize >= 1073741824U)
-              {
-                pEngine->debugInfo.pVramPoolSizePerBlockUnit = "GiB";
-                pEngine->debugInfo.vramPoolSizePerBlock = poolCreateInfo.blockSize / 1073741824.0F;
-              }
+          PATACHE_STRNCPY (
+              pEngine->debugInfo.vramMemoryHostHeap,
+              vk::to_string (memProps.memoryHeaps[memAllocInfo.memoryType].flags).c_str (),
+              PATACHE_MEMORY_HOST_VK_SIZE - 1, PATACHE_MEMORY_HOST_VK_SIZE);
 
-          SKIP_CALC_SIZE_UNIT2:
+          pEngine->debugInfo.vramMemoryHostSize = memAllocInfo.size;
 
-            pEngine->debugInfo.vramPoolSizeAllBlocks
-                = poolCreateInfo.blockSize * pEngine->vulkan.swapchainImageCount;
+          if (pEngine->debugInfo.vramMemoryHostSize >= 1024U)
+            {
+              pEngine->debugInfo.pVramMemoryHostSizeUnit = "KiB";
+              pEngine->debugInfo.vramMemoryHostSize      = memAllocInfo.size / 1024.0F;
+              goto SKIP_CALC_SIZE_UNIT1;
+            }
 
-            if (pEngine->debugInfo.vramPoolSizeAllBlocks >= 1024U)
-              {
-                pEngine->debugInfo.pVramPoolSizeAllBlocksUnit = "KiB";
-                pEngine->debugInfo.vramPoolSizeAllBlocks
-                    = (poolCreateInfo.blockSize * pEngine->vulkan.swapchainImageCount) / 1024.0F;
-                goto SKIP_CALC_SIZE_UNIT3;
-              }
+          if (pEngine->debugInfo.vramMemoryHostSize >= 1048576U)
+            {
+              pEngine->debugInfo.pVramMemoryHostSizeUnit = "MiB";
+              pEngine->debugInfo.vramMemoryHostSize      = memAllocInfo.size / 1048576.0F;
+              goto SKIP_CALC_SIZE_UNIT1;
+            }
 
-            if (pEngine->debugInfo.vramPoolSizeAllBlocks >= 1048576U)
-              {
-                pEngine->debugInfo.pVramPoolSizeAllBlocksUnit = "MiB";
-                pEngine->debugInfo.vramPoolSizeAllBlocks
-                    = (poolCreateInfo.blockSize * pEngine->vulkan.swapchainImageCount) / 1048576.0F;
-                goto SKIP_CALC_SIZE_UNIT3;
-              }
+          if (pEngine->debugInfo.vramMemoryHostSize >= 1073741824U)
+            {
+              pEngine->debugInfo.pVramMemoryHostSizeUnit = "GiB";
+              pEngine->debugInfo.vramMemoryHostSize      = memAllocInfo.size / 1073741824.0F;
+            }
 
-            if (pEngine->debugInfo.vramPoolSizeAllBlocks >= 1073741824U)
-              {
-                pEngine->debugInfo.pVramPoolSizeAllBlocksUnit = "GiB";
-                pEngine->debugInfo.vramPoolSizeAllBlocks
-                    = (poolCreateInfo.blockSize * pEngine->vulkan.swapchainImageCount)
-                      / 1073741824.0F;
-              }
-
-          SKIP_CALC_SIZE_UNIT3:
+        SKIP_CALC_SIZE_UNIT1:
 #endif
 
-            // Device memory
-            pEngine->vulkan.pRenderBuffer = static_cast<vk::Buffer *> (
-                std::malloc (sizeof (vk::Buffer) * pEngine->vulkan.swapchainImageCount));
+          // GPU-device
+          if (physicalDeviceProperties.properties.deviceType
+              == vk::PhysicalDeviceType::eDiscreteGpu)
+            {
+              if (rInfo.memRenderSizePerImage < 262144U)
+                {
+                  std::future<void> err
+                      = std::async (std::launch::async, Patache::FatalErrorMessage,
+                                    "Patache Engine - Raccoon Renderer",
+                                    "memRenderSizePerImage cannot be < (262144 bytes)",
+                                    std::cref (pEngine->configuration));
 
-            pEngine->vulkan.pRenderAllocation = static_cast<VmaAllocation *> (
-                std::malloc (sizeof (VmaAllocation) * pEngine->vulkan.swapchainImageCount));
+                  return false;
+                }
 
-            if (pEngine->vulkan.pRenderBuffer != nullptr
-                && pEngine->vulkan.pRenderAllocation != nullptr)
-              {
-                for (std::uint32_t i = 0; i < pEngine->vulkan.swapchainImageCount; ++i)
-                  {
-                    result = static_cast<vk::Result> (vmaCreateBuffer (
-                        pEngine->vulkan.allocator, &buffRenderInfo, &allocInfo,
-                        reinterpret_cast<VkBuffer *> (&pEngine->vulkan.pRenderBuffer[i]),
-                        &pEngine->vulkan.pRenderAllocation[i], nullptr));
+              const VkBufferCreateInfo buffRenderInfo{
+                .sType       = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
+                .pNext       = nullptr,
+                .flags       = 0U,
+                .size        = rInfo.memRenderSizePerImage,
+                .usage       = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+                .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
+                .queueFamilyIndexCount = 1U,
+                .pQueueFamilyIndices   = &pEngine->vulkan.graphicsQueueFamilyIndex
+              };
 
-                    if (result != vk::Result::eSuccess)
-                      {
-                        std::future<void> checkVulkanReturn = std::async (
-                            std::launch::async, Patache::VulkanCheck, "vmaCreateBuffer()", result);
+              const VmaAllocationCreateInfo allocInfo{
+                .flags = VMA_ALLOCATION_CREATE_STRATEGY_MIN_MEMORY_BIT
+                         | VMA_ALLOCATION_CREATE_WITHIN_BUDGET_BIT,
+                .usage          = VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE,
+                .requiredFlags  = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+                .preferredFlags = VK_MEMORY_PROPERTY_DEVICE_COHERENT_BIT_AMD,
+                .memoryTypeBits = 0U,
+                .pool           = pEngine->vulkan.renderPool,
+                .pUserData      = nullptr,
+                .priority       = 1.0F
+              };
 
-                        return false;
-                      }
-                  }
+              // Memory pool
+              std::uint32_t memoryTypeIndex = 0U;
+
+              result = static_cast<vk::Result> (vmaFindMemoryTypeIndexForBufferInfo (
+                  pEngine->vulkan.allocator, &buffRenderInfo, &allocInfo, &memoryTypeIndex));
+
+              if (result != vk::Result::eSuccess)
+                {
+                  std::future<void> checkVulkanReturn
+                      = std::async (std::launch::async, Patache::VulkanCheck,
+                                    "vmaFindMemoryTypeIndexForBufferInfo()", result);
+
+                  return false;
+                }
+
+              const VmaPoolCreateInfo poolCreateInfo{ .memoryTypeIndex = memoryTypeIndex,
+                                                      .flags = VMA_POOL_CREATE_LINEAR_ALGORITHM_BIT,
+                                                      .blockSize = rInfo.memRenderSizePerImage + 1,
+                                                      .minBlockCount
+                                                      = pEngine->vulkan.swapchainImageCount,
+                                                      .maxBlockCount
+                                                      = pEngine->vulkan.swapchainImageCount + 1,
+                                                      .priority = 1.0F };
+
+              result = static_cast<vk::Result> (vmaCreatePool (
+                  pEngine->vulkan.allocator, &poolCreateInfo, &pEngine->vulkan.renderPool));
+
+              if (result != vk::Result::eSuccess)
+                {
+                  std::future<void> checkVulkanReturn = std::async (
+                      std::launch::async, Patache::VulkanCheck, "vmaCreatePool()", result);
+
+                  return false;
+                }
 
 #if PATACHE_DEBUG == 1
-                // Size info for each memory
-                pEngine->debugInfo.ppVramMemoryDeviceSize = static_cast<float **> (
-                    std::malloc (sizeof (float *) * pEngine->vulkan.swapchainImageCount));
+              // VMA pool info
+              pEngine->debugInfo.vramPoolSizePerBlock = poolCreateInfo.blockSize;
 
-                pEngine->debugInfo.ppVramMemoryDeviceSizeUnit = static_cast<char **> (
-                    std::malloc (sizeof (char *) * pEngine->vulkan.swapchainImageCount));
+              if (poolCreateInfo.blockSize >= 1024U)
+                {
+                  pEngine->debugInfo.pVramPoolSizePerBlockUnit = "KiB";
+                  pEngine->debugInfo.vramPoolSizePerBlock      = poolCreateInfo.blockSize / 1024.0F;
+                  goto SKIP_CALC_SIZE_UNIT2;
+                }
 
-                // Memory type and heaps
-                pEngine->debugInfo.ppVramMemoryDeviceHeap = static_cast<char **> (
-                    std::malloc (sizeof (char *) * pEngine->vulkan.swapchainImageCount));
+              if (poolCreateInfo.blockSize >= 1048576U)
+                {
+                  pEngine->debugInfo.pVramPoolSizePerBlockUnit = "MiB";
+                  pEngine->debugInfo.vramPoolSizePerBlock = poolCreateInfo.blockSize / 1048576.0F;
+                  goto SKIP_CALC_SIZE_UNIT2;
+                }
 
-                pEngine->debugInfo.ppVramMemoryDeviceType = static_cast<char **> (
-                    std::malloc (sizeof (char *) * pEngine->vulkan.swapchainImageCount));
+              if (poolCreateInfo.blockSize >= 1073741824U)
+                {
+                  pEngine->debugInfo.pVramPoolSizePerBlockUnit = "GiB";
+                  pEngine->debugInfo.vramPoolSizePerBlock
+                      = poolCreateInfo.blockSize / 1073741824.0F;
+                }
 
-                if (pEngine->debugInfo.ppVramMemoryDeviceHeap != nullptr
-                    && pEngine->debugInfo.ppVramMemoryDeviceType != nullptr)
-                  {
-                    for (std::uint8_t i = 0; i < pEngine->vulkan.swapchainImageCount; ++i)
-                      {
-                        // Memory type and heaps Info
-                        vmaGetAllocationInfo (pEngine->vulkan.allocator,
-                                              pEngine->vulkan.pRenderAllocation[i], &memAllocInfo);
+            SKIP_CALC_SIZE_UNIT2:
 
-                        pEngine->debugInfo.ppVramMemoryDeviceType[i]
-                            = static_cast<char *> (std::malloc (510U));
+              pEngine->debugInfo.vramPoolSizeAllBlocks
+                  = poolCreateInfo.blockSize * pEngine->vulkan.swapchainImageCount;
 
-                        pEngine->debugInfo.ppVramMemoryDeviceHeap[i]
-                            = static_cast<char *> (std::malloc (510U));
+              if (pEngine->debugInfo.vramPoolSizeAllBlocks >= 1024U)
+                {
+                  pEngine->debugInfo.pVramPoolSizeAllBlocksUnit = "KiB";
+                  pEngine->debugInfo.vramPoolSizeAllBlocks
+                      = (poolCreateInfo.blockSize * pEngine->vulkan.swapchainImageCount) / 1024.0F;
+                  goto SKIP_CALC_SIZE_UNIT3;
+                }
 
-                        pEngine->vulkan.physicalDevice.getMemoryProperties (&memProps);
+              if (pEngine->debugInfo.vramPoolSizeAllBlocks >= 1048576U)
+                {
+                  pEngine->debugInfo.pVramPoolSizeAllBlocksUnit = "MiB";
+                  pEngine->debugInfo.vramPoolSizeAllBlocks
+                      = (poolCreateInfo.blockSize * pEngine->vulkan.swapchainImageCount)
+                        / 1048576.0F;
+                  goto SKIP_CALC_SIZE_UNIT3;
+                }
 
-                        if (pEngine->debugInfo.ppVramMemoryDeviceHeap[i] != nullptr)
-                          {
-                            PATACHE_STRNCPY (
-                                pEngine->debugInfo.ppVramMemoryDeviceHeap[i],
-                                vk::to_string (
-                                    memProps
-                                        .memoryHeaps[memProps.memoryTypes[memAllocInfo.memoryType]
-                                                         .heapIndex]
-                                        .flags)
-                                    .c_str (),
-                                509U, 510U);
-                          }
+              if (pEngine->debugInfo.vramPoolSizeAllBlocks >= 1073741824U)
+                {
+                  pEngine->debugInfo.pVramPoolSizeAllBlocksUnit = "GiB";
+                  pEngine->debugInfo.vramPoolSizeAllBlocks
+                      = (poolCreateInfo.blockSize * pEngine->vulkan.swapchainImageCount)
+                        / 1073741824.0F;
+                }
 
-                        if (pEngine->debugInfo.ppVramMemoryDeviceType[i] != nullptr)
-                          {
-                            PATACHE_STRNCPY (
-                                pEngine->debugInfo.ppVramMemoryDeviceType[i],
-                                vk::to_string (
-                                    memProps.memoryTypes[memAllocInfo.memoryType].propertyFlags)
-                                    .c_str (),
-                                509U, 510U);
-                          }
-
-                        // Size info for each Memory
-                        if (pEngine->debugInfo.ppVramMemoryDeviceSize != nullptr
-                            && pEngine->debugInfo.ppVramMemoryDeviceSizeUnit != nullptr)
-                          {
-                            pEngine->debugInfo.ppVramMemoryDeviceSize[i]
-                                = static_cast<float *> (std::malloc (sizeof (float)));
-
-                            pEngine->debugInfo.ppVramMemoryDeviceSizeUnit[i]
-                                = static_cast<char *> (std::malloc (5U));
-
-                            if (pEngine->debugInfo.ppVramMemoryDeviceSize[i] != nullptr)
-                              {
-                                if (memAllocInfo.size >= 1073741824U)
-                                  {
-                                    if (pEngine->debugInfo.ppVramMemoryDeviceSizeUnit[i] != nullptr)
-                                      {
-                                        PATACHE_STRNCPY (
-                                            pEngine->debugInfo.ppVramMemoryDeviceSizeUnit[i], "GiB",
-                                            4U, 5U);
-                                      }
-
-                                    *pEngine->debugInfo.ppVramMemoryDeviceSize[i]
-                                        = memAllocInfo.size / 1073741824.0F;
-
-                                    continue;
-                                  }
-
-                                if (memAllocInfo.size >= 1048576U)
-                                  {
-                                    if (pEngine->debugInfo.ppVramMemoryDeviceSizeUnit[i] != nullptr)
-                                      {
-                                        PATACHE_STRNCPY (
-                                            pEngine->debugInfo.ppVramMemoryDeviceSizeUnit[i], "MiB",
-                                            4U, 5U);
-                                      }
-
-                                    *pEngine->debugInfo.ppVramMemoryDeviceSize[i]
-                                        = memAllocInfo.size / 1048576.0F;
-
-                                    continue;
-                                  }
-
-                                if (memAllocInfo.size >= 1024U)
-                                  {
-                                    if (pEngine->debugInfo.ppVramMemoryDeviceSizeUnit[i] != nullptr)
-                                      {
-                                        PATACHE_STRNCPY (
-                                            pEngine->debugInfo.ppVramMemoryDeviceSizeUnit[i], "KiB",
-                                            4U, 5U);
-                                      }
-
-                                    *pEngine->debugInfo.ppVramMemoryDeviceSize[i]
-                                        = memAllocInfo.size / 1024.0F;
-                                  }
-                              }
-                          }
-                      }
-                  }
+            SKIP_CALC_SIZE_UNIT3:
 #endif
-              }
-            else
-              {
-                std::future<void> returnVulkanErr = std::async (
-                    std::launch::async, Patache::ErrorMessage, "Cant allocate memory");
 
-                return false;
-              }
-          }
+              // Device memory
+              pEngine->vulkan.pRenderBuffer = static_cast<vk::Buffer *> (
+                  std::malloc (sizeof (vk::Buffer) * pEngine->vulkan.swapchainImageCount));
 
-        return true;
-      });
+              pEngine->vulkan.pRenderAllocation = static_cast<VmaAllocation *> (
+                  std::malloc (sizeof (VmaAllocation) * pEngine->vulkan.swapchainImageCount));
+
+              if (pEngine->vulkan.pRenderBuffer != nullptr
+                  && pEngine->vulkan.pRenderAllocation != nullptr)
+                {
+                  for (std::uint32_t i = 0; i < pEngine->vulkan.swapchainImageCount; ++i)
+                    {
+                      result = static_cast<vk::Result> (vmaCreateBuffer (
+                          pEngine->vulkan.allocator, &buffRenderInfo, &allocInfo,
+                          reinterpret_cast<VkBuffer *> (&pEngine->vulkan.pRenderBuffer[i]),
+                          &pEngine->vulkan.pRenderAllocation[i], nullptr));
+
+                      if (result != vk::Result::eSuccess)
+                        {
+                          std::future<void> checkVulkanReturn
+                              = std::async (std::launch::async, Patache::VulkanCheck,
+                                            "vmaCreateBuffer()", result);
+
+                          return false;
+                        }
+                    }
+
+#if PATACHE_DEBUG == 1
+                  // Size info for each memory
+                  pEngine->debugInfo.ppVramMemoryDeviceSize = static_cast<float **> (
+                      std::malloc (sizeof (float *) * pEngine->vulkan.swapchainImageCount));
+
+                  pEngine->debugInfo.ppVramMemoryDeviceSizeUnit = static_cast<char **> (
+                      std::malloc (sizeof (char *) * pEngine->vulkan.swapchainImageCount));
+
+                  // Memory type and heaps
+                  pEngine->debugInfo.ppVramMemoryDeviceHeap = static_cast<char **> (
+                      std::malloc (sizeof (char *) * pEngine->vulkan.swapchainImageCount));
+
+                  pEngine->debugInfo.ppVramMemoryDeviceType = static_cast<char **> (
+                      std::malloc (sizeof (char *) * pEngine->vulkan.swapchainImageCount));
+
+                  if (pEngine->debugInfo.ppVramMemoryDeviceHeap != nullptr
+                      && pEngine->debugInfo.ppVramMemoryDeviceType != nullptr)
+                    {
+                      for (std::uint8_t i = 0; i < pEngine->vulkan.swapchainImageCount; ++i)
+                        {
+                          // Memory type and heaps Info
+                          vmaGetAllocationInfo (pEngine->vulkan.allocator,
+                                                pEngine->vulkan.pRenderAllocation[i],
+                                                &memAllocInfo);
+
+                          pEngine->debugInfo.ppVramMemoryDeviceType[i]
+                              = static_cast<char *> (std::malloc (510U));
+
+                          pEngine->debugInfo.ppVramMemoryDeviceHeap[i]
+                              = static_cast<char *> (std::malloc (510U));
+
+                          pEngine->vulkan.physicalDevice.getMemoryProperties (&memProps);
+
+                          if (pEngine->debugInfo.ppVramMemoryDeviceHeap[i] != nullptr)
+                            {
+                              PATACHE_STRNCPY (
+                                  pEngine->debugInfo.ppVramMemoryDeviceHeap[i],
+                                  vk::to_string (
+                                      memProps
+                                          .memoryHeaps[memProps.memoryTypes[memAllocInfo.memoryType]
+                                                           .heapIndex]
+                                          .flags)
+                                      .c_str (),
+                                  509U, 510U);
+                            }
+
+                          if (pEngine->debugInfo.ppVramMemoryDeviceType[i] != nullptr)
+                            {
+                              PATACHE_STRNCPY (
+                                  pEngine->debugInfo.ppVramMemoryDeviceType[i],
+                                  vk::to_string (
+                                      memProps.memoryTypes[memAllocInfo.memoryType].propertyFlags)
+                                      .c_str (),
+                                  509U, 510U);
+                            }
+
+                          // Size info for each Memory
+                          if (pEngine->debugInfo.ppVramMemoryDeviceSize != nullptr
+                              && pEngine->debugInfo.ppVramMemoryDeviceSizeUnit != nullptr)
+                            {
+                              pEngine->debugInfo.ppVramMemoryDeviceSize[i]
+                                  = static_cast<float *> (std::malloc (sizeof (float)));
+
+                              pEngine->debugInfo.ppVramMemoryDeviceSizeUnit[i]
+                                  = static_cast<char *> (std::malloc (5U));
+
+                              if (pEngine->debugInfo.ppVramMemoryDeviceSize[i] != nullptr)
+                                {
+                                  if (memAllocInfo.size >= 1073741824U)
+                                    {
+                                      if (pEngine->debugInfo.ppVramMemoryDeviceSizeUnit[i]
+                                          != nullptr)
+                                        {
+                                          PATACHE_STRNCPY (
+                                              pEngine->debugInfo.ppVramMemoryDeviceSizeUnit[i],
+                                              "GiB", 4U, 5U);
+                                        }
+
+                                      *pEngine->debugInfo.ppVramMemoryDeviceSize[i]
+                                          = memAllocInfo.size / 1073741824.0F;
+
+                                      continue;
+                                    }
+
+                                  if (memAllocInfo.size >= 1048576U)
+                                    {
+                                      if (pEngine->debugInfo.ppVramMemoryDeviceSizeUnit[i]
+                                          != nullptr)
+                                        {
+                                          PATACHE_STRNCPY (
+                                              pEngine->debugInfo.ppVramMemoryDeviceSizeUnit[i],
+                                              "MiB", 4U, 5U);
+                                        }
+
+                                      *pEngine->debugInfo.ppVramMemoryDeviceSize[i]
+                                          = memAllocInfo.size / 1048576.0F;
+
+                                      continue;
+                                    }
+
+                                  if (memAllocInfo.size >= 1024U)
+                                    {
+                                      if (pEngine->debugInfo.ppVramMemoryDeviceSizeUnit[i]
+                                          != nullptr)
+                                        {
+                                          PATACHE_STRNCPY (
+                                              pEngine->debugInfo.ppVramMemoryDeviceSizeUnit[i],
+                                              "KiB", 4U, 5U);
+                                        }
+
+                                      *pEngine->debugInfo.ppVramMemoryDeviceSize[i]
+                                          = memAllocInfo.size / 1024.0F;
+                                    }
+                                }
+                            }
+                        }
+                    }
+#endif
+                }
+              else
+                {
+                  std::future<void> returnVulkanErr = std::async (
+                      std::launch::async, Patache::ErrorMessage, "Cant allocate memory");
+
+                  return false;
+                }
+            }
+
+          return true;
+        });
 
   createFence_Async.wait ();
   if (!createFence_Async.get ())
@@ -1635,6 +1675,8 @@ RaccoonRendererClose (Patache::VulkanBackend & rVulkan)
   if (rVulkan.device == VK_NULL_HANDLE || rVulkan.instance == VK_NULL_HANDLE)
     return;
 
+  std::uint_fast32_t i = 0;
+
   vk::Result result = rVulkan.device.waitIdle ();
 
   if (result != vk::Result::eSuccess)
@@ -1654,7 +1696,7 @@ RaccoonRendererClose (Patache::VulkanBackend & rVulkan)
 
   // Swapchain
   // Color
-  for (std::uint8_t i = 0; i < rVulkan.swapchainImageCount; ++i)
+  for (i = 0; i < rVulkan.swapchainImageCount; ++i)
     {
       rVulkan.device.destroyFramebuffer (rVulkan.pSwapchainFrameBuffers[i]);
       rVulkan.device.destroyImageView (rVulkan.pSwapchainColorImageViews[i]);
@@ -1670,7 +1712,7 @@ RaccoonRendererClose (Patache::VulkanBackend & rVulkan)
   rVulkan.device.destroySwapchainKHR (rVulkan.swapchain);
 
   // Buffer
-  for (std::uint8_t i = 0; i < rVulkan.swapchainImageCount; ++i)
+  for (i = 0; i < rVulkan.swapchainImageCount; ++i)
     {
       if (rVulkan.pRenderBuffer[i] != nullptr && rVulkan.pRenderAllocation[i] != nullptr)
         {
@@ -1701,8 +1743,8 @@ RaccoonRendererClose (Patache::VulkanBackend & rVulkan)
       vmaDestroyPool (rVulkan.allocator, rVulkan.renderPool);
     }
 
-    // Imgui
 #if PATACHE_DEBUG == 1
+	// ImGui
   ImGuiIO * pIO = nullptr;
 
   if (ImGui::GetCurrentContext () != nullptr)
@@ -1725,7 +1767,7 @@ RaccoonRendererClose (Patache::VulkanBackend & rVulkan)
   rVulkan.device.destroyRenderPass (rVulkan.renderPass);
 
   // Primitivas de sincronizacion
-  for (std::uint32_t i = 0; i < rVulkan.swapchainImageCount; ++i)
+  for (i = 0; i < rVulkan.swapchainImageCount; ++i)
     {
       rVulkan.device.destroySemaphore (rVulkan.pImageAvailableSemaphores[i]);
       rVulkan.device.destroySemaphore (rVulkan.pImageFinishedSemaphores[i]);
@@ -1739,9 +1781,29 @@ RaccoonRendererClose (Patache::VulkanBackend & rVulkan)
   delete[] rVulkan.pInFlightFences;
   rVulkan.pInFlightFences = nullptr;
 
-  rVulkan.device.destroyCommandPool (rVulkan.commandPool);
-  delete[] rVulkan.pCmd;
-  rVulkan.pCmd = nullptr;
+	// Command Pools and Buffers
+  if (rVulkan.pCommandPools != nullptr)
+    {
+      for (i = 0; i < rVulkan.swapchainImageCount; ++i)
+        {
+          rVulkan.device.destroyCommandPool (rVulkan.pCommandPools[i]);
+        }
+
+      std::free (rVulkan.pCommandPools);
+      rVulkan.pCommandPools = nullptr;
+    }
+
+  if (rVulkan.pCmd != nullptr)
+    {
+      std::free (rVulkan.pCmd);
+      rVulkan.pCmd = nullptr;
+    }
+
+  if (rVulkan.pSubmitCmd != nullptr)
+    {
+      std::free (rVulkan.pSubmitCmd);
+      rVulkan.pSubmitCmd = nullptr;
+    }
 
   vmaDestroyAllocator (rVulkan.allocator);
 

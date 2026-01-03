@@ -21,7 +21,6 @@ target_sources (${PROJECT_NAME} PRIVATE
     "RaccoonRenderer/Vulkan/Vulkan_DepthBuffer.cpp"
     "RaccoonRenderer/Vulkan/Vulkan_SincronizationPrimitives.cpp"
     "RaccoonRenderer/Vulkan/Vulkan_Render.cpp"
-    "RaccoonRenderer/Vulkan/Vulkan_Buffer.cpp"
     "RaccoonRenderer/Vulkan/VmaUsage.cpp"
     "Core/Triangle.cpp"
     "Log/Message.cpp"

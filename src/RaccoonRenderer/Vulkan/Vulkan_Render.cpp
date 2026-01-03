@@ -109,11 +109,28 @@ Patache::Engine::BeginRender (SDL_Event & rEvent)
     }
 #endif
 
-  constexpr vk::CommandBufferBeginInfo cmdBufferBeginInfo{
+  // Reset Command Pool
+  vulkan.renderResult = vulkan.device.resetCommandPool (
+      vulkan.pCommandPools[vulkan.currentFrame], vk::CommandPoolResetFlagBits::eReleaseResources);
+
+#if PATACHE_DEBUG == 1
+  if (vulkan.renderResult != vk::Result::eSuccess)
+    {
+      char errorText[PATACHE_ERROR_TEXT_SIZE]{ 0 };
+
+      std::snprintf (errorText, PATACHE_ERROR_TEXT_SIZE - 1, "Reset Command Pool #%.3u",
+                     vulkan.currentFrame);
+
+      std::future<void> returnVulkanCheck
+          = std::async (std::launch::async, Patache::VulkanCheck, errorText, vulkan.renderResult);
+    }
+#endif
+
+  // Begin Command Buffer
+  static constexpr vk::CommandBufferBeginInfo cmdBufferBeginInfo{
     .flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit
   };
 
-  // Begin Command Buffer
   vulkan.renderResult = vulkan.pCmd[vulkan.currentFrame].begin (&cmdBufferBeginInfo);
 
 #if PATACHE_DEBUG == 1
@@ -182,13 +199,15 @@ Patache::Engine::EndRender (SDL_Event & rEvent)
   // Imgui New Frame
   // ImGui::ShowDemoWindow ();
   Patache::DrawDebugUI (this);
-
   ImGui::Render ();
 
-  if (debugInfo.showMainMenuBar || debugInfo.infoWindow || debugInfo.configWindow)
-    ImGui_ImplVulkan_RenderDrawData (
-        ImGui::GetDrawData (), static_cast<VkCommandBuffer> (vulkan.pCmd[vulkan.currentFrame]),
-        static_cast<VkPipeline> (vulkan.imguiPipeLine));
+  if ((debugInfo.showMainMenuBar || debugInfo.infoWindow || debugInfo.configWindow
+      || debugInfo.raccoonRendererInfoWindow) && (ImGui::GetDrawData ()->TotalVtxCount > 0))
+    {
+      ImGui_ImplVulkan_RenderDrawData (
+          ImGui::GetDrawData (), static_cast<VkCommandBuffer> (vulkan.pCmd[vulkan.currentFrame]),
+          static_cast<VkPipeline> (vulkan.imguiPipeLine));
+    }
 #endif
 
   // End RenderPass
@@ -212,7 +231,7 @@ Patache::Engine::EndRender (SDL_Event & rEvent)
 
   // Submit Queue
   {
-    constexpr vk::PipelineStageFlags waitStages
+    static constexpr vk::PipelineStageFlags waitStages
         = vk::PipelineStageFlagBits::eTopOfPipe | vk::PipelineStageFlagBits::eColorAttachmentOutput;
 
     const vk::SubmitInfo submitInfo{ .waitSemaphoreCount = 1,
