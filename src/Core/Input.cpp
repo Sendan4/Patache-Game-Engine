@@ -57,7 +57,7 @@ Patache::Engine::HandleEvent (const SDL_Event & rEvent)
                                         "Display ID");
                     }
 
-                  if (!SDL_SetWindowFullscreen (pGameWindow, isFullScreen))
+                  if (!SDL_SetWindowFullscreen (pGameWindow, true))
                     std::future<void> err = std::async (std::launch::async, Patache::ErrorMessage,
                                                         "Could not switch to full screen mode");
 #endif
@@ -96,7 +96,7 @@ Patache::Engine::HandleEvent (const SDL_Event & rEvent)
                     }
 #else
                   // SDL_Window
-                  if (!SDL_SetWindowFullscreen (pGameWindow, isFullScreen))
+                  if (!SDL_SetWindowFullscreen (pGameWindow, false))
                     std::future<void> err = std::async (std::launch::async, Patache::ErrorMessage,
                                                         "could not switch to window mode");
 #endif

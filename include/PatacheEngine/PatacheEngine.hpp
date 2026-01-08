@@ -73,37 +73,6 @@ struct ClearColor
   float a = 1.0F; // Alpha
 };
 
-struct Vertex2D
-{
-  vec2 pos   = { 0.0f, 0.0F };
-  vec3 color = { 1.0F, 1.0F, 1.0F };
-  // Default color white
-};
-
-struct Engine;
-
-// Triangle
-struct Triangle
-{
-  Vertex2D vertex[3] = { { { 0.0F, -0.5F }, { 1.0F, 1.0F, 1.0F } },
-                         { { 0.5F, 0.5F }, { 1.0F, 1.0F, 1.0F } },
-                         { { -0.5F, 0.5F }, { 1.0F, 1.0F, 1.0F } } };
-
-  vk::Device *   pDevice = nullptr;
-  vk::DeviceSize offset  = 0U;
-
-  PATACHE_API constexpr void
-  SetColorRGB (const std::uint8_t & rSide, const float & rRed, const float & rBlue,
-               const float & rGreen)
-  {
-    assert ("A triangle only have 3 sides (0 - 3)" && (rSide <= 2U));
-
-    vertex[rSide].color[0] = rRed;
-    vertex[rSide].color[1] = rBlue;
-    vertex[rSide].color[2] = rGreen;
-  }
-};
-
 #if __unix__ || __linux__ || __FreeBSD__ || __NetBSD__ || __NetBSD__ || __OpenBSD__ || __bsdi__    \
     || __DragonFly__ || __MidnightBSD__
 struct WaylandWindow
@@ -188,6 +157,35 @@ enum BorderIndexCSD : std::uint8_t
 };
 #endif
 
+struct Vertex2D
+{
+  vec2 pos   = { 0.0F, 0.0F };
+  vec3 color = { 1.0F, 1.0F, 1.0F };
+  // Default color white
+};
+
+// Triangle
+struct Triangle
+{
+  Vertex2D vertex[3] = { { { 0.0F, -0.5F }, { 1.0F, 1.0F, 1.0F } },
+                         { { 0.5F, 0.5F }, { 1.0F, 1.0F, 1.0F } },
+                         { { -0.5F, 0.5F }, { 1.0F, 1.0F, 1.0F } } };
+
+  vk::DeviceSize   bufferOffset{ 0U };
+  static constexpr std::uint_fast64_t size{ sizeof (Patache::Vertex2D) * 3 };
+
+  PATACHE_API constexpr void
+  SetColorRGB (const std::uint8_t & rSide, const float & rRed, const float & rBlue,
+               const float & rGreen)
+  {
+    assert ("A triangle only have 3 sides (0 - 2)" && (rSide <= 2U));
+
+    vertex[rSide].color[0] = rRed;
+    vertex[rSide].color[1] = rBlue;
+    vertex[rSide].color[2] = rGreen;
+  }
+};
+
 struct Engine
 {
   PATACHE_API Engine (void) = default;
@@ -209,19 +207,6 @@ struct Engine
 
   PATACHE_API ~Engine (void);
 
-  Patache::Config configuration{};
-
-  PATACHE_API void HandleEvent (const SDL_Event &); // Patache Events
-  PATACHE_API bool BeginRender (SDL_Event &);
-  PATACHE_API void EndRender (SDL_Event &);
-
-  // Clear Color
-  Patache::ClearColor clearColor{};
-
-  PATACHE_API void ClearColor (const Patache::Color &);
-  PATACHE_API void ClearColorRGBA (const float &, const float &, const float &, const float &);
-  PATACHE_API void ClearColorRGBA (const float &, const float &, const float &);
-
   // Window
   SDL_Window * pGameWindow = nullptr;
 
@@ -236,12 +221,23 @@ struct Engine
   Patache::EngineInfo debugInfo{};
 #endif
 
-  PATACHE_API bool BeginCopyBuffer (void);
-  PATACHE_API void CopyTriangle (Patache::Triangle &);
-  PATACHE_API void EndCopyBuffer (void);
+  Patache::Config configuration{};
 
-  // Draw
-  PATACHE_API void DrawTriangle (const Patache::Triangle &);
+  PATACHE_API void HandleEvent (const SDL_Event &); // Patache Events
+  PATACHE_API bool BeginRender (SDL_Event &);
+  PATACHE_API void EndRender (SDL_Event &);
+
+  // Clear Color
+  Patache::ClearColor clearColor{};
+
+  PATACHE_API void ClearColor (const Patache::Color &);
+  PATACHE_API void ClearColorRGBA (const float &, const float &, const float &, const float &);
+  PATACHE_API void ClearColorRGBA (const float &, const float &, const float &);
+
+  PATACHE_API bool Bsalloc (Patache::Triangle * const);
+  PATACHE_API void Bsfree (Patache::Triangle * const);
+
+  PATACHE_API void Draw (Patache::Triangle * const);
 };
 
 // Versioning management in the style of Vulkan. // major.minor.patch.variant

@@ -22,6 +22,8 @@ target_sources (${PROJECT_NAME} PRIVATE
     "RaccoonRenderer/Vulkan/Vulkan_SincronizationPrimitives.cpp"
     "RaccoonRenderer/Vulkan/Vulkan_Render.cpp"
     "RaccoonRenderer/Vulkan/VmaUsage.cpp"
+		"RaccoonRenderer/BufferSubAllocation.cpp"
+		"RaccoonRenderer/Draw.cpp"
     "Core/Triangle.cpp"
     "Log/Message.cpp"
     "Log/StartLogInfo.cpp"
@@ -183,7 +185,9 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     PATACHE_COMPILER_PROGRAM="${compiler_program}"
     PATACHE_COMPILER_VERSION="${CMAKE_CXX_COMPILER_VERSION}"
     PATACHE_ARCH="${CMAKE_SYSTEM_PROCESSOR}"
-    PATACHE_FAST_IO_GIT_COMMIT_HASH_SHORT="${Fast_io_COMMIT_SHORT_HASH}"
+    PATACHE_FAST_IO_GIT_COMMIT_HASH_SHORT="${Fast_io_COMMIT_SHORT_HASH}")
+
+target_compile_definitions(${PROJECT_NAME} PUBLIC
     VULKAN_HPP_NO_EXCEPTIONS
     VULKAN_HPP_NO_SMART_HANDLE
     VULKAN_HPP_NO_CONSTRUCTORS)
@@ -230,7 +234,7 @@ if (${CMAKE_SYSTEM_NAME} STREQUAL "Linux" OR
 endif()
 
 # Vulkan
-if (${CMAKE_CXX_COMPILER_ID} STREQUAL "MSVC" OR
+if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" OR
     ${CMAKE_SYSTEM_NAME} STREQUAL "Linux" OR
     ${CMAKE_SYSTEM_NAME} STREQUAL "FreeBSD" OR
     ${CMAKE_SYSTEM_NAME} STREQUAL "OpenBSD" OR
@@ -284,7 +288,7 @@ if (TARGET asm_offset)
 endif()
 
 # Link libraries
-target_link_libraries(${PROJECT_NAME} PUBLIC Fast_io SDL3::SDL3 cglm VulkanMemoryAllocator)
+target_link_libraries(${PROJECT_NAME} PUBLIC Fast_io SDL3::SDL3 cglm GPUOpen::VulkanMemoryAllocator)
 target_link_libraries(${PROJECT_NAME} PRIVATE ryml::ryml freetype)
 target_include_directories(${PROJECT_NAME} PRIVATE ${FREETYPE_INCLUDE_DIRS})
 

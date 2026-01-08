@@ -22,8 +22,8 @@ Patache::Engine::BeginRender (SDL_Event & rEvent)
       resizingPending = false;
       resize          = false;
 
-      vulkan.currentFrame = 0;
-      vulkan.imageIndex   = 0;
+      vulkan.currentFrame = 0U;
+      vulkan.imageIndex   = 0U;
 
       wl_surface_commit (waylandWindow.pSurface);
     }
@@ -135,9 +135,49 @@ Patache::Engine::BeginRender (SDL_Event & rEvent)
 
 #if PATACHE_DEBUG == 1
   if (vulkan.renderResult != vk::Result::eSuccess)
-    std::future<void> returnVulkanCheck = std::async (std::launch::async, Patache::VulkanCheck,
-                                                      "Command Buffer Begin", vulkan.renderResult);
+    {
+      std::future<void> returnVulkanCheck = std::async (
+          std::launch::async, Patache::VulkanCheck, "Command Buffer Begin", vulkan.renderResult);
+    }
 #endif
+
+  if (vulkan.stagingBufferInfo[Patache::VkBufferInfo::eCurrentOffset] > 0U
+      && vulkan.physicalDeviceType == vk::PhysicalDeviceType::eDiscreteGpu)
+    {
+      if (vulkan.copiesCount >= vulkan.swapchainImageCount)
+        {
+          // resetear la posicion del apuntador de memoria al inicio
+          // para invalidad la memoria existente y sobreescribirla
+          vulkan.stagingBufferInfo[Patache::VkBufferInfo::eCurrentOffset] = 0U;
+          vulkan.copiesCount                                              = 0U; // reset count
+
+          goto EXIT_COPY;
+        }
+
+      fast_io::io::println (fast_io::out (), "Copiando");
+
+      vulkan.bufferCopy.srcOffset = 0U;
+      vulkan.bufferCopy.dstOffset = 0U;
+      vulkan.bufferCopy.size      = vulkan.stagingBufferInfo[Patache::VkBufferInfo::eSize];
+
+      vulkan.pCmd[vulkan.currentFrame].copyBuffer (
+          vulkan.stagingBuffer, vulkan.pRenderBuffer[vulkan.currentFrame], 1, &vulkan.bufferCopy);
+
+      vulkan.bufferBarrier.srcAccessMask       = vk::AccessFlagBits::eTransferWrite;
+      vulkan.bufferBarrier.dstAccessMask       = vk::AccessFlagBits::eVertexAttributeRead;
+      vulkan.bufferBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+      vulkan.bufferBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+      vulkan.bufferBarrier.buffer              = vulkan.pRenderBuffer[vulkan.currentFrame];
+      vulkan.bufferBarrier.offset              = 0U;
+      vulkan.bufferBarrier.size = vulkan.renderBufferInfo[Patache::VkBufferInfo::eSize];
+
+      vulkan.pCmd[vulkan.currentFrame].pipelineBarrier (
+          vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eVertexInput, {}, 0,
+          nullptr, 1, &vulkan.bufferBarrier, 0, nullptr);
+
+      ++vulkan.copiesCount;
+    }
+EXIT_COPY:
 
   // Begin RenderPass
   {
@@ -202,7 +242,8 @@ Patache::Engine::EndRender (SDL_Event & rEvent)
   ImGui::Render ();
 
   if ((debugInfo.showMainMenuBar || debugInfo.infoWindow || debugInfo.configWindow
-      || debugInfo.raccoonRendererInfoWindow) && (ImGui::GetDrawData ()->TotalVtxCount > 0))
+       || debugInfo.raccoonRendererInfoWindow)
+      && (ImGui::GetDrawData ()->TotalVtxCount > 0))
     {
       ImGui_ImplVulkan_RenderDrawData (
           ImGui::GetDrawData (), static_cast<VkCommandBuffer> (vulkan.pCmd[vulkan.currentFrame]),

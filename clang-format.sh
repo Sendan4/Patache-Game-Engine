@@ -7,4 +7,5 @@ clang-format -i src/Log/*.cpp
 clang-format -i src/Log/*.hpp
 clang-format -i src/RaccoonRenderer/Vulkan/*.cpp
 clang-format -i src/RaccoonRenderer/Vulkan/*.hpp
+clang-format -i src/RaccoonRenderer/*.cpp
 clang-format -i include/PatacheEngine/*.hpp

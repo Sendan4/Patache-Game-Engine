@@ -63,7 +63,7 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
 		-lvulkan-1
 		-L${VULKANSDK_LIBS_PATH})
 
-    target_include_directories(${PROJECT_NAME} PRIVATE "${Vulkan_INCLUDE_DIRS}")
+    target_include_directories(${PROJECT_NAME} PUBLIC "${Vulkan_INCLUDE_DIRS}")
 endif()
 
 # Move this binaries to a build dir instead of bin build

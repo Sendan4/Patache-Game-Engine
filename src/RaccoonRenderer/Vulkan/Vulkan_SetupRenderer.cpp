@@ -30,7 +30,7 @@ RaccoonRendererInit (Patache::Engine * pEngine, const Patache::EngineCreateInfo 
         return false;
       }
 
-    std::uint32_t supportedVersion = 0;
+    std::uint32_t supportedVersion = 0U;
     result                         = vk::enumerateInstanceVersion (&supportedVersion);
 
     if (result != vk::Result::eSuccess)
@@ -40,7 +40,7 @@ RaccoonRendererInit (Patache::Engine * pEngine, const Patache::EngineCreateInfo 
       }
     else
       {
-        if (supportedVersion < 4202496)
+        if (supportedVersion < 4202496U)
           {
             std::future<void> err = std::async (
                 std::launch::async, Patache::FatalErrorMessage, "Patache Engine - Raccoon Renderer",
@@ -126,11 +126,11 @@ RaccoonRendererInit (Patache::Engine * pEngine, const Patache::EngineCreateInfo 
 
 #if PATACHE_DEBUG == 1
   #if defined(PATACHE_USE_VVL)
-    for (std::uint32_t i = 0; i < propertyCount; ++i)
+    for (std::uint_fast32_t i = 0U; i < propertyCount; ++i)
       {
         if (std::strcmp (pInstanceExtensionProperties[i].extensionName,
                          vk::EXTDebugUtilsExtensionName)
-            == 0)
+            == 0U)
           {
             ++instanceExtensionCount;
             vkEXTDebugUtilsExtensionIsEnabled = true;
@@ -332,7 +332,7 @@ EXIT_CREATE_DEBUG_UTILS_MESSENGER:
   and also the physical device is used to obtain information about its
   characteristics.
 
-  Discreet video cards are preferred.
+  Discret video cards are preferred.
   Geometry shading support is obligatory.
   The larger the maximum image size the GPU can handle, the better.
   */
@@ -481,8 +481,9 @@ EXIT_CREATE_DEBUG_UTILS_MESSENGER:
         }
 
     // Select device
-    pEngine->vulkan.physicalDevice = pTmpPhysicalDevices[gpuIndexWinner];
-    physicalDeviceProperties       = pTmpPhysicalDevices[gpuIndexWinner].getProperties2 ();
+    pEngine->vulkan.physicalDevice     = pTmpPhysicalDevices[gpuIndexWinner];
+    physicalDeviceProperties           = pTmpPhysicalDevices[gpuIndexWinner].getProperties2 ();
+    pEngine->vulkan.physicalDeviceType = physicalDeviceProperties.properties.deviceType;
 #if PATACHE_DEBUG
     pEngine->debugInfo.physicalDeviceProperties = pEngine->vulkan.physicalDevice.getProperties2 ();
 #endif
@@ -949,7 +950,6 @@ EXIT_CREATE_DEVICE:
       [&pEngine] (void) -> bool
         {
           const vk::CommandPoolCreateInfo commandPoolInfo{
-				    .flags = vk::CommandPoolCreateFlagBits::eTransient,
             .queueFamilyIndex = pEngine->vulkan.graphicsQueueFamilyIndex,
           };
 
@@ -970,6 +970,7 @@ EXIT_CREATE_DEVICE:
 
           for (std::uint_fast32_t i = 0; i < pEngine->vulkan.swapchainImageCount; ++i)
             {
+              // Render Command Pools
               result = pEngine->vulkan.device.createCommandPool (&commandPoolInfo, nullptr,
                                                                  &pEngine->vulkan.pCommandPools[i]);
 
@@ -977,7 +978,8 @@ EXIT_CREATE_DEVICE:
                 {
                   char errorText[PATACHE_ERROR_TEXT_SIZE]{};
 
-                  std::snprintf (errorText, PATACHE_ERROR_TEXT_SIZE - 1, "Command Pool #%.3lu", i);
+                  std::snprintf (errorText, PATACHE_ERROR_TEXT_SIZE - 1,
+                                 "Render Command Pool #%.3lu", i);
 
                   std::future<void> returnVulkanCheck
                       = std::async (std::launch::async, Patache::VulkanCheck, errorText, result);
@@ -1277,6 +1279,8 @@ EXIT_CREATE_DEVICE:
               return false;
             }
 
+          pEngine->vulkan.stagingBufferInfo[Patache::VkBufferInfo::eSize] = rInfo.buffStagingSize;
+
           // GPU-CPU visible transfer buffer
           const VkBufferCreateInfo buffStagingInfo{
             .sType       = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
@@ -1290,8 +1294,8 @@ EXIT_CREATE_DEVICE:
           };
 
           constexpr VmaAllocationCreateInfo allocInfo{
-            .flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT
-                     | VMA_ALLOCATION_CREATE_WITHIN_BUDGET_BIT,
+            .flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT
+                     | VMA_ALLOCATION_CREATE_WITHIN_BUDGET_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT,
             .usage = VMA_MEMORY_USAGE_AUTO_PREFER_HOST,
             .requiredFlags
             = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
@@ -1372,6 +1376,9 @@ EXIT_CREATE_DEVICE:
                   return false;
                 }
 
+              pEngine->vulkan.renderBufferInfo[Patache::VkBufferInfo::eSize]
+                  = rInfo.memRenderSizePerImage;
+
               const VkBufferCreateInfo buffRenderInfo{
                 .sType       = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
                 .pNext       = nullptr,
@@ -1410,14 +1417,14 @@ EXIT_CREATE_DEVICE:
                   return false;
                 }
 
-              const VmaPoolCreateInfo poolCreateInfo{ .memoryTypeIndex = memoryTypeIndex,
-                                                      .flags = VMA_POOL_CREATE_LINEAR_ALGORITHM_BIT,
-                                                      .blockSize = rInfo.memRenderSizePerImage + 1,
-                                                      .minBlockCount
-                                                      = pEngine->vulkan.swapchainImageCount,
-                                                      .maxBlockCount
-                                                      = pEngine->vulkan.swapchainImageCount + 1,
-                                                      .priority = 1.0F };
+              const VmaPoolCreateInfo poolCreateInfo{ .memoryTypeIndex        = memoryTypeIndex,
+                                                      .flags                  = 0U,
+                                                      .blockSize              = 0U,
+                                                      .minBlockCount          = 1U,
+                                                      .maxBlockCount          = 0U,
+                                                      .priority               = 1.0F,
+                                                      .minAllocationAlignment = 0U,
+                                                      .pMemoryAllocateNext    = nullptr };
 
               result = static_cast<vk::Result> (vmaCreatePool (
                   pEngine->vulkan.allocator, &poolCreateInfo, &pEngine->vulkan.renderPool));
@@ -1498,7 +1505,7 @@ EXIT_CREATE_DEVICE:
               if (pEngine->vulkan.pRenderBuffer != nullptr
                   && pEngine->vulkan.pRenderAllocation != nullptr)
                 {
-                  for (std::uint32_t i = 0; i < pEngine->vulkan.swapchainImageCount; ++i)
+                  for (std::uint_fast32_t i = 0; i < pEngine->vulkan.swapchainImageCount; ++i)
                     {
                       result = static_cast<vk::Result> (vmaCreateBuffer (
                           pEngine->vulkan.allocator, &buffRenderInfo, &allocInfo,
@@ -1744,7 +1751,7 @@ RaccoonRendererClose (Patache::VulkanBackend & rVulkan)
     }
 
 #if PATACHE_DEBUG == 1
-	// ImGui
+  // ImGui
   ImGuiIO * pIO = nullptr;
 
   if (ImGui::GetCurrentContext () != nullptr)
@@ -1781,7 +1788,7 @@ RaccoonRendererClose (Patache::VulkanBackend & rVulkan)
   delete[] rVulkan.pInFlightFences;
   rVulkan.pInFlightFences = nullptr;
 
-	// Command Pools and Buffers
+  // Command Pools and Buffers
   if (rVulkan.pCommandPools != nullptr)
     {
       for (i = 0; i < rVulkan.swapchainImageCount; ++i)
@@ -1797,12 +1804,6 @@ RaccoonRendererClose (Patache::VulkanBackend & rVulkan)
     {
       std::free (rVulkan.pCmd);
       rVulkan.pCmd = nullptr;
-    }
-
-  if (rVulkan.pSubmitCmd != nullptr)
-    {
-      std::free (rVulkan.pSubmitCmd);
-      rVulkan.pSubmitCmd = nullptr;
     }
 
   vmaDestroyAllocator (rVulkan.allocator);

@@ -6,21 +6,22 @@ struct VulkanBackend
   vk::Instance instance = VK_NULL_HANDLE;
 
   // Hardware
-  vk::PhysicalDevice physicalDevice           = VK_NULL_HANDLE;
-  std::uint32_t      graphicsQueueFamilyIndex = 0;
-  vk::Queue          queue                    = VK_NULL_HANDLE;
-  vk::Device         device                   = VK_NULL_HANDLE;
+  vk::PhysicalDevice     physicalDevice           = VK_NULL_HANDLE;
+  std::uint32_t          graphicsQueueFamilyIndex = { 0U };
+  vk::Queue              queue                    = VK_NULL_HANDLE;
+  vk::Device             device                   = VK_NULL_HANDLE;
+  vk::PhysicalDeviceType physicalDeviceType{ vk::PhysicalDeviceType::eOther };
 
   // Window Surface
   vk::SurfaceKHR surface = VK_NULL_HANDLE;
 
   vk::SwapchainKHR swapchain    = VK_NULL_HANDLE;
   vk::SwapchainKHR oldSwapchain = VK_NULL_HANDLE;
-  std::uint32_t    imageIndex   = 0;
+  std::uint32_t    imageIndex{ 0U };
   vk::Extent2D     swapchainExtent{};
 
   // Color
-  std::uint32_t   swapchainImageCount       = 0;
+  std::uint32_t   swapchainImageCount{ 0U };
   vk::Image *     pSwapchainImages          = nullptr;
   vk::ImageView * pSwapchainColorImageViews = nullptr;
 
@@ -39,9 +40,8 @@ struct VulkanBackend
   vk::Framebuffer * pSwapchainFrameBuffers = nullptr;
 
   // Commands
-  vk::CommandPool *   pCommandPools = nullptr;
-  vk::CommandBuffer * pCmd          = nullptr;
-  vk::CommandBuffer * pSubmitCmd    = nullptr;
+  vk::CommandPool *   pCommandPools{ nullptr };
+  vk::CommandBuffer * pCmd{ nullptr };
 
   vk::RenderPass renderPass = VK_NULL_HANDLE;
 
@@ -66,29 +66,41 @@ struct VulkanBackend
   vk::Semaphore * pImageFinishedSemaphores  = nullptr;
   vk::Fence *     pInFlightFences           = nullptr;
 
-  std::uint8_t currentFrame = 0;
+  std::uint8_t currentFrame{ 0U };
 
   // ClearColor
   vk::ClearValue clearColor{};
 
   // Render Command Buffer Area
-  vk::Rect2D   renderArea{ vk::Offset2D{ 0, 0 } };
+  vk::Rect2D   renderArea{ vk::Offset2D{ 0U, 0U } };
   vk::Viewport viewport{};
   vk::Rect2D   scissor{};
 
   VmaAllocator allocator;
 
   // Buffer (GPU)
-  vk::Buffer *    pRenderBuffer     = nullptr;
-  VmaAllocation * pRenderAllocation = nullptr;
+  vk::Buffer *    pRenderBuffer        = nullptr;
+  VmaAllocation * pRenderAllocation    = nullptr;
+  vk::DeviceSize  renderBufferInfo[2U] = { 0U, 0U };
   // Buffer (CPU) CPU -> GPU
-  vk::Buffer    stagingBuffer = VK_NULL_HANDLE;
-  VmaAllocation stagingAllocation;
-  VmaPool       renderPool;
+  vk::Buffer     stagingBuffer = VK_NULL_HANDLE;
+  VmaAllocation  stagingAllocation;
+  vk::DeviceSize stagingBufferInfo[2U] = { 0U, 0U };
 
-  void * renderData = nullptr;
+  vk::BufferCopy          bufferCopy{};
+  vk::BufferMemoryBarrier bufferBarrier{};
+
+  std::uint_fast8_t copiesCount{ 0U };
+
+  VmaPool renderPool;
 
   vk::Result renderResult;
+};
+
+enum VkBufferInfo : std::uint_fast8_t
+{
+  eSize          = 0U,
+  eCurrentOffset = 1U
 };
 
 struct SwapchainInfo

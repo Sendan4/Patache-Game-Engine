@@ -3,7 +3,7 @@
 bool
 CreateSemaphores (Patache::VulkanBackend & rVulkan)
 {
-  constexpr vk::SemaphoreCreateInfo semaphoreInfo{};
+  static constexpr vk::SemaphoreCreateInfo semaphoreInfo{};
 
   vk::Result result;
 
