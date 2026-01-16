@@ -1415,7 +1415,7 @@ GetWindowSize (void * pData, [[maybe_unused]] xdg_toplevel * pDesktopWindow, std
               pState = static_cast<xdg_toplevel_state *> (
                   (static_cast<xdg_toplevel_state *> (pStates->data) + pos));
 
-              if (*pState == XDG_TOPLEVEL_STATE_ACTIVATED)
+              if (*pState == XDG_TOPLEVEL_STATE_ACTIVATED || *pState == XDG_TOPLEVEL_STATE_RESIZING)
                 {
                   sFocusCSD = true;
                 }
