@@ -1391,10 +1391,10 @@ static void
 GetWindowSize (void * pData, [[maybe_unused]] xdg_toplevel * pDesktopWindow, std::int32_t width,
                std::int32_t height, wl_array * pStates)
 {
-      Patache::Engine * pEngine = static_cast<Patache::Engine *> (pData);
+  Patache::Engine * pEngine = static_cast<Patache::Engine *> (pData);
 
   // Resize vulkan swapchain
-  if ((width != 0 && height != 0) && (width != pEngine->vulkan.swapchainExtent.width && height != pEngine->vulkan.swapchainExtent.height))
+  if (width != 0 && height != 0)
     {
       resizingPending           = true;
 
