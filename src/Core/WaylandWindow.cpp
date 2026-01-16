@@ -264,8 +264,8 @@ CreateWaylandWindow (const std::uint32_t & rWidth, const std::uint32_t & rHeight
                                     PATACHE_CLOSE_BUTTON_CSD_WIDTH,
                                     PATACHE_CLOSE_BUTTON_CSD_HEIGHT);
 
-          SurfaceBufferCleanup * pCleanup
-              = static_cast<SurfaceBufferCleanup *> (std::calloc (1, sizeof (SurfaceBufferCleanup)));
+          SurfaceBufferCleanup * pCleanup = static_cast<SurfaceBufferCleanup *> (
+              std::calloc (1, sizeof (SurfaceBufferCleanup)));
 
           pCleanupMainBar->mappedMemSize = PATACHE_CLOSE_BUTTON_CSD_SIZE;
           pCleanupMainBar->pMappedMem    = pButtonPixels;
@@ -357,8 +357,8 @@ CreateWaylandWindow (const std::uint32_t & rWidth, const std::uint32_t & rHeight
           wl_surface_damage_buffer (pEngine->waylandWindow.pBorderSurface[i], 0, 0, rWidth,
                                     PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE);
 
-          SurfaceBufferCleanup * pCleanup
-              = static_cast<SurfaceBufferCleanup *> (std::calloc (1, sizeof (SurfaceBufferCleanup)));
+          SurfaceBufferCleanup * pCleanup = static_cast<SurfaceBufferCleanup *> (
+              std::calloc (1, sizeof (SurfaceBufferCleanup)));
 
           pCleanupMainBar->mappedMemSize = rWidth * PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE * 4;
           pCleanupMainBar->pMappedMem    = pBorderPixels;
@@ -414,8 +414,8 @@ CreateWaylandWindow (const std::uint32_t & rWidth, const std::uint32_t & rHeight
                                     PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE,
                                     (rHeight + PATACHE_MAINBAR_HEIGHT_CSD_SIZE));
 
-          SurfaceBufferCleanup * pCleanup
-              = static_cast<SurfaceBufferCleanup *> (std::calloc (1, sizeof (SurfaceBufferCleanup)));
+          SurfaceBufferCleanup * pCleanup = static_cast<SurfaceBufferCleanup *> (
+              std::calloc (1, sizeof (SurfaceBufferCleanup)));
 
           pCleanupMainBar->mappedMemSize = PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE
                                            * (rHeight + PATACHE_MAINBAR_HEIGHT_CSD_SIZE) * 4;
@@ -470,8 +470,8 @@ CreateWaylandWindow (const std::uint32_t & rWidth, const std::uint32_t & rHeight
                                     PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE,
                                     PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE);
 
-          SurfaceBufferCleanup * pCleanup
-              = static_cast<SurfaceBufferCleanup *> (std::calloc (1, sizeof (SurfaceBufferCleanup)));
+          SurfaceBufferCleanup * pCleanup = static_cast<SurfaceBufferCleanup *> (
+              std::calloc (1, sizeof (SurfaceBufferCleanup)));
 
           pCleanupMainBar->mappedMemSize
               = PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE * PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE * 4;

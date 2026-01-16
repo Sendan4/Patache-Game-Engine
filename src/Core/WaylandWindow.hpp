@@ -938,8 +938,8 @@ PointerLeave (void * pData, [[maybe_unused]] wl_pointer * pPointer,
               pEngine->waylandWindow.pButtonSurface[Patache::ButtonIndexCSD::eClose], 0, 0,
               PATACHE_CLOSE_BUTTON_CSD_WIDTH, PATACHE_CLOSE_BUTTON_CSD_HEIGHT);
 
-          SurfaceBufferCleanup * pCleanup
-              = static_cast<SurfaceBufferCleanup *> (std::calloc (1, sizeof (SurfaceBufferCleanup)));
+          SurfaceBufferCleanup * pCleanup = static_cast<SurfaceBufferCleanup *> (
+              std::calloc (1, sizeof (SurfaceBufferCleanup)));
 
           pCleanup->mappedMemSize = PATACHE_CLOSE_BUTTON_CSD_SIZE;
           pCleanup->pMappedMem    = pButtonPixels;
@@ -1023,8 +1023,8 @@ PointerLeave (void * pData, [[maybe_unused]] wl_pointer * pPointer,
               pEngine->waylandWindow.pButtonSurface[Patache::ButtonIndexCSD::eMaximize], 0, 0,
               PATACHE_MAXIMIZE_BUTTON_CSD_WIDTH, PATACHE_MAXIMIZE_BUTTON_CSD_HEIGHT);
 
-          SurfaceBufferCleanup * pCleanup
-              = static_cast<SurfaceBufferCleanup *> (std::calloc (1, sizeof (SurfaceBufferCleanup)));
+          SurfaceBufferCleanup * pCleanup = static_cast<SurfaceBufferCleanup *> (
+              std::calloc (1, sizeof (SurfaceBufferCleanup)));
 
           pCleanup->mappedMemSize = PATACHE_MAXIMIZE_BUTTON_CSD_SIZE;
           pCleanup->pMappedMem    = pButtonPixels;
@@ -1088,8 +1088,8 @@ PointerLeave (void * pData, [[maybe_unused]] wl_pointer * pPointer,
               pEngine->waylandWindow.pButtonSurface[Patache::ButtonIndexCSD::eMinimize], 0, 0,
               PATACHE_MINIMIZE_BUTTON_CSD_WIDTH, PATACHE_MINIMIZE_BUTTON_CSD_HEIGHT);
 
-          SurfaceBufferCleanup * pCleanup
-              = static_cast<SurfaceBufferCleanup *> (std::calloc (1, sizeof (SurfaceBufferCleanup)));
+          SurfaceBufferCleanup * pCleanup = static_cast<SurfaceBufferCleanup *> (
+              std::calloc (1, sizeof (SurfaceBufferCleanup)));
 
           pCleanup->mappedMemSize = PATACHE_MINIMIZE_BUTTON_CSD_SIZE;
           pCleanup->pMappedMem    = pButtonPixels;
@@ -1391,31 +1391,34 @@ static void
 GetWindowSize (void * pData, [[maybe_unused]] xdg_toplevel * pDesktopWindow, std::int32_t width,
                std::int32_t height, wl_array * pStates)
 {
-  Patache::Engine * pEngine = static_cast<Patache::Engine *> (pData);
-
   // Resize vulkan swapchain
   if (width != 0 && height != 0)
     {
-      resizingPending           = true;
+      Patache::Engine * pEngine = static_cast<Patache::Engine *> (pData);
+
+      resizingPending = true;
 
       // If Server Side Decorations (CSD) is no available
       if (pEngine->waylandWindow.pDecorationMananger == nullptr
           && pEngine->waylandWindow.pSubCompositor != nullptr)
         {
-          /*
-           * pStates
-           * This is the worst part of wayland for C++
-           */
-          std::uint32_t * state = static_cast<std::uint32_t *> (pStates->data);
-          std::uint32_t * end   = reinterpret_cast<std::uint32_t *> (
-              static_cast<std::uint8_t *> (pStates->data) + pStates->size);
-
           sFocusCSD = false;
-          for (; state < end; ++state)
+
+          // wl_array_for_each no funciona en C++ debido a hacer conversiones raras de void * que
+          // igual estoy haciendo aca, la cuestion es que no configure el compilador como permisivo
+          // (-fpermissive). asi que toco hacer mi propio wl_array_for_each()
+          enum xdg_toplevel_state * pState;
+
+          for (std::uint32_t pos{ 0U }; pStates->size > 0 && pos < pStates->size;
+               pos += sizeof (xdg_toplevel_state))
             {
-              if (*reinterpret_cast<enum xdg_toplevel_state *> (state)
-                  == XDG_TOPLEVEL_STATE_ACTIVATED)
-                sFocusCSD = true;
+              pState = static_cast<xdg_toplevel_state *> (
+                  (static_cast<xdg_toplevel_state *> (pStates->data) + pos));
+
+              if (*pState == XDG_TOPLEVEL_STATE_ACTIVATED)
+                {
+                  sFocusCSD = true;
+                }
             }
 
           if (!isFullScreen && !isMaximized)
