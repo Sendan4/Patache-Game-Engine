@@ -78,42 +78,34 @@ struct ClearColor
 struct WaylandWindow
 {
   // Globals
-  wl_display *    pDisplay    = nullptr;
-  wl_compositor * pCompositor = nullptr;
-  wl_seat *       pInput      = nullptr;
+  wl_display *    pDisplay{ nullptr };
+  wl_compositor * pCompositor{ nullptr };
+  wl_seat *       pInput{ nullptr };
   // Main Surface for graphics
-  wl_surface *   pSurface                   = nullptr; // Used by Vulkan
-  xdg_wm_base *  pWindowManangerBase        = nullptr;
-  xdg_surface *  pDesktopStyleUserInterface = nullptr;
-  xdg_toplevel * pDesktopWindow             = nullptr;
+  wl_surface *   pSurface{ nullptr }; // Used by Vulkan
+  xdg_wm_base *  pWindowManangerBase{ nullptr };
+  xdg_surface *  pDesktopStyleUserInterface{ nullptr };
+  xdg_toplevel * pDesktopWindow{ nullptr };
   // Server side decoration (SSD)
-  zxdg_decoration_manager_v1 *  pDecorationMananger = nullptr;
-  zxdg_toplevel_decoration_v1 * pDecoration         = nullptr;
+  zxdg_decoration_manager_v1 *  pDecorationMananger{ nullptr };
+  zxdg_toplevel_decoration_v1 * pDecoration{ nullptr };
   // Client side decoration (CSD)
-  wl_shm *           pDecorationSharedMemory = nullptr;
-  wl_subcompositor * pSubCompositor          = nullptr;
+  wl_shm *           pDecorationSharedMemory{ nullptr };
+  wl_subcompositor * pSubCompositor{ nullptr };
   // Main Bar
-  wl_surface *    pMainBarSurface    = nullptr;
-  wl_subsurface * pMainBarSubSurface = nullptr;
-  std::uint32_t * pMainBarPixels     = nullptr;
-  wl_buffer *     pMainBarBuffer     = nullptr;
+  wl_surface *    pMainBarSurface{ nullptr };
+  wl_subsurface * pMainBarSubSurface{ nullptr };
   // Border
-  wl_surface * pBorderSurface[8U]
-      = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
-  wl_subsurface * pBorderSubSurface[8U]
-      = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
-  std::uint32_t * pBorderPixels[8U]
-      = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
-  wl_buffer * pBorderBuffer[8U]
-      = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
+  wl_surface *    pBorderSurface[8U]{ nullptr, nullptr, nullptr, nullptr,
+                                      nullptr, nullptr, nullptr, nullptr };
+  wl_subsurface * pBorderSubSurface[8U]{ nullptr, nullptr, nullptr, nullptr,
+                                         nullptr, nullptr, nullptr, nullptr };
   // Buttons
-  wl_surface *    pButtonSurface[3U]          = { nullptr, nullptr, nullptr };
-  wl_subsurface * pButtonSubSurface[3U]       = { nullptr, nullptr, nullptr };
-  std::uint32_t * pDecorationButtonPixels[3U] = { nullptr, nullptr, nullptr };
-  wl_buffer *     pDecorationButtonBuffer[3U] = { nullptr, nullptr, nullptr };
+  wl_surface *    pButtonSurface[3U]{ nullptr, nullptr, nullptr };
+  wl_subsurface * pButtonSubSurface[3U]{ nullptr, nullptr, nullptr };
   // Cursor
-  wl_surface *      pCursorSurface = nullptr;
-  wl_cursor_theme * pCursorTheme   = nullptr;
+  wl_surface *      pCursorSurface{ nullptr };
+  wl_cursor_theme * pCursorTheme{ nullptr };
 };
 
   /*
