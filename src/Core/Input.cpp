@@ -18,7 +18,6 @@ Patache::Engine::HandleEvent (const SDL_Event & rEvent)
                 {
 #if __unix__ || __linux__ || __FreeBSD__ || __NetBSD__ || __NetBSD__ || __OpenBSD__ || __bsdi__    \
     || __DragonFly__ || __MidnightBSD__
-                  fast_io::io::println ("returnFromFullscreen : ", returnFromFullscreen);
                   // Wayland Client Side Decoration
                   if (waylandWindow.pDecorationMananger == nullptr)
                     {
@@ -36,7 +35,6 @@ Patache::Engine::HandleEvent (const SDL_Event & rEvent)
 
                   xdg_toplevel_set_fullscreen (waylandWindow.pDesktopWindow, nullptr);
                   isFullScreen = true;
-                  fast_io::io::println ("Entrando a pantalla completa");
 #else
                   // SDL_Window
                   int                           displaysCount = 0;
@@ -69,7 +67,6 @@ Patache::Engine::HandleEvent (const SDL_Event & rEvent)
     || __DragonFly__ || __MidnightBSD__
                   // Wayland Client Side Decoration
                   returnFromFullscreen = true;
-                  fast_io::io::println ("returnFromFullscreen : ", returnFromFullscreen);
 
                   xdg_toplevel_unset_fullscreen (waylandWindow.pDesktopWindow);
 
@@ -98,7 +95,6 @@ Patache::Engine::HandleEvent (const SDL_Event & rEvent)
                             }
                         }
                     }
-                  fast_io::io::println ("Saliendo de pantalla completa");
 #else
                   // SDL_Window
                   if (!SDL_SetWindowFullscreen (pGameWindow, false))
