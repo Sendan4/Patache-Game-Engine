@@ -226,8 +226,8 @@ struct Engine
   PATACHE_API void ClearColorRGBA (const float &, const float &, const float &, const float &);
   PATACHE_API void ClearColorRGBA (const float &, const float &, const float &);
 
-  PATACHE_API bool Bsalloc (Patache::Triangle * const);
-  PATACHE_API void Bsfree (Patache::Triangle * const);
+  PATACHE_API bool BufferSubAlloc (Patache::Triangle * const);
+  PATACHE_API void BufferSubFree (Patache::Triangle * const);
 
   PATACHE_API void Draw (Patache::Triangle * const);
 };

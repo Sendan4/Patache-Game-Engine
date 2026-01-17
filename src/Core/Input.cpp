@@ -16,10 +16,9 @@ Patache::Engine::HandleEvent (const SDL_Event & rEvent)
             {
               if (!isFullScreen)
                 {
-                  isFullScreen = true;
-
 #if __unix__ || __linux__ || __FreeBSD__ || __NetBSD__ || __NetBSD__ || __OpenBSD__ || __bsdi__    \
     || __DragonFly__ || __MidnightBSD__
+                  fast_io::io::println ("returnFromFullscreen : ", returnFromFullscreen);
                   // Wayland Client Side Decoration
                   if (waylandWindow.pDecorationMananger == nullptr)
                     {
@@ -36,6 +35,8 @@ Patache::Engine::HandleEvent (const SDL_Event & rEvent)
                     }
 
                   xdg_toplevel_set_fullscreen (waylandWindow.pDesktopWindow, nullptr);
+                  isFullScreen = true;
+                  fast_io::io::println ("Entrando a pantalla completa");
 #else
                   // SDL_Window
                   int                           displaysCount = 0;
@@ -67,14 +68,13 @@ Patache::Engine::HandleEvent (const SDL_Event & rEvent)
 #if __unix__ || __linux__ || __FreeBSD__ || __NetBSD__ || __NetBSD__ || __OpenBSD__ || __bsdi__    \
     || __DragonFly__ || __MidnightBSD__
                   // Wayland Client Side Decoration
+                  returnFromFullscreen = true;
+                  fast_io::io::println ("returnFromFullscreen : ", returnFromFullscreen);
+
                   xdg_toplevel_unset_fullscreen (waylandWindow.pDesktopWindow);
 
                   if (waylandWindow.pDecorationMananger == nullptr)
                     {
-                      waylandWindow.pMainBarSubSurface = wl_subcompositor_get_subsurface (
-                          waylandWindow.pSubCompositor, waylandWindow.pMainBarSurface,
-                          waylandWindow.pSurface);
-
                       // Buttons
                       for (std::uint8_t i = 0; i < 3; ++i)
                         {
@@ -82,6 +82,10 @@ Patache::Engine::HandleEvent (const SDL_Event & rEvent)
                               waylandWindow.pSubCompositor, waylandWindow.pButtonSurface[i],
                               waylandWindow.pMainBarSurface);
                         }
+
+                      waylandWindow.pMainBarSubSurface = wl_subcompositor_get_subsurface (
+                          waylandWindow.pSubCompositor, waylandWindow.pMainBarSurface,
+                          waylandWindow.pSurface);
 
                       // Border Window
                       if (!isMaximized)
@@ -94,6 +98,7 @@ Patache::Engine::HandleEvent (const SDL_Event & rEvent)
                             }
                         }
                     }
+                  fast_io::io::println ("Saliendo de pantalla completa");
 #else
                   // SDL_Window
                   if (!SDL_SetWindowFullscreen (pGameWindow, false))

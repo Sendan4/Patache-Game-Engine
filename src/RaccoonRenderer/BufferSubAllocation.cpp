@@ -6,7 +6,7 @@
 #include "PatacheEngine/PatacheEngine.hpp"
 
 bool
-Patache::Engine::Bsalloc (Patache::Triangle * const triangle)
+Patache::Engine::BufferSubAlloc (Patache::Triangle * const triangle)
 {
   assert (triangle != nullptr
           && "Triangle pointer in Patache::Triangle::Bsalloc() cannot be null "
@@ -41,7 +41,7 @@ Patache::Engine::Bsalloc (Patache::Triangle * const triangle)
 }
 
 void
-Patache::Engine::Bsfree (Patache::Triangle * const triangle)
+Patache::Engine::BufferSubFree (Patache::Triangle * const triangle)
 {
   triangle->bufferOffset = ~0U;
 }

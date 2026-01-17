@@ -22,6 +22,7 @@
 #if __unix__ || __linux__ || __FreeBSD__ || __NetBSD__ || __NetBSD__ || __OpenBSD__ || __bsdi__    \
     || __DragonFly__ || __MidnightBSD__
 extern bool isMaximized;
+extern bool returnFromFullscreen;
 #else
 bool SDLCALL HandleResize (void *, SDL_Event *);
 #endif

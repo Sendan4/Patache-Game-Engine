@@ -147,38 +147,75 @@ DesktopStyleUserInterfaceConfigure (void * pData, xdg_surface * pDesktopStyleUse
           if (!isMaximized && !isFullScreen)
             {
               // Horizontal border
-              wl_subsurface_set_position (
-                  pEngine->waylandWindow.pBorderSubSurface[Patache::BorderIndexCSD::eTop], 0, -26);
+              if (pEngine->waylandWindow.pBorderSubSurface[Patache::BorderIndexCSD::eTop]
+                  != nullptr)
+                {
+                  wl_subsurface_set_position (
+                      pEngine->waylandWindow.pBorderSubSurface[Patache::BorderIndexCSD::eTop], 0,
+                      -26);
+                }
 
-              wl_subsurface_set_position (
-                  pEngine->waylandWindow.pBorderSubSurface[Patache::BorderIndexCSD::eBottom], 0,
-                  pEngine->vulkan.swapchainExtent.height);
+              if (pEngine->waylandWindow.pBorderSubSurface[Patache::BorderIndexCSD::eBottom]
+                  != nullptr)
+                {
+                  wl_subsurface_set_position (
+                      pEngine->waylandWindow.pBorderSubSurface[Patache::BorderIndexCSD::eBottom], 0,
+                      pEngine->vulkan.swapchainExtent.height);
+                }
 
               // Vertical Border
-              wl_subsurface_set_position (
-                  pEngine->waylandWindow.pBorderSubSurface[Patache::BorderIndexCSD::eLeft],
-                  -PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE, -PATACHE_MAINBAR_HEIGHT_CSD_SIZE);
+              if (pEngine->waylandWindow.pBorderSubSurface[Patache::BorderIndexCSD::eLeft]
+                  != nullptr)
+                {
+                  wl_subsurface_set_position (
+                      pEngine->waylandWindow.pBorderSubSurface[Patache::BorderIndexCSD::eLeft],
+                      -PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE, -PATACHE_MAINBAR_HEIGHT_CSD_SIZE);
+                }
 
-              wl_subsurface_set_position (
-                  pEngine->waylandWindow.pBorderSubSurface[Patache::BorderIndexCSD::eRight],
-                  pEngine->vulkan.swapchainExtent.width, -PATACHE_MAINBAR_HEIGHT_CSD_SIZE);
+              if (pEngine->waylandWindow.pBorderSubSurface[Patache::BorderIndexCSD::eRight]
+                  != nullptr)
+                {
+                  wl_subsurface_set_position (
+                      pEngine->waylandWindow.pBorderSubSurface[Patache::BorderIndexCSD::eRight],
+                      pEngine->vulkan.swapchainExtent.width, -PATACHE_MAINBAR_HEIGHT_CSD_SIZE);
+                }
 
               // Corner Borders
-              wl_subsurface_set_position (
-                  pEngine->waylandWindow.pBorderSubSurface[Patache::BorderIndexCSD::eTopLeft],
-                  -PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE, -26);
+              if (pEngine->waylandWindow.pBorderSubSurface[Patache::BorderIndexCSD::eTopLeft]
+                  != nullptr)
+                {
+                  wl_subsurface_set_position (
+                      pEngine->waylandWindow.pBorderSubSurface[Patache::BorderIndexCSD::eTopLeft],
+                      -PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE, -26);
+                }
 
-              wl_subsurface_set_position (
-                  pEngine->waylandWindow.pBorderSubSurface[Patache::BorderIndexCSD::eTopRight],
-                  pEngine->vulkan.swapchainExtent.width, -26);
+              if (pEngine->waylandWindow.pBorderSubSurface[Patache::BorderIndexCSD::eTopRight]
+                  != nullptr)
+                {
+                  wl_subsurface_set_position (
+                      pEngine->waylandWindow.pBorderSubSurface[Patache::BorderIndexCSD::eTopRight],
+                      pEngine->vulkan.swapchainExtent.width, -26);
+                }
 
-              wl_subsurface_set_position (
-                  pEngine->waylandWindow.pBorderSubSurface[Patache::BorderIndexCSD::eBottomLeft],
-                  -PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE, pEngine->vulkan.swapchainExtent.height);
+              if (pEngine->waylandWindow.pBorderSubSurface[Patache::BorderIndexCSD::eBottomLeft]
+                  != nullptr)
+                {
+                  wl_subsurface_set_position (
+                      pEngine->waylandWindow
+                          .pBorderSubSurface[Patache::BorderIndexCSD::eBottomLeft],
+                      -PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE,
+                      pEngine->vulkan.swapchainExtent.height);
+                }
 
-              wl_subsurface_set_position (
-                  pEngine->waylandWindow.pBorderSubSurface[Patache::BorderIndexCSD::eBottomRight],
-                  pEngine->vulkan.swapchainExtent.width, pEngine->vulkan.swapchainExtent.height);
+              if (pEngine->waylandWindow.pBorderSubSurface[Patache::BorderIndexCSD::eBottomRight]
+                  != nullptr)
+                {
+                  wl_subsurface_set_position (
+                      pEngine->waylandWindow
+                          .pBorderSubSurface[Patache::BorderIndexCSD::eBottomRight],
+                      pEngine->vulkan.swapchainExtent.width,
+                      pEngine->vulkan.swapchainExtent.height);
+                }
 
               // Horizontal border
               for (std::uint8_t i = 0; i < PATACHE_BORDER_HORIZONTAL_CSD_SIZE; ++i)
@@ -1189,6 +1226,8 @@ PointerPressButton (void * pData, [[maybe_unused]] wl_pointer * pPointer, std::u
         {
           if (isMaximized)
             {
+              xdg_toplevel_unset_maximized (pEngine->waylandWindow.pDesktopWindow);
+
               // Border Window
               for (std::uint8_t i = 0; i < PATACHE_BORDER_CSD_SIZE; ++i)
                 {
@@ -1196,18 +1235,16 @@ PointerPressButton (void * pData, [[maybe_unused]] wl_pointer * pPointer, std::u
                       pEngine->waylandWindow.pSubCompositor,
                       pEngine->waylandWindow.pBorderSurface[i], pEngine->waylandWindow.pSurface);
                 }
-
-              xdg_toplevel_unset_maximized (pEngine->waylandWindow.pDesktopWindow);
             }
           else
             {
-              xdg_toplevel_set_maximized (pEngine->waylandWindow.pDesktopWindow);
-
               // Border Window
               for (std::uint8_t i = 0; i < PATACHE_BORDER_CSD_SIZE; ++i)
                 {
                   wl_subsurface_destroy (pEngine->waylandWindow.pBorderSubSurface[i]);
                 }
+
+              xdg_toplevel_set_maximized (pEngine->waylandWindow.pDesktopWindow);
             }
 
           isMaximized ^= true;
@@ -1386,54 +1423,131 @@ RemoveObject ([[maybe_unused]] void * pData, [[maybe_unused]] wl_registry * pReg
 static constexpr struct wl_registry_listener sRegistryListener
     = { .global = AddObject, .global_remove = RemoveObject };
 
+bool          returnFromFullscreen = false;
+std::uint32_t widthWindoned{ 720U };
+std::uint32_t heightWindoned{ 480U };
+
 // xdg_toplevel
 static void
 GetWindowSize (void * pData, [[maybe_unused]] xdg_toplevel * pDesktopWindow, std::int32_t width,
                std::int32_t height, wl_array * pStates)
 {
-  // Resize vulkan swapchain
-  if (width != 0 && height != 0)
+  Patache::Engine * pEngine = static_cast<Patache::Engine *> (pData);
+ 
+  if (pEngine->waylandWindow.pDecorationMananger == nullptr
+      && pEngine->waylandWindow.pSubCompositor != nullptr)
     {
-      Patache::Engine * pEngine = static_cast<Patache::Engine *> (pData);
+      sFocusCSD = false;
 
-      resizingPending = true;
+      // wl_array_for_each no funciona en C++ debido a hacer conversiones raras de void * que
+      // igual estoy haciendo aca, la cuestion es que no configure el compilador como permisivo
+      // (-fpermissive). asi que toco hacer mi propio wl_array_for_each()
+      enum xdg_toplevel_state * pState;
 
-      // If Server Side Decorations (CSD) is no available
-      if (pEngine->waylandWindow.pDecorationMananger == nullptr
-          && pEngine->waylandWindow.pSubCompositor != nullptr)
+      for (std::uint32_t pos{ 0U }; pStates->size > 0 && pos < pStates->size;
+           pos += sizeof (xdg_toplevel_state))
         {
-          sFocusCSD = false;
+          pState = static_cast<xdg_toplevel_state *> (
+              (static_cast<xdg_toplevel_state *> (pStates->data) + pos));
 
-          // wl_array_for_each no funciona en C++ debido a hacer conversiones raras de void * que
-          // igual estoy haciendo aca, la cuestion es que no configure el compilador como permisivo
-          // (-fpermissive). asi que toco hacer mi propio wl_array_for_each()
-          enum xdg_toplevel_state * pState;
+          if (*pState == 0)
+            continue;
 
-          for (std::uint32_t pos{ 0U }; pStates->size > 0 && pos < pStates->size;
-               pos += sizeof (xdg_toplevel_state))
+          fast_io::io::println ("state ", static_cast<std::uint32_t> (*pState));
+
+          if (*pState == XDG_TOPLEVEL_STATE_ACTIVATED || *pState == XDG_TOPLEVEL_STATE_RESIZING
+              || *pState == XDG_TOPLEVEL_STATE_FULLSCREEN)
             {
-              pState = static_cast<xdg_toplevel_state *> (
-                  (static_cast<xdg_toplevel_state *> (pStates->data) + pos));
+              sFocusCSD       = true;
+              resizingPending = true;
 
-              if (*pState == XDG_TOPLEVEL_STATE_ACTIVATED || *pState == XDG_TOPLEVEL_STATE_RESIZING)
+              if (isMaximized)
                 {
-                  sFocusCSD = true;
+                  xdg_toplevel_unset_maximized (pEngine->waylandWindow.pDesktopWindow);
+
+                  // Border Window
+                  for (std::uint8_t i = 0; i < PATACHE_BORDER_CSD_SIZE; ++i)
+                    {
+                      pEngine->waylandWindow.pBorderSubSurface[i]
+                          = wl_subcompositor_get_subsurface (
+                              pEngine->waylandWindow.pSubCompositor,
+                              pEngine->waylandWindow.pBorderSurface[i],
+                              pEngine->waylandWindow.pSurface);
+                    }
+
+                  isMaximized = false;
                 }
             }
 
+          if (*pState == XDG_TOPLEVEL_STATE_MAXIMIZED)
+            {
+              sFocusCSD       = true;
+              resizingPending = true;
+
+              if (!isMaximized)
+                {
+                  xdg_toplevel_set_maximized (pEngine->waylandWindow.pDesktopWindow);
+
+                  // Border Window
+                  for (std::uint8_t i = 0; i < PATACHE_BORDER_CSD_SIZE; ++i)
+                    {
+                      if (pEngine->waylandWindow.pBorderSubSurface[i] != nullptr)
+                        {
+                          wl_subsurface_destroy (pEngine->waylandWindow.pBorderSubSurface[i]);
+                        }
+                    }
+
+                  isMaximized = true;
+                }
+            }
+        }
+
+      if (returnFromFullscreen)
+        {
+          // si el compositor no devuelve un nuevo tamaño, toca inprovisar
           if (!isFullScreen && !isMaximized)
             {
+              width  = widthWindoned;
+              height = heightWindoned;
+
+              pEngine->vulkan.swapchainExtent.width = width - PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE
+                                                      - PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE;
+              pEngine->vulkan.swapchainExtent.height
+                  = height - PATACHE_MAINBAR_HEIGHT_CSD_SIZE
+                    - (PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE * 2);
+            }
+
+          resizingPending      = true;
+          returnFromFullscreen = false;
+        }
+    }
+
+  // Resize vulkan swapchain
+  if (width != 0 && height != 0)
+    {
+      resizingPending = true;
+
+      if (pEngine->waylandWindow.pDecorationMananger == nullptr
+          && pEngine->waylandWindow.pSubCompositor != nullptr)
+        {
+          // Client Side Decoration (CSD)
+          if (!isFullScreen && !isMaximized)
+            {
+              // CSD Window
               pEngine->vulkan.swapchainExtent.width = width - PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE
                                                       - PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE;
 
               pEngine->vulkan.swapchainExtent.height
                   = height - PATACHE_MAINBAR_HEIGHT_CSD_SIZE
                     - (PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE * 2);
+
+              widthWindoned  = width;
+              heightWindoned = height;
             }
           else if (isMaximized && !isFullScreen)
             {
-              pEngine->vulkan.swapchainExtent.width = width;
-
+              // CSD Maximized
+              pEngine->vulkan.swapchainExtent.width  = width;
               pEngine->vulkan.swapchainExtent.height = height - PATACHE_MAINBAR_HEIGHT_CSD_SIZE;
             }
           else
@@ -1448,6 +1562,22 @@ GetWindowSize (void * pData, [[maybe_unused]] xdg_toplevel * pDesktopWindow, std
           // Server Side Decoration (SSD)
           pEngine->vulkan.swapchainExtent.width  = width;
           pEngine->vulkan.swapchainExtent.height = height;
+        }
+    }
+  else
+    {
+      // si el compositor no devuelve un nuevo tamaño, toca inprovisar
+      if (!isFullScreen && !isMaximized)
+        {
+          // CSD Window
+          width  = widthWindoned;
+          height = heightWindoned;
+
+          pEngine->vulkan.swapchainExtent.width = width - PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE
+                                                  - PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE;
+
+          pEngine->vulkan.swapchainExtent.height = height - PATACHE_MAINBAR_HEIGHT_CSD_SIZE
+                                                   - (PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE * 2);
         }
     }
 }
