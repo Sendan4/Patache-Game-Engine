@@ -129,7 +129,6 @@ static void
 DesktopStyleUserInterfaceConfigure (void * pData, xdg_surface * pDesktopStyleUserInterface,
                                     std::uint32_t serial)
 {
-  xdg_surface_ack_configure (pDesktopStyleUserInterface, serial);
   Patache::Engine * pEngine = static_cast<Patache::Engine *> (pData);
 
   if (resizingPending)
@@ -653,6 +652,8 @@ DesktopStyleUserInterfaceConfigure (void * pData, xdg_surface * pDesktopStyleUse
             }
         }
     }
+
+  xdg_surface_ack_configure (pDesktopStyleUserInterface, serial);
 }
 
 static constexpr struct xdg_surface_listener sDesktopStyleUserInterfaceListener
@@ -1424,6 +1425,7 @@ static constexpr struct wl_registry_listener sRegistryListener
     = { .global = AddObject, .global_remove = RemoveObject };
 
 bool          returnFromFullscreen = false;
+bool          waitForFullscreen    = false;
 std::uint32_t widthWindoned{ 720U };
 std::uint32_t heightWindoned{ 480U };
 
@@ -1433,7 +1435,7 @@ GetWindowSize (void * pData, [[maybe_unused]] xdg_toplevel * pDesktopWindow, std
                std::int32_t height, wl_array * pStates)
 {
   Patache::Engine * pEngine = static_cast<Patache::Engine *> (pData);
- 
+
   if (pEngine->waylandWindow.pDecorationMananger == nullptr
       && pEngine->waylandWindow.pSubCompositor != nullptr)
     {
@@ -1451,12 +1453,9 @@ GetWindowSize (void * pData, [[maybe_unused]] xdg_toplevel * pDesktopWindow, std
               (static_cast<xdg_toplevel_state *> (pStates->data) + pos));
 
           if (*pState == 0)
-            continue;
+            break;
 
-          fast_io::io::println ("state ", static_cast<std::uint32_t> (*pState));
-
-          if (*pState == XDG_TOPLEVEL_STATE_ACTIVATED || *pState == XDG_TOPLEVEL_STATE_RESIZING
-              || *pState == XDG_TOPLEVEL_STATE_FULLSCREEN)
+          if (*pState == XDG_TOPLEVEL_STATE_ACTIVATED || *pState == XDG_TOPLEVEL_STATE_RESIZING)
             {
               sFocusCSD       = true;
               resizingPending = true;
@@ -1475,6 +1474,7 @@ GetWindowSize (void * pData, [[maybe_unused]] xdg_toplevel * pDesktopWindow, std
                               pEngine->waylandWindow.pSurface);
                     }
 
+                  fast_io::io::println ("desactivando un maximizado");
                   isMaximized = false;
                 }
             }
@@ -1498,6 +1498,33 @@ GetWindowSize (void * pData, [[maybe_unused]] xdg_toplevel * pDesktopWindow, std
                     }
 
                   isMaximized = true;
+                }
+            }
+
+          // Esto es por weston, no podia simplemente decirle que desmaximize la ventana y que la
+          // ponga en pantalla completa de una, tengo que primero desmaximizar y luego solicitarle
+          // al compositor que coloque la ventana en pantalla completa, no se pueden hacer a la vez
+          // con el exigente de Weston, hay que solicitarlo uno por uno y esperar a que los estados
+          // llegen.
+          if (waitForFullscreen)
+            {
+              if (*pState == XDG_TOPLEVEL_STATE_FULLSCREEN)
+                {
+                  waitForFullscreen = false;
+                }
+              else
+                {
+                  // From window
+                  for (std::uint8_t i = 0; i < PATACHE_BORDER_CSD_SIZE; ++i)
+                    wl_subsurface_destroy (pEngine->waylandWindow.pBorderSubSurface[i]);
+
+                  wl_subsurface_destroy (pEngine->waylandWindow.pMainBarSubSurface);
+
+                  for (std::uint8_t i = 0; i < 3; ++i)
+                    wl_subsurface_destroy (pEngine->waylandWindow.pButtonSubSurface[i]);
+
+                  isFullScreen = true;
+                  xdg_toplevel_set_fullscreen (pEngine->waylandWindow.pDesktopWindow, nullptr);
                 }
             }
         }

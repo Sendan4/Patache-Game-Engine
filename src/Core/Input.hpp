@@ -23,6 +23,7 @@
     || __DragonFly__ || __MidnightBSD__
 extern bool isMaximized;
 extern bool returnFromFullscreen;
+extern bool waitForFullscreen;
 #else
 bool SDLCALL HandleResize (void *, SDL_Event *);
 #endif

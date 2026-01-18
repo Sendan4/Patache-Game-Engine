@@ -19,22 +19,42 @@ Patache::Engine::HandleEvent (const SDL_Event & rEvent)
 #if __unix__ || __linux__ || __FreeBSD__ || __NetBSD__ || __NetBSD__ || __OpenBSD__ || __bsdi__    \
     || __DragonFly__ || __MidnightBSD__
                   // Wayland Client Side Decoration
-                  if (waylandWindow.pDecorationMananger == nullptr)
+                  if (waylandWindow.pDecorationMananger == nullptr
+                      && waylandWindow.pSubCompositor != nullptr)
                     {
-                      for (std::uint8_t i = 0; i < 3; ++i)
-                        wl_subsurface_destroy (waylandWindow.pButtonSubSurface[i]);
-
-                      wl_subsurface_destroy (waylandWindow.pMainBarSubSurface);
-
                       if (!isMaximized)
                         {
+                          // From window
                           for (std::uint8_t i = 0; i < PATACHE_BORDER_CSD_SIZE; ++i)
                             wl_subsurface_destroy (waylandWindow.pBorderSubSurface[i]);
+
+                          for (std::uint8_t i = 0; i < 3; ++i)
+                            wl_subsurface_destroy (waylandWindow.pButtonSubSurface[i]);
+
+                          wl_subsurface_destroy (waylandWindow.pMainBarSubSurface);
+
+                          xdg_toplevel_set_fullscreen (waylandWindow.pDesktopWindow, nullptr);
+                          isFullScreen = true;
+                        }
+                      else
+                        {
+                          // Por el exigente de weston debo desmaximizar primero y luego debo
+                          // solicitar la pantalla completa, no se pueden hacer las 2 cosas en la
+                          // misma funcion. la solicitud para la pantalla completa esta dentro de un
+                          // callback del protocolo wayland
+                          xdg_toplevel_unset_maximized (waylandWindow.pDesktopWindow);
+
+                          for (std::uint8_t i = 0; i < PATACHE_BORDER_CSD_SIZE; ++i)
+                            {
+                              waylandWindow.pBorderSubSurface[i] = wl_subcompositor_get_subsurface (
+                                  waylandWindow.pSubCompositor, waylandWindow.pBorderSurface[i],
+                                  waylandWindow.pSurface);
+                            }
+
+                          isMaximized       = false;
+                          waitForFullscreen = true;
                         }
                     }
-
-                  xdg_toplevel_set_fullscreen (waylandWindow.pDesktopWindow, nullptr);
-                  isFullScreen = true;
 #else
                   // SDL_Window
                   int                           displaysCount = 0;
@@ -70,7 +90,8 @@ Patache::Engine::HandleEvent (const SDL_Event & rEvent)
 
                   xdg_toplevel_unset_fullscreen (waylandWindow.pDesktopWindow);
 
-                  if (waylandWindow.pDecorationMananger == nullptr)
+                  if (waylandWindow.pDecorationMananger == nullptr
+                      && waylandWindow.pSubCompositor != nullptr)
                     {
                       // Buttons
                       for (std::uint8_t i = 0; i < 3; ++i)
@@ -84,7 +105,6 @@ Patache::Engine::HandleEvent (const SDL_Event & rEvent)
                           waylandWindow.pSubCompositor, waylandWindow.pMainBarSurface,
                           waylandWindow.pSurface);
 
-                      // Border Window
                       if (!isMaximized)
                         {
                           for (std::uint8_t i = 0; i < PATACHE_BORDER_CSD_SIZE; ++i)

@@ -24,7 +24,6 @@ target_sources (${PROJECT_NAME} PRIVATE
     "RaccoonRenderer/Vulkan/VmaUsage.cpp"
 		"RaccoonRenderer/BufferSubAllocation.cpp"
 		"RaccoonRenderer/Draw.cpp"
-    "Core/Triangle.cpp"
     "Log/Message.cpp"
     "Log/StartLogInfo.cpp"
     "Log/Vulkan_SetupLog.cpp"
