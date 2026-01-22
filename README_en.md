@@ -7,7 +7,8 @@
 
 _Dumb and simple 2D game engine made in C++. The goal is to do fast, lightweight and portable._
 
-<p>⚠️ <span style="color: yellow;">It is at a very early stage of development.</span></p>
+> [!IMPORTANT]
+> It is at a very early stage of development.
 
 ## Links
 <!-- - [Documentation](#)-->

@@ -7,7 +7,8 @@
 
 _Motor de videojuegos 2D tonto y simple hecho con C++. El objetivo es hacerlo rapido, ligero y portable._
 
-<p>⚠️ <span style="color: yellow;">Esta en un estado muy temprano de desarrollo.</span></p>
+> [!IMPORTANT]
+> Esta en un estado muy temprano de desarrollo.
 
 ## Enlaces
 <!-- - [Documentation](#)-->
