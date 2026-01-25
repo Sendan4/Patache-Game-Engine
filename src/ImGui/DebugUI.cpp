@@ -104,7 +104,7 @@ Patache::DrawDebugUI (Patache::Engine * const pEngine)
 
       // Text about the pEngine
       ImGui::Text ("Simple and free Game Engine");
-      ImGui::Text ("%s is under the MIT License.", PATACHE_ENGINE_NAME);
+      ImGui::Text ("%s is under the GPLv3 License.", PATACHE_ENGINE_NAME);
       ImGui::Spacing ();
 
       // below is the advanced Info
