@@ -77,7 +77,7 @@ CreateWaylandWindow (const std::uint32_t & rWidth, const std::uint32_t & rHeight
 
   xdg_toplevel_set_min_size (pEngine->waylandWindow.pDesktopWindow, 640, 360);
 
-  // Callback for Window events form the desktop
+  // Callback for Window events from the desktop
   xdg_toplevel_add_listener (pEngine->waylandWindow.pDesktopWindow, &sDesktopWindowListener,
                              pEngine);
 
@@ -151,7 +151,6 @@ CreateWaylandWindow (const std::uint32_t & rWidth, const std::uint32_t & rHeight
 
       for (std::uint32_t i = 0; i < (rWidth * PATACHE_MAINBAR_HEIGHT_CSD_SIZE); ++i)
         {
-          // Write Color for a wl_buffer
           pMainBarPixels[i] = PATACHE_MAINBAR_FOCUS_CSD_COLOR;
         }
 
@@ -197,14 +196,14 @@ CreateWaylandWindow (const std::uint32_t & rWidth, const std::uint32_t & rHeight
       // Set button position
       wl_subsurface_set_position (
           pEngine->waylandWindow.pButtonSubSurface[Patache::ButtonIndexCSD::eMinimize],
-          (rWidth - 89), 2);
+          (rWidth - 87), 2);
 
       wl_subsurface_set_position (
           pEngine->waylandWindow.pButtonSubSurface[Patache::ButtonIndexCSD::eMaximize],
-          (rWidth - 59), 2);
+          (rWidth - 57), 2);
 
       wl_subsurface_set_position (
-          pEngine->waylandWindow.pButtonSubSurface[Patache::ButtonIndexCSD::eClose], (rWidth - 29),
+          pEngine->waylandWindow.pButtonSubSurface[Patache::ButtonIndexCSD::eClose], (rWidth - 27),
           2);
 
       for (std::uint8_t i = 0; i < PATACHE_BUTTON_CSD_SIZE; ++i)
