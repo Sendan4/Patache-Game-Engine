@@ -48,29 +48,29 @@ enum class ProjectGraphics : bool
 // you can use nullptr to not use the options or not assign them at all.
 struct EngineCreateInfo
 {
-  const char * const  pGameName   = nullptr; // Name of the game // It is optional.
-  const std::uint32_t gameVersion = 0;
+  const char * const  pGameName{ nullptr }; // Name of the game // It is optional.
+  const std::uint32_t gameVersion{ 0U };
   // Vulkan version style: major.minor.patch.variant // It is
   // optional.
-  const char * const pWindowTitle = nullptr;
+  const char * const pWindowTitle{ nullptr };
   // Initial title of the window. // It is optional.
-  const Patache::ProjectGraphics projectGraphicsMode = Patache::ProjectGraphics::Mode2D;
+  const Patache::ProjectGraphics projectGraphicsMode{ Patache::ProjectGraphics::Mode2D };
   // Determines whether the project uses 2D or 3D graphics.
   // It is mandatory.
-  const char * const pWindowIconPath = nullptr;
+  const char * const pWindowIconPath{ nullptr };
   // Initial icon of the window. // It is optional.
   // Use bitmap (.bmp) format/codec. // It is optional.
-  const std::uint32_t memRenderSizePerImage = 262144U;
-  const std::uint32_t buffStagingSize       = 262144U;
+  const std::uint32_t memRenderSizePerImage{ 262144U };
+  const std::uint32_t buffStagingSize{ 262144U };
 };
 
 // Float32 format
 struct ClearColor
 {
-  float r = 0.0F; // Red
-  float g = 0.0F; // Green
-  float b = 0.0F; // Blue
-  float a = 1.0F; // Alpha
+  float r{ 0.0F }; // Red
+  float g{ 0.0F }; // Green
+  float b{ 0.0F }; // Blue
+  float a{ 1.0F }; // Alpha
 };
 
 #if __unix__ || __linux__ || __FreeBSD__ || __NetBSD__ || __NetBSD__ || __OpenBSD__ || __bsdi__    \
@@ -151,17 +151,17 @@ enum BorderIndexCSD : std::uint8_t
 
 struct Vertex2D
 {
-  vec2 pos   = { 0.0F, 0.0F };
-  vec3 color = { 1.0F, 1.0F, 1.0F };
+  vec2 pos{ 0.0F, 0.0F };
+  vec3 color{ 1.0F, 1.0F, 1.0F };
   // Default color white
 };
 
 // Triangle
 struct Triangle
 {
-  Vertex2D vertex[3] = { { { 0.0F, -0.5F }, { 1.0F, 1.0F, 1.0F } },
-                         { { 0.5F, 0.5F }, { 1.0F, 1.0F, 1.0F } },
-                         { { -0.5F, 0.5F }, { 1.0F, 1.0F, 1.0F } } };
+  Vertex2D vertex[3]{ { { 0.0F, -0.5F }, { 1.0F, 1.0F, 1.0F } },
+                      { { 0.5F, 0.5F }, { 1.0F, 1.0F, 1.0F } },
+                      { { -0.5F, 0.5F }, { 1.0F, 1.0F, 1.0F } } };
 
   vk::DeviceSize   bufferOffset{ 0U };
   static constexpr std::uint_fast64_t size{ sizeof (Patache::Vertex2D) * 3 };
@@ -200,7 +200,7 @@ struct Engine
   PATACHE_API ~Engine (void);
 
   // Window
-  SDL_Window * pGameWindow = nullptr;
+  SDL_Window * pGameWindow{ nullptr };
 
 #if __unix__ || __linux__ || __FreeBSD__ || __NetBSD__ || __NetBSD__ || __OpenBSD__ || __bsdi__    \
     || __DragonFly__ || __MidnightBSD__

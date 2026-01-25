@@ -24,7 +24,7 @@ enum class WindowDecorationType : std::uint8_t
 struct EngineInfo
 {
   // Window
-  std::uint64_t windowCreationFlags = 0U;
+  std::uint64_t windowCreationFlags{ 0U };
 
 #if __unix__ || __linux__ || __FreeBSD__ || __NetBSD__ || __OpenBSD__ || __bsdi__ || __DragonFly__ \
     || __MidnightBSD__
@@ -37,13 +37,13 @@ struct EngineInfo
 
   // Device
   char                          deviceNameVK[VK_MAX_PHYSICAL_DEVICE_NAME_SIZE]{ 0 };
-  std::uint32_t                 deviceVendorIdVK = 0;
+  std::uint32_t                 deviceVendorIdVK{ 0U };
   char                          deviceTypeVK[PATACHE_DEVICETYPE_VK_SIZE]{ 0 };
   vk::PhysicalDeviceProperties2 physicalDeviceProperties;
 
   // Queue
   // uint8_t VkQueuesCount = 0
-  float                        queuePriorityVK = 0.0F;
+  float                        queuePriorityVK{ 0.0F };
   vk::Flags<vk::QueueFlagBits> queueFlagsVK;
 
   // Driver
@@ -56,46 +56,46 @@ struct EngineInfo
   vk::PresentModeKHR swapchainPresentModeVK;
   vk::Format         swapchainImageColorFormatVK;
   vk::ColorSpaceKHR  swapchainImageColorSpaceVK;
-  std::uint32_t      minImageCountVK = 0U; // Also the actual number of images
+  std::uint32_t      minImageCountVK{ 0U }; // Also the actual number of images
 
   // Extensions
-  const char ** ppLayersVK                = nullptr;
-  const char ** ppInstanceExtensionsVK    = nullptr;
-  std::uint32_t instanceExtensionsCountVK = 0U;
-  const char ** ppDeviceExtensionsVK      = nullptr;
-  std::uint32_t deviceExtensionsCountVK   = 0U;
+  const char ** ppLayersVK{ nullptr };
+  const char ** ppInstanceExtensionsVK{ nullptr };
+  std::uint32_t instanceExtensionsCountVK{ 0U };
+  const char ** ppDeviceExtensionsVK{ nullptr };
+  std::uint32_t deviceExtensionsCountVK{ 0U };
 
   // Memory
   // Total Heap memory
-  double       vramSize     = 0.0F;
-  const char * vramSizeUnit = "Byte";
+  double       vramSize{ 0.0F };
+  const char * vramSizeUnit{ "Byte" };
 
   // GPU-Device heap
-  float ** ppVramMemoryDeviceSize     = nullptr;
-  char **  ppVramMemoryDeviceSizeUnit = nullptr;
-  char **  ppVramMemoryDeviceHeap     = nullptr;
-  char **  ppVramMemoryDeviceType     = nullptr;
+  float ** ppVramMemoryDeviceSize{ nullptr };
+  char **  ppVramMemoryDeviceSizeUnit{ nullptr };
+  char **  ppVramMemoryDeviceHeap{ nullptr };
+  char **  ppVramMemoryDeviceType{ nullptr };
 
   // CPU-GPU Host visible
-  float        vramMemoryHostSize      = 0.0F;
-  const char * pVramMemoryHostSizeUnit = "Bytes";
-  char         vramMemoryHostHeap[PATACHE_MEMORY_HOST_VK_SIZE];
-  char         vramMemoryHostType[PATACHE_MEMORY_HOST_VK_SIZE];
+  float        vramMemoryHostSize{ 0.0F };
+  const char * pVramMemoryHostSizeUnit{ "Bytes" };
+  char         vramMemoryHostHeap[PATACHE_MEMORY_HOST_VK_SIZE]{ 0 };
+  char         vramMemoryHostType[PATACHE_MEMORY_HOST_VK_SIZE]{ 0 };
 
   // vma Pool
-  const char * pVramPoolSizePerBlockUnit  = "Bytes";
-  float        vramPoolSizePerBlock       = 0.0F;
-  const char * pVramPoolSizeAllBlocksUnit = "Bytes";
-  float        vramPoolSizeAllBlocks      = 0.0F;
+  const char * pVramPoolSizePerBlockUnit{ "Bytes" };
+  float        vramPoolSizePerBlock{ 0.0F };
+  const char * pVramPoolSizeAllBlocksUnit{ "Bytes" };
+  float        vramPoolSizeAllBlocks{ 0.0F };
 
   // RaccoonSound
 
   // ImGui
-  bool showMainMenuBar           = true;
-  bool infoWindow                = false;
-  bool configWindow              = false;
-  bool raccoonRendererInfoWindow = false;
-  bool configBooleansTmp         = false;
+  bool showMainMenuBar{ true };
+  bool infoWindow{ false };
+  bool configWindow{ false };
+  bool raccoonRendererInfoWindow{ false };
+  bool configBooleansTmp{ false };
 
   ImVec4 engineStyles[21];
 };

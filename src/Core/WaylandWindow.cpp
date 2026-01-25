@@ -136,29 +136,29 @@ CreateWaylandWindow (const std::uint32_t & rWidth, const std::uint32_t & rHeight
       wl_subsurface_set_position (pEngine->waylandWindow.pMainBarSubSurface, 0,
                                   -PATACHE_MAINBAR_HEIGHT_CSD_SIZE);
 
-      std::int32_t mainBarFileDescriptor
-          = shm_open (mainBarFileDescriptorName, O_RDWR | O_CREAT | O_EXCL,
-                      S_IWUSR | S_IRUSR | S_IWOTH | S_IROTH);
+      std::int32_t mainBarFileDescriptor{ shm_open (mainBarFileDescriptorName,
+                                                    O_RDWR | O_CREAT | O_EXCL,
+                                                    S_IWUSR | S_IRUSR | S_IWOTH | S_IROTH) };
 
       shm_unlink (mainBarFileDescriptorName);
 
       ftruncate (mainBarFileDescriptor, rWidth * PATACHE_MAINBAR_HEIGHT_CSD_SIZE * 4U);
 
-      std::uint32_t * pMainBarPixels = static_cast<std::uint32_t *> (
+      std::uint32_t * pMainBarPixels{ static_cast<std::uint32_t *> (
           mmap (nullptr, rWidth * PATACHE_MAINBAR_HEIGHT_CSD_SIZE * 4, PROT_READ | PROT_WRITE,
-                MAP_SHARED, mainBarFileDescriptor, 0));
+                MAP_SHARED, mainBarFileDescriptor, 0)) };
 
       for (std::uint32_t i{ 0U }; i < (rWidth * PATACHE_MAINBAR_HEIGHT_CSD_SIZE); ++i)
         {
           pMainBarPixels[i] = PATACHE_MAINBAR_FOCUS_CSD_COLOR;
         }
 
-      wl_shm_pool * pPool = wl_shm_create_pool (pEngine->waylandWindow.pDecorationSharedMemory,
-                                                mainBarFileDescriptor,
-                                                rWidth * PATACHE_MAINBAR_HEIGHT_CSD_SIZE * 4U);
+      wl_shm_pool * pPool{ wl_shm_create_pool (pEngine->waylandWindow.pDecorationSharedMemory,
+                                               mainBarFileDescriptor,
+                                               rWidth * PATACHE_MAINBAR_HEIGHT_CSD_SIZE * 4U) };
 
-      wl_buffer * pBuffer = wl_shm_pool_create_buffer (
-          pPool, 0, rWidth, PATACHE_MAINBAR_HEIGHT_CSD_SIZE, rWidth * 4U, WL_SHM_FORMAT_ARGB8888);
+      wl_buffer * pBuffer{ wl_shm_pool_create_buffer (
+          pPool, 0, rWidth, PATACHE_MAINBAR_HEIGHT_CSD_SIZE, rWidth * 4U, WL_SHM_FORMAT_ARGB8888) };
 
       wl_shm_pool_destroy (pPool);
 
@@ -166,8 +166,8 @@ CreateWaylandWindow (const std::uint32_t & rWidth, const std::uint32_t & rHeight
       wl_surface_damage_buffer (pEngine->waylandWindow.pMainBarSurface, 0, 0, rWidth,
                                 PATACHE_MAINBAR_HEIGHT_CSD_SIZE);
 
-      SurfaceBufferCleanup * pCleanupMainBar
-          = static_cast<SurfaceBufferCleanup *> (std::calloc (1ZU, sizeof (SurfaceBufferCleanup)));
+      SurfaceBufferCleanup * pCleanupMainBar{ static_cast<SurfaceBufferCleanup *> (
+          std::calloc (1ZU, sizeof (SurfaceBufferCleanup))) };
 
       pCleanupMainBar->mappedMemSize = rWidth * PATACHE_MAINBAR_HEIGHT_CSD_SIZE * 4;
       pCleanupMainBar->pMappedMem    = pMainBarPixels;
@@ -206,17 +206,17 @@ CreateWaylandWindow (const std::uint32_t & rWidth, const std::uint32_t & rHeight
 
       for (std::uint8_t i{ 0U }; i < PATACHE_BUTTON_CSD_SIZE; ++i)
         {
-          std::int32_t buttonFileDescriptor
-              = shm_open (buttonFileDescriptorName[i], O_RDWR | O_CREAT | O_EXCL,
-                          S_IWUSR | S_IRUSR | S_IWOTH | S_IROTH);
+          std::int32_t buttonFileDescriptor{ shm_open (buttonFileDescriptorName[i],
+                                                       O_RDWR | O_CREAT | O_EXCL,
+                                                       S_IWUSR | S_IRUSR | S_IWOTH | S_IROTH) };
 
           shm_unlink (buttonFileDescriptorName[i]);
 
           ftruncate (buttonFileDescriptor, PATACHE_CLOSE_BUTTON_CSD_SIZE);
 
-          std::uint32_t * pButtonPixels = static_cast<std::uint32_t *> (
+          std::uint32_t * pButtonPixels{ static_cast<std::uint32_t *> (
               mmap (nullptr, PATACHE_CLOSE_BUTTON_CSD_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED,
-                    buttonFileDescriptor, 0));
+                    buttonFileDescriptor, 0)) };
 
           switch (i)
             {
@@ -243,13 +243,13 @@ CreateWaylandWindow (const std::uint32_t & rWidth, const std::uint32_t & rHeight
               break;
             }
 
-          wl_shm_pool * pPool
-              = wl_shm_create_pool (pEngine->waylandWindow.pDecorationSharedMemory,
-                                    buttonFileDescriptor, PATACHE_CLOSE_BUTTON_CSD_SIZE);
+          wl_shm_pool * pPool{ wl_shm_create_pool (pEngine->waylandWindow.pDecorationSharedMemory,
+                                                   buttonFileDescriptor,
+                                                   PATACHE_CLOSE_BUTTON_CSD_SIZE) };
 
-          wl_buffer * pBuffer = wl_shm_pool_create_buffer (
+          wl_buffer * pBuffer{ wl_shm_pool_create_buffer (
               pPool, 0, PATACHE_CLOSE_BUTTON_CSD_WIDTH, PATACHE_CLOSE_BUTTON_CSD_HEIGHT,
-              PATACHE_CLOSE_BUTTON_CSD_WIDTH * 4U, WL_SHM_FORMAT_ARGB8888);
+              PATACHE_CLOSE_BUTTON_CSD_WIDTH * 4U, WL_SHM_FORMAT_ARGB8888) };
 
           wl_shm_pool_destroy (pPool);
 
@@ -259,8 +259,8 @@ CreateWaylandWindow (const std::uint32_t & rWidth, const std::uint32_t & rHeight
                                     PATACHE_CLOSE_BUTTON_CSD_WIDTH,
                                     PATACHE_CLOSE_BUTTON_CSD_HEIGHT);
 
-          SurfaceBufferCleanup * pCleanup = static_cast<SurfaceBufferCleanup *> (
-              std::calloc (1ZU, sizeof (SurfaceBufferCleanup)));
+          SurfaceBufferCleanup * pCleanup{ static_cast<SurfaceBufferCleanup *> (
+              std::calloc (1ZU, sizeof (SurfaceBufferCleanup))) };
 
           pCleanupMainBar->mappedMemSize = PATACHE_CLOSE_BUTTON_CSD_SIZE;
           pCleanupMainBar->pMappedMem    = pButtonPixels;
@@ -318,30 +318,30 @@ CreateWaylandWindow (const std::uint32_t & rWidth, const std::uint32_t & rHeight
       // Horizontal border
       for (std::uint8_t i{ 0U }; i < PATACHE_BORDER_HORIZONTAL_CSD_SIZE; ++i)
         {
-          std::int32_t borderFileDescriptor
-              = shm_open (borderFileDescriptorName[i], O_RDWR | O_CREAT | O_EXCL,
-                          S_IWUSR | S_IRUSR | S_IWOTH | S_IROTH);
+          std::int32_t borderFileDescriptor{ shm_open (borderFileDescriptorName[i],
+                                                       O_RDWR | O_CREAT | O_EXCL,
+                                                       S_IWUSR | S_IRUSR | S_IWOTH | S_IROTH) };
 
           shm_unlink (borderFileDescriptorName[i]);
 
           ftruncate (borderFileDescriptor, rWidth * PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE * 4U);
 
-          std::uint32_t * pBorderPixels = static_cast<std::uint32_t *> (
+          std::uint32_t * pBorderPixels{ static_cast<std::uint32_t *> (
               mmap (nullptr, rWidth * PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE * 4U,
-                    PROT_READ | PROT_WRITE, MAP_SHARED, borderFileDescriptor, 0));
+                    PROT_READ | PROT_WRITE, MAP_SHARED, borderFileDescriptor, 0)) };
 
           for (std::uint32_t i2{ 0U }; i2 < (rWidth * PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE); ++i2)
             {
-              pBorderPixels[i2] = PATACHE_BORDER_CSD_COLOR;
+              pBorderPixels[i2] = PATACHE_BORDER_FOCUS_CSD_COLOR;
             }
 
-          wl_shm_pool * pPool = wl_shm_create_pool (
+          wl_shm_pool * pPool{ wl_shm_create_pool (
               pEngine->waylandWindow.pDecorationSharedMemory, borderFileDescriptor,
-              rWidth * PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE * 4U);
+              rWidth * PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE * 4U) };
 
-          wl_buffer * pBuffer
-              = wl_shm_pool_create_buffer (pPool, 0, rWidth, PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE,
-                                           rWidth * 4U, WL_SHM_FORMAT_ARGB8888);
+          wl_buffer * pBuffer{ wl_shm_pool_create_buffer (pPool, 0, rWidth,
+                                                          PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE,
+                                                          rWidth * 4U, WL_SHM_FORMAT_ARGB8888) };
 
           wl_shm_pool_destroy (pPool);
 
@@ -350,8 +350,8 @@ CreateWaylandWindow (const std::uint32_t & rWidth, const std::uint32_t & rHeight
           wl_surface_damage_buffer (pEngine->waylandWindow.pBorderSurface[i], 0, 0, rWidth,
                                     PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE);
 
-          SurfaceBufferCleanup * pCleanup = static_cast<SurfaceBufferCleanup *> (
-              std::calloc (1ZU, sizeof (SurfaceBufferCleanup)));
+          SurfaceBufferCleanup * pCleanup{ static_cast<SurfaceBufferCleanup *> (
+              std::calloc (1ZU, sizeof (SurfaceBufferCleanup))) };
 
           pCleanupMainBar->mappedMemSize = rWidth * PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE * 4U;
           pCleanupMainBar->pMappedMem    = pBorderPixels;
@@ -365,37 +365,37 @@ CreateWaylandWindow (const std::uint32_t & rWidth, const std::uint32_t & rHeight
       // Vertical Border
       for (std::uint8_t i{ 2U }; i < PATACHE_BORDER_VERTICAL_CSD_SIZE; ++i)
         {
-          std::int32_t borderFileDescriptor
-              = shm_open (borderFileDescriptorName[i], O_RDWR | O_CREAT | O_EXCL,
-                          S_IWUSR | S_IRUSR | S_IWOTH | S_IROTH);
+          std::int32_t borderFileDescriptor{ shm_open (borderFileDescriptorName[i],
+                                                       O_RDWR | O_CREAT | O_EXCL,
+                                                       S_IWUSR | S_IRUSR | S_IWOTH | S_IROTH) };
 
           shm_unlink (borderFileDescriptorName[i]);
 
           ftruncate (borderFileDescriptor, PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE
                                                * (rHeight + PATACHE_MAINBAR_HEIGHT_CSD_SIZE) * 4U);
 
-          std::uint32_t * pBorderPixels = static_cast<std::uint32_t *> (
+          std::uint32_t * pBorderPixels{ static_cast<std::uint32_t *> (
               mmap (nullptr,
                     PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE
                         * (rHeight + PATACHE_MAINBAR_HEIGHT_CSD_SIZE) * 4U,
-                    PROT_READ | PROT_WRITE, MAP_SHARED, borderFileDescriptor, 0));
+                    PROT_READ | PROT_WRITE, MAP_SHARED, borderFileDescriptor, 0)) };
 
           for (std::uint32_t i2{ 0U }; i2 < PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE
                                                 * (rHeight + PATACHE_MAINBAR_HEIGHT_CSD_SIZE);
                ++i2)
             {
-              pBorderPixels[i2] = PATACHE_BORDER_CSD_COLOR;
+              pBorderPixels[i2] = PATACHE_BORDER_FOCUS_CSD_COLOR;
             }
 
-          wl_shm_pool * pPool = wl_shm_create_pool (
+          wl_shm_pool * pPool{ wl_shm_create_pool (
               pEngine->waylandWindow.pDecorationSharedMemory, borderFileDescriptor,
               PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE * (rHeight + PATACHE_MAINBAR_HEIGHT_CSD_SIZE)
-                  * 4U);
+                  * 4U) };
 
-          wl_buffer * pBuffer = wl_shm_pool_create_buffer (
+          wl_buffer * pBuffer{ wl_shm_pool_create_buffer (
               pPool, 0, PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE,
               (rHeight + PATACHE_MAINBAR_HEIGHT_CSD_SIZE),
-              PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE * 4U, WL_SHM_FORMAT_ARGB8888);
+              PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE * 4U, WL_SHM_FORMAT_ARGB8888) };
 
           wl_shm_pool_destroy (pPool);
 
@@ -405,8 +405,8 @@ CreateWaylandWindow (const std::uint32_t & rWidth, const std::uint32_t & rHeight
                                     PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE,
                                     (rHeight + PATACHE_MAINBAR_HEIGHT_CSD_SIZE));
 
-          SurfaceBufferCleanup * pCleanup = static_cast<SurfaceBufferCleanup *> (
-              std::calloc (1ZU, sizeof (SurfaceBufferCleanup)));
+          SurfaceBufferCleanup * pCleanup{ static_cast<SurfaceBufferCleanup *> (
+              std::calloc (1ZU, sizeof (SurfaceBufferCleanup))) };
 
           pCleanupMainBar->mappedMemSize = PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE
                                            * (rHeight + PATACHE_MAINBAR_HEIGHT_CSD_SIZE) * 4U;
@@ -421,35 +421,35 @@ CreateWaylandWindow (const std::uint32_t & rWidth, const std::uint32_t & rHeight
       // Corner Border
       for (std::uint8_t i{ 4U }; i < PATACHE_BORDER_CSD_SIZE; ++i)
         {
-          std::int32_t borderFileDescriptor
-              = shm_open (borderFileDescriptorName[i], O_RDWR | O_CREAT | O_EXCL,
-                          S_IWUSR | S_IRUSR | S_IWOTH | S_IROTH);
+          std::int32_t borderFileDescriptor{ shm_open (borderFileDescriptorName[i],
+                                                       O_RDWR | O_CREAT | O_EXCL,
+                                                       S_IWUSR | S_IRUSR | S_IWOTH | S_IROTH) };
 
           shm_unlink (borderFileDescriptorName[i]);
 
           ftruncate (borderFileDescriptor, PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE
                                                * PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE * 4U);
 
-          std::uint32_t * pBorderPixels = static_cast<std::uint32_t *> (mmap (
+          std::uint32_t * pBorderPixels{ static_cast<std::uint32_t *> (mmap (
               nullptr,
               PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE * PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE * 4U,
-              PROT_READ | PROT_WRITE, MAP_SHARED, borderFileDescriptor, 0));
+              PROT_READ | PROT_WRITE, MAP_SHARED, borderFileDescriptor, 0)) };
 
           for (std::uint32_t i2{ 0U };
                i2 < (PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE * PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE);
                ++i2)
             {
-              pBorderPixels[i2] = PATACHE_BORDER_CSD_COLOR;
+              pBorderPixels[i2] = PATACHE_BORDER_FOCUS_CSD_COLOR;
             }
 
-          wl_shm_pool * pPool = wl_shm_create_pool (
+          wl_shm_pool * pPool{ wl_shm_create_pool (
               pEngine->waylandWindow.pDecorationSharedMemory, borderFileDescriptor,
-              PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE * PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE * 4U);
+              PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE * PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE * 4U) };
 
-          wl_buffer * pBuffer = wl_shm_pool_create_buffer (
+          wl_buffer * pBuffer{ wl_shm_pool_create_buffer (
               pPool, 0, PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE,
               PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE, PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE * 4U,
-              WL_SHM_FORMAT_ARGB8888);
+              WL_SHM_FORMAT_ARGB8888) };
 
           wl_shm_pool_destroy (pPool);
 
@@ -459,8 +459,8 @@ CreateWaylandWindow (const std::uint32_t & rWidth, const std::uint32_t & rHeight
                                     PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE,
                                     PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE);
 
-          SurfaceBufferCleanup * pCleanup = static_cast<SurfaceBufferCleanup *> (
-              std::calloc (1ZU, sizeof (SurfaceBufferCleanup)));
+          SurfaceBufferCleanup * pCleanup{ static_cast<SurfaceBufferCleanup *> (
+              std::calloc (1ZU, sizeof (SurfaceBufferCleanup))) };
 
           pCleanupMainBar->mappedMemSize
               = PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE * PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE * 4U;
@@ -490,7 +490,7 @@ CreateWaylandWindow (const std::uint32_t & rWidth, const std::uint32_t & rHeight
 SKIP_CSD_CREATION:
 
   // SDL Window
-  SDL_PropertiesID windowProperties = SDL_CreateProperties ();
+  SDL_PropertiesID windowProperties{ SDL_CreateProperties () };
 
   SDL_SetPointerProperty (SDL_GetGlobalProperties (),
                           SDL_PROP_GLOBAL_VIDEO_WAYLAND_WL_DISPLAY_POINTER,

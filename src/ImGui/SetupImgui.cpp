@@ -21,7 +21,7 @@ InitImGuiCore (const Patache::Config & rConfiguration, Patache::EngineInfo & rDe
   rIO.IniSavingRate   = 0;
   rIO.IniFilename     = nullptr;
   rIO.LogFilename     = nullptr;
-  rIO.FontGlobalScale = 1.0f;
+  rIO.FontGlobalScale = 1.0F;
 
   ImFontConfig fontConfig;
   fontConfig.RasterizerDensity = 4.0f;
@@ -29,7 +29,7 @@ InitImGuiCore (const Patache::Config & rConfiguration, Patache::EngineInfo & rDe
   fontConfig.OversampleV       = 1;
 
   rIO.Fonts->AddFontFromMemoryCompressedTTF (sInterDisplay_Medium_compressed_data,
-                                             sInterDisplay_Medium_compressed_size, 16.0f,
+                                             sInterDisplay_Medium_compressed_size, 16.0F,
                                              &fontConfig, nullptr);
 
   // constexpr ImWchar ranges[] = { 0x1, 0x1FFFF, 0 };
@@ -40,42 +40,42 @@ InitImGuiCore (const Patache::Config & rConfiguration, Patache::EngineInfo & rDe
 
   // General styles
   ImGui::StyleColorsDark ();
-  ImGui::GetStyle ().FrameRounding                   = 0.0f;
-  ImGui::GetStyle ().GrabRounding                    = 0.0f;
-  ImGui::GetStyle ().PopupBorderSize                 = 0.0f;
-  ImGui::GetStyle ().ChildBorderSize                 = 1.0f;
-  ImGui::GetStyle ().TabRounding                     = 0.0f;
-  ImGui::GetStyle ().TabBorderSize                   = 0.0f;
-  ImGui::GetStyle ().TabBarBorderSize                = 0.0f;
-  ImGui::GetStyle ().ScrollbarRounding               = 0.0f;
-  ImGui::GetStyle ().ItemSpacing                     = ImVec2 (8.0f, 12.0f);
+  ImGui::GetStyle ().FrameRounding                   = 0.0F;
+  ImGui::GetStyle ().GrabRounding                    = 0.0F;
+  ImGui::GetStyle ().PopupBorderSize                 = 0.0F;
+  ImGui::GetStyle ().ChildBorderSize                 = 1.0F;
+  ImGui::GetStyle ().TabRounding                     = 0.0F;
+  ImGui::GetStyle ().TabBorderSize                   = 0.0F;
+  ImGui::GetStyle ().TabBarBorderSize                = 0.0F;
+  ImGui::GetStyle ().ScrollbarRounding               = 0.0F;
+  ImGui::GetStyle ().ItemSpacing                     = ImVec2 (8.0F, 12.0F);
   ImGui::GetStyle ().WindowPadding                   = ImVec2 (20, 6);
-  ImGui::GetStyle ().Colors[ImGuiCol_WindowBg].w     = 0.90f;
+  ImGui::GetStyle ().Colors[ImGuiCol_WindowBg].w     = 0.90F;
   ImGui::GetStyle ().Colors[ImGuiCol_TitleBg]        = ImGui::GetStyle ().Colors[ImGuiCol_WindowBg];
-  ImGui::GetStyle ().Colors[ImGuiCol_DockingEmptyBg] = ImVec4 (0.0f, 0.0f, 0.0f, 0.0f);
+  ImGui::GetStyle ().Colors[ImGuiCol_DockingEmptyBg] = ImVec4 (0.0F, 0.0F, 0.0F, 0.0F);
 
   // specific window engine styles
-  rDebugInfo.engineStyles[0]  = ImGui::GetStyle ().Colors[ImGuiCol_TitleBgActive];
-  rDebugInfo.engineStyles[1]  = ImGui::GetStyle ().Colors[ImGuiCol_ResizeGrip];
-  rDebugInfo.engineStyles[2]  = ImGui::GetStyle ().Colors[ImGuiCol_ResizeGripActive];
-  rDebugInfo.engineStyles[3]  = ImGui::GetStyle ().Colors[ImGuiCol_ResizeGripHovered];
-  rDebugInfo.engineStyles[4]  = ImGui::GetStyle ().Colors[ImGuiCol_SeparatorHovered];
-  rDebugInfo.engineStyles[5]  = ImGui::GetStyle ().Colors[ImGuiCol_SeparatorActive];
-  rDebugInfo.engineStyles[6]  = ImGui::GetStyle ().Colors[ImGuiCol_Tab];
-  rDebugInfo.engineStyles[7]  = ImGui::GetStyle ().Colors[ImGuiCol_TabSelected];
-  rDebugInfo.engineStyles[8]  = ImGui::GetStyle ().Colors[ImGuiCol_TabHovered];
-  rDebugInfo.engineStyles[9]  = ImGui::GetStyle ().Colors[ImGuiCol_Header];
-  rDebugInfo.engineStyles[10] = ImGui::GetStyle ().Colors[ImGuiCol_HeaderActive];
-  rDebugInfo.engineStyles[11] = ImGui::GetStyle ().Colors[ImGuiCol_HeaderHovered];
-  rDebugInfo.engineStyles[12] = ImGui::GetStyle ().Colors[ImGuiCol_Button];
-  rDebugInfo.engineStyles[13] = ImGui::GetStyle ().Colors[ImGuiCol_ButtonHovered];
-  rDebugInfo.engineStyles[14] = ImGui::GetStyle ().Colors[ImGuiCol_ButtonActive];
-  rDebugInfo.engineStyles[15] = ImGui::GetStyle ().Colors[ImGuiCol_FrameBg];
-  rDebugInfo.engineStyles[16] = ImGui::GetStyle ().Colors[ImGuiCol_FrameBgHovered];
-  rDebugInfo.engineStyles[17] = ImGui::GetStyle ().Colors[ImGuiCol_FrameBgActive];
-  rDebugInfo.engineStyles[18] = ImGui::GetStyle ().Colors[ImGuiCol_CheckMark];
-  rDebugInfo.engineStyles[19] = ImGui::GetStyle ().Colors[ImGuiCol_SliderGrab];
-  rDebugInfo.engineStyles[20] = ImGui::GetStyle ().Colors[ImGuiCol_SliderGrabActive];
+  rDebugInfo.engineStyles[0U]  = ImGui::GetStyle ().Colors[ImGuiCol_TitleBgActive];
+  rDebugInfo.engineStyles[1U]  = ImGui::GetStyle ().Colors[ImGuiCol_ResizeGrip];
+  rDebugInfo.engineStyles[2U]  = ImGui::GetStyle ().Colors[ImGuiCol_ResizeGripActive];
+  rDebugInfo.engineStyles[3U]  = ImGui::GetStyle ().Colors[ImGuiCol_ResizeGripHovered];
+  rDebugInfo.engineStyles[4U]  = ImGui::GetStyle ().Colors[ImGuiCol_SeparatorHovered];
+  rDebugInfo.engineStyles[5U]  = ImGui::GetStyle ().Colors[ImGuiCol_SeparatorActive];
+  rDebugInfo.engineStyles[6U]  = ImGui::GetStyle ().Colors[ImGuiCol_Tab];
+  rDebugInfo.engineStyles[7U]  = ImGui::GetStyle ().Colors[ImGuiCol_TabSelected];
+  rDebugInfo.engineStyles[8U]  = ImGui::GetStyle ().Colors[ImGuiCol_TabHovered];
+  rDebugInfo.engineStyles[9U]  = ImGui::GetStyle ().Colors[ImGuiCol_Header];
+  rDebugInfo.engineStyles[10U] = ImGui::GetStyle ().Colors[ImGuiCol_HeaderActive];
+  rDebugInfo.engineStyles[11U] = ImGui::GetStyle ().Colors[ImGuiCol_HeaderHovered];
+  rDebugInfo.engineStyles[12U] = ImGui::GetStyle ().Colors[ImGuiCol_Button];
+  rDebugInfo.engineStyles[13U] = ImGui::GetStyle ().Colors[ImGuiCol_ButtonHovered];
+  rDebugInfo.engineStyles[14U] = ImGui::GetStyle ().Colors[ImGuiCol_ButtonActive];
+  rDebugInfo.engineStyles[15U] = ImGui::GetStyle ().Colors[ImGuiCol_FrameBg];
+  rDebugInfo.engineStyles[16U] = ImGui::GetStyle ().Colors[ImGuiCol_FrameBgHovered];
+  rDebugInfo.engineStyles[17U] = ImGui::GetStyle ().Colors[ImGuiCol_FrameBgActive];
+  rDebugInfo.engineStyles[18U] = ImGui::GetStyle ().Colors[ImGuiCol_CheckMark];
+  rDebugInfo.engineStyles[19U] = ImGui::GetStyle ().Colors[ImGuiCol_SliderGrab];
+  rDebugInfo.engineStyles[20U] = ImGui::GetStyle ().Colors[ImGuiCol_SliderGrabActive];
 }
 
 bool
@@ -90,12 +90,12 @@ CreateImguiDescriptorPool (Patache::VulkanBackend & rVulkan)
       return false;
     }
 
-  constexpr vk::DescriptorPoolSize poolSize = { vk::DescriptorType::eCombinedImageSampler, 1 };
+  constexpr vk::DescriptorPoolSize poolSize = { vk::DescriptorType::eCombinedImageSampler, 1U };
 
   const vk::DescriptorPoolCreateInfo info{ .flags
                                            = vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet,
-                                           .maxSets       = 1,
-                                           .poolSizeCount = 1,
+                                           .maxSets       = 1U,
+                                           .poolSizeCount = 1U,
                                            .pPoolSizes    = &poolSize };
 
   vk::Result result
@@ -109,7 +109,9 @@ CreateImguiDescriptorPool (Patache::VulkanBackend & rVulkan)
       return false;
     }
   else
-    return true;
+    {
+      return true;
+    }
 }
 
 bool
@@ -180,13 +182,13 @@ InitImGuiVulkan (Patache::Engine * const pEngine)
     .ImageCount          = pEngine->vulkan.swapchainImageCount,
     .MSAASamples         = VK_SAMPLE_COUNT_1_BIT,
     .PipelineCache       = static_cast<VkPipelineCache> (pEngine->vulkan.imguiPipelineCache),
-    .Subpass             = 0,
-    .DescriptorPoolSize  = 0,
+    .Subpass             = 0U,
+    .DescriptorPoolSize  = 0U,
     .UseDynamicRendering = false,
     .PipelineRenderingCreateInfo = {},
     .Allocator                   = nullptr,
     .CheckVkResultFn             = nullptr,
-    .MinAllocationSize           = 1048576
+    .MinAllocationSize           = 1048576U
   };
 
   if (!ImGui_ImplVulkan_Init (&info))

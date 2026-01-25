@@ -125,7 +125,7 @@ Patache::Engine::Init (const Patache::EngineCreateInfo & rInfo)
 #if defined(_WIN64)
   {
     // Window Initial Size
-    std::uint32_t width = 0, height = 0;
+    std::uint32_t width{ 0U }, height{ 0U };
 
     // Displays
     int                           displaysCount = 0;
@@ -135,8 +135,8 @@ Patache::Engine::Init (const Patache::EngineCreateInfo & rInfo)
     // Initial Resolution
     if (pCurrentMode != nullptr)
       {
-        width  = static_cast<std::uint32_t> (pCurrentMode->w * 0.64);
-        height = static_cast<std::uint32_t> (pCurrentMode->h * 0.64);
+        width  = static_cast<std::uint32_t> (pCurrentMode->w * 0.64F);
+        height = static_cast<std::uint32_t> (pCurrentMode->h * 0.64F);
       }
     else
       {
@@ -144,8 +144,8 @@ Patache::Engine::Init (const Patache::EngineCreateInfo & rInfo)
                                             "can't get the current resolution. starting with 480p "
                                             "(1.78)");
 
-        width  = 854;
-        height = 480;
+        width  = 854U;
+        height = 480U;
       }
 
     // Create Window
@@ -171,10 +171,10 @@ Patache::Engine::Init (const Patache::EngineCreateInfo & rInfo)
 
     if (rInfo.pWindowIconPath != nullptr)
       {
-        char path[512]{ 0 };
-        PATACHE_STRNCPY (path, SDL_GetBasePath (), 511, 512);
-        PATACHE_STRNCAT (path, "/", 511, 512);
-        PATACHE_STRNCAT (path, rInfo.pWindowIconPath, 511, 512);
+        char path[512U]{ 0 };
+        PATACHE_STRNCPY (path, SDL_GetBasePath (), 511ZU, 512ZU);
+        PATACHE_STRNCAT (path, "/", 511ZU, 512ZU);
+        PATACHE_STRNCAT (path, rInfo.pWindowIconPath, 511ZU, 512ZU);
 
         pWindowIcon = SDL_LoadBMP (path);
       }
@@ -254,19 +254,19 @@ Patache::Engine::~Engine (void)
     {
       delete[] debugInfo.ppInstanceExtensionsVK;
       debugInfo.ppInstanceExtensionsVK    = nullptr;
-      debugInfo.instanceExtensionsCountVK = 0;
+      debugInfo.instanceExtensionsCountVK = 0U;
     }
 
   if (debugInfo.ppDeviceExtensionsVK != nullptr)
     {
       delete[] debugInfo.ppDeviceExtensionsVK;
       debugInfo.ppDeviceExtensionsVK    = nullptr;
-      debugInfo.deviceExtensionsCountVK = 0;
+      debugInfo.deviceExtensionsCountVK = 0U;
     }
 
   if (debugInfo.ppVramMemoryDeviceSize != nullptr)
     {
-      for (std::uint8_t i = 0; i < vulkan.swapchainImageCount; ++i)
+      for (std::uint8_t i{ 0U }; i < vulkan.swapchainImageCount; ++i)
         {
           if (debugInfo.ppVramMemoryDeviceSize[i] != nullptr)
             {
@@ -280,7 +280,7 @@ Patache::Engine::~Engine (void)
 
   if (debugInfo.ppVramMemoryDeviceSizeUnit != nullptr)
     {
-      for (std::uint8_t i = 0; i < vulkan.swapchainImageCount; ++i)
+      for (std::uint8_t i{ 0U }; i < vulkan.swapchainImageCount; ++i)
         {
           if (debugInfo.ppVramMemoryDeviceSizeUnit[i] != nullptr)
             {
@@ -294,7 +294,7 @@ Patache::Engine::~Engine (void)
 
   if (debugInfo.ppVramMemoryDeviceHeap != nullptr)
     {
-      for (std::uint8_t i = 0; i < vulkan.swapchainImageCount; ++i)
+      for (std::uint8_t i{ 0U }; i < vulkan.swapchainImageCount; ++i)
         {
           if (debugInfo.ppVramMemoryDeviceHeap[i] != nullptr)
             {
@@ -308,7 +308,7 @@ Patache::Engine::~Engine (void)
 
   if (debugInfo.ppVramMemoryDeviceType != nullptr)
     {
-      for (std::uint8_t i = 0; i < vulkan.swapchainImageCount; ++i)
+      for (std::uint8_t i{ 0U }; i < vulkan.swapchainImageCount; ++i)
         {
           if (debugInfo.ppVramMemoryDeviceType[i] != nullptr)
             {
@@ -320,8 +320,8 @@ Patache::Engine::~Engine (void)
       debugInfo.ppVramMemoryDeviceType = nullptr;
     }
 
-  debugInfo.deviceVendorIdVK    = 0;
-  debugInfo.windowCreationFlags = 0;
+  debugInfo.deviceVendorIdVK    = 0U;
+  debugInfo.windowCreationFlags = 0U;
 #endif
 
   // SDL
@@ -331,6 +331,7 @@ Patache::Engine::~Engine (void)
 #if __unix__ || __linux__ || __FreeBSD__ || __NetBSD__ || __NetBSD__ || __OpenBSD__ || __bsdi__    \
     || __DragonFly__ || __MidnightBSD__
   if (waylandWindow.pCursorTheme != nullptr)
+
     {
       wl_cursor_theme_destroy (waylandWindow.pCursorTheme);
       waylandWindow.pCursorTheme = nullptr;

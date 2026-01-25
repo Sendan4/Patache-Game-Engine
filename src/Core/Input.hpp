@@ -28,5 +28,5 @@ extern bool waitForFullscreen;
 bool SDLCALL HandleResize (void *, SDL_Event *);
 #endif
 
-bool isFullScreen = false;
-bool resize       = false;
+bool isFullScreen{ false };
+bool resize{ false };

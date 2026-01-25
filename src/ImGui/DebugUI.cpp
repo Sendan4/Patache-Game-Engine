@@ -39,17 +39,21 @@ Patache::DrawDebugUI (Patache::Engine * const pEngine)
   // Menu Bar
   if (pEngine->debugInfo.showMainMenuBar)
     {
-      ImGui::GetStyle ().Colors[ImGuiCol_Button] = ImVec4 (0.0f, 0.0f, 0.0f, 0.0f);
+      ImGui::GetStyle ().Colors[ImGuiCol_Button] = ImVec4 (0.0F, 0.0F, 0.0F, 0.0F);
 
       if (ImGui::BeginMainMenuBar ())
         {
           if (ImGui::Button ("(Patache Icon)"))
-            pEngine->debugInfo.showMainMenuBar ^= 0b00000001; // Cambiar bits
+            {
+              pEngine->debugInfo.showMainMenuBar ^= 0b00000001; // Cambiar bits
+            }
 
           if (ImGui::BeginMenu ("Raccoon"))
             {
               if (ImGui::MenuItem ("Renderer", ""))
-                pEngine->debugInfo.raccoonRendererInfoWindow ^= 0b00000001; // Cambiar bits
+                {
+                  pEngine->debugInfo.raccoonRendererInfoWindow ^= 0b00000001; // Cambiar bits
+                }
 
               // No implementado aun
               // ImGui::MenuItem ("Profiler", "");
@@ -59,10 +63,14 @@ Patache::DrawDebugUI (Patache::Engine * const pEngine)
             }
 
           if (ImGui::Button ("Configuration"))
-            pEngine->debugInfo.configWindow ^= 0b00000001; // Cambiar bits
+            {
+              pEngine->debugInfo.configWindow ^= 0b00000001; // Cambiar bits
+            }
 
           if (ImGui::Button ("About"))
-            pEngine->debugInfo.infoWindow ^= 0b00000001; // Cambiar bits
+            {
+              pEngine->debugInfo.infoWindow ^= 0b00000001; // Cambiar bits
+            }
 
           ImGui::EndMainMenuBar ();
         }
@@ -74,7 +82,7 @@ Patache::DrawDebugUI (Patache::Engine * const pEngine)
   // Patache Window Info
   if (pEngine->debugInfo.infoWindow)
     {
-      ImGui::SetNextWindowSize (ImVec2 (400, 440), ImGuiCond_FirstUseEver);
+      ImGui::SetNextWindowSize (ImVec2 (400.0F, 440.0F), ImGuiCond_FirstUseEver);
 
       ImGui::Begin (PATACHE_ENGINE_NAME, &pEngine->debugInfo.infoWindow);
 
@@ -293,7 +301,7 @@ Patache::DrawDebugUI (Patache::Engine * const pEngine)
   // Raccoon Renderer Info
   if (pEngine->debugInfo.raccoonRendererInfoWindow)
     {
-      ImGui::SetNextWindowSize (ImVec2 (480, 400), ImGuiCond_FirstUseEver);
+      ImGui::SetNextWindowSize (ImVec2 (480.0F, 400.0F), ImGuiCond_FirstUseEver);
 
       ImGui::Begin ("Raccoon Renderer", &pEngine->debugInfo.raccoonRendererInfoWindow);
 
@@ -316,7 +324,7 @@ Patache::DrawDebugUI (Patache::Engine * const pEngine)
               ImGui::TableSetupColumn ("INSTANCE", ImGuiTableColumnFlags_WidthFixed);
               ImGui::TableHeadersRow ();
 
-              for (std::uint32_t i = 0; i < pEngine->debugInfo.instanceExtensionsCountVK; ++i)
+              for (std::uint32_t i{ 0U }; i < pEngine->debugInfo.instanceExtensionsCountVK; ++i)
                 {
                   ImGui::TableNextRow ();
 
@@ -335,7 +343,7 @@ Patache::DrawDebugUI (Patache::Engine * const pEngine)
               ImGui::TableSetupColumn ("DEVICE", ImGuiTableColumnFlags_WidthFixed);
               ImGui::TableHeadersRow ();
 
-              for (std::uint32_t i = 0; i < pEngine->debugInfo.deviceExtensionsCountVK; ++i)
+              for (std::uint32_t i{ 0U }; i < pEngine->debugInfo.deviceExtensionsCountVK; ++i)
                 {
                   ImGui::TableNextRow ();
 
@@ -353,7 +361,7 @@ Patache::DrawDebugUI (Patache::Engine * const pEngine)
               ImGui::TableSetupColumn ("LAYER", ImGuiTableColumnFlags_WidthFixed);
               ImGui::TableHeadersRow ();
 
-              for (std::uint16_t i = 0; i < PATACHE_LAYER_VK_COUNT; ++i)
+              for (std::uint16_t i{ 0U }; i < PATACHE_LAYER_VK_COUNT; ++i)
                 {
                   ImGui::TableNextRow ();
 
@@ -369,7 +377,7 @@ Patache::DrawDebugUI (Patache::Engine * const pEngine)
       ImGui::Spacing ();
 
       // Device name
-      if (pEngine->debugInfo.deviceNameVK[0] != '\0')
+      if (pEngine->debugInfo.deviceNameVK[0U] != '\0')
         {
           ImGui::BeginGroup ();
           ImGui::Text ("DEVICE :");
@@ -476,7 +484,7 @@ Patache::DrawDebugUI (Patache::Engine * const pEngine)
         }
 
       // Device type {Discrete?, Integrated?}
-      if (pEngine->debugInfo.deviceTypeVK[0] != '\0')
+      if (pEngine->debugInfo.deviceTypeVK[0U] != '\0')
         ImGui::Text ("DEVICE TYPE : %s", pEngine->debugInfo.deviceTypeVK);
 
       // Device Memory Size (VRAM size)
@@ -495,7 +503,7 @@ Patache::DrawDebugUI (Patache::Engine * const pEngine)
 
               ImGui::TableHeadersRow ();
 
-              for (std::uint8_t i = 0; i < pEngine->vulkan.swapchainImageCount; ++i)
+              for (std::uint8_t i{ 0U }; i < pEngine->vulkan.swapchainImageCount; ++i)
                 {
                   ImGui::TableNextRow ();
 
@@ -587,9 +595,9 @@ Patache::DrawDebugUI (Patache::Engine * const pEngine)
               // Queue Priority
               ImGui::TableSetColumnIndex (2);
 
-              if (pEngine->debugInfo.queuePriorityVK == 1.0f)
+              if (pEngine->debugInfo.queuePriorityVK == 1.0F)
                 ImGui::Text ("%.2f (High)", pEngine->debugInfo.queuePriorityVK);
-              else if (pEngine->debugInfo.queuePriorityVK < 0.4f)
+              else if (pEngine->debugInfo.queuePriorityVK < 0.4F)
                 ImGui::Text ("%.2f (Low)", pEngine->debugInfo.queuePriorityVK);
               else
                 ImGui::Text ("%.2f", pEngine->debugInfo.queuePriorityVK);
@@ -601,7 +609,7 @@ Patache::DrawDebugUI (Patache::Engine * const pEngine)
       ImGui::Spacing ();
 
       // Driver
-      if (pEngine->debugInfo.driverNameVK[0] != '\0')
+      if (pEngine->debugInfo.driverNameVK[0U] != '\0')
         {
           ImGui::BeginGroup ();
           ImGui::Text ("DRIVER :");
@@ -635,7 +643,7 @@ Patache::DrawDebugUI (Patache::Engine * const pEngine)
           ImGui::SameLine ();
 
           // Driver Version
-          if (pEngine->debugInfo.driverVersionVK[0] != '\0')
+          if (pEngine->debugInfo.driverVersionVK[0U] != '\0')
             ImGui::Text ("%s", pEngine->debugInfo.driverVersionVK);
 
           ImGui::EndGroup ();
@@ -643,10 +651,10 @@ Patache::DrawDebugUI (Patache::Engine * const pEngine)
           // Driver Vendor Tooltip
           if (ImGui::BeginItemTooltip ())
             {
-              if (pEngine->debugInfo.driverIdVK[0] != '\0')
+              if (pEngine->debugInfo.driverIdVK[0U] != '\0')
                 ImGui::Text ("ID : %s", pEngine->debugInfo.driverIdVK);
 
-              if (pEngine->debugInfo.driverInfoVK[0] != '\0')
+              if (pEngine->debugInfo.driverInfoVK[0U] != '\0')
                 ImGui::Text ("INFO : %s", pEngine->debugInfo.driverInfoVK);
 
               ImGui::EndTooltip ();
@@ -702,18 +710,24 @@ Patache::DrawDebugUI (Patache::Engine * const pEngine)
       if (ImGui::Checkbox ("Show Fatal Error "
                            "Messagebox##ConfigView_ShowFatalErrorMessagebox",
                            &pEngine->configuration.showFatalErrorMessagebox))
-        pEngine->configuration.triggeredChange
-            |= Patache::ChangeConfigFlagBits::eShowFatalErrorMessagebox;
+        {
+          pEngine->configuration.triggeredChange
+              |= Patache::ChangeConfigFlagBits::eShowFatalErrorMessagebox;
+        }
 
       // Vsync
       if (ImGui::Checkbox ("Vsync##ConfigView_Vsync", &pEngine->configuration.vsync))
-        pEngine->configuration.triggeredChange |= Patache::ChangeConfigFlagBits::eVsync;
+        {
+          pEngine->configuration.triggeredChange |= Patache::ChangeConfigFlagBits::eVsync;
+        }
 
       ImGui::SameLine ();
 
       // 10 Bit Depth
       if (ImGui::Checkbox ("10 Bit Depth##ConfigView_BitDepth", &pEngine->configuration.bitDepth10))
-        pEngine->configuration.triggeredChange |= Patache::ChangeConfigFlagBits::eBitDepth10;
+        {
+          pEngine->configuration.triggeredChange |= Patache::ChangeConfigFlagBits::eBitDepth10;
+        }
 
       ImGui::Spacing ();
 
@@ -721,35 +735,37 @@ Patache::DrawDebugUI (Patache::Engine * const pEngine)
       int actualCount = pEngine->vulkan.swapchainImageCount;
 
       ImGui::Text ("Add Image Count");
-      if (ImGui::SliderInt ("###ConfigView_AddImageCount", &actualCount,
-                            pEngine->debugInfo.minImageCountVK,
-                            static_cast<int> (pEngine->debugInfo.minImageCountVK + 4), "%d Images"))
-        pEngine->configuration.triggeredChange |= Patache::ChangeConfigFlagBits::eAddImageCount;
+      if (ImGui::SliderInt (
+              "###ConfigView_AddImageCount", &actualCount, pEngine->debugInfo.minImageCountVK,
+              static_cast<int> (pEngine->debugInfo.minImageCountVK + 4U), "%d Images"))
+        {
+          pEngine->configuration.triggeredChange |= Patache::ChangeConfigFlagBits::eAddImageCount;
+        }
 
       ImGui::End ();
     }
   // End Patache Window configuration
 
   // Reset style outside of Engine
-  ImGui::GetStyle ().Colors[ImGuiCol_TitleBgActive]     = pEngine->debugInfo.engineStyles[0];
-  ImGui::GetStyle ().Colors[ImGuiCol_ResizeGrip]        = pEngine->debugInfo.engineStyles[1];
-  ImGui::GetStyle ().Colors[ImGuiCol_ResizeGripActive]  = pEngine->debugInfo.engineStyles[2];
-  ImGui::GetStyle ().Colors[ImGuiCol_ResizeGripHovered] = pEngine->debugInfo.engineStyles[3];
-  ImGui::GetStyle ().Colors[ImGuiCol_SeparatorHovered]  = pEngine->debugInfo.engineStyles[4];
-  ImGui::GetStyle ().Colors[ImGuiCol_SeparatorActive]   = pEngine->debugInfo.engineStyles[5];
-  ImGui::GetStyle ().Colors[ImGuiCol_Tab]               = pEngine->debugInfo.engineStyles[6];
-  ImGui::GetStyle ().Colors[ImGuiCol_TabSelected]       = pEngine->debugInfo.engineStyles[7];
-  ImGui::GetStyle ().Colors[ImGuiCol_TabHovered]        = pEngine->debugInfo.engineStyles[8];
-  ImGui::GetStyle ().Colors[ImGuiCol_Header]            = pEngine->debugInfo.engineStyles[9];
-  ImGui::GetStyle ().Colors[ImGuiCol_HeaderActive]      = pEngine->debugInfo.engineStyles[10];
-  ImGui::GetStyle ().Colors[ImGuiCol_HeaderHovered]     = pEngine->debugInfo.engineStyles[11];
-  ImGui::GetStyle ().Colors[ImGuiCol_Button]            = pEngine->debugInfo.engineStyles[12];
-  ImGui::GetStyle ().Colors[ImGuiCol_ButtonHovered]     = pEngine->debugInfo.engineStyles[13];
-  ImGui::GetStyle ().Colors[ImGuiCol_ButtonActive]      = pEngine->debugInfo.engineStyles[14];
-  ImGui::GetStyle ().Colors[ImGuiCol_FrameBg]           = pEngine->debugInfo.engineStyles[15];
-  ImGui::GetStyle ().Colors[ImGuiCol_FrameBgHovered]    = pEngine->debugInfo.engineStyles[16];
-  ImGui::GetStyle ().Colors[ImGuiCol_FrameBgActive]     = pEngine->debugInfo.engineStyles[17];
-  ImGui::GetStyle ().Colors[ImGuiCol_CheckMark]         = pEngine->debugInfo.engineStyles[18];
-  ImGui::GetStyle ().Colors[ImGuiCol_SliderGrab]        = pEngine->debugInfo.engineStyles[19];
-  ImGui::GetStyle ().Colors[ImGuiCol_SliderGrabActive]  = pEngine->debugInfo.engineStyles[20];
+  ImGui::GetStyle ().Colors[ImGuiCol_TitleBgActive]     = pEngine->debugInfo.engineStyles[0U];
+  ImGui::GetStyle ().Colors[ImGuiCol_ResizeGrip]        = pEngine->debugInfo.engineStyles[1U];
+  ImGui::GetStyle ().Colors[ImGuiCol_ResizeGripActive]  = pEngine->debugInfo.engineStyles[2U];
+  ImGui::GetStyle ().Colors[ImGuiCol_ResizeGripHovered] = pEngine->debugInfo.engineStyles[3U];
+  ImGui::GetStyle ().Colors[ImGuiCol_SeparatorHovered]  = pEngine->debugInfo.engineStyles[4U];
+  ImGui::GetStyle ().Colors[ImGuiCol_SeparatorActive]   = pEngine->debugInfo.engineStyles[5U];
+  ImGui::GetStyle ().Colors[ImGuiCol_Tab]               = pEngine->debugInfo.engineStyles[6U];
+  ImGui::GetStyle ().Colors[ImGuiCol_TabSelected]       = pEngine->debugInfo.engineStyles[7U];
+  ImGui::GetStyle ().Colors[ImGuiCol_TabHovered]        = pEngine->debugInfo.engineStyles[8U];
+  ImGui::GetStyle ().Colors[ImGuiCol_Header]            = pEngine->debugInfo.engineStyles[9U];
+  ImGui::GetStyle ().Colors[ImGuiCol_HeaderActive]      = pEngine->debugInfo.engineStyles[10U];
+  ImGui::GetStyle ().Colors[ImGuiCol_HeaderHovered]     = pEngine->debugInfo.engineStyles[11U];
+  ImGui::GetStyle ().Colors[ImGuiCol_Button]            = pEngine->debugInfo.engineStyles[12U];
+  ImGui::GetStyle ().Colors[ImGuiCol_ButtonHovered]     = pEngine->debugInfo.engineStyles[13U];
+  ImGui::GetStyle ().Colors[ImGuiCol_ButtonActive]      = pEngine->debugInfo.engineStyles[14U];
+  ImGui::GetStyle ().Colors[ImGuiCol_FrameBg]           = pEngine->debugInfo.engineStyles[15U];
+  ImGui::GetStyle ().Colors[ImGuiCol_FrameBgHovered]    = pEngine->debugInfo.engineStyles[16U];
+  ImGui::GetStyle ().Colors[ImGuiCol_FrameBgActive]     = pEngine->debugInfo.engineStyles[17U];
+  ImGui::GetStyle ().Colors[ImGuiCol_CheckMark]         = pEngine->debugInfo.engineStyles[18U];
+  ImGui::GetStyle ().Colors[ImGuiCol_SliderGrab]        = pEngine->debugInfo.engineStyles[19U];
+  ImGui::GetStyle ().Colors[ImGuiCol_SliderGrabActive]  = pEngine->debugInfo.engineStyles[20U];
 }

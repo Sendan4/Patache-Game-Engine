@@ -14,14 +14,14 @@ enum ChangeConfigFlagBits : std::uint8_t
 struct Config
 {
   // General
-  bool showFatalErrorMessagebox = true;
+  bool showFatalErrorMessagebox{ true };
 
   // Raccoon Renderer
-  bool         vsync         = true;
-  bool         bitDepth10    = false;
-  std::uint8_t addImageCount = 0;
+  bool         vsync{ true };
+  bool         bitDepth10{ false };
+  std::uint8_t addImageCount{ 0U };
 
   // Change
-  std::uint8_t triggeredChange = Patache::ChangeConfigFlagBits::eNone;
+  std::uint8_t triggeredChange{ Patache::ChangeConfigFlagBits::eNone };
 };
 }
