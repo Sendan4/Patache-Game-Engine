@@ -15,12 +15,12 @@ CreateImageView (Patache::VulkanBackend & rVulkan, const Patache::SwapchainInfo 
 
   constexpr vk::ImageSubresourceRange imageSubresourceRange{ .aspectMask
                                                              = vk::ImageAspectFlagBits::eColor,
-                                                             .baseMipLevel   = 0,
-                                                             .levelCount     = 1,
-                                                             .baseArrayLayer = 0,
-                                                             .layerCount     = 1 };
+                                                             .baseMipLevel   = 0U,
+                                                             .levelCount     = 1U,
+                                                             .baseArrayLayer = 0U,
+                                                             .layerCount     = 1U };
 
-  for (std::uint8_t i = 0; i < rVulkan.swapchainImageCount; ++i)
+  for (std::uint8_t i{ 0U }; i < rVulkan.swapchainImageCount; ++i)
     {
       const vk::ImageViewCreateInfo colorImageViewInfo{ .image    = rVulkan.pSwapchainImages[i],
                                                         .viewType = vk::ImageViewType::e2D,
@@ -35,10 +35,11 @@ CreateImageView (Patache::VulkanBackend & rVulkan, const Patache::SwapchainInfo 
         {
           char errorText[PATACHE_ERROR_TEXT_SIZE]{ 0 };
 
-          std::snprintf (errorText, PATACHE_ERROR_TEXT_SIZE - 1, "Color Image View #%.3u", i + 1);
+          std::snprintf (errorText, PATACHE_ERROR_TEXT_SIZE - 1,
+                         "vkCreateImageView() Color Image View #%.3u", i + 1);
 
-          std::future<void> returnrVulkanCheck
-              = std::async (std::launch::async, Patache::VulkanCheck, errorText, result);
+          std::future<void> returnrVulkanCheck{ std::async (
+              std::launch::async, Patache::VulkanCheck, errorText, result) };
 
           return false;
         }

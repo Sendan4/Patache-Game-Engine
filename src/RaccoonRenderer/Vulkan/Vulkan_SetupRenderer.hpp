@@ -15,7 +15,6 @@
 #include "PatacheEngine/PatacheEngine.hpp"
 #include "ColorTerminal.hpp"
 #include "FastIOBuff.hpp"
-#include "LogMacroUtils.hpp"
 #include "CstringWrapped.hpp"
 #include "Vulkan_SetupLog.hpp"
 #include "Message.hpp"

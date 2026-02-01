@@ -4,57 +4,58 @@ bool
 RaccoonRendererInit (Patache::Engine * pEngine, const Patache::EngineCreateInfo & rInfo)
 {
 #if PATACHE_DEBUG == 1
-  std::future<void> initImguiCore_Async
-      = std::async (std::launch::async, InitImGuiCore, std::cref (pEngine->configuration),
-                    std::ref (pEngine->debugInfo));
+  std::future<void> initImguiCore_Async{ std::async (std::launch::async, InitImGuiCore,
+                                                     std::cref (pEngine->configuration),
+                                                     std::ref (pEngine->debugInfo)) };
 #endif
 
   vk::Result result;
 
 #if PATACHE_DEBUG == 1
-  bool vkEXTDebugUtilsExtensionIsEnabled = false;
+  bool vkEXTDebugUtilsExtensionIsEnabled{ false };
 #endif
 
   // Verify vulkan version
   {
-    PFN_vkVoidFunction PFN_vkEnumerateInstanceVersion
-        = vkGetInstanceProcAddr (nullptr, "vkEnumerateInstanceVersion");
+    PFN_vkVoidFunction PFN_vkEnumerateInstanceVersion{ vkGetInstanceProcAddr (
+        nullptr, "vkEnumerateInstanceVersion") };
 
     if (PFN_vkEnumerateInstanceVersion == nullptr)
       {
-        std::future<void> err = std::async (
+        std::future<void> err{ std::async (
             std::launch::async, Patache::FatalErrorMessage, "Patache Engine - Raccoon Renderer",
             "Your drivers are too old, your vulkan version is unsupported. (Vulkan 1.1 <=)",
-            std::cref (pEngine->configuration));
+            std::cref (pEngine->configuration)) };
 
         return false;
       }
 
-    std::uint32_t supportedVersion = 0U;
-    result                         = vk::enumerateInstanceVersion (&supportedVersion);
+    std::uint32_t supportedVersion{ 0U };
+    result = vk::enumerateInstanceVersion (&supportedVersion);
 
     if (result != vk::Result::eSuccess)
       {
-        std::future<void> returnVulkanErr = std::async (std::launch::async, Patache::WarningMessage,
-                                                        "Cannot get the supported vulkan version");
-      }
-    else
-      {
-        if (supportedVersion < 4202496U)
-          {
-            std::future<void> err = std::async (
-                std::launch::async, Patache::FatalErrorMessage, "Patache Engine - Raccoon Renderer",
-                "Your drivers are too old, your vulkan version is unsupported. (Vulkan 1.1 <=)",
-                std::cref (pEngine->configuration));
+        std::future<void> returnVulkanErr{ std::async (std::launch::async, Patache::WarningMessage,
+                                                       "Cannot get the supported vulkan version") };
 
-            return false;
-          }
+        return false;
+      }
+
+    if (supportedVersion < 4202496U)
+      {
+        std::future<void> err{ std::async (
+            std::launch::async, Patache::FatalErrorMessage, "Patache Engine - Raccoon Renderer",
+            "Your drivers are too old, your vulkan version is unsupported. (Vulkan 1.1 <=)",
+            std::cref (pEngine->configuration)) };
+
+        return false;
       }
   }
 
   // Vulkan Instance
   {
-    const char * const pGameName = (rInfo.pGameName != nullptr) ? rInfo.pGameName : "Untitled Game";
+    const char * const pGameName{ (rInfo.pGameName != nullptr) ? rInfo.pGameName
+                                                               : "Untitled Game" };
 
     const vk::ApplicationInfo patacheEngineInfo{ .pApplicationName   = pGameName,
                                                  .applicationVersion = rInfo.gameVersion,
@@ -72,14 +73,14 @@ RaccoonRendererInit (Patache::Engine * pEngine, const Patache::EngineCreateInfo 
 
     // List Layers
     {
-      std::future<void> returnVulkanList
-          = std::async (std::launch::async, Patache::VulkanList, pEngine->debugInfo.ppLayersVK,
-                        PATACHE_LAYER_VK_COUNT, "Layers");
+      std::future<void> returnVulkanList{ std::async (std::launch::async, Patache::VulkanList,
+                                                      pEngine->debugInfo.ppLayersVK,
+                                                      PATACHE_LAYER_VK_COUNT, "Layers") };
     }
 #endif
 
     // Get Extensions
-    std::uint32_t instanceExtensionCount = 0, extensionCountSDL = 0;
+    std::uint32_t instanceExtensionCount{ 0U }, extensionCountSDL{ 0U };
 
     const char * const * pArrayInstanceExtensionsSDL
         = SDL_Vulkan_GetInstanceExtensions (&extensionCountSDL);
@@ -93,16 +94,17 @@ RaccoonRendererInit (Patache::Engine * pEngine, const Patache::EngineCreateInfo 
 #endif
 
     // Search extension instance
-    vk::ExtensionProperties * pInstanceExtensionProperties = nullptr;
-    std::uint32_t             propertyCount                = 0;
+    vk::ExtensionProperties * pInstanceExtensionProperties{ nullptr };
+    std::uint32_t             propertyCount{ 0U };
 
     result = vk::enumerateInstanceExtensionProperties (nullptr, &propertyCount, nullptr);
 
     if (result != vk::Result::eSuccess)
       {
-        std::future<void> returnVulkanErr = std::async (
+        std::future<void> returnVulkanErr{ std::async (
             std::launch::async, Patache::WarningMessage,
-            "Cannot get the instance extensions count. continuing without some extensions");
+            "vkEnumerateInstanceVersion() Cannot get the instance extensions count. continuing "
+            "without some extensions") };
 
         goto SKIP_OTHER_EXTENSIONS;
       }
@@ -114,9 +116,10 @@ RaccoonRendererInit (Patache::Engine * pEngine, const Patache::EngineCreateInfo 
 
     if (result != vk::Result::eSuccess)
       {
-        std::future<void> returnVulkanErr
-            = std::async (std::launch::async, Patache::WarningMessage,
-                          "Cannot get the instance extensions. continuing without some extensions");
+        std::future<void> returnVulkanErr{ std::async (
+            std::launch::async, Patache::WarningMessage,
+            "vkEnumerateInstanceVersion() Cannot get the instance extensions. continuing without "
+            "some extensions") };
 
         if (pInstanceExtensionProperties != nullptr)
           delete[] pInstanceExtensionProperties;
@@ -145,7 +148,7 @@ RaccoonRendererInit (Patache::Engine * pEngine, const Patache::EngineCreateInfo 
   SKIP_OTHER_EXTENSIONS:
 
     // Enable instance extensions
-    const char ** ppAllExtensionInstance = nullptr;
+    const char ** ppAllExtensionInstance{ nullptr };
 
     if (pArrayInstanceExtensionsSDL != nullptr)
       {
@@ -184,15 +187,15 @@ RaccoonRendererInit (Patache::Engine * pEngine, const Patache::EngineCreateInfo 
                         instanceExtensionCount * sizeof (const char *));
 #endif
 
-        std::future<void> vulkanList
-            = std::async (std::launch::async, Patache::VulkanList, ppAllExtensionInstance,
-                          instanceExtensionCount, "Instance Extensions");
+        std::future<void> vulkanList{ std::async (std::launch::async, Patache::VulkanList,
+                                                  ppAllExtensionInstance, instanceExtensionCount,
+                                                  "Instance Extensions") };
       }
     else
       {
-        std::future<void> fatalErr = std::async (
+        std::future<void> fatalErr{ std::async (
             std::launch::async, Patache::FatalErrorMessage, "Patache Engine - Raccoon Renderer",
-            "Cannot find vulkan surface extensions", std::cref (pEngine->configuration));
+            "Cannot find vulkan surface extensions", std::cref (pEngine->configuration)) };
 
         return false;
       }
@@ -263,24 +266,24 @@ RaccoonRendererInit (Patache::Engine * pEngine, const Patache::EngineCreateInfo 
         char errorText[PATACHE_ERROR_TEXT_SIZE]{ 0 };
 
         PATACHE_STRNCPY (errorText,
-                         "You do not have Vulkan API compatible drivers or your "
+                         "vkCreateInstance() You do not have Vulkan API compatible drivers or your "
                          "GPU does not support the Vulkan API. ",
                          PATACHE_ERROR_TEXT_SIZE - 1, PATACHE_ERROR_TEXT_SIZE);
 
         PATACHE_STRNCAT (errorText, vk::to_string (result).c_str (), PATACHE_ERROR_TEXT_SIZE - 1,
                          PATACHE_ERROR_TEXT_SIZE);
 
-        std::future<void> returnVulkanErr = std::async (
+        std::future<void> returnVulkanErr{ std::async (
             std::launch::async, Patache::FatalErrorMessage, "Patache Engine - Raccoon Renderer",
-            errorText, std::cref (pEngine->configuration));
+            errorText, std::cref (pEngine->configuration)) };
 
         return false;
       }
 
     if (result != vk::Result::eSuccess)
       {
-        std::future<void> returnVulkanCheck
-            = std::async (std::launch::async, Patache::VulkanCheck, "Instance", result);
+        std::future<void> returnVulkanCheck{ std::async (std::launch::async, Patache::VulkanCheck,
+                                                         "vkCreateInstance()", result) };
 
         return false;
       }
@@ -296,9 +299,9 @@ RaccoonRendererInit (Patache::Engine * pEngine, const Patache::EngineCreateInfo 
 
       if (pfnVkCreateDebugUtilsMessengerEXT == nullptr)
         {
-          std::future<void> err = std::async (std::launch::async, Patache::ErrorMessage,
-                                              "Cannot get address of function "
-                                              "vkCreateDebugUtilsMessengerEXT");
+          std::future<void> err{ std::async (std::launch::async, Patache::ErrorMessage,
+                                             "vkGetDeviceProcAddr() Cannot get address of function "
+                                             "vkCreateDebugUtilsMessengerEXT()") };
 
           goto EXIT_CREATE_DEBUG_UTILS_MESSENGER;
         }
@@ -318,8 +321,9 @@ RaccoonRendererInit (Patache::Engine * pEngine, const Patache::EngineCreateInfo 
 
       if (result != vk::Result::eSuccess)
         {
-          std::future<void> returnVulkanCheck = std::async (
-              std::launch::async, Patache::VulkanCheck, "Debug Utils Messenger", result);
+          std::future<void> returnVulkanCheck{ std::async (std::launch::async, Patache::VulkanCheck,
+                                                           "vkCreateDebugUtilsMessengerEXT()",
+                                                           result) };
 
           return false;
         }
@@ -340,24 +344,24 @@ EXIT_CREATE_DEBUG_UTILS_MESSENGER:
   vk::PhysicalDeviceProperties2 physicalDeviceProperties;
   // Search a Physical Device
   {
-    std::uint32_t gpuCount = 0;
+    std::uint32_t gpuCount{ 0U };
 
     result = pEngine->vulkan.instance.enumeratePhysicalDevices (&gpuCount, nullptr);
 
     if (result != vk::Result::eSuccess)
       {
-        std::future<void> returnVulkanCheck
-            = std::async (std::launch::async, Patache::VulkanCheck,
-                          "Enumerate Physical Devices - Obtaining the count", result);
+        std::future<void> returnVulkanCheck{ std::async (
+            std::launch::async, Patache::VulkanCheck,
+            "vkEnumeratePhysicalDevices() Obtaining the count", result) };
 
         return false;
       }
 
     if (gpuCount <= 0)
       {
-        std::future<void> err = std::async (
+        std::future<void> err{ std::async (
             std::launch::async, Patache::FatalErrorMessage, "Patache engine - Raccoon Renderer",
-            "No vulkan compatible device found", std::cref (pEngine->configuration));
+            "No vulkan compatible device found", std::cref (pEngine->configuration)) };
 
         return false;
       }
@@ -366,27 +370,27 @@ EXIT_CREATE_DEBUG_UTILS_MESSENGER:
 
     result = pEngine->vulkan.instance.enumeratePhysicalDevices (&gpuCount, pTmpPhysicalDevices);
 
+    if (result != vk::Result::eSuccess)
+      {
+        std::future<void> returnVulkanCheck{ std::async (std::launch::async, Patache::VulkanCheck,
+                                                         "vkEnumeratePhysicalDevices()", result) };
+
+        std::future<void> err{ std::async (
+            std::launch::async, Patache::FatalErrorMessage, "Patache Engine - RaccoonRenderer",
+            "Failed to obtain a physical device", std::cref (pEngine->configuration)) };
+
+        delete[] pTmpPhysicalDevices;
+        pTmpPhysicalDevices = nullptr;
+
+        return false;
+      }
+
     if (gpuCount == 1)
       {
         // If you only have one compatible GPU, I will take it directly.
         fast_io::io::println (PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_BOLD, PATACHE_TERM_COLOR_PATACHE,
                               "Raccoon Renderer", PATACHE_TERM_RESET, PATACHE_TERM_BOLD,
                               " : Only one vulkan compatible device found", PATACHE_TERM_RESET);
-
-        if (result != vk::Result::eSuccess)
-          {
-            std::future<void> returnVulkanCheck = std::async (
-                std::launch::async, Patache::VulkanCheck, "Enumerate Physical Devices", result);
-
-            std::future<void> err = std::async (
-                std::launch::async, Patache::FatalErrorMessage, "Patache Engine - RaccoonRenderer",
-                "Failed to obtain a physical device", std::cref (pEngine->configuration));
-
-            delete[] pTmpPhysicalDevices;
-            pTmpPhysicalDevices = nullptr;
-
-            return false;
-          }
 
         // Select the only device available
         pEngine->vulkan.physicalDevice = pTmpPhysicalDevices[0];
@@ -399,14 +403,15 @@ EXIT_CREATE_DEBUG_UTILS_MESSENGER:
             = pEngine->vulkan.physicalDevice.getProperties2 ();
 #endif
 
-        const vk::PhysicalDeviceFeatures deviceFeatures
-            = pEngine->vulkan.physicalDevice.getFeatures ();
+        const vk::PhysicalDeviceFeatures deviceFeatures{
+          pEngine->vulkan.physicalDevice.getFeatures ()
+        };
 
         // I need the GPU to have geometryShader
         if (!deviceFeatures.geometryShader)
           {
-            std::future<void> err = std::async (std::launch::async, Patache::ErrorMessage,
-                                                "Your GPU Dont Support Geometry Shader");
+            std::future<void> err{ std::async (std::launch::async, Patache::ErrorMessage,
+                                               "Your GPU Dont Support Geometry Shader") };
 
             pEngine->vulkan.physicalDevice = VK_NULL_HANDLE;
 
@@ -427,7 +432,7 @@ EXIT_CREATE_DEBUG_UTILS_MESSENGER:
 
     vk::PhysicalDeviceFeatures2 physicalDeviceFeatures;
 
-    for (std::uint32_t i = 0; i < gpuCount; ++i)
+    for (std::uint32_t i{ 0U }; i < gpuCount; ++i)
       {
         physicalDeviceProperties = pTmpPhysicalDevices[i].getProperties2 ();
         physicalDeviceFeatures   = pTmpPhysicalDevices[i].getFeatures2 ();
@@ -454,9 +459,9 @@ EXIT_CREATE_DEBUG_UTILS_MESSENGER:
         // I need the GPU to have geometryShader
         if (!physicalDeviceFeatures.features.geometryShader)
           {
-            std::future<void> err = std::async (std::launch::async, Patache::ErrorMessage,
-                                                "This GPU Dont Support Geometry "
-                                                "Shader, your points will be 0");
+            std::future<void> err{ std::async (std::launch::async, Patache::ErrorMessage,
+                                               "This GPU Dont Support Geometry "
+                                               "Shader, your points will be 0") };
 
             pGpuScore[i] = 0;
           }
@@ -471,9 +476,9 @@ EXIT_CREATE_DEBUG_UTILS_MESSENGER:
 
     fast_io::io::println (PATACHE_FASTIO_BUFFOUT);
 
-    std::uint32_t highestScore = 0, gpuIndexWinner = 0;
+    std::uint32_t highestScore{ 0U }, gpuIndexWinner{ 0U };
 
-    for (std::uint32_t i = 0; i < gpuCount; ++i)
+    for (std::uint32_t i{ 0U }; i < gpuCount; ++i)
       if (pGpuScore[i] > highestScore)
         {
           highestScore   = pGpuScore[i];
@@ -495,18 +500,18 @@ EXIT_CREATE_DEBUG_UTILS_MESSENGER:
   }
 EXIT_CREATE_DEVICE:
 
-  VmaAllocatorCreateFlags vmaAllocatorInfoFlags = 0;
+  VmaAllocatorCreateFlags vmaAllocatorInfoFlags{ 0U };
 
   /*
   Search a queue of graphics from the selected physical device.
   Create a logical device from the selected physical device.
   */
   {
-    float queuePriority = 1.0f;
+    float queuePriority{ 1.0F };
 
     // Graphics Queue
     {
-      std::uint32_t queueCount = 0;
+      std::uint32_t queueCount{ 0U };
 
       pEngine->vulkan.physicalDevice.getQueueFamilyProperties (&queueCount, nullptr);
 
@@ -519,26 +524,15 @@ EXIT_CREATE_DEVICE:
 
       pEngine->vulkan.physicalDevice.getQueueFamilyProperties (&queueCount, pQueueFamilyProperties);
 
-      for (std::uint32_t i = 0; i < queueCount; ++i)
+      for (std::uint32_t i{ 0U }; i < queueCount; ++i)
         {
-#if PATACHE_DEBUG == 1
-          PATACHE_VARTYPE_STRING_PTR pVarTypeRealName = nullptr;
-
-          PATACHE_GET_VARTYPE_STRING (pVarTypeRealName, pQueueFamilyProperties[i].queueFlags);
-#endif
-
-          fast_io::io::println (PATACHE_FASTIO_BUFFOUT,
-#if PATACHE_DEBUG == 1
-                                PATACHE_FASTIO_SHOW_VARTYPE_STRING (pVarTypeRealName, 3, 2, 3),
-#endif
-                                PATACHE_TERM_BOLD, "Index [", PATACHE_TERM_RESET, i,
+          fast_io::io::println (PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_BOLD,
+                                fast_io::mnp::right ("Index [", 9U), PATACHE_TERM_RESET, i,
                                 PATACHE_TERM_BOLD, "] : ", PATACHE_TERM_RESET,
                                 vk::to_string (pQueueFamilyProperties[i].queueFlags));
-
-          PATACHE_FREE_VARTYPE_STRING (pVarTypeRealName);
         }
 
-      std::uint32_t i = 0;
+      std::uint32_t i{ 0U };
       for (i = 0; i < queueCount; ++i)
         if (pQueueFamilyProperties[i].queueFlags
             & (vk::QueueFlagBits::eGraphics | vk::QueueFlagBits::eTransfer))
@@ -556,9 +550,9 @@ EXIT_CREATE_DEVICE:
 
       if (i == UINT32_MAX)
         {
-          std::future<void> returnVulkanErr = std::async (
+          std::future<void> returnVulkanErr{ std::async (
               std::launch::async, Patache::FatalErrorMessage, "Patache Engine - Raccoon Renderer",
-              "No Queue found for graphics", std::cref (pEngine->configuration));
+              "No Queue found for graphics", std::cref (pEngine->configuration)) };
 
           return false;
         }
@@ -577,8 +571,8 @@ EXIT_CREATE_DEVICE:
     // Logical Device
     {
       // Search extensions
-      vk::ExtensionProperties * pExtensionsProperties = nullptr;
-      std::uint32_t             propertyCount         = 0;
+      vk::ExtensionProperties * pExtensionsProperties{ nullptr };
+      std::uint32_t             propertyCount{ 0U };
 
       // Count
       result = pEngine->vulkan.physicalDevice.enumerateDeviceExtensionProperties (
@@ -586,9 +580,10 @@ EXIT_CREATE_DEVICE:
 
       if (result != vk::Result::eSuccess)
         {
-          std::future<void> returnVulkanErr = std::async (
+          std::future<void> returnVulkanErr{ std::async (
               std::launch::async, Patache::FatalErrorMessage, "Patache Engine - Raccoon Renderer",
-              "No found device extension count", std::cref (pEngine->configuration));
+              "vkEnumerateDeviceExtensionProperties() No found device extension count",
+              std::cref (pEngine->configuration)) };
 
           return false;
         }
@@ -601,9 +596,10 @@ EXIT_CREATE_DEVICE:
 
       if (result != vk::Result::eSuccess)
         {
-          std::future<void> returnVulkanErr = std::async (
+          std::future<void> returnVulkanErr{ std::async (
               std::launch::async, Patache::FatalErrorMessage, "Patache Engine - Raccoon Renderer",
-              "No found device extensions", std::cref (pEngine->configuration));
+              "vkEnumerateDeviceExtensionProperties() No found device extensions",
+              std::cref (pEngine->configuration)) };
 
           return false;
         }
@@ -615,14 +611,14 @@ EXIT_CREATE_DEVICE:
   #define DEVICE_EXTENSION_COUNT_SEARCH 6
 #endif
 
-      std::uint8_t deviceExtensionCount = 1;
+      std::uint8_t deviceExtensionCount{ 1U };
       bool         deviceExtensionIndices[DEVICE_EXTENSION_COUNT_SEARCH]{ false };
 
 #if defined(DEVICE_EXTENSION_COUNT_SEARCH)
   #undef DEVICE_EXTENSION_COUNT_SEARCH
 #endif
 
-      for (std::uint32_t i = 0; i < propertyCount; ++i)
+      for (std::uint32_t i{ 0U }; i < propertyCount; ++i)
         {
           if (std::strcmp (pExtensionsProperties[i].extensionName, vk::KHRMaintenance4ExtensionName)
               == 0)
@@ -687,7 +683,7 @@ EXIT_CREATE_DEVICE:
         }
 
       // Add device extensions
-      std::uint8_t deviceAddExtensionIndexCount = 0;
+      std::uint8_t deviceAddExtensionIndexCount{ 0 };
 
       const char ** ppDeviceExtensions = new const char *[deviceExtensionCount](nullptr);
 
@@ -756,9 +752,9 @@ EXIT_CREATE_DEVICE:
       {
         fast_io::io::println (PATACHE_FASTIO_BUFFOUT);
 
-        std::future<void> vulkanList
-            = std::async (std::launch::async, Patache::VulkanList, ppDeviceExtensions,
-                          deviceExtensionCount, "Device Extensions");
+        std::future<void> vulkanList{ std::async (std::launch::async, Patache::VulkanList,
+                                                  ppDeviceExtensions, deviceExtensionCount,
+                                                  "Device Extensions") };
       }
 
       // Logical device creation
@@ -785,12 +781,13 @@ EXIT_CREATE_DEVICE:
 
       if (result != vk::Result::eSuccess)
         {
-          std::future<void> returnVulkanCheck
-              = std::async (std::launch::async, Patache::VulkanCheck, "Logical Device", result);
+          std::future<void> returnVulkanCheck{ std::async (std::launch::async, Patache::VulkanCheck,
+                                                           "vkCreateDevice()", result) };
 
-          std::future<void> returnVulkanErr = std::async (
+          std::future<void> returnVulkanErr{ std::async (
               std::launch::async, Patache::FatalErrorMessage, "Patache Engine - Raccoon Renderer",
-              "Logical device creation failed", std::cref (pEngine->configuration));
+              "vkCreateDevice() Logical device creation failed",
+              std::cref (pEngine->configuration)) };
 
           return false;
         }
@@ -808,55 +805,54 @@ EXIT_CREATE_DEVICE:
   }
 
   // VMA Allocator
-  std::future<bool> createAllocator_Async = std::async (
+  std::future<bool> createAllocator_Async{ std::async (
       std::launch::async,
       [&vmaAllocatorInfoFlags, &pEngine] (void) -> bool
         {
-          vk::Result result;
-
           VmaVulkanFunctions vulkanFunctions{};
           vulkanFunctions.vkGetInstanceProcAddr = &vkGetInstanceProcAddr;
           vulkanFunctions.vkGetDeviceProcAddr   = &vkGetDeviceProcAddr;
 
-          VmaAllocatorCreateInfo vmaAllocatorInfo{ .flags          = vmaAllocatorInfoFlags,
-                                                   .physicalDevice = pEngine->vulkan.physicalDevice,
-                                                   .device         = pEngine->vulkan.device,
-                                                   .preferredLargeHeapBlockSize = 0,
-                                                   .pAllocationCallbacks        = nullptr,
-                                                   .pDeviceMemoryCallbacks      = nullptr,
-                                                   .pHeapSizeLimit              = nullptr,
-                                                   .pVulkanFunctions            = &vulkanFunctions,
-                                                   .instance         = pEngine->vulkan.instance,
-                                                   .vulkanApiVersion = VK_API_VERSION_1_3,
+          VmaAllocatorCreateInfo vmaAllocatorInfo{ .flags                       = vmaAllocatorInfoFlags,
+                                      .physicalDevice              = pEngine->vulkan.physicalDevice,
+                                      .device                      = pEngine->vulkan.device,
+                                      .preferredLargeHeapBlockSize = 0,
+                                      .pAllocationCallbacks        = nullptr,
+                                      .pDeviceMemoryCallbacks      = nullptr,
+                                      .pHeapSizeLimit              = nullptr,
+                                      .pVulkanFunctions            = &vulkanFunctions,
+                                      .instance                    = pEngine->vulkan.instance,
+                                      .vulkanApiVersion            = VK_API_VERSION_1_3,
 #if VMA_EXTERNAL_MEMORY
                                                    .pTypeExternalMemoryHandleTypes = nullptr
 #endif
           };
 
-          result = static_cast<vk::Result> (
-              vmaCreateAllocator (&vmaAllocatorInfo, &pEngine->vulkan.allocator));
+          vk::Result result{ static_cast<vk::Result> (
+              vmaCreateAllocator (&vmaAllocatorInfo, &pEngine->vulkan.allocator)) };
 
           if (result != vk::Result::eSuccess)
             {
-              std::future<void> returnVulkanCheck
-                  = std::async (std::launch::async, Patache::VulkanCheck, "allocator", result);
+              std::future<void> returnVulkanCheck{ std::async (
+                  std::launch::async, Patache::VulkanCheck, "vmaCreateAllocator()", result) };
 
-              std::future<void> returnVulkanErr
-                  = std::async (std::launch::async, Patache::FatalErrorMessage,
-                                "Patache Engine - Raccoon Renderer", "Allocator creation fail",
-                                std::cref (pEngine->configuration));
+              std::future<void> returnVulkanErr{ std::async (
+                  std::launch::async, Patache::FatalErrorMessage,
+                  "Patache Engine - Raccoon Renderer",
+                  "vmaCreateAllocator() Allocator creation fail",
+                  std::cref (pEngine->configuration)) };
 
               return false;
             }
 
           return true;
-        });
+        }) };
 
 #if PATACHE_DEBUG == 1
-  std::future<bool> createImguiDescriptorPool_Async
-      = std::async (std::launch::async, CreateImguiDescriptorPool, std::ref (pEngine->vulkan));
-  std::future<bool> createImguiPipelineCache_Async
-      = std::async (std::launch::async, CreateImguiPipelineCache, std::ref (pEngine->vulkan));
+  std::future<bool> createImguiDescriptorPool_Async{ std::async (
+      std::launch::async, CreateImguiDescriptorPool, std::ref (pEngine->vulkan)) };
+  std::future<bool> createImguiPipelineCache_Async{ std::async (
+      std::launch::async, CreateImguiPipelineCache, std::ref (pEngine->vulkan)) };
 
   initImguiCore_Async.wait ();
 #endif
@@ -866,12 +862,12 @@ EXIT_CREATE_DEVICE:
                                  reinterpret_cast<VkSurfaceKHR *> (&pEngine->vulkan.surface)))
     {
       fast_io::io::println (PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_RESET, PATACHE_TERM_BOLD,
-                            "SDL Create Window Surface : ", PATACHE_TERM_RESET,
+                            "SDL_Vulkan_CreateSurface() : ", PATACHE_TERM_RESET,
                             PATACHE_TERM_COLOR_YELLOW, "Fail", PATACHE_TERM_RESET);
 
-      std::future<void> fatalErr
-          = std::async (std::launch::async, Patache::FatalErrorMessage, "SDL", SDL_GetError (),
-                        std::cref (pEngine->configuration));
+      std::future<void> fatalErr{ std::async (std::launch::async, Patache::FatalErrorMessage, "SDL",
+                                              SDL_GetError (),
+                                              std::cref (pEngine->configuration)) };
 
       return false;
     }
@@ -923,29 +919,29 @@ EXIT_CREATE_DEVICE:
 
     const vk::SubpassDescription subpassDescriptionInfo{ .pipelineBindPoint
                                                          = vk::PipelineBindPoint::eGraphics,
-                                                         .colorAttachmentCount = 1,
+                                                         .colorAttachmentCount = 1U,
                                                          .pColorAttachments = &colorAttachmentRef };
 
-    const vk::RenderPassCreateInfo renderPassInfo{ .attachmentCount = 1,
+    const vk::RenderPassCreateInfo renderPassInfo{ .attachmentCount = 1U,
                                                    .pAttachments = &colorAttachmentDescriptionInfo,
-                                                   .subpassCount = 1,
+                                                   .subpassCount = 1U,
                                                    .pSubpasses   = &subpassDescriptionInfo,
-                                                   .dependencyCount = 0 };
+                                                   .dependencyCount = 0U };
 
     result = pEngine->vulkan.device.createRenderPass (&renderPassInfo, nullptr,
                                                       &pEngine->vulkan.renderPass);
 
     if (result != vk::Result::eSuccess)
       {
-        std::future<void> returnVulkanCheck
-            = std::async (std::launch::async, Patache::VulkanCheck, "Render Pass", result);
+        std::future<void> returnVulkanCheck{ std::async (std::launch::async, Patache::VulkanCheck,
+                                                         "vkCreateRenderPass()", result) };
 
         return false;
       }
   }
 
   // Command Pool
-  std::future<bool> createCommandPool_Async = std::async (
+  std::future<bool> createCommandPool_Async{ std::async (
       std::launch::async,
       [&pEngine] (void) -> bool
         {
@@ -958,17 +954,17 @@ EXIT_CREATE_DEVICE:
 
           if (pEngine->vulkan.pCommandPools == nullptr)
             {
-              std::future<void> fatalErr
-                  = std::async (std::launch::async, Patache::FatalErrorMessage, "Raccoon Renderer",
-                                "malloc fail to allocate memory heap for vulkan command pools",
-                                std::cref (pEngine->configuration));
+              std::future<void> fatalErr{ std::async (
+                  std::launch::async, Patache::FatalErrorMessage, "Raccoon Renderer",
+                  "malloc fail to allocate memory heap for vulkan command pools",
+                  std::cref (pEngine->configuration)) };
 
               return false;
             }
 
           vk::Result result;
 
-          for (std::uint_fast32_t i = 0; i < pEngine->vulkan.swapchainImageCount; ++i)
+          for (std::uint32_t i{ 0U }; i < pEngine->vulkan.swapchainImageCount; ++i)
             {
               // Render Command Pools
               result = pEngine->vulkan.device.createCommandPool (&commandPoolInfo, nullptr,
@@ -979,33 +975,33 @@ EXIT_CREATE_DEVICE:
                   char errorText[PATACHE_ERROR_TEXT_SIZE]{};
 
                   std::snprintf (errorText, PATACHE_ERROR_TEXT_SIZE - 1,
-                                 "Render Command Pool #%.3lu", i);
+                                 "vkCreateCommandPool() Render Command Pool #%.3u", i);
 
-                  std::future<void> returnVulkanCheck
-                      = std::async (std::launch::async, Patache::VulkanCheck, errorText, result);
+                  std::future<void> returnVulkanCheck{ std::async (
+                      std::launch::async, Patache::VulkanCheck, errorText, result) };
 
                   return false;
                 }
             }
 
           return true;
-        });
+        }) };
 
-  std::future<bool> createFrameBuffer_Async
-      = std::async (std::launch::async, CreateFrameBuffer, std::ref (pEngine->vulkan));
+  std::future<bool> createFrameBuffer_Async{ std::async (std::launch::async, CreateFrameBuffer,
+                                                         std::ref (pEngine->vulkan)) };
 
   createCommandPool_Async.wait ();
   if (!createCommandPool_Async.get ())
     return false;
 
-  std::future<bool> createCommandBuffer_Async
-      = std::async (std::launch::async, CreateCommandBuffer, std::ref (pEngine->vulkan));
+  std::future<bool> createCommandBuffer_Async{ std::async (std::launch::async, CreateCommandBuffer,
+                                                           std::ref (pEngine->vulkan)) };
 
-  std::future<bool> createFence_Async
-      = std::async (std::launch::async, CreateFence, std::ref (pEngine->vulkan));
+  std::future<bool> createFence_Async{ std::async (std::launch::async, CreateFence,
+                                                   std::ref (pEngine->vulkan)) };
 
-  std::future<bool> createSemaphores_Async
-      = std::async (std::launch::async, CreateSemaphores, std::ref (pEngine->vulkan));
+  std::future<bool> createSemaphores_Async{ std::async (std::launch::async, CreateSemaphores,
+                                                        std::ref (pEngine->vulkan)) };
 
   std::future<bool> createPipeline_Async = std::async (
       std::launch::async,
@@ -1041,13 +1037,14 @@ EXIT_CREATE_DEVICE:
           };
 
           // Vertex Shader Module
-          vk::Result result = pEngine->vulkan.device.createShaderModule (
-              &shaderModuleInfo[0], nullptr, &vertexShaderModule);
+          vk::Result result{ pEngine->vulkan.device.createShaderModule (
+              &shaderModuleInfo[0], nullptr, &vertexShaderModule) };
 
           if (result != vk::Result::eSuccess)
             {
-              std::future<void> returnVulkanCheck = std::async (
-                  std::launch::async, Patache::VulkanCheck, "Vertex Shader Module", result);
+              std::future<void> returnVulkanCheck{ std::async (
+                  std::launch::async, Patache::VulkanCheck, "vkCreateShaderModule() Vertex",
+                  result) };
 
               return false;
             }
@@ -1058,8 +1055,9 @@ EXIT_CREATE_DEVICE:
 
           if (result != vk::Result::eSuccess)
             {
-              std::future<void> returnVulkanCheck = std::async (
-                  std::launch::async, Patache::VulkanCheck, "Fragment Shader Module", result);
+              std::future<void> returnVulkanCheck{ std::async (
+                  std::launch::async, Patache::VulkanCheck, "vkCreateShaderModule() Fragment",
+                  result) };
 
               return false;
             }
@@ -1076,28 +1074,28 @@ EXIT_CREATE_DEVICE:
 
           // Vertex Input & Input Assembly
           const vk::VertexInputBindingDescription bindingDescription{
-            .binding   = 0,
+            .binding   = 0U,
             .stride    = sizeof (Patache::Vertex2D),
             .inputRate = vk::VertexInputRate::eVertex
           };
 
           const vk::VertexInputAttributeDescription vertexInputAttrib[2]{
             // Position
-            { .location = 0,
-              .binding  = 0,
+            { .location = 0U,
+              .binding  = 0U,
               .format   = vk::Format::eR32G32Sfloat,
               .offset   = offsetof (Patache::Vertex2D, pos) },
             // Color
-            { .location = 1,
-              .binding  = 0,
+            { .location = 1U,
+              .binding  = 0U,
               .format   = vk::Format::eR32G32B32Sfloat,
               .offset   = offsetof (Patache::Vertex2D, color) }
           };
 
           const vk::PipelineVertexInputStateCreateInfo vertexInputStateInfo{
-            .vertexBindingDescriptionCount   = 1,
+            .vertexBindingDescriptionCount   = 1U,
             .pVertexBindingDescriptions      = &bindingDescription,
-            .vertexAttributeDescriptionCount = 2,
+            .vertexAttributeDescriptionCount = 2U,
             .pVertexAttributeDescriptions    = vertexInputAttrib
           };
 
@@ -1106,30 +1104,30 @@ EXIT_CREATE_DEVICE:
           };
 
           // Dynamic State
-          static constexpr vk::DynamicState dynamicStates[2]{ vk::DynamicState::eViewport,
-                                                              vk::DynamicState::eScissor };
+          static constexpr vk::DynamicState dynamicStates[2U]{ vk::DynamicState::eViewport,
+                                                               vk::DynamicState::eScissor };
 
-          const vk::PipelineDynamicStateCreateInfo dynamicStateInfo{ .dynamicStateCount = 2,
+          const vk::PipelineDynamicStateCreateInfo dynamicStateInfo{ .dynamicStateCount = 2U,
                                                                      .pDynamicStates
                                                                      = dynamicStates };
 
           // Viewport and Scissor
-          pEngine->vulkan.viewport.x = 0;
-          pEngine->vulkan.viewport.y = 0;
+          pEngine->vulkan.viewport.x = 0U;
+          pEngine->vulkan.viewport.y = 0U;
           pEngine->vulkan.viewport.width
               = static_cast<float> (pEngine->vulkan.swapchainExtent.width);
           pEngine->vulkan.viewport.height
               = static_cast<float> (pEngine->vulkan.swapchainExtent.height);
-          pEngine->vulkan.viewport.minDepth = 0.0f;
-          pEngine->vulkan.viewport.maxDepth = 1.0f;
+          pEngine->vulkan.viewport.minDepth = 0.0F;
+          pEngine->vulkan.viewport.maxDepth = 1.0F;
 
-          pEngine->vulkan.scissor.offset = vk::Offset2D (0, 0);
+          pEngine->vulkan.scissor.offset = vk::Offset2D (0U, 0U);
           pEngine->vulkan.scissor.extent = pEngine->vulkan.swapchainExtent;
 
-          const vk::PipelineViewportStateCreateInfo viewportStateInfo{ .viewportCount = 1,
+          const vk::PipelineViewportStateCreateInfo viewportStateInfo{ .viewportCount = 1U,
                                                                        .pViewports
                                                                        = &pEngine->vulkan.viewport,
-                                                                       .scissorCount = 1,
+                                                                       .scissorCount = 1U,
                                                                        .pScissors
                                                                        = &pEngine->vulkan.scissor };
 
@@ -1141,17 +1139,17 @@ EXIT_CREATE_DEVICE:
             .cullMode                = vk::CullModeFlagBits::eBack,
             .frontFace               = vk::FrontFace::eClockwise,
             .depthBiasEnable         = VK_FALSE,
-            .depthBiasConstantFactor = 0.0f,
-            .depthBiasClamp          = 0.0f,
-            .depthBiasSlopeFactor    = 0.0f,
-            .lineWidth               = 1.0f
+            .depthBiasConstantFactor = 0.0F,
+            .depthBiasClamp          = 0.0F,
+            .depthBiasSlopeFactor    = 0.0F,
+            .lineWidth               = 1.0F
           };
 
           // MSAA Multisampling
           const vk::PipelineMultisampleStateCreateInfo multisamplingStateInfo{
             .rasterizationSamples  = vk::SampleCountFlagBits::e1,
             .sampleShadingEnable   = VK_FALSE,
-            .minSampleShading      = 1.0f,
+            .minSampleShading      = 1.0F,
             .pSampleMask           = nullptr,
             .alphaToCoverageEnable = VK_FALSE,
             .alphaToOneEnable      = VK_FALSE
@@ -1180,23 +1178,23 @@ EXIT_CREATE_DEVICE:
             .pAttachments    = &colorBlendAttachmentState
           };
 
-          const vk::PipelineLayoutCreateInfo pipelineLayoutInfo{ .setLayoutCount         = 0,
+          const vk::PipelineLayoutCreateInfo pipelineLayoutInfo{ .setLayoutCount         = 0U,
                                                                  .pSetLayouts            = nullptr,
-                                                                 .pushConstantRangeCount = 0,
+                                                                 .pushConstantRangeCount = 0U,
                                                                  .pPushConstantRanges = nullptr };
 
           result = pEngine->vulkan.device.createPipelineLayout (&pipelineLayoutInfo, nullptr,
                                                                 &pEngine->vulkan.pipelineLayout);
           if (result != vk::Result::eSuccess)
             {
-              std::future<void> returnVulkanCheck = std::async (
-                  std::launch::async, Patache::VulkanCheck, "Pipeline Layout", result);
+              std::future<void> returnVulkanCheck{ std::async (
+                  std::launch::async, Patache::VulkanCheck, "vkCreatePipelineLayout()", result) };
 
               return false;
             }
 
           const vk::GraphicsPipelineCreateInfo graphicsPipelineInfo{
-            .stageCount          = 2,
+            .stageCount          = 2U,
             .pStages             = shaderStageInfo,
             .pVertexInputState   = &vertexInputStateInfo,
             .pInputAssemblyState = &inputAssemblyStateInfo,
@@ -1211,12 +1209,14 @@ EXIT_CREATE_DEVICE:
           };
 
           result = pEngine->vulkan.device.createGraphicsPipelines (
-              VK_NULL_HANDLE, 1, &graphicsPipelineInfo, nullptr, &pEngine->vulkan.graphicsPipeline);
+              VK_NULL_HANDLE, 1U, &graphicsPipelineInfo, nullptr,
+              &pEngine->vulkan.graphicsPipeline);
 
           if (result != vk::Result::eSuccess)
             {
-              std::future<void> returnVulkanCheck = std::async (
-                  std::launch::async, Patache::VulkanCheck, "Graphics Pipeline", result);
+              std::future<void> returnVulkanCheck{ std::async (
+                  std::launch::async, Patache::VulkanCheck, "vkCreateGraphicsPipelines()",
+                  result) };
 
               return false;
             }
@@ -1227,8 +1227,8 @@ EXIT_CREATE_DEVICE:
           return true;
         });
 
-  std::future<void> vulkanInfo_Async
-      = std::async (std::launch::async, VulkanInfo, std::ref (pEngine), std::ref (swapchainInfo));
+  std::future<void> vulkanInfo_Async{ std::async (std::launch::async, VulkanInfo,
+                                                  std::ref (pEngine), std::ref (swapchainInfo)) };
 
 #if PATACHE_DEBUG == 1
   createImguiPipelineCache_Async.wait ();
@@ -1259,7 +1259,7 @@ EXIT_CREATE_DEVICE:
   if (!createAllocator_Async.get ())
     return false;
 
-  std::future<bool> createBuffer_Async = std::async (
+  std::future<bool> createBuffer_Async{ std::async (
       std::launch::async,
       [&pEngine, &physicalDeviceProperties, &rInfo] (void) -> bool
         {
@@ -1271,10 +1271,10 @@ EXIT_CREATE_DEVICE:
 
           if (rInfo.buffStagingSize < 262144U)
             {
-              std::future<void> err = std::async (std::launch::async, Patache::FatalErrorMessage,
-                                                  "Patache Engine - Raccoon Renderer",
-                                                  "buffStagingSize cannot be < (262144 bytes)",
-                                                  std::cref (pEngine->configuration));
+              std::future<void> err{ std::async (std::launch::async, Patache::FatalErrorMessage,
+                                                 "Patache Engine - Raccoon Renderer",
+                                                 "buffStagingSize cannot be < (262144 bytes)",
+                                                 std::cref (pEngine->configuration)) };
 
               return false;
             }
@@ -1313,8 +1313,8 @@ EXIT_CREATE_DEVICE:
 
           if (result != vk::Result::eSuccess)
             {
-              std::future<void> checkVulkanReturn = std::async (
-                  std::launch::async, Patache::VulkanCheck, "vmaCreateBuffer()", result);
+              std::future<void> checkVulkanReturn{ std::async (
+                  std::launch::async, Patache::VulkanCheck, "vmaCreateBuffer()", result) };
 
               return false;
             }
@@ -1367,11 +1367,11 @@ EXIT_CREATE_DEVICE:
             {
               if (rInfo.memRenderSizePerImage < 262144U)
                 {
-                  std::future<void> err
-                      = std::async (std::launch::async, Patache::FatalErrorMessage,
-                                    "Patache Engine - Raccoon Renderer",
-                                    "memRenderSizePerImage cannot be < (262144 bytes)",
-                                    std::cref (pEngine->configuration));
+                  std::future<void> err{ std::async (
+                      std::launch::async, Patache::FatalErrorMessage,
+                      "Patache Engine - Raccoon Renderer",
+                      "memRenderSizePerImage cannot be < (262144 bytes)",
+                      std::cref (pEngine->configuration)) };
 
                   return false;
                 }
@@ -1403,16 +1403,16 @@ EXIT_CREATE_DEVICE:
               };
 
               // Memory pool
-              std::uint32_t memoryTypeIndex = 0U;
+              std::uint32_t memoryTypeIndex{ 0U };
 
               result = static_cast<vk::Result> (vmaFindMemoryTypeIndexForBufferInfo (
                   pEngine->vulkan.allocator, &buffRenderInfo, &allocInfo, &memoryTypeIndex));
 
               if (result != vk::Result::eSuccess)
                 {
-                  std::future<void> checkVulkanReturn
-                      = std::async (std::launch::async, Patache::VulkanCheck,
-                                    "vmaFindMemoryTypeIndexForBufferInfo()", result);
+                  std::future<void> checkVulkanReturn{ std::async (
+                      std::launch::async, Patache::VulkanCheck,
+                      "vmaFindMemoryTypeIndexForBufferInfo()", result) };
 
                   return false;
                 }
@@ -1431,8 +1431,8 @@ EXIT_CREATE_DEVICE:
 
               if (result != vk::Result::eSuccess)
                 {
-                  std::future<void> checkVulkanReturn = std::async (
-                      std::launch::async, Patache::VulkanCheck, "vmaCreatePool()", result);
+                  std::future<void> checkVulkanReturn{ std::async (
+                      std::launch::async, Patache::VulkanCheck, "vmaCreatePool()", result) };
 
                   return false;
                 }
@@ -1540,7 +1540,7 @@ EXIT_CREATE_DEVICE:
                   if (pEngine->debugInfo.ppVramMemoryDeviceHeap != nullptr
                       && pEngine->debugInfo.ppVramMemoryDeviceType != nullptr)
                     {
-                      for (std::uint8_t i = 0; i < pEngine->vulkan.swapchainImageCount; ++i)
+                      for (std::uint8_t i{ 0U }; i < pEngine->vulkan.swapchainImageCount; ++i)
                         {
                           // Memory type and heaps Info
                           vmaGetAllocationInfo (pEngine->vulkan.allocator,
@@ -1643,15 +1643,15 @@ EXIT_CREATE_DEVICE:
                 }
               else
                 {
-                  std::future<void> returnVulkanErr = std::async (
-                      std::launch::async, Patache::ErrorMessage, "Cant allocate memory");
+                  std::future<void> returnVulkanErr{ std::async (
+                      std::launch::async, Patache::ErrorMessage, "Cant allocate memory") };
 
                   return false;
                 }
             }
 
           return true;
-        });
+        }) };
 
   createFence_Async.wait ();
   if (!createFence_Async.get ())
@@ -1682,14 +1682,14 @@ RaccoonRendererClose (Patache::VulkanBackend & rVulkan)
   if (rVulkan.device == VK_NULL_HANDLE || rVulkan.instance == VK_NULL_HANDLE)
     return;
 
-  std::uint_fast32_t i = 0;
+  std::uint_fast32_t i{ 0U };
 
-  vk::Result result = rVulkan.device.waitIdle ();
+  vk::Result result{ rVulkan.device.waitIdle () };
 
   if (result != vk::Result::eSuccess)
     {
-      std::future<void> returnVulkanCheck
-          = std::async (std::launch::async, Patache::VulkanCheck, "Device Wait Idle", result);
+      std::future<void> returnVulkanCheck{ std::async (std::launch::async, Patache::VulkanCheck,
+                                                       "vkDeviceWaitIdle()", result) };
     }
 
   if (rVulkan.queue == VK_NULL_HANDLE)
@@ -1698,8 +1698,10 @@ RaccoonRendererClose (Patache::VulkanBackend & rVulkan)
   result = rVulkan.queue.waitIdle ();
 
   if (result != vk::Result::eSuccess)
-    std::future<void> returnVulkanCheck
-        = std::async (std::launch::async, Patache::VulkanCheck, "Queue Wait Idle", result);
+    {
+      std::future<void> returnVulkanCheck{ std::async (std::launch::async, Patache::VulkanCheck,
+                                                       "vkQueueWaitIdle()", result) };
+    }
 
   // Swapchain
   // Color
@@ -1819,11 +1821,16 @@ RaccoonRendererClose (Patache::VulkanBackend & rVulkan)
           rVulkan.instance.getProcAddr ("vkDestroyDebugUtilsMessengerEXT"));
 
       if (pfnVkDestroyDebugUtilsMessengerEXT == nullptr)
-        std::future<void> err = std::async (std::launch::async, Patache::ErrorMessage,
-                                            "Cannot get address of function "
-                                            "vkDestroyDebugUtilsMessengerEXT");
+        {
+          std::future<void> err{ std::async (
+              std::launch::async, Patache::ErrorMessage,
+              "vkGetInstanceProcAddr() Cannot get address of function "
+              "vkDestroyDebugUtilsMessengerEXT()") };
+        }
       else
-        rVulkan.instance.destroyDebugUtilsMessengerEXT (rVulkan.debugMessenger);
+        {
+          rVulkan.instance.destroyDebugUtilsMessengerEXT (rVulkan.debugMessenger);
+        }
     }
 #endif
 

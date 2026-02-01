@@ -60,9 +60,7 @@ Patache::Engine::Init (const Patache::EngineCreateInfo & rInfo)
   SetConsoleMode (sTerminal, ENABLE_VIRTUAL_TERMINAL_PROCESSING | sMode);
 #endif
 
-  {
-    std::future<void> startLogInfo = std::async (std::launch::async, StartLogInfo);
-  }
+  std::future<void> startLogInfo{ std::async (std::launch::async, StartLogInfo) };
 
   if (!LoadConfiguration (configuration))
     return false;
@@ -70,8 +68,8 @@ Patache::Engine::Init (const Patache::EngineCreateInfo & rInfo)
 #if defined(PATACHE_VVL_PATH)
   if (PATACHE_SETENV ("VK_LAYER_PATH", PATACHE_VVL_PATH) != PATACHE_SETENV_SUCCESS)
     {
-      std::future<void> err = std::async (std::launch::async, Patache::ErrorMessage,
-                                          "Cannot set enviroment varible VK_LAYER_PATH");
+      std::future<void> err{ std::async (std::launch::async, Patache::ErrorMessage,
+                                         "Cannot set enviroment varible VK_LAYER_PATH") };
     }
 #endif
 
@@ -98,8 +96,8 @@ Patache::Engine::Init (const Patache::EngineCreateInfo & rInfo)
 #else
   // Release
   #define PATACHE_WINDOW_TITLE pWindowTitle
-  const char * pWindowTitle
-      = (rInfo.pWindowTitle != nullptr) ? rInfo.pWindowTitle : rInfo.pGameName;
+  const char * pWindowTitle{ (rInfo.pWindowTitle != nullptr) ? rInfo.pWindowTitle
+                                                             : rInfo.pGameName };
 
   if (pWindowTitle == nullptr)
     pWindowTitle = PATACHE_ENGINE_NAME;
@@ -115,8 +113,8 @@ Patache::Engine::Init (const Patache::EngineCreateInfo & rInfo)
   // Init SDL Subsystems
   if (!SDL_Init (SDL_INIT_VIDEO | SDL_INIT_EVENTS))
     {
-      std::future<void> err = std::async (std::launch::async, Patache::FatalErrorMessage,
-                                          "Patache Engine - SDL2", SDL_GetError (), configuration);
+      std::future<void> err{ std::async (std::launch::async, Patache::FatalErrorMessage,
+                                         "Patache Engine - SDL2", SDL_GetError (), configuration) };
 
       return false;
     }
@@ -128,9 +126,9 @@ Patache::Engine::Init (const Patache::EngineCreateInfo & rInfo)
     std::uint32_t width{ 0U }, height{ 0U };
 
     // Displays
-    int                           displaysCount = 0;
-    SDL_DisplayID *               dID           = SDL_GetDisplays (&displaysCount);
-    const SDL_DisplayMode * const pCurrentMode  = SDL_GetCurrentDisplayMode (*dID);
+    int                           displaysCount{ 0U };
+    SDL_DisplayID *               dID{ SDL_GetDisplays (&displaysCount) };
+    const SDL_DisplayMode * const pCurrentMode{ SDL_GetCurrentDisplayMode (*dID) };
 
     // Initial Resolution
     if (pCurrentMode != nullptr)
@@ -140,9 +138,9 @@ Patache::Engine::Init (const Patache::EngineCreateInfo & rInfo)
       }
     else
       {
-        std::future<void> err = std::async (std::launch::async, Patache::ErrorMessage,
-                                            "can't get the current resolution. starting with 480p "
-                                            "(1.78)");
+        std::future<void> err{ std::async (std::launch::async, Patache::ErrorMessage,
+                                           "can't get the current resolution. starting with 480p "
+                                           "(1.78)") };
 
         width  = 854U;
         height = 480U;
@@ -155,9 +153,9 @@ Patache::Engine::Init (const Patache::EngineCreateInfo & rInfo)
 
     if (pGameWindow == nullptr)
       {
-        std::future<void> err
-            = std::async (std::launch::async, Patache::FatalErrorMessage,
-                          "Window cannot be created", SDL_GetError (), configuration);
+        std::future<void> err{ std::async (std::launch::async, Patache::FatalErrorMessage,
+                                           "Window cannot be created", SDL_GetError (),
+                                           configuration) };
 
         return false;
       }
@@ -167,7 +165,7 @@ Patache::Engine::Init (const Patache::EngineCreateInfo & rInfo)
 
   // Set Window Icon
   {
-    SDL_Surface * pWindowIcon = nullptr;
+    SDL_Surface * pWindowIcon{ nullptr };
 
     if (rInfo.pWindowIconPath != nullptr)
       {
@@ -187,8 +185,8 @@ Patache::Engine::Init (const Patache::EngineCreateInfo & rInfo)
 
     if (pWindowIcon == nullptr)
       {
-        std::future<void> err
-            = std::async (std::launch::async, Patache::ErrorMessage, "Icon cannot be loaded");
+        std::future<void> err{ std::async (std::launch::async, Patache::ErrorMessage,
+                                           "Icon cannot be loaded") };
       }
     else
       {
@@ -231,7 +229,7 @@ Patache::Engine::~Engine (void)
 
 #if PATACHE_DEBUG == 1
   // Imgui
-  ImGuiIO * pIO = nullptr;
+  ImGuiIO * pIO{ nullptr };
 
   if (ImGui::GetCurrentContext () != nullptr)
     {

@@ -19,7 +19,6 @@
 #include "PatacheEngine/PatacheEngine.hpp"
 #include "ColorTerminal.hpp"
 #include "FastIOBuff.hpp"
-#include "LogMacroUtils.hpp"
 #include "CstringWrapped.hpp"
 
 void VulkanInfo (Patache::Engine * const, const Patache::SwapchainInfo &);

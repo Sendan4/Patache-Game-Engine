@@ -8,15 +8,15 @@ CreateFrameBuffer (Patache::VulkanBackend & rVulkan)
 
   vk::Result result;
 
-  for (std::uint8_t i = 0; i < rVulkan.swapchainImageCount; ++i)
+  for (std::uint8_t i{ 0U }; i < rVulkan.swapchainImageCount; ++i)
     {
       const vk::FramebufferCreateInfo frameBufferInfo{
         .renderPass      = rVulkan.renderPass,
-        .attachmentCount = 1,
+        .attachmentCount = 1U,
         .pAttachments    = &rVulkan.pSwapchainColorImageViews[i],
         .width           = rVulkan.swapchainExtent.width,
         .height          = rVulkan.swapchainExtent.height,
-        .layers          = 1,
+        .layers          = 1U,
       };
 
       result = rVulkan.device.createFramebuffer (&frameBufferInfo, nullptr,
@@ -26,10 +26,11 @@ CreateFrameBuffer (Patache::VulkanBackend & rVulkan)
         {
           char errorText[PATACHE_ERROR_TEXT_SIZE]{ 0 };
 
-          std::snprintf (errorText, PATACHE_ERROR_TEXT_SIZE - 1, "Frame Buffer #%.3u", i + 1);
+          std::snprintf (errorText, PATACHE_ERROR_TEXT_SIZE - 1,
+                         "vkCreateFramebuffer() Frame Buffer #%.3u", i + 1);
 
-          std::future<void> returnVulkanCheck
-              = std::async (std::launch::async, Patache::VulkanCheck, errorText, result);
+          std::future<void> returnVulkanCheck{ std::async (std::launch::async, Patache::VulkanCheck,
+                                                           errorText, result) };
 
           return false;
         }

@@ -18,7 +18,8 @@ Patache::Engine::BufferSubAlloc (Patache::Triangle * const triangle)
       vulkan.allocator, triangle->vertex, vulkan.stagingAllocation,
       vulkan.stagingBufferInfo[Patache::VkBufferInfo::eCurrentOffset], size));
 
-  assert (vulkan.renderResult == vk::Result::eSuccess && "Cannot copy data to a staging buffer");
+  assert (vulkan.renderResult == vk::Result::eSuccess
+          && "vmaCopyMemoryToAllocation() Cannot copy data to a staging buffer");
 
   if (vulkan.renderResult != vk::Result::eSuccess)
     {

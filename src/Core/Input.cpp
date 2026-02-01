@@ -3,7 +3,7 @@
 void
 Patache::Engine::HandleEvent (const SDL_Event & rEvent)
 {
-  const bool * const pKeyState = SDL_GetKeyboardState (nullptr);
+  const bool * const pKeyState{ SDL_GetKeyboardState (nullptr) };
 
   switch (rEvent.type)
     {
@@ -25,11 +25,15 @@ Patache::Engine::HandleEvent (const SDL_Event & rEvent)
                       if (!isMaximized)
                         {
                           // From window
-                          for (std::uint8_t i = 0; i < PATACHE_BORDER_CSD_SIZE; ++i)
-                            wl_subsurface_destroy (waylandWindow.pBorderSubSurface[i]);
+                          for (std::uint8_t i{ 0U }; i < PATACHE_BORDER_CSD_SIZE; ++i)
+                            {
+                              wl_subsurface_destroy (waylandWindow.pBorderSubSurface[i]);
+                            }
 
-                          for (std::uint8_t i = 0; i < 3; ++i)
-                            wl_subsurface_destroy (waylandWindow.pButtonSubSurface[i]);
+                          for (std::uint8_t i{ 0U }; i < 3U; ++i)
+                            {
+                              wl_subsurface_destroy (waylandWindow.pButtonSubSurface[i]);
+                            }
 
                           wl_subsurface_destroy (waylandWindow.pMainBarSubSurface);
 
@@ -40,11 +44,11 @@ Patache::Engine::HandleEvent (const SDL_Event & rEvent)
                         {
                           // Por el exigente de weston debo desmaximizar primero y luego debo
                           // solicitar la pantalla completa, no se pueden hacer las 2 cosas en la
-                          // misma funcion. la solicitud para la pantalla completa esta dentro de un
-                          // callback del protocolo wayland
+                          // misma funcion. la solicitud para la pantalla completa esta dentro de
+                          // un callback del protocolo wayland
                           xdg_toplevel_unset_maximized (waylandWindow.pDesktopWindow);
 
-                          for (std::uint8_t i = 0; i < PATACHE_BORDER_CSD_SIZE; ++i)
+                          for (std::uint8_t i{ 0U }; i < PATACHE_BORDER_CSD_SIZE; ++i)
                             {
                               waylandWindow.pBorderSubSurface[i] = wl_subcompositor_get_subsurface (
                                   waylandWindow.pSubCompositor, waylandWindow.pBorderSurface[i],
@@ -57,28 +61,32 @@ Patache::Engine::HandleEvent (const SDL_Event & rEvent)
                     }
 #else
                   // SDL_Window
-                  int                           displaysCount = 0;
-                  SDL_DisplayID *               pDID          = SDL_GetDisplays (&displaysCount);
-                  const SDL_DisplayMode * const pDesktopMode  = SDL_GetDesktopDisplayMode (*pDID);
+                  int displaysCount
+                  {
+                    0U;
+                    SDL_DisplayID *               pDID{ SDL_GetDisplays (&displaysCount) };
+                    const SDL_DisplayMode * const pDesktopMode{ SDL_GetDesktopDisplayMode (*pDID) };
 
-                  if (pDesktopMode != nullptr)
-                    {
-                      if (!SDL_SetWindowFullscreenMode (pGameWindow, pDesktopMode))
-                        std::future<void> err
-                            = std::async (std::launch::async, Patache::ErrorMessage,
-                                          "Unable to apply full screen resolution");
-                    }
-                  else
-                    {
-                      std::future<void> err
-                          = std::async (std::launch::async, Patache::ErrorMessage,
-                                        "Could not obtain Desktop Display Mode mode or "
-                                        "Display ID");
-                    }
+                    if (pDesktopMode != nullptr)
+                      {
+                        if (!SDL_SetWindowFullscreenMode (pGameWindow, pDesktopMode))
+                          {
+                            std::future<void> err{ std::async (
+                                std::launch::async, Patache::ErrorMessage,
+                                "Unable to apply full screen resolution") };
+                          }
+                      }
+                    else
+                      {
+                        std::future<void> err{ std::async (
+                            std::launch::async, Patache::ErrorMessage,
+                            "Could not obtain Desktop Display Mode mode or "
+                            "Display ID") };
+                      }
 
-                  if (!SDL_SetWindowFullscreen (pGameWindow, true))
-                    std::future<void> err = std::async (std::launch::async, Patache::ErrorMessage,
-                                                        "Could not switch to full screen mode");
+                    if (!SDL_SetWindowFullscreen (pGameWindow, true))
+                      std::future<void> err = std::async (std::launch::async, Patache::ErrorMessage,
+                                                          "Could not switch to full screen mode");
 #endif
                 }
               else
@@ -94,7 +102,7 @@ Patache::Engine::HandleEvent (const SDL_Event & rEvent)
                       && waylandWindow.pSubCompositor != nullptr)
                     {
                       // Buttons
-                      for (std::uint8_t i = 0; i < 3; ++i)
+                      for (std::uint8_t i{ 0U }; i < 3U; ++i)
                         {
                           waylandWindow.pButtonSubSurface[i] = wl_subcompositor_get_subsurface (
                               waylandWindow.pSubCompositor, waylandWindow.pButtonSurface[i],
@@ -107,7 +115,7 @@ Patache::Engine::HandleEvent (const SDL_Event & rEvent)
 
                       if (!isMaximized)
                         {
-                          for (std::uint8_t i = 0; i < PATACHE_BORDER_CSD_SIZE; ++i)
+                          for (std::uint8_t i{ 0U }; i < PATACHE_BORDER_CSD_SIZE; ++i)
                             {
                               waylandWindow.pBorderSubSurface[i] = wl_subcompositor_get_subsurface (
                                   waylandWindow.pSubCompositor, waylandWindow.pBorderSurface[i],
@@ -116,10 +124,13 @@ Patache::Engine::HandleEvent (const SDL_Event & rEvent)
                         }
                     }
 #else
-                  // SDL_Window
-                  if (!SDL_SetWindowFullscreen (pGameWindow, false))
-                    std::future<void> err = std::async (std::launch::async, Patache::ErrorMessage,
-                                                        "could not switch to window mode");
+                    // SDL_Window
+                    if (!SDL_SetWindowFullscreen (pGameWindow, false))
+                      {
+                        std::future<void> err{ std::async (std::launch::async,
+                                                           Patache::ErrorMessage,
+                                                           "could not switch to window mode") };
+                      }
 #endif
                   isFullScreen = false;
                 }

@@ -10,7 +10,6 @@
 // Patache Engine
 #include "ColorTerminal.hpp"
 #include "FastIOBuff.hpp"
-#include "LogMacroUtils.hpp"
 
 namespace Patache
 {
