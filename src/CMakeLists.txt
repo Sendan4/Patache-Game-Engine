@@ -288,7 +288,7 @@ endif()
 
 # Link libraries
 target_link_libraries(${PROJECT_NAME} PUBLIC Fast_io SDL3::SDL3 cglm GPUOpen::VulkanMemoryAllocator)
-target_link_libraries(${PROJECT_NAME} PRIVATE ryml::ryml freetype)
+target_link_libraries(${PROJECT_NAME} PRIVATE ryml::ryml freetype Vulkan::UtilityHeaders)
 target_include_directories(${PROJECT_NAME} PRIVATE ${FREETYPE_INCLUDE_DIRS})
 
 if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo")

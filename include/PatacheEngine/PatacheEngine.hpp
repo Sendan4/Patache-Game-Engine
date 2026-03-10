@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <cassert>
 
 // cglm warnings
 #if defined(__GNUC__)
@@ -163,7 +164,7 @@ struct Triangle
                       { { 0.5F, 0.5F }, { 1.0F, 1.0F, 1.0F } },
                       { { -0.5F, 0.5F }, { 1.0F, 1.0F, 1.0F } } };
 
-  vk::DeviceSize   bufferOffset{ 0U };
+  VkDeviceSize     bufferOffset{ 0U };
   static constexpr std::uint_fast64_t size{ sizeof (Patache::Vertex2D) * 3 };
 
   PATACHE_API constexpr void

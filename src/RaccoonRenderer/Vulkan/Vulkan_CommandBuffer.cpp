@@ -3,25 +3,31 @@
 bool
 CreateCommandBuffer (Patache::VulkanBackend & rVulkan)
 {
-  vk::CommandBufferAllocateInfo cmdAllocateInfo{ .level = vk::CommandBufferLevel::ePrimary,
-                                                 .commandBufferCount = 1 };
+  VkCommandBufferAllocateInfo cmdAllocateInfo{ .sType
+                                               = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+                                               .pNext       = nullptr,
+                                               .commandPool = VK_NULL_HANDLE,
+                                               .level       = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
+                                               .commandBufferCount = 1U };
+
+  rVulkan.pCmd = static_cast<VkCommandBuffer *> (
+      std::malloc (sizeof (VkCommandBuffer) * rVulkan.swapchainImageCount));
 
   if (rVulkan.pCmd == nullptr)
     {
-      rVulkan.pCmd = static_cast<vk::CommandBuffer *> (
-          std::malloc (sizeof (vk::CommandBuffer) * rVulkan.swapchainImageCount));
+      return false;
     }
 
-  vk::Result result;
+  VkResult result;
 
   for (std::uint32_t i{ 0U }; i < rVulkan.swapchainImageCount; ++i)
     {
       // Render command buffer
       cmdAllocateInfo.commandPool = rVulkan.pCommandPools[i];
 
-      result = rVulkan.device.allocateCommandBuffers (&cmdAllocateInfo, &rVulkan.pCmd[i]);
+      result = vkAllocateCommandBuffers (rVulkan.device, &cmdAllocateInfo, &rVulkan.pCmd[i]);
 
-      if (result != vk::Result::eSuccess)
+      if (result != VK_SUCCESS)
         {
           char errorText[PATACHE_ERROR_TEXT_SIZE]{ 0 };
 

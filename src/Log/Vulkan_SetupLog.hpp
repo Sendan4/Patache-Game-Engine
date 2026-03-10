@@ -1,10 +1,8 @@
 #pragma once
-#if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
-  #include <cxxabi.h>
-#endif
 
 #include <fast_io.h>
-#include <vulkan/vulkan.hpp>
+#include <vulkan/vulkan.h>
+#include <vulkan/vk_enum_string_helper.h>
 #include "PatacheEngine/VmaUsage.hpp"
 
 // Patache Engine
@@ -13,6 +11,6 @@
 
 namespace Patache
 {
-void VulkanCheck (const char * const, const vk::Result &);
+void VulkanCheck (const char * const, const VkResult &);
 void VulkanList (const char * const List[], const uint32_t &, const char * const);
 }

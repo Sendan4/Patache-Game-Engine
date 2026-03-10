@@ -6,7 +6,7 @@
 #define PATACHE_VERSION_VK_SIZE        20U
 #define PATACHE_DRIVER_VERSION_VK_SIZE 100U
 #define PATACHE_DRIVERID_VK_SIZE       256U
-#define PATACHE_DEVICETYPE_VK_SIZE     32U
+#define PATACHE_DEVICETYPE_VK_SIZE     64U
 #define PATACHE_MEMORY_HOST_VK_SIZE    510U
 
 namespace Patache
@@ -28,7 +28,7 @@ struct EngineInfo
 
 #if __unix__ || __linux__ || __FreeBSD__ || __NetBSD__ || __OpenBSD__ || __bsdi__ || __DragonFly__ \
     || __MidnightBSD__
-  Patache::WindowDecorationType windowDecorationType = Patache::WindowDecorationType::eNone;
+  Patache::WindowDecorationType windowDecorationType{ Patache::WindowDecorationType::eNone };
 #endif
 
   // RaccoonRenderer
@@ -36,15 +36,14 @@ struct EngineInfo
   char versionVK[PATACHE_VERSION_VK_SIZE]{ 0 };
 
   // Device
-  char                          deviceNameVK[VK_MAX_PHYSICAL_DEVICE_NAME_SIZE]{ 0 };
-  std::uint32_t                 deviceVendorIdVK{ 0U };
-  char                          deviceTypeVK[PATACHE_DEVICETYPE_VK_SIZE]{ 0 };
-  vk::PhysicalDeviceProperties2 physicalDeviceProperties;
+  char                        deviceNameVK[VK_MAX_PHYSICAL_DEVICE_NAME_SIZE]{ 0 };
+  std::uint32_t               deviceVendorIdVK{ 0U };
+  char                        deviceTypeVK[PATACHE_DEVICETYPE_VK_SIZE]{ 0 };
+  VkPhysicalDeviceProperties2 physicalDeviceProperties;
 
   // Queue
-  // uint8_t VkQueuesCount = 0
-  float                        queuePriorityVK{ 0.0F };
-  vk::Flags<vk::QueueFlagBits> queueFlagsVK;
+  float        queuePriorityVK{ 0.0F };
+  VkQueueFlags queueFlagsVK;
 
   // Driver
   char driverNameVK[VK_MAX_DRIVER_NAME_SIZE]{ 0 };
@@ -53,10 +52,10 @@ struct EngineInfo
   char driverVersionVK[PATACHE_DRIVER_VERSION_VK_SIZE]{ 0 };
 
   // Swapchain
-  vk::PresentModeKHR swapchainPresentModeVK;
-  vk::Format         swapchainImageColorFormatVK;
-  vk::ColorSpaceKHR  swapchainImageColorSpaceVK;
-  std::uint32_t      minImageCountVK{ 0U }; // Also the actual number of images
+  VkPresentModeKHR swapchainPresentModeVK;
+  VkFormat         swapchainImageColorFormatVK;
+  VkColorSpaceKHR  swapchainImageColorSpaceVK;
+  std::uint32_t    minImageCountVK{ 0U }; // Also the actual number of images
 
   // Extensions
   const char ** ppLayersVK{ nullptr };

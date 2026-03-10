@@ -3,27 +3,27 @@ namespace Patache
 {
 struct VulkanBackend
 {
-  vk::Instance instance{ VK_NULL_HANDLE };
+  VkInstance instance{ VK_NULL_HANDLE };
 
   // Hardware
-  vk::PhysicalDevice     physicalDevice{ VK_NULL_HANDLE };
-  std::uint32_t          graphicsQueueFamilyIndex{ 0U };
-  vk::Queue              queue{ VK_NULL_HANDLE };
-  vk::Device             device{ VK_NULL_HANDLE };
-  vk::PhysicalDeviceType physicalDeviceType{ vk::PhysicalDeviceType::eOther };
+  VkPhysicalDevice     physicalDevice{ VK_NULL_HANDLE };
+  std::uint32_t        graphicsQueueFamilyIndex{ 0U };
+  VkQueue              queue{ VK_NULL_HANDLE };
+  VkDevice             device{ VK_NULL_HANDLE };
+  VkPhysicalDeviceType physicalDeviceType{ VK_PHYSICAL_DEVICE_TYPE_OTHER };
 
   // Window Surface
-  vk::SurfaceKHR surface{ VK_NULL_HANDLE };
+  VkSurfaceKHR surface{ VK_NULL_HANDLE };
 
-  vk::SwapchainKHR swapchain{ VK_NULL_HANDLE };
-  vk::SwapchainKHR oldSwapchain{ VK_NULL_HANDLE };
-  std::uint32_t    imageIndex{ 0U };
-  vk::Extent2D     swapchainExtent{};
+  VkSwapchainKHR swapchain{ VK_NULL_HANDLE };
+  VkSwapchainKHR oldSwapchain{ VK_NULL_HANDLE };
+  std::uint32_t  imageIndex{ 0U };
+  VkExtent2D     swapchainExtent{};
 
   // Color
-  std::uint32_t   swapchainImageCount{ 0U };
-  vk::Image *     pSwapchainImages{ nullptr };
-  vk::ImageView * pSwapchainColorImageViews{ nullptr };
+  std::uint32_t swapchainImageCount{ 0U };
+  VkImage *     pSwapchainImages{ nullptr };
+  VkImageView * pSwapchainColorImageViews{ nullptr };
 
   /*
   Depth buffer will not be useful for now.
@@ -33,68 +33,76 @@ struct VulkanBackend
   displayed correctly over another.
   */
   // Depth
-  vk::Image        depthImage{ VK_NULL_HANDLE };
-  vk::ImageView    depthView{ VK_NULL_HANDLE };
-  vk::DeviceMemory depthMemory{ VK_NULL_HANDLE };
+  VkImage        depthImage{ VK_NULL_HANDLE };
+  VkImageView    depthView{ VK_NULL_HANDLE };
+  VkDeviceMemory depthMemory{ VK_NULL_HANDLE };
 
-  vk::Framebuffer * pSwapchainFrameBuffers{ nullptr };
+  VkFramebuffer * pSwapchainFrameBuffers{ nullptr };
 
   // Commands
-  vk::CommandPool *   pCommandPools{ nullptr };
-  vk::CommandBuffer * pCmd{ nullptr };
+  VkCommandPool *   pCommandPools{ nullptr };
+  VkCommandBuffer * pCmd{ nullptr };
 
-  vk::RenderPass renderPass{ VK_NULL_HANDLE };
+  VkRenderPass renderPass{ VK_NULL_HANDLE };
 
   // Pipeline
-  vk::PipelineLayout pipelineLayout{ VK_NULL_HANDLE };
-  vk::Pipeline       graphicsPipeline{ VK_NULL_HANDLE };
-  vk::PipelineCache  graphicsPipelineCache{ VK_NULL_HANDLE };
+  VkPipelineLayout pipelineLayout{ VK_NULL_HANDLE };
+  VkPipeline       graphicsPipeline{ VK_NULL_HANDLE };
+  VkPipelineCache  graphicsPipelineCache{ VK_NULL_HANDLE };
 
 #if PATACHE_DEBUG == 1
-  vk::DebugUtilsMessengerEXT debugMessenger{ VK_NULL_HANDLE };
+  VkDebugUtilsMessengerEXT debugMessenger{ VK_NULL_HANDLE };
 
   // Imgui
-  vk::PipelineLayout imguiPipeLineLayout{ VK_NULL_HANDLE };
-  vk::Pipeline       imguiPipeLine{ VK_NULL_HANDLE };
+  VkPipelineLayout imguiPipeLineLayout{ VK_NULL_HANDLE };
+  VkPipeline       imguiPipeLine{ VK_NULL_HANDLE };
 
-  vk::PipelineCache  imguiPipelineCache{ VK_NULL_HANDLE };
-  vk::DescriptorPool imguiDescriptorPool{ VK_NULL_HANDLE };
+  VkPipelineCache  imguiPipelineCache{ VK_NULL_HANDLE };
+  VkDescriptorPool imguiDescriptorPool{ VK_NULL_HANDLE };
 #endif
 
   // Synchronization Primitives
-  vk::Semaphore * pImageAvailableSemaphores{ nullptr };
-  vk::Semaphore * pImageFinishedSemaphores{ nullptr };
-  vk::Fence *     pInFlightFences{ nullptr };
+  VkSemaphore * pImageAvailableSemaphores{ nullptr };
+  VkSemaphore * pImageFinishedSemaphores{ nullptr };
+  VkFence *     pInFlightFences{ nullptr };
 
   std::uint8_t currentFrame{ 0U };
 
   // ClearColor
-  vk::ClearValue clearColor{};
+  VkClearValue clearColor{};
 
   // Render Command Buffer Area
-  vk::Rect2D   renderArea{ vk::Offset2D{ 0U, 0U } };
-  vk::Viewport viewport{};
-  vk::Rect2D   scissor{};
+  VkRect2D   renderArea{};
+  VkViewport viewport{};
+  VkRect2D   scissor{};
 
   VmaAllocator allocator;
 
   // Buffer (GPU)
-  vk::Buffer *    pRenderBuffer{ nullptr };
+  VkBuffer *      pRenderBuffer{ nullptr };
   VmaAllocation * pRenderAllocation{ nullptr };
-  vk::DeviceSize  renderBufferInfo[2U]{ 0U, 0U };
+  VkDeviceSize    renderBufferInfo[2U]{ 0U, 0U };
   // Buffer (CPU) CPU -> GPU
-  vk::Buffer     stagingBuffer{ VK_NULL_HANDLE };
-  VmaAllocation  stagingAllocation;
-  vk::DeviceSize stagingBufferInfo[2U]{ 0U, 0U };
+  VkBuffer      stagingBuffer{ VK_NULL_HANDLE };
+  VmaAllocation stagingAllocation;
+  VkDeviceSize  stagingBufferInfo[2U]{ 0U, 0U };
 
-  vk::BufferCopy          bufferCopy{};
-  vk::BufferMemoryBarrier bufferBarrier{};
+  VkBufferCopy          bufferCopy{};
+  VkBufferMemoryBarrier bufferBarrier{ .sType         = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER,
+                                       .pNext         = nullptr,
+                                       .srcAccessMask = 0U,
+                                       .dstAccessMask = 0U,
+                                       .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+                                       .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+                                       .buffer              = VK_NULL_HANDLE,
+                                       .offset              = 0U,
+                                       .size                = 0U };
 
-  std::uint_fast8_t copiesCount{ 0U };
+  std::uint8_t copiesCount{ 0U };
 
   VmaPool renderPool;
 
-  vk::Result renderResult;
+  VkResult renderResult;
 };
 
 enum VkBufferInfo : std::uint_fast8_t
@@ -105,8 +113,8 @@ enum VkBufferInfo : std::uint_fast8_t
 
 struct SwapchainInfo
 {
-  vk::PresentModeKHR presentMode;
-  vk::Format         imageColorFormat{ vk::Format::eUndefined };
-  vk::ColorSpaceKHR  imageColorSpace;
+  VkPresentModeKHR presentMode;
+  VkFormat         imageColorFormat{ VK_FORMAT_UNDEFINED };
+  VkColorSpaceKHR  imageColorSpace;
 };
 }

@@ -487,64 +487,13 @@ Patache::DrawDebugUI (Patache::Engine * const pEngine)
       if (pEngine->debugInfo.deviceTypeVK[0U] != '\0')
         ImGui::Text ("DEVICE TYPE : %s", pEngine->debugInfo.deviceTypeVK);
 
-      // Device Memory Size (VRAM size)
-      ImGui::Text ("DEVICE VRAM : %.2f %s", pEngine->debugInfo.vramSize,
-                   pEngine->debugInfo.vramSizeUnit);
-
       ImGui::Spacing ();
 
       if (ImGui::CollapsingHeader ("DEVICE MEMORY"))
         {
-          if (ImGui::BeginTable ("DeviceMemory##AboutDeviceMemory", 3, PATACHE_IMGUI_TABLE_FLAGS))
-            {
-              ImGui::TableSetupColumn ("TYPE PROPERTY", ImGuiTableColumnFlags_WidthFixed);
-              ImGui::TableSetupColumn ("HEAP", ImGuiTableColumnFlags_WidthFixed);
-              ImGui::TableSetupColumn ("SIZE", ImGuiTableColumnFlags_WidthFixed);
-
-              ImGui::TableHeadersRow ();
-
-              for (std::uint8_t i{ 0U }; i < pEngine->vulkan.swapchainImageCount; ++i)
-                {
-                  ImGui::TableNextRow ();
-
-                  if (pEngine->debugInfo.physicalDeviceProperties.properties.deviceType
-                      == vk::PhysicalDeviceType::eDiscreteGpu)
-                    {
-                      ImGui::TableSetColumnIndex (0);
-                      ImGui::Text ("%s", pEngine->debugInfo.ppVramMemoryDeviceType[i]);
-
-                      ImGui::TableSetColumnIndex (1);
-                      ImGui::Text ("%s", pEngine->debugInfo.ppVramMemoryDeviceHeap[i]);
-
-                      ImGui::TableSetColumnIndex (2);
-                      ImGui::Text ("%.2f %s", *pEngine->debugInfo.ppVramMemoryDeviceSize[i],
-                                   pEngine->debugInfo.ppVramMemoryDeviceSizeUnit[i]);
-                    }
-                }
-
-              // Host memory
-              ImGui::TableNextRow ();
-
-              ImGui::TableSetColumnIndex (0);
-              ImGui::Text ("%s", pEngine->debugInfo.vramMemoryHostType);
-
-              ImGui::TableSetColumnIndex (1);
-              ImGui::Text ("%s", pEngine->debugInfo.vramMemoryHostHeap);
-
-              ImGui::TableSetColumnIndex (2);
-              ImGui::Text ("%.2f %s", pEngine->debugInfo.vramMemoryHostSize,
-                           pEngine->debugInfo.pVramMemoryHostSizeUnit);
-
-              ImGui::EndTable ();
-            }
-
-          ImGui::Text (
-              "vma Pool Size Per Block : %.4f %s * %d", pEngine->debugInfo.vramPoolSizePerBlock,
-              pEngine->debugInfo.pVramPoolSizePerBlockUnit, pEngine->vulkan.swapchainImageCount);
-
-          ImGui::Text ("vma Pool Size of all blocks : %.4f %s",
-                       pEngine->debugInfo.vramPoolSizeAllBlocks,
-                       pEngine->debugInfo.pVramPoolSizeAllBlocksUnit);
+          // Device Memory Size (VRAM size)
+          ImGui::Text ("DEVICE VRAM : %.2f %s", pEngine->debugInfo.vramSize,
+                       pEngine->debugInfo.vramSizeUnit);
 
           ImGui::Spacing ();
         }
@@ -568,39 +517,45 @@ Patache::DrawDebugUI (Patache::Engine * const pEngine)
               // Queue Family Properties
               ImGui::TableSetColumnIndex (1);
 
-              if (pEngine->debugInfo.queueFlagsVK & vk::QueueFlagBits::eGraphics)
-                ImGui::BulletText ("Graphics");
+              if (pEngine->debugInfo.queueFlagsVK & VK_QUEUE_GRAPHICS_BIT)
+                ImGui::BulletText ("VK_QUEUE_GRAPHICS_BIT");
 
-              if (pEngine->debugInfo.queueFlagsVK & vk::QueueFlagBits::eCompute)
-                ImGui::BulletText ("Compute");
+              if (pEngine->debugInfo.queueFlagsVK & VK_QUEUE_COMPUTE_BIT)
+                ImGui::BulletText ("VK_QUEUE_COMPUTE_BIT");
 
-              if (pEngine->debugInfo.queueFlagsVK & vk::QueueFlagBits::eTransfer)
-                ImGui::BulletText ("Transfer");
+              if (pEngine->debugInfo.queueFlagsVK & VK_QUEUE_TRANSFER_BIT)
+                ImGui::BulletText ("VK_QUEUE_TRANSFER_BIT");
 
-              if (pEngine->debugInfo.queueFlagsVK & vk::QueueFlagBits::eSparseBinding)
-                ImGui::BulletText ("Sparse Binding");
+              if (pEngine->debugInfo.queueFlagsVK & VK_QUEUE_SPARSE_BINDING_BIT)
+                ImGui::BulletText ("VK_QUEUE_SPARSE_BINDING_BIT");
 
-              if (pEngine->debugInfo.queueFlagsVK & vk::QueueFlagBits::eProtected)
-                ImGui::BulletText ("Protected");
+              if (pEngine->debugInfo.queueFlagsVK & VK_QUEUE_PROTECTED_BIT)
+                ImGui::BulletText ("VK_QUEUE_PROTECTED_BIT");
 
-              if (pEngine->debugInfo.queueFlagsVK & vk::QueueFlagBits::eVideoDecodeKHR)
-                ImGui::BulletText ("Video Decode KHR");
+              if (pEngine->debugInfo.queueFlagsVK & VK_QUEUE_VIDEO_DECODE_BIT_KHR)
+                ImGui::BulletText ("VK_QUEUE_VIDEO_DECODE_BIT_KHR");
 
-              if (pEngine->debugInfo.queueFlagsVK & vk::QueueFlagBits::eVideoEncodeKHR)
-                ImGui::BulletText ("Video Encode KHR");
+              if (pEngine->debugInfo.queueFlagsVK & VK_QUEUE_VIDEO_ENCODE_BIT_KHR)
+                ImGui::BulletText ("VK_QUEUE_VIDEO_ENCODE_BIT_KHR");
 
-              if (pEngine->debugInfo.queueFlagsVK & vk::QueueFlagBits::eOpticalFlowNV)
-                ImGui::BulletText ("Nvidia Optical Flow");
+              if (pEngine->debugInfo.queueFlagsVK & VK_QUEUE_OPTICAL_FLOW_BIT_NV)
+                ImGui::BulletText ("VK_QUEUE_OPTICAL_FLOW_BIT_NV");
 
               // Queue Priority
               ImGui::TableSetColumnIndex (2);
 
               if (pEngine->debugInfo.queuePriorityVK == 1.0F)
-                ImGui::Text ("%.2f (High)", pEngine->debugInfo.queuePriorityVK);
+                {
+                  ImGui::Text ("%.2f (High)", pEngine->debugInfo.queuePriorityVK);
+                }
               else if (pEngine->debugInfo.queuePriorityVK < 0.4F)
-                ImGui::Text ("%.2f (Low)", pEngine->debugInfo.queuePriorityVK);
+                {
+                  ImGui::Text ("%.2f (Low)", pEngine->debugInfo.queuePriorityVK);
+                }
               else
-                ImGui::Text ("%.2f", pEngine->debugInfo.queuePriorityVK);
+                {
+                  ImGui::Text ("%.2f", pEngine->debugInfo.queuePriorityVK);
+                }
 
               ImGui::EndTable ();
             }
@@ -644,7 +599,9 @@ Patache::DrawDebugUI (Patache::Engine * const pEngine)
 
           // Driver Version
           if (pEngine->debugInfo.driverVersionVK[0U] != '\0')
-            ImGui::Text ("%s", pEngine->debugInfo.driverVersionVK);
+            {
+              ImGui::Text ("%s", pEngine->debugInfo.driverVersionVK);
+            }
 
           ImGui::EndGroup ();
 
@@ -664,18 +621,39 @@ Patache::DrawDebugUI (Patache::Engine * const pEngine)
         }
 
       // Swapchain present mode
-      ImGui::Text ("SWAPCHAIN PRESENT MODE : %s",
-                   vk::to_string (pEngine->debugInfo.swapchainPresentModeVK).c_str ());
 
       // Is vsync?
-      if ((pEngine->debugInfo.swapchainPresentModeVK == vk::PresentModeKHR::eFifo
-           || pEngine->debugInfo.swapchainPresentModeVK == vk::PresentModeKHR::eFifoRelaxed
+      if ((pEngine->debugInfo.swapchainPresentModeVK == VK_PRESENT_MODE_FIFO_KHR
+           || pEngine->debugInfo.swapchainPresentModeVK == VK_PRESENT_MODE_FIFO_RELAXED_KHR
            || pEngine->debugInfo.swapchainPresentModeVK
-                  == vk::PresentModeKHR::eSharedContinuousRefresh)
+                  == VK_PRESENT_MODE_SHARED_CONTINUOUS_REFRESH_KHR)
           && (pEngine->configuration.vsync))
         {
+          ImGui::BeginGroup ();
+          ImGui::Text ("SWAPCHAIN PRESENT MODE :");
           ImGui::SameLine ();
-          ImGui::TextColored (ImVec4 (PATACHE_IMGUI_POSITIVE_VALUE), "Vertical sync");
+          ImGui::TextColored (ImVec4 (PATACHE_IMGUI_POSITIVE_VALUE), "%s",
+                              string_VkPresentModeKHR (pEngine->debugInfo.swapchainPresentModeVK));
+          ImGui::EndGroup ();
+
+          if (ImGui::BeginItemTooltip ())
+            {
+              ImGui::TextColored (ImVec4 (PATACHE_IMGUI_POSITIVE_VALUE), "Vertical sync Active");
+              ImGui::EndTooltip ();
+            }
+        }
+      else
+        {
+          ImGui::BeginGroup ();
+          ImGui::TextColored (ImVec4 (PATACHE_IMGUI_WARNING_VALUE), "%s",
+                              string_VkPresentModeKHR (pEngine->debugInfo.swapchainPresentModeVK));
+          ImGui::EndGroup ();
+
+          if (ImGui::BeginItemTooltip ())
+            {
+              ImGui::TextColored (ImVec4 (PATACHE_IMGUI_WARNING_VALUE), "Vertical sync Inactve");
+              ImGui::EndTooltip ();
+            }
         }
 
       // Image count
@@ -683,11 +661,11 @@ Patache::DrawDebugUI (Patache::Engine * const pEngine)
 
       // Image Color Format
       ImGui::Text ("COLOR FORMAT : %s",
-                   vk::to_string (pEngine->debugInfo.swapchainImageColorFormatVK).c_str ());
+                   string_VkFormat (pEngine->debugInfo.swapchainImageColorFormatVK));
 
       // Image Color Space
       ImGui::Text ("COLOR SPACE : %s",
-                   vk::to_string (pEngine->debugInfo.swapchainImageColorSpaceVK).c_str ());
+                   string_VkColorSpaceKHR (pEngine->debugInfo.swapchainImageColorSpaceVK));
 
       // Drawable Size
       ImGui::Text ("SWAPCHAIN DRAWABLE SIZE : %u x %u", pEngine->vulkan.swapchainExtent.width,

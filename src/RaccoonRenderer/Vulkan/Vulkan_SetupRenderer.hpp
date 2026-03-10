@@ -1,10 +1,9 @@
-#if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
-  #include <cxxabi.h>
-#endif
+#include <cstring>
 #include <future>
 #include <functional>
 
-#include <vulkan/vulkan.hpp>
+#include <vulkan/vulkan.h>
+#include <vulkan/vk_enum_string_helper.h>
 #include "PatacheEngine/VmaUsage.hpp"
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_vulkan.h>
@@ -30,7 +29,7 @@
 // Function pointers
 
 // vkCreateDebugUtilsMessengerEXT
-PFN_vkCreateDebugUtilsMessengerEXT pfnVkCreateDebugUtilsMessengerEXT = nullptr;
+PFN_vkCreateDebugUtilsMessengerEXT pfnVkCreateDebugUtilsMessengerEXT{ nullptr };
 
 VKAPI_ATTR VkResult VKAPI_CALL
 vkCreateDebugUtilsMessengerEXT (VkInstance                                 instance,
@@ -42,7 +41,7 @@ vkCreateDebugUtilsMessengerEXT (VkInstance                                 insta
 }
 
 // vkDestroyDebugUtilsMessengerEXT
-PFN_vkDestroyDebugUtilsMessengerEXT pfnVkDestroyDebugUtilsMessengerEXT = nullptr;
+PFN_vkDestroyDebugUtilsMessengerEXT pfnVkDestroyDebugUtilsMessengerEXT{ nullptr };
 
 VKAPI_ATTR void VKAPI_CALL
 vkDestroyDebugUtilsMessengerEXT (VkInstance instance, VkDebugUtilsMessengerEXT messenger,
@@ -52,11 +51,10 @@ vkDestroyDebugUtilsMessengerEXT (VkInstance instance, VkDebugUtilsMessengerEXT m
 }
 
 // Callback Message function
-VKAPI_ATTR vk::Bool32 VKAPI_CALL
-           DebugMessageFunc (vk::DebugUtilsMessageSeverityFlagBitsEXT       messageSeverity,
-                             vk::DebugUtilsMessageTypeFlagsEXT              messageTypes,
-                             vk::DebugUtilsMessengerCallbackDataEXT const * pCallbackData,
-                             void * /*pUserData*/)
+VKAPI_ATTR VkBool32 VKAPI_CALL
+DebugMessageFunc (VkDebugUtilsMessageSeverityFlagBitsEXT       messageSeverity,
+                  VkDebugUtilsMessageTypeFlagsEXT              messageTypes,
+                  VkDebugUtilsMessengerCallbackDataEXT const * pCallbackData, void * /*pUserData*/)
 {
   fast_io::io::println (PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_BOLD, PATACHE_TERM_COLOR_RED,
                         "Vulkan Validation Layers :", PATACHE_TERM_RESET);
@@ -64,40 +62,56 @@ VKAPI_ATTR vk::Bool32 VKAPI_CALL
   // Message Severity
   switch (messageSeverity)
     {
-    case vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose:
-    case vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo:
-      fast_io::io::println (PATACHE_FASTIO_BUFFOUT, fast_io::mnp::right ("Severity : ", 13),
-                            vk::to_string (messageSeverity));
+    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
+    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
+    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_FLAG_BITS_MAX_ENUM_EXT:
+      fast_io::io::println (
+          PATACHE_FASTIO_BUFFOUT, fast_io::mnp::right ("Severity : ", 13),
+          fast_io::mnp::os_c_str (string_VkDebugUtilsMessageSeverityFlagBitsEXT (messageSeverity)));
       break;
 
-    case vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning:
-      fast_io::io::println (PATACHE_FASTIO_BUFFOUT, fast_io::mnp::right ("Severity : ", 13),
-                            PATACHE_TERM_COLOR_YELLOW, vk::to_string (messageSeverity),
-                            PATACHE_TERM_RESET);
+    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
+      fast_io::io::println (
+          PATACHE_FASTIO_BUFFOUT, fast_io::mnp::right ("Severity : ", 13),
+          PATACHE_TERM_COLOR_YELLOW,
+          fast_io::mnp::os_c_str (string_VkDebugUtilsMessageSeverityFlagBitsEXT (messageSeverity)),
+          PATACHE_TERM_RESET);
       break;
 
-    case vk::DebugUtilsMessageSeverityFlagBitsEXT::eError:
-      fast_io::io::println (PATACHE_FASTIO_BUFFOUT, fast_io::mnp::right ("Severity : ", 13),
-                            PATACHE_TERM_COLOR_RED, vk::to_string (messageSeverity),
-                            PATACHE_TERM_RESET);
+    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
+      fast_io::io::println (
+          PATACHE_FASTIO_BUFFOUT, fast_io::mnp::right ("Severity : ", 13), PATACHE_TERM_COLOR_RED,
+          fast_io::mnp::os_c_str (string_VkDebugUtilsMessageSeverityFlagBitsEXT (messageSeverity)),
+          PATACHE_TERM_RESET);
       break;
     }
 
   // Message Types
-  if (messageTypes & vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral)
-    fast_io::io::println (PATACHE_FASTIO_BUFFOUT, fast_io::mnp::right ("Type : ", 9),
-                          vk::to_string (messageTypes));
+  switch (messageTypes)
+    {
+    case VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT:
+      fast_io::io::println (PATACHE_FASTIO_BUFFOUT, fast_io::mnp::right ("Type : ", 9),
+                            "VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT");
+      break;
 
-  if (messageTypes & vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation
-      || messageTypes & vk::DebugUtilsMessageTypeFlagBitsEXT::eDeviceAddressBinding)
-    fast_io::io::println (PATACHE_FASTIO_BUFFOUT, fast_io::mnp::right ("Type : ", 9),
-                          PATACHE_TERM_COLOR_YELLOW, vk::to_string (messageTypes),
-                          PATACHE_TERM_RESET);
+    case VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT:
+      fast_io::io::println (PATACHE_FASTIO_BUFFOUT, fast_io::mnp::right ("Type : ", 9),
+                            PATACHE_TERM_COLOR_YELLOW,
+                            "VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT", PATACHE_TERM_RESET);
+      break;
 
-  if (messageTypes & vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance)
-    fast_io::io::println (PATACHE_FASTIO_BUFFOUT, fast_io::mnp::right ("Type : ", 9),
-                          PATACHE_TERM_COLOR_BLUE, vk::to_string (messageTypes),
-                          PATACHE_TERM_RESET);
+    case VK_DEBUG_UTILS_MESSAGE_TYPE_DEVICE_ADDRESS_BINDING_BIT_EXT:
+      fast_io::io::println (
+          PATACHE_FASTIO_BUFFOUT, fast_io::mnp::right ("Type : ", 9), PATACHE_TERM_COLOR_YELLOW,
+          "VK_DEBUG_UTILS_MESSAGE_TYPE_DEVICE_ADDRESS_BINDING_BIT_EXT", PATACHE_TERM_RESET);
+      break;
+
+    case VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT:
+      fast_io::io::println (PATACHE_FASTIO_BUFFOUT, fast_io::mnp::right ("Type : ", 9),
+                            PATACHE_TERM_COLOR_BLUE,
+                            "VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT", PATACHE_TERM_RESET);
+      break;
+    }
 
   fast_io::io::println (PATACHE_FASTIO_BUFFOUT, fast_io::mnp::right ("ID Name : ", 12),
                         fast_io::mnp::os_c_str (pCallbackData->pMessageIdName), "\n",

@@ -1,4 +1,5 @@
-#include <vulkan/vulkan.hpp>
+#include <vulkan/vulkan.h>
+#include <vulkan/vk_enum_string_helper.h>
 #include "PatacheEngine/VmaUsage.hpp"
 #include <SDL3/SDL.h>
 #include <imgui.h>

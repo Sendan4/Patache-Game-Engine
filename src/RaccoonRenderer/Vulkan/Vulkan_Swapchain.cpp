@@ -4,25 +4,30 @@ bool
 CreateSwapchain (Patache::Engine * const pEngine, Patache::SwapchainInfo & rSwapchainInfo)
 {
   // Search Presentation modes
-  std::uint32_t        presentModesCount{ 0U };
-  vk::PresentModeKHR * pPresentModes{ nullptr };
+  std::uint32_t presentModesCount{ 0U };
 
-  vk::Result result{ pEngine->vulkan.physicalDevice.getSurfacePresentModesKHR (
-      pEngine->vulkan.surface, &presentModesCount, nullptr) };
+  VkResult result{ vkGetPhysicalDeviceSurfacePresentModesKHR (
+      pEngine->vulkan.physicalDevice, pEngine->vulkan.surface, &presentModesCount, nullptr) };
 
-  if (result != vk::Result::eSuccess)
+  if (result != VK_SUCCESS)
     {
       std::future<void> returnVulkanCheck{ std::async (
           std::launch::async, Patache::VulkanCheck,
           "vkGetPhysicalDeviceSurfacePresentModesKHR() Obtaining the count", result) };
     }
 
-  pPresentModes = new vk::PresentModeKHR[presentModesCount];
+  VkPresentModeKHR * pPresentModes{ static_cast<VkPresentModeKHR *> (
+      std::malloc (sizeof (VkPresentModeKHR) * presentModesCount)) };
 
-  result = pEngine->vulkan.physicalDevice.getSurfacePresentModesKHR (
-      pEngine->vulkan.surface, &presentModesCount, pPresentModes);
+  if (pPresentModes == nullptr)
+    {
+      return false;
+    }
 
-  if (result != vk::Result::eSuccess)
+  result = vkGetPhysicalDeviceSurfacePresentModesKHR (
+      pEngine->vulkan.physicalDevice, pEngine->vulkan.surface, &presentModesCount, pPresentModes);
+
+  if (result != VK_SUCCESS)
     {
       std::future<void> returnVulkanCheck{ std::async (
           std::launch::async, Patache::VulkanCheck, "vkGetPhysicalDeviceSurfacePresentModesKHR()",
@@ -30,25 +35,31 @@ CreateSwapchain (Patache::Engine * const pEngine, Patache::SwapchainInfo & rSwap
     }
 
   // Search for window surface formats
-  std::uint32_t          surfaceFormatsCount{ 0U };
-  vk::SurfaceFormatKHR * pSurfaceFormats{ nullptr };
+  std::uint32_t surfaceFormatsCount{ 0U };
 
-  result = pEngine->vulkan.physicalDevice.getSurfaceFormatsKHR (pEngine->vulkan.surface,
-                                                                &surfaceFormatsCount, nullptr);
+  result = vkGetPhysicalDeviceSurfaceFormatsKHR (
+      pEngine->vulkan.physicalDevice, pEngine->vulkan.surface, &surfaceFormatsCount, nullptr);
 
-  if (result != vk::Result::eSuccess)
+  if (result != VK_SUCCESS)
     {
       std::future<void> returnVulkanCheck{ std::async (
           std::launch::async, Patache::VulkanCheck,
           "vkGetPhysicalDeviceSurfaceFormatsKHR() Obtaining the count", result) };
     }
 
-  pSurfaceFormats = new vk::SurfaceFormatKHR[surfaceFormatsCount];
+  VkSurfaceFormatKHR * pSurfaceFormats{ static_cast<VkSurfaceFormatKHR *> (
+      std::malloc (sizeof (VkSurfaceFormatKHR) * surfaceFormatsCount)) };
 
-  result = pEngine->vulkan.physicalDevice.getSurfaceFormatsKHR (
-      pEngine->vulkan.surface, &surfaceFormatsCount, pSurfaceFormats);
+  if (pSurfaceFormats == nullptr)
+    {
+      return false;
+    }
 
-  if (result != vk::Result::eSuccess)
+  result = vkGetPhysicalDeviceSurfaceFormatsKHR (pEngine->vulkan.physicalDevice,
+                                                 pEngine->vulkan.surface, &surfaceFormatsCount,
+                                                 pSurfaceFormats);
+
+  if (result != VK_SUCCESS)
     {
       std::future<void> returnVulkanCheck{ std::async (std::launch::async, Patache::VulkanCheck,
                                                        "vkGetPhysicalDeviceSurfaceFormatsKHR()",
@@ -65,7 +76,7 @@ CreateSwapchain (Patache::Engine * const pEngine, Patache::SwapchainInfo & rSwap
       std::launch::async,
       [&pEngine] (void)
         {
-          int w = 1, h = 1;
+          int w{ 1 }, h{ 1 };
           SDL_GetWindowSizeInPixels (pEngine->pGameWindow, &w, &h);
 
           pEngine->vulkan.swapchainExtent.width  = w;
@@ -82,23 +93,23 @@ CreateSwapchain (Patache::Engine * const pEngine, Patache::SwapchainInfo & rSwap
 
   Finding a Present Mode
   */
-  vk::PresentModeKHR selectedPresentMode{ vk::PresentModeKHR::eFifo };
-  bool               found{ false };
+  VkPresentModeKHR selectedPresentMode{ VK_PRESENT_MODE_FIFO_KHR };
+  bool             found{ false };
 
   if (!pEngine->configuration.vsync)
     {
       // No Vsync
       for (std::uint8_t i{ 0U }; i < presentModesCount; ++i)
         {
-          if (pPresentModes[i] == vk::PresentModeKHR::eMailbox)
+          if (pPresentModes[i] == VK_PRESENT_MODE_MAILBOX_KHR)
             {
-              selectedPresentMode = vk::PresentModeKHR::eMailbox;
+              selectedPresentMode = VK_PRESENT_MODE_MAILBOX_KHR;
               found               = true;
               break;
             }
-          else if (pPresentModes[i] == vk::PresentModeKHR::eImmediate)
+          else if (pPresentModes[i] == VK_PRESENT_MODE_IMMEDIATE_KHR)
             {
-              selectedPresentMode = vk::PresentModeKHR::eImmediate;
+              selectedPresentMode = VK_PRESENT_MODE_IMMEDIATE_KHR;
               found               = true;
               break;
             }
@@ -109,21 +120,25 @@ CreateSwapchain (Patache::Engine * const pEngine, Patache::SwapchainInfo & rSwap
       // Vsync
       for (std::uint8_t i{ 0U }; i < presentModesCount; ++i)
         {
-          if (pPresentModes[i] == vk::PresentModeKHR::eFifo)
+          if (pPresentModes[i] == VK_PRESENT_MODE_FIFO_KHR)
             {
               found = true;
               break;
             }
-          else if (pPresentModes[i] == vk::PresentModeKHR::eFifoRelaxed)
+          else if (pPresentModes[i] == VK_PRESENT_MODE_FIFO_RELAXED_KHR)
             {
-              selectedPresentMode = vk::PresentModeKHR::eFifoRelaxed;
+              selectedPresentMode = VK_PRESENT_MODE_FIFO_RELAXED_KHR;
               found               = true;
               break;
             }
         }
     }
 
-  delete[] pPresentModes;
+  if (pPresentModes != nullptr)
+    {
+      std::free (pPresentModes);
+      pPresentModes = nullptr;
+    }
 
   if (!found)
     {
@@ -135,7 +150,7 @@ CreateSwapchain (Patache::Engine * const pEngine, Patache::SwapchainInfo & rSwap
     }
 
   // Finding a surface format.
-  vk::SurfaceFormatKHR selectedSurfaceFormat;
+  VkSurfaceFormatKHR selectedSurfaceFormat;
   found = false;
 
   for (std::uint32_t i{ 0U }; i < surfaceFormatsCount; ++i)
@@ -143,8 +158,8 @@ CreateSwapchain (Patache::Engine * const pEngine, Patache::SwapchainInfo & rSwap
       if (pEngine->configuration.bitDepth10)
         {
           // 10 Bits
-          if (pSurfaceFormats[i].format == vk::Format::eA2B10G10R10UnormPack32
-              || pSurfaceFormats[i].format == vk::Format::eA2R10G10B10UnormPack32)
+          if (pSurfaceFormats[i].format == VK_FORMAT_A2B10G10R10_UNORM_PACK32
+              || pSurfaceFormats[i].format == VK_FORMAT_A2R10G10B10_UNORM_PACK32)
             {
               selectedSurfaceFormat = pSurfaceFormats[i];
               found                 = true;
@@ -154,8 +169,8 @@ CreateSwapchain (Patache::Engine * const pEngine, Patache::SwapchainInfo & rSwap
       else
         {
           // 8 Bits
-          if (pSurfaceFormats[i].format == vk::Format::eB8G8R8A8Unorm
-              || pSurfaceFormats[i].format == vk::Format::eR8G8B8A8Unorm)
+          if (pSurfaceFormats[i].format == VK_FORMAT_B8G8R8A8_UNORM
+              || pSurfaceFormats[i].format == VK_FORMAT_R8G8B8A8_UNORM)
             {
               selectedSurfaceFormat = pSurfaceFormats[i];
               found                 = true;
@@ -164,7 +179,11 @@ CreateSwapchain (Patache::Engine * const pEngine, Patache::SwapchainInfo & rSwap
         }
     }
 
-  delete[] pSurfaceFormats;
+  if (pSurfaceFormats == nullptr)
+    {
+      std::free (pSurfaceFormats);
+      pSurfaceFormats = nullptr;
+    }
 
   if (!found)
     {
@@ -175,12 +194,12 @@ CreateSwapchain (Patache::Engine * const pEngine, Patache::SwapchainInfo & rSwap
       return false;
     }
 
-  vk::SurfaceCapabilitiesKHR surfaceCapabilities;
+  VkSurfaceCapabilitiesKHR surfaceCapabilities{};
 
-  result = pEngine->vulkan.physicalDevice.getSurfaceCapabilitiesKHR (pEngine->vulkan.surface,
-                                                                     &surfaceCapabilities);
+  result = vkGetPhysicalDeviceSurfaceCapabilitiesKHR (
+      pEngine->vulkan.physicalDevice, pEngine->vulkan.surface, &surfaceCapabilities);
 
-  if (result != vk::Result::eSuccess)
+  if (result != VK_SUCCESS)
     {
       std::future<void> returnVulkanCheck{ std::async (
           std::launch::async, Patache::VulkanCheck, "vkGetPhysicalDeviceSurfaceCapabilitiesKHR()",
@@ -200,28 +219,31 @@ CreateSwapchain (Patache::Engine * const pEngine, Patache::SwapchainInfo & rSwap
 #endif
 
   // Create SwapChain
-  const vk::SwapchainCreateInfoKHR swapchainCreateInfo{
+  const VkSwapchainCreateInfoKHR swapchainCreateInfo{
+    .sType            = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
+    .pNext            = nullptr,
+    .flags            = 0U,
     .surface          = pEngine->vulkan.surface,
     .minImageCount    = (surfaceCapabilities.minImageCount + pEngine->configuration.addImageCount),
     .imageFormat      = selectedSurfaceFormat.format,
-    .imageColorSpace  = vk::ColorSpaceKHR::eSrgbNonlinear,
+    .imageColorSpace  = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR,
     .imageExtent      = pEngine->vulkan.swapchainExtent,
     .imageArrayLayers = 1U,
-    .imageUsage = vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eTransferDst,
-    .imageSharingMode      = vk::SharingMode::eExclusive,
+    .imageUsage       = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT,
+    .imageSharingMode = VK_SHARING_MODE_EXCLUSIVE,
     .queueFamilyIndexCount = 1U,
     .pQueueFamilyIndices   = &pEngine->vulkan.graphicsQueueFamilyIndex,
     .preTransform          = surfaceCapabilities.currentTransform,
-    .compositeAlpha        = vk::CompositeAlphaFlagBitsKHR::eOpaque,
+    .compositeAlpha        = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
     .presentMode           = selectedPresentMode,
     .clipped               = VK_TRUE,
     .oldSwapchain          = pEngine->vulkan.oldSwapchain
   };
 
-  result = pEngine->vulkan.device.createSwapchainKHR (&swapchainCreateInfo, nullptr,
-                                                      &pEngine->vulkan.swapchain);
+  result = vkCreateSwapchainKHR (pEngine->vulkan.device, &swapchainCreateInfo, nullptr,
+                                 &pEngine->vulkan.swapchain);
 
-  if (result != vk::Result::eSuccess)
+  if (result != VK_SUCCESS)
     {
       std::future<void> returnVulkanCheck{ std::async (std::launch::async, Patache::VulkanCheck,
                                                        "vkCreateSwapchainKHR()", result) };
@@ -239,29 +261,39 @@ CreateSwapchain (Patache::Engine * const pEngine, Patache::SwapchainInfo & rSwap
         {
           rSwapchainInfo.presentMode      = selectedPresentMode;
           rSwapchainInfo.imageColorFormat = selectedSurfaceFormat.format;
-          rSwapchainInfo.imageColorSpace  = vk::ColorSpaceKHR::eSrgbNonlinear;
+          rSwapchainInfo.imageColorSpace  = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
         }) };
 
-  // SwapChain Images
-  result = pEngine->vulkan.device.getSwapchainImagesKHR (
-      pEngine->vulkan.swapchain, &pEngine->vulkan.swapchainImageCount, nullptr);
+  // Swapchain Images
+  result = vkGetSwapchainImagesKHR (pEngine->vulkan.device, pEngine->vulkan.swapchain,
+                                    &pEngine->vulkan.swapchainImageCount, nullptr);
 
-  if (result != vk::Result::eSuccess)
+  if (result != VK_SUCCESS)
     {
       std::future<void> returnVulkanCheck{ std::async (
           std::launch::async, Patache::VulkanCheck, "vkGetSwapchainImagesKHR() Obtaining the count",
           result) };
     }
 
+  // TODO: no destruir la memoria de las imagenes rapidamente
+  if (pEngine->vulkan.pSwapchainImages != nullptr)
+    {
+      std::free (pEngine->vulkan.pSwapchainImages);
+    }
+
+  pEngine->vulkan.pSwapchainImages = static_cast<VkImage *> (
+      std::malloc (sizeof (VkImage) * pEngine->vulkan.swapchainImageCount));
+
   if (pEngine->vulkan.pSwapchainImages == nullptr)
-    pEngine->vulkan.pSwapchainImages
-        = new vk::Image[pEngine->vulkan.swapchainImageCount](VK_NULL_HANDLE);
+    {
+      return false;
+    }
 
-  result = pEngine->vulkan.device.getSwapchainImagesKHR (pEngine->vulkan.swapchain,
-                                                         &pEngine->vulkan.swapchainImageCount,
-                                                         pEngine->vulkan.pSwapchainImages);
+  result = vkGetSwapchainImagesKHR (pEngine->vulkan.device, pEngine->vulkan.swapchain,
+                                    &pEngine->vulkan.swapchainImageCount,
+                                    pEngine->vulkan.pSwapchainImages);
 
-  if (result != vk::Result::eSuccess)
+  if (result != VK_SUCCESS)
     {
       std::future<void> returnVulkanCheck{ std::async (std::launch::async, Patache::VulkanCheck,
                                                        "vkGetSwapchainImagesKHR()", result) };
@@ -276,9 +308,9 @@ CreateSwapchain (Patache::Engine * const pEngine, Patache::SwapchainInfo & rSwap
 void
 RecreateSwapchain (Patache::Engine * const pEngine)
 {
-  vk::Result result{ pEngine->vulkan.device.waitIdle () };
+  VkResult result{ vkDeviceWaitIdle (pEngine->vulkan.device) };
 
-  if (result != vk::Result::eSuccess)
+  if (result != VK_SUCCESS)
     {
       std::future<void> returnVulkanCheck{ std::async (std::launch::async, Patache::VulkanCheck,
                                                        "vkDeviceWaitIdle()", result) };
@@ -296,12 +328,14 @@ RecreateSwapchain (Patache::Engine * const pEngine)
         {
           for (std::uint8_t i{ 0U }; i < pEngine->vulkan.swapchainImageCount; ++i)
             {
-              pEngine->vulkan.device.destroyFramebuffer (pEngine->vulkan.pSwapchainFrameBuffers[i]);
-              pEngine->vulkan.device.destroyImageView (
-                  pEngine->vulkan.pSwapchainColorImageViews[i]);
-              pEngine->vulkan.device.destroySemaphore (
-                  pEngine->vulkan.pImageAvailableSemaphores[i]);
-              pEngine->vulkan.device.destroySemaphore (pEngine->vulkan.pImageFinishedSemaphores[i]);
+              vkDestroyFramebuffer (pEngine->vulkan.device,
+                                    pEngine->vulkan.pSwapchainFrameBuffers[i], nullptr);
+              vkDestroyImageView (pEngine->vulkan.device,
+                                  pEngine->vulkan.pSwapchainColorImageViews[i], nullptr);
+              vkDestroySemaphore (pEngine->vulkan.device,
+                                  pEngine->vulkan.pImageAvailableSemaphores[i], nullptr);
+              vkDestroySemaphore (pEngine->vulkan.device,
+                                  pEngine->vulkan.pImageFinishedSemaphores[i], nullptr);
             }
         }) };
 
@@ -335,7 +369,7 @@ RecreateSwapchain (Patache::Engine * const pEngine)
   std::future<bool> createSemaphores_Async{ std::async (std::launch::async, CreateSemaphores,
                                                         std::ref (pEngine->vulkan)) };
 
-  pEngine->vulkan.device.destroySwapchainKHR (pEngine->vulkan.oldSwapchain);
+  vkDestroySwapchainKHR (pEngine->vulkan.device, pEngine->vulkan.oldSwapchain, nullptr);
   pEngine->vulkan.oldSwapchain = VK_NULL_HANDLE;
 
   createFrameBuffer_Async.wait ();

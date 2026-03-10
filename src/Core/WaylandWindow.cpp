@@ -4,7 +4,7 @@ bool
 CreateWaylandWindow (const std::uint32_t & rWidth, const std::uint32_t & rHeight,
                      const char * const pWindowTitle, Patache::Engine * const pEngine)
 {
-  wl_registry * pRegistry = nullptr;
+  wl_registry * pRegistry{ nullptr };
 
   // Display Connect
   pEngine->waylandWindow.pDisplay = wl_display_connect (nullptr);

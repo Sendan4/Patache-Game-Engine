@@ -3,14 +3,22 @@
 bool
 CreateFrameBuffer (Patache::VulkanBackend & rVulkan)
 {
-  if (rVulkan.pSwapchainFrameBuffers == nullptr)
-    rVulkan.pSwapchainFrameBuffers = new vk::Framebuffer[rVulkan.swapchainImageCount];
+  rVulkan.pSwapchainFrameBuffers = static_cast<VkFramebuffer *> (
+      std::malloc (sizeof (VkFramebuffer) * rVulkan.swapchainImageCount));
 
-  vk::Result result;
+  if (rVulkan.pSwapchainFrameBuffers == nullptr)
+    {
+      return false;
+    }
+
+  VkResult result;
 
   for (std::uint8_t i{ 0U }; i < rVulkan.swapchainImageCount; ++i)
     {
-      const vk::FramebufferCreateInfo frameBufferInfo{
+      const VkFramebufferCreateInfo frameBufferInfo{
+        .sType           = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
+        .pNext           = nullptr,
+        .flags           = 0U,
         .renderPass      = rVulkan.renderPass,
         .attachmentCount = 1U,
         .pAttachments    = &rVulkan.pSwapchainColorImageViews[i],
@@ -19,10 +27,10 @@ CreateFrameBuffer (Patache::VulkanBackend & rVulkan)
         .layers          = 1U,
       };
 
-      result = rVulkan.device.createFramebuffer (&frameBufferInfo, nullptr,
-                                                 &rVulkan.pSwapchainFrameBuffers[i]);
+      result = vkCreateFramebuffer (rVulkan.device, &frameBufferInfo, nullptr,
+                                    &rVulkan.pSwapchainFrameBuffers[i]);
 
-      if (result != vk::Result::eSuccess)
+      if (result != VK_SUCCESS)
         {
           char errorText[PATACHE_ERROR_TEXT_SIZE]{ 0 };
 
@@ -35,5 +43,6 @@ CreateFrameBuffer (Patache::VulkanBackend & rVulkan)
           return false;
         }
     }
+
   return true;
 }

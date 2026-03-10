@@ -1,4 +1,4 @@
-#include <vulkan/vulkan.hpp>
+#include <vulkan/vulkan.h>
 #include "PatacheEngine/VmaUsage.hpp"
 #include <SDL3/SDL.h>
 
@@ -14,19 +14,19 @@ Patache::Engine::BufferSubAlloc (Patache::Triangle * const triangle)
 
   static constexpr std::uint_fast64_t size{ sizeof (Patache::Vertex2D) * 3 };
 
-  vulkan.renderResult = static_cast<vk::Result> (vmaCopyMemoryToAllocation (
+  vulkan.renderResult = vmaCopyMemoryToAllocation (
       vulkan.allocator, triangle->vertex, vulkan.stagingAllocation,
-      vulkan.stagingBufferInfo[Patache::VkBufferInfo::eCurrentOffset], size));
+      vulkan.stagingBufferInfo[Patache::VkBufferInfo::eCurrentOffset], size);
 
-  assert (vulkan.renderResult == vk::Result::eSuccess
+  assert (vulkan.renderResult == VK_SUCCESS
           && "vmaCopyMemoryToAllocation() Cannot copy data to a staging buffer");
 
-  if (vulkan.renderResult != vk::Result::eSuccess)
+  if (vulkan.renderResult != VK_SUCCESS)
     {
       return false;
     }
 
-  if (vulkan.physicalDeviceType != vk::PhysicalDeviceType::eDiscreteGpu)
+  if (vulkan.physicalDeviceType != VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)
     {
       triangle->bufferOffset = vulkan.stagingBufferInfo[Patache::VkBufferInfo::eCurrentOffset];
     }

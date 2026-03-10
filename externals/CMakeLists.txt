@@ -103,6 +103,20 @@ else()
 endif()
 
 message("")
+message("  - Vulkan Utility Libraries -")
+
+if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/Vulkan-Utility-Libraries/)
+  add_subdirectory(Vulkan-Utility-Libraries)
+else()
+  FetchContent_Declare(
+    Vulkan-Utility-Libraries
+    GIT_REPOSITORY https://github.com/KhronosGroup/Vulkan-Utility-Libraries.git
+  	GIT_TAG v1.4.315
+  )
+  FetchContent_MakeAvailable(Vulkan-Utility-Libraries)
+endif()
+
+message("")
 message("  - Glslang -")
 set (CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})

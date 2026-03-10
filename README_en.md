@@ -39,6 +39,7 @@ _Dumb and simple 2D game engine made in C++. The goal is to do fast, lightweight
 	- [Vulkan-Headers](https://github.com/KhronosGroup/Vulkan-Headers.git)
 	- [Vulkan-Loader](https://github.com/KhronosGroup/Vulkan-Loader.git)
 	- [Vulkan-Validation-Layers](https://github.com/KhronosGroup/Vulkan-ValidationLayers.git)
+	- [Vulkan-Utility-Libraries](https://github.com/KhronosGroup/Vulkan-Utility-Libraries.git) *modified*
     - [VulkanMemoryAllocator](https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git)
 	- [Glslang](https://github.com/KhronosGroup/glslang.git)
 - [fast_io](https://github.com/cppfastio/fast_io.git)

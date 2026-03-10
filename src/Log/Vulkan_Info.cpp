@@ -6,23 +6,31 @@ VulkanInfo (Patache::Engine * const pEngine, const Patache::SwapchainInfo & rSwa
   fast_io::io::println (PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_BOLD, PATACHE_TERM_COLOR_PATACHE,
                         "Raccoon Renderer ", PATACHE_TERM_RESET, "INFO");
 
-  vk::PhysicalDeviceDriverProperties driver{};
+  VkPhysicalDeviceDriverProperties driver{ .sType
+                                           = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DRIVER_PROPERTIES,
+                                           .pNext = nullptr,
+                                           .driverID{},
+                                           .driverName{},
+                                           .driverInfo{},
+                                           .conformanceVersion{} };
+  VkPhysicalDeviceProperties2      physicalDeviceProperties{
+         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2, .pNext = &driver, .properties{}
+  };
+  vkGetPhysicalDeviceProperties2 (pEngine->vulkan.physicalDevice, &physicalDeviceProperties);
 
-  vk::PhysicalDeviceProperties2 physicalDeviceProperties{};
-  physicalDeviceProperties.pNext = &driver;
-  pEngine->vulkan.physicalDevice.getProperties2 (&physicalDeviceProperties);
+  std::uint64_t vramSizeTmp{ 0U };
+  double        vramSize{ 0.0F };
+  const char *  vramSizeUnit{ "Byte" };
 
-  std::uint64_t vramSizeTmp  = 0U;
-  double        vramSize     = 0.0F;
-  const char *  vramSizeUnit = "Byte";
-
-  vk::PhysicalDeviceMemoryProperties memProperties{};
-  pEngine->vulkan.physicalDevice.getMemoryProperties (&memProperties);
+  VkPhysicalDeviceMemoryProperties memProperties{};
+  vkGetPhysicalDeviceMemoryProperties (pEngine->vulkan.physicalDevice, &memProperties);
 
   for (std::uint32_t i = 0; i < memProperties.memoryHeapCount; ++i)
     {
-      if (memProperties.memoryHeaps[i].flags & vk::MemoryHeapFlagBits::eDeviceLocal)
-        vramSizeTmp += static_cast<std::uint64_t> (memProperties.memoryHeaps[i].size);
+      if (memProperties.memoryHeaps[i].flags & VK_MEMORY_HEAP_DEVICE_LOCAL_BIT)
+        {
+          vramSizeTmp += static_cast<std::uint64_t> (memProperties.memoryHeaps[i].size);
+        }
     }
 
 #if PATACHE_DEBUG == 1
@@ -39,8 +47,7 @@ VulkanInfo (Patache::Engine * const pEngine, const Patache::SwapchainInfo & rSwa
                  VK_API_VERSION_VARIANT (physicalDeviceProperties.properties.apiVersion));
 
   // Vulkan Device Name
-  PATACHE_STRNCPY (pEngine->debugInfo.deviceNameVK,
-                   physicalDeviceProperties.properties.deviceName.data (),
+  PATACHE_STRNCPY (pEngine->debugInfo.deviceNameVK, physicalDeviceProperties.properties.deviceName,
                    VK_MAX_PHYSICAL_DEVICE_NAME_SIZE, VK_MAX_EXTENSION_NAME_SIZE);
 
   // Vulkan Device Vendor ID
@@ -49,20 +56,20 @@ VulkanInfo (Patache::Engine * const pEngine, const Patache::SwapchainInfo & rSwa
 
   // Vulkan Device Type
   PATACHE_STRNCPY (pEngine->debugInfo.deviceTypeVK,
-                   vk::to_string (physicalDeviceProperties.properties.deviceType).c_str (),
+                   string_VkPhysicalDeviceType (physicalDeviceProperties.properties.deviceType),
                    PATACHE_DEVICETYPE_VK_SIZE - 1, PATACHE_DEVICETYPE_VK_SIZE);
 
   // Vulkan Driver Name
-  PATACHE_STRNCPY (pEngine->debugInfo.driverNameVK, driver.driverName.data (),
-                   VK_MAX_DRIVER_NAME_SIZE, VK_MAX_EXTENSION_NAME_SIZE);
+  PATACHE_STRNCPY (pEngine->debugInfo.driverNameVK, driver.driverName, VK_MAX_DRIVER_NAME_SIZE,
+                   VK_MAX_EXTENSION_NAME_SIZE);
 
   // Vulkan Driver ID
-  PATACHE_STRNCPY (pEngine->debugInfo.driverIdVK, vk::to_string (driver.driverID).c_str (),
+  PATACHE_STRNCPY (pEngine->debugInfo.driverIdVK, string_VkDriverId (driver.driverID),
                    PATACHE_DRIVERID_VK_SIZE - 1, PATACHE_DRIVERID_VK_SIZE);
 
   // Vulkan Driver Info
-  PATACHE_STRNCPY (pEngine->debugInfo.driverInfoVK, driver.driverInfo.data (),
-                   VK_MAX_DRIVER_INFO_SIZE, VK_MAX_EXTENSION_NAME_SIZE);
+  PATACHE_STRNCPY (pEngine->debugInfo.driverInfoVK, driver.driverInfo, VK_MAX_DRIVER_INFO_SIZE,
+                   VK_MAX_EXTENSION_NAME_SIZE);
 
   // Vulkan Driver Version
   std::snprintf (pEngine->debugInfo.driverVersionVK, PATACHE_DRIVER_VERSION_VK_SIZE, "%u.%u.%u.%u",
@@ -255,7 +262,8 @@ END_CHECK_SIZE_UNIT:
   // Device Type
   fast_io::io::println (PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_BOLD,
                         fast_io::mnp::right ("Type : ", 11U), PATACHE_TERM_RESET,
-                        vk::to_string (physicalDeviceProperties.properties.deviceType));
+                        fast_io::mnp::os_c_str (string_VkPhysicalDeviceType (
+                            physicalDeviceProperties.properties.deviceType)));
 
   // =================== Device Vram Size =========================
   fast_io::io::println (PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_RESET, PATACHE_TERM_BOLD,
@@ -275,7 +283,7 @@ END_CHECK_SIZE_UNIT:
   // =================== Driver ID ================================
   fast_io::io::println (PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_BOLD,
                         fast_io::mnp::right ("ID : ", 9U), PATACHE_TERM_RESET,
-                        vk::to_string (driver.driverID));
+                        fast_io::mnp::os_c_str (string_VkDriverId (driver.driverID)));
 
   // =================== Driver Info ==============================
   fast_io::io::println (PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_BOLD,
@@ -297,16 +305,21 @@ END_CHECK_SIZE_UNIT:
   // =================== Swapchain Present Mode ===================
   fast_io::io::print (PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_BOLD,
                       fast_io::mnp::right ("Present Mode : ", 19U), PATACHE_TERM_RESET,
-                      vk::to_string (rSwapchainInfo.presentMode), " ");
+                      fast_io::mnp::os_c_str (string_VkPresentModeKHR (rSwapchainInfo.presentMode)),
+                      " ");
 
   // Vulkan Vsync
-  if ((rSwapchainInfo.presentMode == vk::PresentModeKHR::eFifo
-       || rSwapchainInfo.presentMode == vk::PresentModeKHR::eFifoRelaxed)
+  if ((rSwapchainInfo.presentMode == VK_PRESENT_MODE_FIFO_KHR
+       || rSwapchainInfo.presentMode == VK_PRESENT_MODE_FIFO_RELAXED_KHR)
       && pEngine->configuration.vsync)
-    fast_io::io::println (PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_COLOR_GREEN, "Vertical Sync",
-                          PATACHE_TERM_RESET);
+    {
+      fast_io::io::println (PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_COLOR_GREEN, "Vertical Sync",
+                            PATACHE_TERM_RESET);
+    }
   else
-    fast_io::io::println (PATACHE_FASTIO_BUFFOUT);
+    {
+      fast_io::io::println (PATACHE_FASTIO_BUFFOUT);
+    }
 
   // =================== Swapchain Images =========================
   fast_io::io::println (PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_BOLD,
@@ -316,12 +329,13 @@ END_CHECK_SIZE_UNIT:
   // =================== Swapchain Image Color Format =============
   fast_io::io::println (PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_BOLD,
                         fast_io::mnp::right ("Surface Color Format : ", 27U), PATACHE_TERM_RESET,
-                        vk::to_string (rSwapchainInfo.imageColorFormat));
+                        fast_io::mnp::os_c_str (string_VkFormat (rSwapchainInfo.imageColorFormat)));
 
   // =================== Swapchain Image Color Format =============
-  fast_io::io::println (PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_BOLD,
-                        fast_io::mnp::right ("Surface Color Space : ", 26U), PATACHE_TERM_RESET,
-                        vk::to_string (rSwapchainInfo.imageColorSpace), "\n");
+  fast_io::io::println (
+      PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_BOLD,
+      fast_io::mnp::right ("Surface Color Space : ", 26U), PATACHE_TERM_RESET,
+      fast_io::mnp::os_c_str (string_VkColorSpaceKHR (rSwapchainInfo.imageColorSpace)), "\n");
 
   // =================== Debug ====================================
 #if PATACHE_DEBUG == 1

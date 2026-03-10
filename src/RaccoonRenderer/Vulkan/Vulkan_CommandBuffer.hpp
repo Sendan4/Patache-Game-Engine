@@ -1,7 +1,7 @@
 #include <future>
 #include <cstdio>
 
-#include <vulkan/vulkan.hpp>
+#include <vulkan/vulkan.h>
 #include "PatacheEngine/VmaUsage.hpp"
 
 // Patache Engine
@@ -10,4 +10,4 @@
 
 bool CreateCommandBuffer (Patache::VulkanBackend &);
 
-#define PATACHE_ERROR_TEXT_SIZE 64
+#define PATACHE_ERROR_TEXT_SIZE 70

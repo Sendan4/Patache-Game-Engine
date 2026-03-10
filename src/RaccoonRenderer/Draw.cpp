@@ -1,4 +1,4 @@
-#include <vulkan/vulkan.hpp>
+#include <vulkan/vulkan.h>
 #include "PatacheEngine/VmaUsage.hpp"
 #include <SDL3/SDL.h>
 
@@ -14,16 +14,16 @@ Patache::Engine::Draw (Patache::Triangle * const triangle)
       triangle != nullptr
       && "Patache engine pointer in Patache::Triangle::Draw() cannot be null pointer (nullptr)");
 
-  if (vulkan.physicalDeviceType != vk::PhysicalDeviceType::eDiscreteGpu)
+  if (vulkan.physicalDeviceType != VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)
     {
-      vulkan.pCmd[vulkan.currentFrame].bindVertexBuffers (0, 1, &vulkan.stagingBuffer,
-                                                          &triangle->bufferOffset);
+      vkCmdBindVertexBuffers (vulkan.pCmd[vulkan.currentFrame], 0U, 1U, &vulkan.stagingBuffer,
+                              &triangle->bufferOffset);
     }
   else
     {
-      vulkan.pCmd[vulkan.currentFrame].bindVertexBuffers (
-          0, 1, &vulkan.pRenderBuffer[vulkan.currentFrame], &triangle->bufferOffset);
+      vkCmdBindVertexBuffers (vulkan.pCmd[vulkan.currentFrame], 0U, 1U,
+                              &vulkan.pRenderBuffer[vulkan.currentFrame], &triangle->bufferOffset);
     }
 
-  vulkan.pCmd[vulkan.currentFrame].draw (3, 1, 0, 0);
+  vkCmdDraw (vulkan.pCmd[vulkan.currentFrame], 3U, 1U, 0U, 0U);
 }

@@ -3,23 +3,35 @@
 bool
 CreateSemaphores (Patache::VulkanBackend & rVulkan)
 {
-  static constexpr vk::SemaphoreCreateInfo semaphoreInfo{};
+  static constexpr VkSemaphoreCreateInfo semaphoreInfo{
+    .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO, .pNext = nullptr, .flags = 0U
+  };
 
-  vk::Result result;
+  VkResult result;
+
+  rVulkan.pImageAvailableSemaphores = static_cast<VkSemaphore *> (
+      std::malloc (sizeof (VkSemaphore) * rVulkan.swapchainImageCount));
 
   if (rVulkan.pImageAvailableSemaphores == nullptr)
-    rVulkan.pImageAvailableSemaphores = new vk::Semaphore[rVulkan.swapchainImageCount];
+    {
+      return false;
+    }
+
+  rVulkan.pImageFinishedSemaphores = static_cast<VkSemaphore *> (
+      std::malloc (sizeof (VkSemaphore) * rVulkan.swapchainImageCount));
 
   if (rVulkan.pImageFinishedSemaphores == nullptr)
-    rVulkan.pImageFinishedSemaphores = new vk::Semaphore[rVulkan.swapchainImageCount];
+    {
+      return false;
+    }
 
   for (std::uint32_t i{ 0U }; i < rVulkan.swapchainImageCount; ++i)
     {
       // ImageAvailableSemaphore
-      result = rVulkan.device.createSemaphore (&semaphoreInfo, nullptr,
-                                               &rVulkan.pImageAvailableSemaphores[i]);
+      result = vkCreateSemaphore (rVulkan.device, &semaphoreInfo, nullptr,
+                                  &rVulkan.pImageAvailableSemaphores[i]);
 
-      if (result != vk::Result::eSuccess)
+      if (result != VK_SUCCESS)
         {
           char errorText[PATACHE_ERROR_TEXT_SIZE]{ 0 };
 
@@ -33,10 +45,10 @@ CreateSemaphores (Patache::VulkanBackend & rVulkan)
         }
 
       // ImageFinishedSemaphore
-      result = rVulkan.device.createSemaphore (&semaphoreInfo, nullptr,
-                                               &rVulkan.pImageFinishedSemaphores[i]);
+      result = vkCreateSemaphore (rVulkan.device, &semaphoreInfo, nullptr,
+                                  &rVulkan.pImageFinishedSemaphores[i]);
 
-      if (result != vk::Result::eSuccess)
+      if (result != VK_SUCCESS)
         {
           char errorText[PATACHE_ERROR_TEXT_SIZE]{ 0 };
 
@@ -56,18 +68,25 @@ CreateSemaphores (Patache::VulkanBackend & rVulkan)
 bool
 CreateFence (Patache::VulkanBackend & rVulkan)
 {
-  constexpr vk::FenceCreateInfo fenceInfo{ .flags = vk::FenceCreateFlagBits::eSignaled };
+  static constexpr VkFenceCreateInfo fenceInfo{ .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
+                                                .pNext = nullptr,
+                                                .flags = VK_FENCE_CREATE_SIGNALED_BIT };
 
-  vk::Result result;
+  VkResult result;
+
+  rVulkan.pInFlightFences
+      = static_cast<VkFence *> (std::malloc (sizeof (VkFence) * rVulkan.swapchainImageCount));
 
   if (rVulkan.pInFlightFences == nullptr)
-    rVulkan.pInFlightFences = new vk::Fence[rVulkan.swapchainImageCount];
+    {
+      return false;
+    }
 
   for (std::uint32_t i{ 0U }; i < rVulkan.swapchainImageCount; ++i)
     {
-      result = rVulkan.device.createFence (&fenceInfo, nullptr, &rVulkan.pInFlightFences[i]);
+      result = vkCreateFence (rVulkan.device, &fenceInfo, nullptr, &rVulkan.pInFlightFences[i]);
 
-      if (result != vk::Result::eSuccess)
+      if (result != VK_SUCCESS)
         {
           char errorText[PATACHE_ERROR_TEXT_SIZE]{ 0 };
 

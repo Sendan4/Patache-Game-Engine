@@ -61,32 +61,32 @@ Patache::Engine::HandleEvent (const SDL_Event & rEvent)
                     }
 #else
                   // SDL_Window
-                  int displaysCount
-                  {
-                    0U;
-                    SDL_DisplayID *               pDID{ SDL_GetDisplays (&displaysCount) };
-                    const SDL_DisplayMode * const pDesktopMode{ SDL_GetDesktopDisplayMode (*pDID) };
+                  int                           displaysCount{ 0U };
+                  SDL_DisplayID *               pDID{ SDL_GetDisplays (&displaysCount) };
+                  const SDL_DisplayMode * const pDesktopMode{ SDL_GetDesktopDisplayMode (*pDID) };
 
-                    if (pDesktopMode != nullptr)
-                      {
-                        if (!SDL_SetWindowFullscreenMode (pGameWindow, pDesktopMode))
-                          {
-                            std::future<void> err{ std::async (
-                                std::launch::async, Patache::ErrorMessage,
-                                "Unable to apply full screen resolution") };
-                          }
-                      }
-                    else
-                      {
-                        std::future<void> err{ std::async (
-                            std::launch::async, Patache::ErrorMessage,
-                            "Could not obtain Desktop Display Mode mode or "
-                            "Display ID") };
-                      }
+                  if (pDesktopMode != nullptr)
+                    {
+                      if (!SDL_SetWindowFullscreenMode (pGameWindow, pDesktopMode))
+                        {
+                          std::future<void> err{ std::async (
+                              std::launch::async, Patache::ErrorMessage,
+                              "Unable to apply full screen resolution") };
+                        }
+                    }
+                  else
+                    {
+                      std::future<void> err{ std::async (
+                          std::launch::async, Patache::ErrorMessage,
+                          "Could not obtain Desktop Display Mode mode or "
+                          "Display ID") };
+                    }
 
-                    if (!SDL_SetWindowFullscreen (pGameWindow, true))
-                      std::future<void> err = std::async (std::launch::async, Patache::ErrorMessage,
-                                                          "Could not switch to full screen mode");
+                  if (!SDL_SetWindowFullscreen (pGameWindow, true))
+                    {
+                      std::future<void> err{ std::async (std::launch::async, Patache::ErrorMessage,
+                                                         "Could not switch to full screen mode") };
+                    }
 #endif
                 }
               else
@@ -124,13 +124,12 @@ Patache::Engine::HandleEvent (const SDL_Event & rEvent)
                         }
                     }
 #else
-                    // SDL_Window
-                    if (!SDL_SetWindowFullscreen (pGameWindow, false))
-                      {
-                        std::future<void> err{ std::async (std::launch::async,
-                                                           Patache::ErrorMessage,
-                                                           "could not switch to window mode") };
-                      }
+                  // SDL_Window
+                  if (!SDL_SetWindowFullscreen (pGameWindow, false))
+                    {
+                      std::future<void> err{ std::async (std::launch::async, Patache::ErrorMessage,
+                                                         "could not switch to window mode") };
+                    }
 #endif
                   isFullScreen = false;
                 }
