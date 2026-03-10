@@ -33,7 +33,6 @@ _Motor de videojuegos 2D tonto y simple hecho con C++. El objetivo es hacerlo ra
 - almenos 200 MiB de memoria RAM disponible.
 - almenos 14 GiB de espacio libre para los binarios y el codigo fuente (incluido todas las caracteristicas de depuracion).
 
-<!---->
 ## Dependencias
 - [SDL3](http://www.libsdl.org/)
 - [Vulkan](https://www.vulkan.org/)
