@@ -36,8 +36,6 @@ InitImGuiCore (const Patache::Config & rConfiguration, Patache::EngineInfo & rDe
   // FontConfig.FontBuilderFlags |= ImGuiFreeTypeBuilderFlags_LoadColor;
   // FontConfig.MergeMode = true;
 
-  rIO.Fonts->Build ();
-
   // General styles
   ImGui::StyleColorsDark ();
   ImGui::GetStyle ().FrameRounding                   = 0.0F;
@@ -91,12 +89,13 @@ CreateImguiDescriptorPool (Patache::VulkanBackend & rVulkan)
     }
 
   constexpr VkDescriptorPoolSize poolSize{ .type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-                                           .descriptorCount = 1U };
+                                           .descriptorCount
+                                           = IMGUI_IMPL_VULKAN_MINIMUM_IMAGE_SAMPLER_POOL_SIZE };
 
   const VkDescriptorPoolCreateInfo info{ .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
                                          .pNext = nullptr,
                                          .flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT,
-                                         .maxSets       = 1U,
+                                         .maxSets       = 2U,
                                          .poolSizeCount = 1U,
                                          .pPoolSizes    = &poolSize };
 
@@ -174,25 +173,33 @@ InitImGuiVulkan (Patache::Engine * const pEngine)
       return false;
     }
 
-  ImGui_ImplVulkan_InitInfo info{ .ApiVersion          = VK_API_VERSION_1_3,
-                                  .Instance            = pEngine->vulkan.instance,
-                                  .PhysicalDevice      = pEngine->vulkan.physicalDevice,
-                                  .Device              = pEngine->vulkan.device,
-                                  .QueueFamily         = pEngine->vulkan.graphicsQueueFamilyIndex,
-                                  .Queue               = pEngine->vulkan.queue,
-                                  .DescriptorPool      = pEngine->vulkan.imguiDescriptorPool,
-                                  .RenderPass          = pEngine->vulkan.renderPass,
-                                  .MinImageCount       = surfaceCapabilities.minImageCount,
-                                  .ImageCount          = pEngine->vulkan.swapchainImageCount,
-                                  .MSAASamples         = VK_SAMPLE_COUNT_1_BIT,
-                                  .PipelineCache       = pEngine->vulkan.imguiPipelineCache,
-                                  .Subpass             = 0U,
-                                  .DescriptorPoolSize  = 0U,
+  ImGui_ImplVulkan_InitInfo info{ .ApiVersion         = VK_API_VERSION_1_3,
+                                  .Instance           = pEngine->vulkan.instance,
+                                  .PhysicalDevice     = pEngine->vulkan.physicalDevice,
+                                  .Device             = pEngine->vulkan.device,
+                                  .QueueFamily        = pEngine->vulkan.graphicsQueueFamilyIndex,
+                                  .Queue              = pEngine->vulkan.queue,
+                                  .DescriptorPool     = pEngine->vulkan.imguiDescriptorPool,
+                                  .DescriptorPoolSize = 0U,
+                                  .MinImageCount      = surfaceCapabilities.minImageCount,
+                                  .ImageCount         = pEngine->vulkan.swapchainImageCount,
+                                  .PipelineCache      = pEngine->vulkan.imguiPipelineCache,
+                                  .PipelineInfoMain{
+                                      .RenderPass  = pEngine->vulkan.renderPass,
+                                      .Subpass     = 0U,
+                                      .MSAASamples = VK_SAMPLE_COUNT_1_BIT,
+#ifdef IMGUI_IMPL_VULKAN_HAS_DYNAMIC_RENDERING
+                                      .PipelineRenderingCreateInfo{},
+#endif
+                                      .SwapChainImageUsage = 0U,
+                                  },
+                                  .PipelineInfoForViewports{},
                                   .UseDynamicRendering = false,
-                                  .PipelineRenderingCreateInfo{},
-                                  .Allocator         = nullptr,
-                                  .CheckVkResultFn   = nullptr,
-                                  .MinAllocationSize = 1048576U };
+                                  .Allocator           = nullptr,
+                                  .CheckVkResultFn     = nullptr,
+                                  .MinAllocationSize   = 1048576U,
+                                  .CustomShaderVertCreateInfo{},
+                                  .CustomShaderFragCreateInfo{} };
 
   if (!ImGui_ImplVulkan_Init (&info))
     {

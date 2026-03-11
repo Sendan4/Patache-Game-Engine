@@ -356,5 +356,5 @@ else()
 endif()
 
 if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo")
-    add_subdirectory(imgui)
+	  add_subdirectory(imgui)
 endif()

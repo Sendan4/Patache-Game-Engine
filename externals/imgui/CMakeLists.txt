@@ -1,11 +1,18 @@
 cmake_minimum_required(VERSION 3.18)
 
-project("Imgui" LANGUAGES CXX C VERSION 1.91.7)
+project("Imgui" LANGUAGES CXX C VERSION "1.92.6")
 
-set(Imgui_VERSION "1.91.9" CACHE INTERNAL "Imgui version")
+set(Imgui_VERSION "v1.92.6-docking" CACHE INTERNAL "Imgui version")
 
 message("")
 message("  - ImGui -")
+
+FetchContent_Declare(
+    imgui
+    GIT_REPOSITORY https://github.com/ocornut/imgui.git
+    GIT_TAG ${Imgui_VERSION}
+)
+FetchContent_MakeAvailable(imgui)
 
 include(CheckIncludeFile)
 
@@ -24,7 +31,7 @@ if (BUILD_SHARED_LIBS AND NOT MSVC)
 	message(STATUS "Library Type : Shared")
 	add_library(${PROJECT_NAME} SHARED)
 
-    if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+  if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 		target_compile_options(${PROJECT_NAME} PRIVATE "-fPIC")
 		message(STATUS "Build With Position Independent Code")
 	endif()
@@ -35,12 +42,12 @@ endif()
 
 if (NOT MSVC OR MSYS AND CMAKE_SYSTEM_NAME STREQUAL "Windows")
 	enable_language(RC)
-    target_sources(${PROJECT_NAME} PRIVATE "imgui.rc")
+  target_sources(${PROJECT_NAME} PRIVATE "imgui.rc")
 endif()
 
-target_include_directories(${PROJECT_NAME} PUBLIC ".")
-target_include_directories(${PROJECT_NAME} PUBLIC "backends/")
-target_include_directories(${PROJECT_NAME} PUBLIC "misc/freetype")
+target_include_directories(${PROJECT_NAME} PUBLIC "${imgui_SOURCE_DIR}")
+target_include_directories(${PROJECT_NAME} PUBLIC "${imgui_SOURCE_DIR}/backends/")
+target_include_directories(${PROJECT_NAME} PUBLIC "${imgui_SOURCE_DIR}/misc/freetype")
 
 # Link Libraries
 if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" OR
@@ -52,18 +59,18 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" OR
 	# build Vulkan
 	target_link_libraries(${PROJECT_NAME} PRIVATE vulkan Vulkan::Headers)
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
-    # Link Vulkan from SDK
+  # Link Vulkan from SDK
 	find_package(Vulkan REQUIRED)
 
 	set (VULKANSDK_LIBS_PATH "${Vulkan_LIBRARIES}")
 	string(REPLACE "vulkan-1.lib" "" VULKANSDK_LIBS_PATH ${VULKANSDK_LIBS_PATH})
 	string(STRIP VULKANSDK_LIBS_PATH ${VULKANSDK_LIBS_PATH})
 
-    target_link_libraries(${PROJECT_NAME} PRIVATE
+  target_link_libraries(${PROJECT_NAME} PRIVATE
 		-lvulkan-1
 		-L${VULKANSDK_LIBS_PATH})
 
-    target_include_directories(${PROJECT_NAME} PUBLIC "${Vulkan_INCLUDE_DIRS}")
+  target_include_directories(${PROJECT_NAME} PUBLIC "${Vulkan_INCLUDE_DIRS}")
 endif()
 
 # Move this binaries to a build dir instead of bin build
@@ -83,11 +90,13 @@ set_target_properties(${PROJECT_NAME}
 	VERSION "${Imgui_VERSION}")
 
 target_sources(${PROJECT_NAME} PRIVATE
-	"imgui.cpp"
-	"imgui_demo.cpp"
-	"imgui_draw.cpp"
-	"imgui_tables.cpp"
-	"imgui_widgets.cpp"
-	"backends/imgui_impl_sdl3.cpp"
-	"backends/imgui_impl_vulkan.cpp"
-	"misc/freetype/imgui_freetype.cpp")
+	"${imgui_SOURCE_DIR}/imgui.cpp"
+	"${imgui_SOURCE_DIR}/imgui_demo.cpp"
+	"${imgui_SOURCE_DIR}/imgui_draw.cpp"
+	"${imgui_SOURCE_DIR}/imgui_tables.cpp"
+	"${imgui_SOURCE_DIR}/imgui_widgets.cpp"
+	"${imgui_SOURCE_DIR}/backends/imgui_impl_sdl3.cpp"
+	"${imgui_SOURCE_DIR}/backends/imgui_impl_vulkan.cpp"
+	"${imgui_SOURCE_DIR}/misc/freetype/imgui_freetype.cpp")
+
+write_file("${imgui_SOURCE_DIR}/imconfig.h" "#define IMGUI_ENABLE_FREETYPE" APPEND)
