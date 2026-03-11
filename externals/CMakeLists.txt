@@ -12,7 +12,7 @@ set (RYML_DEV OFF CACHE INTERNAL "..." FORCE)
 set (RYML_DEFAULT_CALLBACK_USES_EXCEPTIONS OFF CACHE INTERNAL "..." FORCE)
 set (RYML_INSTALL OFF CACHE INTERNAL "..." FORCE)
 
-if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/rapidyaml/)
+if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/rapidyaml/CMakeLists.txt)
     add_subdirectory(rapidyaml)
 else()
     FetchContent_Declare(
@@ -45,7 +45,7 @@ if (MSVC OR CMAKE_SYSTEM_NAME STREQUAL "Linux" OR
 
     message("")
     message("  - Vulkan Headers -")
-    if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/Vulkan-Headers/)
+    if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/Vulkan-Headers/CMakeLists.txt)
     	add_subdirectory(Vulkan-Headers)
     else()
     	FetchContent_Declare(
@@ -59,7 +59,7 @@ if (MSVC OR CMAKE_SYSTEM_NAME STREQUAL "Linux" OR
     message("")
     message("  - Vulkan Loader -")
    
-    if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/Vulkan-Loader/)
+    if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/Vulkan-Loader/CMakeLists.txt)
     	add_subdirectory(Vulkan-Loader)
     else()
     	FetchContent_Declare(
@@ -89,7 +89,7 @@ message("")
 message("  - Vulkan Memory Allocator -")
 set (VMA_BUILD_SAMPLES OFF CACHE BOOL "..." FORCE)
 
-if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/VulkanMemoryAllocator/)
+if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/VulkanMemoryAllocator/CMakeLists.txt)
     add_subdirectory(VulkanMemoryAllocator)
 else()
     FetchContent_Declare(
@@ -103,7 +103,7 @@ endif()
 message("")
 message("  - Vulkan Utility Libraries -")
 
-if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/Vulkan-Utility-Libraries/)
+if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/Vulkan-Utility-Libraries/CMakeLists.txt)
     add_subdirectory(Vulkan-Utility-Libraries)
 else()
     FetchContent_Declare(
@@ -128,7 +128,7 @@ set (ENABLE_SPVREMAPPER OFF CACHE INTERNAL "..." FORCE)
 set (ALLOW_EXTERNAL_SPIRV_TOOLS OFF CACHE INTERNAL "..." FORCE)
 set (BUILD_EXTERNAL ON CACHE INTERNAL "..." FORCE)
 
-if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/glslang)
+if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/glslang/CMakeLists.txt)
     find_package(Python 3 REQUIRED COMPONENTS Interpreter)
 
     execute_process(
@@ -166,7 +166,7 @@ else()
     set (CGLM_STATIC ON CACHE INTERNAL "..." FORCE)
 endif()
 
-if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/cglm/)
+if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/cglm/CMakeLists.txt)
     add_subdirectory(cglm)
 else() 
     FetchContent_Declare(
@@ -322,7 +322,7 @@ if (CMAKE_SYSTEM_NAME STREQUAL "Linux" OR
     set (SDL_X11_SHARED OFF CACHE INTERNAL "..." FORCE)
 endif ()
 
-if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/SDL/)
+if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/SDL/CMakeLists.txt)
     add_subdirectory(SDL)
 else() 
     FetchContent_Declare(
@@ -342,7 +342,7 @@ set (FT_DISABLE_PNG ON CACHE INTERNAL "..." FORCE)
 set (FT_DISABLE_HARFBUZZ ON CACHE INTERNAL "..." FORCE)
 set (FT_DISABLE_BROTLI ON CACHE INTERNAL "..." FORCE)
 
-if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/freetype/)
+if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/freetype/CMakeLists.txt)
     add_subdirectory(freetype)
 else() 
     FetchContent_Declare(

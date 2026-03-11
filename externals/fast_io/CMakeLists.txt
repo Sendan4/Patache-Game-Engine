@@ -13,7 +13,7 @@ target_compile_definitions(${PROJECT_NAME} INTERFACE FAST_IO_OPTIMIZE_TIME)
 
 message(STATUS "Header-Only Library")
 
-if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/fast_io/)
+if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/fast_io/include)
     target_include_directories(${PROJECT_NAME} INTERFACE "fast_io/include/")
 else()
     FetchContent_Declare(
