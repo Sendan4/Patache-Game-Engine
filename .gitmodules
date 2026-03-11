@@ -30,3 +30,6 @@
 	path = externals/cglm
 	url = https://github.com/recp/cglm.git
 	branch = v0.9.6
+[submodule "externals/fast_io/fast_io"]
+	path = externals/fast_io/fast_io
+	url = https://github.com/cppfastio/fast_io.git

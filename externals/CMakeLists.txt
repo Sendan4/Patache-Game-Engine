@@ -2,8 +2,6 @@
 set (FETCHCONTENT_QUIET OFF)
 include(FetchContent)
 
-message("")
-message("  - Fast_io -")
 add_subdirectory(fast_io)
 
 # RapidYaml
@@ -15,7 +13,7 @@ set (RYML_DEFAULT_CALLBACK_USES_EXCEPTIONS OFF CACHE INTERNAL "..." FORCE)
 set (RYML_INSTALL OFF CACHE INTERNAL "..." FORCE)
 
 if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/rapidyaml/)
-        add_subdirectory(rapidyaml)
+    add_subdirectory(rapidyaml)
 else()
     FetchContent_Declare(
         RapidYaml
@@ -65,9 +63,9 @@ if (MSVC OR CMAKE_SYSTEM_NAME STREQUAL "Linux" OR
     	add_subdirectory(Vulkan-Loader)
     else()
     	FetchContent_Declare(
-      		Vulkan-Loader
-      		GIT_REPOSITORY https://github.com/KhronosGroup/Vulkan-Loader.git
-      		GIT_TAG v1.4.315
+      	    Vulkan-Loader
+      	    GIT_REPOSITORY https://github.com/KhronosGroup/Vulkan-Loader.git
+      	    GIT_TAG v1.4.315
     	)
     	FetchContent_MakeAvailable(Vulkan-Loader)
     endif()
@@ -106,14 +104,14 @@ message("")
 message("  - Vulkan Utility Libraries -")
 
 if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/Vulkan-Utility-Libraries/)
-  add_subdirectory(Vulkan-Utility-Libraries)
+    add_subdirectory(Vulkan-Utility-Libraries)
 else()
-  FetchContent_Declare(
-    Vulkan-Utility-Libraries
-    GIT_REPOSITORY https://github.com/KhronosGroup/Vulkan-Utility-Libraries.git
+    FetchContent_Declare(
+        Vulkan-Utility-Libraries
+        GIT_REPOSITORY https://github.com/KhronosGroup/Vulkan-Utility-Libraries.git
   	GIT_TAG v1.4.315
-  )
-  FetchContent_MakeAvailable(Vulkan-Utility-Libraries)
+    )
+    FetchContent_MakeAvailable(Vulkan-Utility-Libraries)
 endif()
 
 message("")
@@ -131,7 +129,7 @@ set (ALLOW_EXTERNAL_SPIRV_TOOLS OFF CACHE INTERNAL "..." FORCE)
 set (BUILD_EXTERNAL ON CACHE INTERNAL "..." FORCE)
 
 if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/glslang)
-   find_package(Python 3 REQUIRED COMPONENTS Interpreter)
+    find_package(Python 3 REQUIRED COMPONENTS Interpreter)
 
     execute_process(
         COMMAND ${Python_EXECUTABLE} update_glslang_sources.py
@@ -356,5 +354,5 @@ else()
 endif()
 
 if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo")
-	  add_subdirectory(imgui)
+    add_subdirectory(imgui)
 endif()

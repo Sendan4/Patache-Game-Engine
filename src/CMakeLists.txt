@@ -1,3 +1,4 @@
+#
 if (BUILD_SHARED_LIBS)
     add_library(${PROJECT_NAME} SHARED)
 else()
@@ -287,12 +288,12 @@ if (TARGET asm_offset)
 endif()
 
 # Link libraries
-target_link_libraries(${PROJECT_NAME} PUBLIC Fast_io SDL3::SDL3 cglm GPUOpen::VulkanMemoryAllocator)
+target_link_libraries(${PROJECT_NAME} PUBLIC fast_io SDL3::SDL3 cglm GPUOpen::VulkanMemoryAllocator)
 target_link_libraries(${PROJECT_NAME} PRIVATE ryml::ryml freetype Vulkan::UtilityHeaders)
 target_include_directories(${PROJECT_NAME} PRIVATE ${FREETYPE_INCLUDE_DIRS})
 
 if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo")
-    target_link_libraries(${PROJECT_NAME} PUBLIC Imgui)
+    target_link_libraries(${PROJECT_NAME} PUBLIC imgui)
 endif()
 
 # MSVC Folders
