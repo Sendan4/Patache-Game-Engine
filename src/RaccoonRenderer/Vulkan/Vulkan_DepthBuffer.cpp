@@ -78,7 +78,7 @@ CreateDepthBuffer (Patache::VulkanBackend & rVulkan, Patache::Config & rConfigur
   VkPhysicalDeviceMemoryProperties2 memoryProperties{};
   vkGetPhysicalDeviceMemoryProperties2 (rVulkan.physicalDevice, &memoryProperties);
 
-  VkMemoryRequirements  mr;
+  VkMemoryRequirements  mr{};
   VkMemoryRequirements2 memoryRequirements{};
   memoryRequirements.memoryRequirements = mr;
 

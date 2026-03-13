@@ -1,4 +1,3 @@
-#
 if (BUILD_SHARED_LIBS)
     add_library(${PROJECT_NAME} SHARED)
 else()
@@ -8,6 +7,10 @@ endif()
 add_subdirectory(RaccoonRenderer/Shaders)
 
 add_dependencies(${PROJECT_NAME} PatacheFiles PatacheCompileShaders)
+
+if (NOT MSVC AND ${FORMAT_IN_BUILD_TIME})
+    add_dependencies(${PROJECT_NAME} PatacheClangFormat)
+endif()
 
 target_sources (${PROJECT_NAME} PRIVATE
     "Core/PatacheEngine.cpp"
@@ -23,8 +26,8 @@ target_sources (${PROJECT_NAME} PRIVATE
     "RaccoonRenderer/Vulkan/Vulkan_SincronizationPrimitives.cpp"
     "RaccoonRenderer/Vulkan/Vulkan_Render.cpp"
     "RaccoonRenderer/Vulkan/VmaUsage.cpp"
-		"RaccoonRenderer/BufferSubAllocation.cpp"
-		"RaccoonRenderer/Draw.cpp"
+    "RaccoonRenderer/BufferSubAllocation.cpp"
+    "RaccoonRenderer/Draw.cpp"
     "Log/Message.cpp"
     "Log/StartLogInfo.cpp"
     "Log/Vulkan_SetupLog.cpp"
@@ -504,7 +507,7 @@ if (MSVC)
 
     #Imgui
     if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo")
-        set_target_properties(Imgui PROPERTIES FOLDER "Engine/Dependencies")
+        set_target_properties(imgui PROPERTIES FOLDER "Engine/Dependencies")
     endif()
 endif()
 

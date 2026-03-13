@@ -128,7 +128,7 @@ CreateImguiPipelineCache (Patache::VulkanBackend & rVulkan)
   constexpr VkPipelineCacheCreateInfo info{ .sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO,
                                             .pNext = nullptr,
                                             .flags = 0U,
-                                            .initialDataSize = 0ZU,
+                                            .initialDataSize = 0U,
                                             .pInitialData    = nullptr };
 
   const VkResult result{ vkCreatePipelineCache (rVulkan.device, &info, nullptr,

@@ -9,7 +9,8 @@ set(Fast_io_BRANCH "master" CACHE INTERNAL "Git branch")
 
 add_library(${PROJECT_NAME} INTERFACE)
 
-target_compile_definitions(${PROJECT_NAME} INTERFACE FAST_IO_OPTIMIZE_TIME)
+target_compile_definitions(${PROJECT_NAME} INTERFACE
+    FAST_IO_OPTIMIZE_TIME)
 
 message(STATUS "Header-Only Library")
 

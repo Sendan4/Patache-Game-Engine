@@ -150,7 +150,7 @@ CreateSwapchain (Patache::Engine * const pEngine, Patache::SwapchainInfo & rSwap
     }
 
   // Finding a surface format.
-  VkSurfaceFormatKHR selectedSurfaceFormat;
+  VkSurfaceFormatKHR selectedSurfaceFormat{};
   found = false;
 
   for (std::uint32_t i{ 0U }; i < surfaceFormatsCount; ++i)

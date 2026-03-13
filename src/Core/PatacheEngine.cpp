@@ -170,9 +170,9 @@ Patache::Engine::Init (const Patache::EngineCreateInfo & rInfo)
     if (rInfo.pWindowIconPath != nullptr)
       {
         char path[512U]{ 0 };
-        PATACHE_STRNCPY (path, SDL_GetBasePath (), 511ZU, 512ZU);
-        PATACHE_STRNCAT (path, "/", 511ZU, 512ZU);
-        PATACHE_STRNCAT (path, rInfo.pWindowIconPath, 511ZU, 512ZU);
+        PATACHE_STRNCPY (path, SDL_GetBasePath (), 511U, 512U);
+        PATACHE_STRNCAT (path, "/", 511U, 512U);
+        PATACHE_STRNCAT (path, rInfo.pWindowIconPath, 511U, 512U);
 
         pWindowIcon = SDL_LoadBMP (path);
       }

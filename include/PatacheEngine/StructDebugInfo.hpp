@@ -39,7 +39,9 @@ struct EngineInfo
   char                        deviceNameVK[VK_MAX_PHYSICAL_DEVICE_NAME_SIZE]{ 0 };
   std::uint32_t               deviceVendorIdVK{ 0U };
   char                        deviceTypeVK[PATACHE_DEVICETYPE_VK_SIZE]{ 0 };
-  VkPhysicalDeviceProperties2 physicalDeviceProperties;
+  VkPhysicalDeviceProperties2 physicalDeviceProperties{
+    .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2, .pNext = nullptr, .properties{}
+  };
 
   // Queue
   float        queuePriorityVK{ 0.0F };

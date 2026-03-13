@@ -104,13 +104,17 @@ message("")
 message("  - Vulkan Utility Libraries -")
 
 if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/Vulkan-Utility-Libraries/CMakeLists.txt)
+    set (UPDATE_DEPS ON CACHE INTERNAL "..." FORCE)
     add_subdirectory(Vulkan-Utility-Libraries)
 else()
+    set (UPDATE_DEPS ON CACHE INTERNAL "..." FORCE)
+
     FetchContent_Declare(
         Vulkan-Utility-Libraries
         GIT_REPOSITORY https://github.com/KhronosGroup/Vulkan-Utility-Libraries.git
   	GIT_TAG v1.4.315
     )
+
     FetchContent_MakeAvailable(Vulkan-Utility-Libraries)
 endif()
 

@@ -14,6 +14,10 @@ add_custom_command(
 
 file(GLOB ShaderFiles "*.vert" "*.frag")
 
+list(LENGTH ShaderFiles ShaderCount)
+
+set(ShaderIterator 1)
+
 # Build Shaders
 foreach(SHADER ${ShaderFiles})
     get_filename_component(ShaderFileName ${SHADER} NAME)
@@ -21,6 +25,9 @@ foreach(SHADER ${ShaderFiles})
     add_custom_command(
         POST_BUILD
         TARGET PatacheCompileShaders
-        COMMAND $<TARGET_FILE:glslang-standalone> ${SHADER} -o ${OUTPUT_DIR}/${ShaderFileName}.spv -V)
+				COMMAND ${CMAKE_COMMAND} -E cmake_echo_color --blue --bold "[${ShaderIterator}/${ShaderCount}] Building SPIR-V object ${ShaderFileName}.spv"
+        COMMAND $<TARGET_FILE:glslang-standalone> ${SHADER} -o ${OUTPUT_DIR}/${ShaderFileName}.spv -V -lto --quiet)
+
+	math(EXPR ShaderIterator "${ShaderIterator} + 1" OUTPUT_FORMAT DECIMAL)
 endforeach()
 
