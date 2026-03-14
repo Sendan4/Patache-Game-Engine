@@ -18,7 +18,7 @@ _Dumb and simple 2D game engine made in C++. The goal is to do fast, lightweight
 
 <b>Mirror repositories</b>
 
-| [Github](https://github.com/Sendan4/Patache-Game-Engine) | [Codeberg](https://codeberg.org/PatacheEngine/Patache.git) |
+| [Github](https://github.com/Sendan4/Patache-Game-Engine) | [Gitlab](https://gitlab.com/PatacheEngine/Patache.git) |
 | :--: | :--: |
 
 ## Platforms
