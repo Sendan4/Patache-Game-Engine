@@ -18,7 +18,7 @@ _Motor de videojuegos 2D tonto y simple hecho con C++. El objetivo es hacerlo ra
 
 <b>Repositorios espejo</b>
 
-| [Github](https://github.com/Sendan4/Patache-Game-Engine) | [Codeberg](https://codeberg.org/PatacheEngine/Patache.git) |
+| [Github](https://github.com/Sendan4/Patache-Game-Engine) | [Gitlab](https://gitlab.com/PatacheEngine/Patache.git) |
 | :--: | :--: |
 
 ## Plataformas
