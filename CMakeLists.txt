@@ -437,7 +437,7 @@ add_subdirectory(src)
 add_subdirectory(data)
 
 if (NOT MSVC)
-    include(ClangFormat.cmake)
+    include(cmake/ClangFormat.cmake)
 endif()
 
 if (BUILD_SHARED_LIBS)
