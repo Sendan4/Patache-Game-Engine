@@ -51,7 +51,7 @@ if (MSVC OR CMAKE_SYSTEM_NAME STREQUAL "Linux" OR
     	FetchContent_Declare(
       		Vulkan-Headers
       		GIT_REPOSITORY https://github.com/KhronosGroup/Vulkan-Headers.git
-      		GIT_TAG v1.4.315
+      		GIT_TAG v1.4.346
     	)
     	FetchContent_MakeAvailable(Vulkan-Headers)
     endif()
@@ -60,14 +60,14 @@ if (MSVC OR CMAKE_SYSTEM_NAME STREQUAL "Linux" OR
     message("  - Vulkan Loader -")
    
     if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/Vulkan-Loader/CMakeLists.txt)
-    	add_subdirectory(Vulkan-Loader)
+        add_subdirectory(Vulkan-Loader)
     else()
-    	FetchContent_Declare(
-      	    Vulkan-Loader
-      	    GIT_REPOSITORY https://github.com/KhronosGroup/Vulkan-Loader.git
-      	    GIT_TAG v1.4.315
-    	)
-    	FetchContent_MakeAvailable(Vulkan-Loader)
+    	  FetchContent_Declare(
+            Vulkan-Loader
+            GIT_REPOSITORY https://github.com/KhronosGroup/Vulkan-Loader.git
+            GIT_TAG v1.4.346
+    	  )
+    	  FetchContent_MakeAvailable(Vulkan-Loader)
     endif()
 
     # Vulkan Validation Layer
@@ -78,7 +78,7 @@ if (MSVC OR CMAKE_SYSTEM_NAME STREQUAL "Linux" OR
     FetchContent_Declare(
         Vulkan-ValidationLayers
         GIT_REPOSITORY https://github.com/KhronosGroup/Vulkan-ValidationLayers.git
-        GIT_TAG v1.4.315
+        GIT_TAG v1.4.346
     )
     
     FetchContent_MakeAvailable(Vulkan-ValidationLayers)
@@ -111,8 +111,8 @@ else()
 
     FetchContent_Declare(
         Vulkan-Utility-Libraries
-        GIT_REPOSITORY https://github.com/KhronosGroup/Vulkan-Utility-Libraries.git
-  	GIT_TAG v1.4.315
+        GIT_REPOSITORY https://codeberg.org/PatacheEngine/Vulkan-Utility-Libraries.git
+        GIT_TAG v1.4.346-Patache
     )
 
     FetchContent_MakeAvailable(Vulkan-Utility-Libraries)
