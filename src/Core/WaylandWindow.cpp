@@ -122,6 +122,13 @@ CreateWaylandWindow (const std::uint32_t & rWidth, const std::uint32_t & rHeight
 #endif
 
       // Decoration
+      xdg_surface_set_window_geometry (
+          pEngine->waylandWindow.pDesktopStyleUserInterface, -PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE,
+          (-PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE - PATACHE_MAINBAR_HEIGHT_CSD_SIZE),
+          (rWidth + PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE + PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE),
+          (rHeight + PATACHE_MAINBAR_HEIGHT_CSD_SIZE + PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE
+           + PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE));
+
       /*
        * Main Bar
        * [||||||||||||||||||||||]
@@ -470,6 +477,313 @@ CreateWaylandWindow (const std::uint32_t & rWidth, const std::uint32_t & rHeight
           wl_buffer_add_listener (pBuffer, &wl_buffer_listener, pCleanup);
 
           wl_surface_commit (pEngine->waylandWindow.pBorderSurface[i]);
+        }
+
+      // Shadow
+      for (std::uint8_t i{ 0U }; i < PATACHE_BORDER_CSD_SIZE; ++i)
+        {
+          pEngine->waylandWindow.pShadowSurface[i]
+              = wl_compositor_create_surface (pEngine->waylandWindow.pCompositor);
+
+          pEngine->waylandWindow.pShadowSubSurface[i] = wl_subcompositor_get_subsurface (
+              pEngine->waylandWindow.pSubCompositor, pEngine->waylandWindow.pShadowSurface[i],
+              pEngine->waylandWindow.pSurface);
+        }
+
+      // Horizontal Shadow
+      wl_subsurface_set_position (
+          pEngine->waylandWindow.pShadowSubSurface[Patache::BorderIndexCSD::eTop],
+          -PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE, PATACHE_SHADOW_HORIZONTAL_POSITION_Y);
+
+      wl_subsurface_set_position (
+          pEngine->waylandWindow.pShadowSubSurface[Patache::BorderIndexCSD::eBottom],
+          -PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE,
+          (rHeight + PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE
+           + PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE));
+
+      // Vertical Shadow
+      wl_subsurface_set_position (
+          pEngine->waylandWindow.pShadowSubSurface[Patache::BorderIndexCSD::eLeft],
+          PATACHE_SHADOW_VERTICAL_POSITION_X, PATACHE_SHADOW_VERTICAL_POSITION_Y);
+
+      wl_subsurface_set_position (
+          pEngine->waylandWindow.pShadowSubSurface[Patache::BorderIndexCSD::eRight],
+          (rWidth + PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE), PATACHE_SHADOW_VERTICAL_POSITION_Y);
+
+      // Corner Shadow
+      wl_subsurface_set_position (
+          pEngine->waylandWindow.pShadowSubSurface[Patache::BorderIndexCSD::eTopLeft],
+          PATACHE_SHADOW_VERTICAL_POSITION_X, PATACHE_SHADOW_HORIZONTAL_POSITION_Y);
+
+      wl_subsurface_set_position (
+          pEngine->waylandWindow.pShadowSubSurface[Patache::BorderIndexCSD::eTopRight],
+          (rWidth + PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE), PATACHE_SHADOW_HORIZONTAL_POSITION_Y);
+
+      wl_subsurface_set_position (
+          pEngine->waylandWindow.pShadowSubSurface[Patache::BorderIndexCSD::eBottomLeft],
+          PATACHE_SHADOW_VERTICAL_POSITION_X,
+          (rHeight + PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE
+           + PATACHE_SHADOW_THRESHOLDEDGE_CSD_SIZE));
+
+      wl_subsurface_set_position (
+          pEngine->waylandWindow.pShadowSubSurface[Patache::BorderIndexCSD::eBottomRight],
+          (rWidth + PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE),
+          (rHeight + PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE
+           + PATACHE_SHADOW_THRESHOLDEDGE_CSD_SIZE));
+
+      // Horizontal
+      for (std::uint8_t i{ 0U }; i < PATACHE_BORDER_HORIZONTAL_CSD_SIZE; ++i)
+        {
+          std::int32_t shadowFileDescriptor{ shm_open (shadowFileDescriptorName[i],
+                                                       O_RDWR | O_CREAT | O_EXCL,
+                                                       S_IWUSR | S_IRUSR | S_IWOTH | S_IROTH) };
+
+          shm_unlink (shadowFileDescriptorName[i]);
+
+          ftruncate (shadowFileDescriptor, (rWidth + (PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE * 2))
+                                               * PATACHE_SHADOW_THRESHOLDEDGE_CSD_SIZE * 4U);
+
+          std::uint32_t * pBorderPixels{ static_cast<std::uint32_t *> (
+              mmap (nullptr,
+                    (rWidth + (PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE * 2))
+                        * PATACHE_SHADOW_THRESHOLDEDGE_CSD_SIZE * 4U,
+                    PROT_READ | PROT_WRITE, MAP_SHARED, shadowFileDescriptor, 0)) };
+
+          if (i == Patache::BorderIndexCSD::eTop)
+            {
+              for (std::uint32_t i2{ 0U }, i3{ 0U };
+                   i2 < (rWidth + (PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE * 2))
+                            * PATACHE_SHADOW_THRESHOLDEDGE_CSD_SIZE;
+                   ++i2)
+                {
+                  if ((i2 % (rWidth + (PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE * 2))
+                           * PATACHE_SHADOW_THRESHOLDEDGE_CSD_SIZE
+                       == 0)
+                      && i3 < PATACHE_SHADOW_TOP_SIZE)
+                    {
+                      ++i3;
+                    }
+
+                  pBorderPixels[i2] = sShadowTop[i3];
+                }
+            }
+          else
+            {
+              for (std::uint32_t i2{ 0U }, i3{ 0U };
+                   i2 < (rWidth + (PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE * 2))
+                            * PATACHE_SHADOW_THRESHOLDEDGE_CSD_SIZE;
+                   ++i2)
+                {
+                  if ((i2 % (rWidth + (PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE * 2))
+                           * PATACHE_SHADOW_THRESHOLDEDGE_CSD_SIZE
+                       == 0)
+                      && i3 < PATACHE_SHADOW_BOTTOM_SIZE)
+                    {
+                      ++i3;
+                    }
+
+                  pBorderPixels[i2] = sShadowBottom[i3];
+                }
+            }
+
+          wl_shm_pool * pPoolTest{ wl_shm_create_pool (
+              pEngine->waylandWindow.pDecorationSharedMemory, shadowFileDescriptor,
+              (rWidth + (PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE * 2))
+                  * PATACHE_SHADOW_THRESHOLDEDGE_CSD_SIZE * 4U) };
+
+          wl_buffer * pBufferTest{ wl_shm_pool_create_buffer (
+              pPoolTest, 0, (rWidth + (PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE * 2)),
+              PATACHE_SHADOW_THRESHOLDEDGE_CSD_SIZE,
+              (rWidth + (PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE * 2)) * 4U,
+              WL_SHM_FORMAT_ARGB8888) };
+
+          wl_shm_pool_destroy (pPoolTest);
+
+          wl_surface_attach (pEngine->waylandWindow.pShadowSurface[i], pBufferTest, 0, 0);
+
+          wl_surface_damage_buffer (pEngine->waylandWindow.pShadowSurface[i], 0, 0,
+                                    (rWidth + (PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE * 2)),
+                                    PATACHE_SHADOW_THRESHOLDEDGE_CSD_SIZE);
+
+          SurfaceBufferCleanup * pCleanupShadow{ static_cast<SurfaceBufferCleanup *> (
+              std::calloc (1ZU, sizeof (SurfaceBufferCleanup))) };
+
+          pCleanupShadow->mappedMemSize = (rWidth + (PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE * 2))
+                                          * PATACHE_SHADOW_THRESHOLDEDGE_CSD_SIZE * 4U;
+          pCleanupShadow->pMappedMem = pBorderPixels;
+          pCleanupShadow->fd         = shadowFileDescriptor;
+
+          wl_buffer_add_listener (pBufferTest, &wl_buffer_listener, pCleanupShadow);
+
+          wl_surface_commit (pEngine->waylandWindow.pShadowSurface[i]);
+        }
+
+      // Vertical
+      for (std::uint8_t i{ PATACHE_BORDER_HORIZONTAL_CSD_SIZE };
+           i < PATACHE_BORDER_VERTICAL_CSD_SIZE; ++i)
+        {
+          std::int32_t shadowFileDescriptor{ shm_open (shadowFileDescriptorName[i],
+                                                       O_RDWR | O_CREAT | O_EXCL,
+                                                       S_IWUSR | S_IRUSR | S_IWOTH | S_IROTH) };
+
+          shm_unlink (shadowFileDescriptorName[i]);
+
+          ftruncate (shadowFileDescriptor, PATACHE_SHADOW_THRESHOLDEDGE_CSD_SIZE
+                                               * (rHeight + PATACHE_MAINBAR_HEIGHT_CSD_SIZE
+                                                  + (PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE * 2))
+                                               * 4U);
+
+          std::uint32_t * pBorderPixels{ static_cast<std::uint32_t *> (
+              mmap (nullptr,
+                    PATACHE_SHADOW_THRESHOLDEDGE_CSD_SIZE
+                        * (rHeight + PATACHE_MAINBAR_HEIGHT_CSD_SIZE
+                           + (PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE * 2))
+                        * 4U,
+                    PROT_READ | PROT_WRITE, MAP_SHARED, shadowFileDescriptor, 0)) };
+
+          if (i == Patache::BorderIndexCSD::eRight)
+            {
+              for (std::uint32_t i2{ 0U }, i3{ 0U };
+                   i2 < (PATACHE_SHADOW_THRESHOLDEDGE_CSD_SIZE
+                         * (rHeight + PATACHE_MAINBAR_HEIGHT_CSD_SIZE
+                            + (PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE * 2)));
+                   ++i2, ++i3)
+                {
+                  if ((i2 % PATACHE_SHADOW_THRESHOLDEDGE_CSD_SIZE == 0)
+                      || i3 < PATACHE_SHADOW_RIGHT_SIZE)
+                    {
+                      i3 = 0;
+                    }
+
+                  pBorderPixels[i2] = sShadowRight[i3];
+                }
+            }
+          else
+            {
+              for (std::uint32_t i2{ 0U }, i3{ 0U };
+                   i2 < (PATACHE_SHADOW_THRESHOLDEDGE_CSD_SIZE
+                         * (rHeight + PATACHE_MAINBAR_HEIGHT_CSD_SIZE
+                            + (PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE * 2)));
+                   ++i2, ++i3)
+                {
+                  if ((i2 % PATACHE_SHADOW_THRESHOLDEDGE_CSD_SIZE == 0)
+                      || i3 < PATACHE_SHADOW_LEFT_SIZE)
+                    {
+                      i3 = 0;
+                    }
+
+                  pBorderPixels[i2] = sShadowLeft[i3];
+                }
+            }
+
+          wl_shm_pool * pPoolTest{ wl_shm_create_pool (
+              pEngine->waylandWindow.pDecorationSharedMemory, shadowFileDescriptor,
+              PATACHE_SHADOW_THRESHOLDEDGE_CSD_SIZE
+                  * (rHeight + PATACHE_MAINBAR_HEIGHT_CSD_SIZE
+                     + (PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE * 2))
+                  * 4U) };
+
+          wl_buffer * pBufferTest{ wl_shm_pool_create_buffer (
+              pPoolTest, 0, PATACHE_SHADOW_THRESHOLDEDGE_CSD_SIZE,
+              (rHeight + PATACHE_MAINBAR_HEIGHT_CSD_SIZE
+               + (PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE * 2)),
+              PATACHE_SHADOW_THRESHOLDEDGE_CSD_SIZE * 4U, WL_SHM_FORMAT_ARGB8888) };
+
+          wl_shm_pool_destroy (pPoolTest);
+
+          wl_surface_attach (pEngine->waylandWindow.pShadowSurface[i], pBufferTest, 0, 0);
+
+          wl_surface_damage_buffer (pEngine->waylandWindow.pShadowSurface[i], 0, 0,
+                                    PATACHE_SHADOW_THRESHOLDEDGE_CSD_SIZE,
+                                    (rHeight + PATACHE_MAINBAR_HEIGHT_CSD_SIZE
+                                     + (PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE * 2)));
+
+          SurfaceBufferCleanup * pCleanupShadow{ static_cast<SurfaceBufferCleanup *> (
+              std::calloc (1ZU, sizeof (SurfaceBufferCleanup))) };
+
+          pCleanupShadow->mappedMemSize = PATACHE_SHADOW_THRESHOLDEDGE_CSD_SIZE
+                                          * (rHeight + PATACHE_MAINBAR_HEIGHT_CSD_SIZE
+                                             + (PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE * 2))
+                                          * 4U;
+          pCleanupShadow->pMappedMem = pBorderPixels;
+          pCleanupShadow->fd         = shadowFileDescriptor;
+
+          wl_buffer_add_listener (pBufferTest, &wl_buffer_listener, pCleanupShadow);
+
+          wl_surface_commit (pEngine->waylandWindow.pShadowSurface[i]);
+        }
+
+      // Corner
+      for (std::uint8_t i{ PATACHE_BORDER_VERTICAL_CSD_SIZE }; i < PATACHE_BORDER_CSD_SIZE; ++i)
+        {
+          std::int32_t shadowFileDescriptor{ shm_open (shadowFileDescriptorName[i],
+                                                       O_RDWR | O_CREAT | O_EXCL,
+                                                       S_IWUSR | S_IRUSR | S_IWOTH | S_IROTH) };
+
+          shm_unlink (shadowFileDescriptorName[i]);
+
+          ftruncate (shadowFileDescriptor, PATACHE_SHADOW_CORNER_CSD_TOTALBYTESIZE);
+
+          std::uint32_t * pBorderPixels{ static_cast<std::uint32_t *> (
+              mmap (nullptr, PATACHE_SHADOW_CORNER_CSD_TOTALBYTESIZE, PROT_READ | PROT_WRITE,
+                    MAP_SHARED, shadowFileDescriptor, 0)) };
+
+          if (i == Patache::BorderIndexCSD::eTopLeft)
+            {
+              for (std::uint32_t i2{ 0U }; i2 < PATACHE_SHADOW_CORNER_CSD_SIZE; ++i2)
+                {
+                  pBorderPixels[i2] = sShadowTopLeft[i2];
+                }
+            }
+          else if (i == Patache::BorderIndexCSD::eTopRight)
+            {
+              for (std::uint32_t i2{ 0U }; i2 < PATACHE_SHADOW_CORNER_CSD_SIZE; ++i2)
+                {
+                  pBorderPixels[i2] = sShadowTopRight[i2];
+                }
+            }
+          else if (i == Patache::BorderIndexCSD::eBottomRight)
+            {
+              for (std::uint32_t i2{ 0U }; i2 < PATACHE_SHADOW_CORNER_CSD_SIZE; ++i2)
+                {
+                  pBorderPixels[i2] = sShadowBottomRight[i2];
+                }
+            }
+          else
+            {
+              for (std::uint32_t i2{ 0U }; i2 < PATACHE_SHADOW_CORNER_CSD_SIZE; ++i2)
+                {
+                  pBorderPixels[i2] = sShadowBottomLeft[i2];
+                }
+            }
+
+          wl_shm_pool * pPoolTest{ wl_shm_create_pool (
+              pEngine->waylandWindow.pDecorationSharedMemory, shadowFileDescriptor,
+              PATACHE_SHADOW_CORNER_CSD_TOTALBYTESIZE) };
+
+          wl_buffer * pBufferTest{ wl_shm_pool_create_buffer (
+              pPoolTest, 0, PATACHE_SHADOW_THRESHOLDEDGE_CSD_SIZE,
+              PATACHE_SHADOW_THRESHOLDEDGE_CSD_SIZE, PATACHE_SHADOW_CORNER_WIDTH_CSD_BYTESIZE,
+              WL_SHM_FORMAT_ARGB8888) };
+
+          wl_shm_pool_destroy (pPoolTest);
+
+          wl_surface_attach (pEngine->waylandWindow.pShadowSurface[i], pBufferTest, 0, 0);
+
+          wl_surface_damage_buffer (pEngine->waylandWindow.pShadowSurface[i], 0, 0,
+                                    PATACHE_SHADOW_THRESHOLDEDGE_CSD_SIZE,
+                                    PATACHE_SHADOW_THRESHOLDEDGE_CSD_SIZE);
+
+          SurfaceBufferCleanup * pCleanupShadow{ static_cast<SurfaceBufferCleanup *> (
+              std::calloc (1ZU, sizeof (SurfaceBufferCleanup))) };
+
+          pCleanupShadow->mappedMemSize = PATACHE_SHADOW_CORNER_CSD_TOTALBYTESIZE;
+          pCleanupShadow->pMappedMem    = pBorderPixels;
+          pCleanupShadow->fd            = shadowFileDescriptor;
+
+          wl_buffer_add_listener (pBufferTest, &wl_buffer_listener, pCleanupShadow);
+
+          wl_surface_commit (pEngine->waylandWindow.pShadowSurface[i]);
         }
     }
   else

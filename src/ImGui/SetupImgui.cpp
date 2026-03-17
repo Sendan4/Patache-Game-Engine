@@ -95,7 +95,7 @@ CreateImguiDescriptorPool (Patache::VulkanBackend & rVulkan)
   const VkDescriptorPoolCreateInfo info{ .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
                                          .pNext = nullptr,
                                          .flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT,
-                                         .maxSets       = 2U,
+                                         .maxSets       = 12U,
                                          .poolSizeCount = 1U,
                                          .pPoolSizes    = &poolSize };
 

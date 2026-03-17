@@ -28,6 +28,7 @@ Patache::Engine::HandleEvent (const SDL_Event & rEvent)
                           for (std::uint8_t i{ 0U }; i < PATACHE_BORDER_CSD_SIZE; ++i)
                             {
                               wl_subsurface_destroy (waylandWindow.pBorderSubSurface[i]);
+                              wl_subsurface_destroy (waylandWindow.pShadowSubSurface[i]);
                             }
 
                           for (std::uint8_t i{ 0U }; i < 3U; ++i)
@@ -52,6 +53,10 @@ Patache::Engine::HandleEvent (const SDL_Event & rEvent)
                             {
                               waylandWindow.pBorderSubSurface[i] = wl_subcompositor_get_subsurface (
                                   waylandWindow.pSubCompositor, waylandWindow.pBorderSurface[i],
+                                  waylandWindow.pSurface);
+
+                              waylandWindow.pShadowSubSurface[i] = wl_subcompositor_get_subsurface (
+                                  waylandWindow.pSubCompositor, waylandWindow.pShadowSurface[i],
                                   waylandWindow.pSurface);
                             }
 
@@ -119,6 +124,10 @@ Patache::Engine::HandleEvent (const SDL_Event & rEvent)
                             {
                               waylandWindow.pBorderSubSurface[i] = wl_subcompositor_get_subsurface (
                                   waylandWindow.pSubCompositor, waylandWindow.pBorderSurface[i],
+                                  waylandWindow.pSurface);
+
+                              waylandWindow.pShadowSubSurface[i] = wl_subcompositor_get_subsurface (
+                                  waylandWindow.pSubCompositor, waylandWindow.pShadowSurface[i],
                                   waylandWindow.pSurface);
                             }
                         }

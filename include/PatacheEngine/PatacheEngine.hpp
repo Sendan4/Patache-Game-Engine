@@ -101,6 +101,11 @@ struct WaylandWindow
                                       nullptr, nullptr, nullptr, nullptr };
   wl_subsurface * pBorderSubSurface[8U]{ nullptr, nullptr, nullptr, nullptr,
                                          nullptr, nullptr, nullptr, nullptr };
+  // Shadow
+  wl_surface *    pShadowSurface[8U]{ nullptr, nullptr, nullptr, nullptr,
+                                      nullptr, nullptr, nullptr, nullptr };
+  wl_subsurface * pShadowSubSurface[8U]{ nullptr, nullptr, nullptr, nullptr,
+                                         nullptr, nullptr, nullptr, nullptr };
   // Buttons
   wl_surface *    pButtonSurface[3U]{ nullptr, nullptr, nullptr };
   wl_subsurface * pButtonSubSurface[3U]{ nullptr, nullptr, nullptr };
