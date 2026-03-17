@@ -332,7 +332,7 @@ else()
     FetchContent_Declare(
         SDL
         GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
-        GIT_TAG release-3.2.16
+        GIT_TAG release-3.4.2
     )
     FetchContent_MakeAvailable(SDL)
 endif()
