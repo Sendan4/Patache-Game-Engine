@@ -3,16 +3,18 @@ message("  - Patache Engine -")
 
 cmake_minimum_required(VERSION 3.18)
 
+option(BUILD_SHARED_LIBS "Build static or shared library" OFF)
+option(USE_GIT "Grab git information" ON)
+option(USE_BIN_DIR "use the bin directory as output" ON)
+set(PATACHE_USE_BIN_DIR ${USE_BIN_DIR} PARENT_SCOPE)
+
 if (${CMAKE_BUILD_TYPE} STREQUAL "Release")
     set(DEFAULT_USE_LTO_OPT ON)
 else()
     set(DEFAULT_USE_LTO_OPT OFF)
 endif()
-
-option(BUILD_SHARED_LIBS "Build static or shared library" OFF)
+    
 option(USE_LTO "Use Link Time Optimization" ${DEFAULT_USE_LTO_OPT})
-option(USE_GIT "Grab git information" ON)
-option(USE_BIN_DIR "use the bin directory as output" ON)
 
 if (NOT MSVC)
     option(FORMAT_IN_BUILD_TIME "use clang-format to format in build time" OFF)
@@ -26,14 +28,12 @@ if (MSVC)
     set(CMAKE_SKIP_INSTALL_RULES YES)
 endif()
 
-#set (CMAKE_FIND_PACKAGE_TARGETS_GLOBAL TRUE)
-
 set (CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 project("PatacheEngine"
     LANGUAGES CXX
     VERSION 1 
-    HOMEPAGE_URL "https://gitlab.com/PatacheEngine/Patache.git")
+    HOMEPAGE_URL "https://codeberg.org/PatacheEngine/Patache.git")
 
 if (${CMAKE_SYSTEM_NAME} STREQUAL "FreeBSD" OR
     ${CMAKE_SYSTEM_NAME} STREQUAL "OpenBSD" OR
@@ -42,10 +42,10 @@ if (${CMAKE_SYSTEM_NAME} STREQUAL "FreeBSD" OR
     set(CMAKE_DISABLE_PRECOMPILE_HEADERS ON CACHE INTERNAL "..." FORCE)
 endif()
 
-set (PATACHE_ENGINE_VERSION_MAYOR 1)
+set (PATACHE_ENGINE_VERSION_MAYOR 0)
 set (PATACHE_ENGINE_VERSION_MINOR 0)
 set (PATACHE_ENGINE_VERSION_PATCH 0)
-set (PATACHE_ENGINE_VERSION "1.0.0")
+set (PATACHE_ENGINE_VERSION "0.0.0")
 
 include(CheckCXXCompilerFlag)
 include(CheckIncludeFileCXX)
@@ -425,6 +425,7 @@ if (USE_BIN_DIR)
     set(BIN_DIR ${CMAKE_SOURCE_DIR}/bin/${BUILDDIR_NAME})
     set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin/${BUILDDIR_NAME})
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin/${BUILDDIR_NAME})
+    set(PATACHE_OUTPUT_DIR ${BIN_DIR} PARENT_SCOPE)
 else()
     set(BIN_DIR ${CMAKE_BINARY_DIR})
 endif()

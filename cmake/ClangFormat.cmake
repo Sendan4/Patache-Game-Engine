@@ -1,18 +1,15 @@
-find_program(CLANGFORMAT NAMES clang-format)
+find_program(CLANGFORMAT NAMES clang-format OPTIONAL)
 
-if (${CLANGFORMAT} STREQUAL "")
-    message(FATAL_ERROR "Fail to find clang-format program")
-endif()
+if (NOT ${CLANGFORMAT} STREQUAL "")
+    message("")
+    message(STATUS "clang-format Found : ${CLANGFORMAT}")
 
-message("")
-message(STATUS "clang-format Found : ${CLANGFORMAT}")
+    add_custom_target(PatacheClangFormat)
 
-add_custom_target(PatacheClangFormat)
-
-add_custom_command(
-    POST_BUILD
-    TARGET PatacheClangFormat
-		COMMAND ${CLANGFORMAT}
+    add_custom_command(
+        POST_BUILD
+        TARGET PatacheClangFormat
+		    COMMAND ${CLANGFORMAT}
 						-i ${CMAKE_CURRENT_SOURCE_DIR}/include/PatacheEngine/*.hpp
 		        -i ${CMAKE_CURRENT_SOURCE_DIR}/src/Core/*.cpp
             -i ${CMAKE_CURRENT_SOURCE_DIR}/src/Core/*.hpp
@@ -25,15 +22,18 @@ add_custom_command(
 						-i ${CMAKE_CURRENT_SOURCE_DIR}/src/RaccoonRenderer/Vulkan/*.hpp
 						--verbose)
 
-if (${CMAKE_SYSTEM_NAME} STREQUAL "Linux" OR
-    ${CMAKE_SYSTEM_NAME} STREQUAL "FreeBSD" OR
-    ${CMAKE_SYSTEM_NAME} STREQUAL "OpenBSD" OR
-    ${CMAKE_SYSTEM_NAME} STREQUAL "DragonFly" OR
-    ${CMAKE_SYSTEM_NAME} STREQUAL "NetBSD")
-    add_custom_command(
-       POST_BUILD
-       TARGET PatacheClangFormat
-		   COMMAND ${CLANGFORMAT}
+    if (${CMAKE_SYSTEM_NAME} STREQUAL "Linux" OR
+        ${CMAKE_SYSTEM_NAME} STREQUAL "FreeBSD" OR
+        ${CMAKE_SYSTEM_NAME} STREQUAL "OpenBSD" OR
+        ${CMAKE_SYSTEM_NAME} STREQUAL "DragonFly" OR
+        ${CMAKE_SYSTEM_NAME} STREQUAL "NetBSD")
+        add_custom_command(
+           POST_BUILD
+           TARGET PatacheClangFormat
+		       COMMAND ${CLANGFORMAT}
 		           -i ${CMAKE_CURRENT_SOURCE_DIR}/src/Core/WaylandCSD/*.hpp
 						   --verbose)
+    endif()
+else()
+  	message(WARNING "clang-format not found")
 endif()
