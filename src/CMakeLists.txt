@@ -8,8 +8,10 @@ add_subdirectory(RaccoonRenderer/Shaders)
 
 add_dependencies(${PROJECT_NAME} PatacheFiles PatacheCompileShaders)
 
-if (NOT MSVC AND ${FORMAT_IN_BUILD_TIME})
-    add_dependencies(${PROJECT_NAME} PatacheClangFormat)
+if (NOT MSVC)
+    if (${FORMAT_IN_BUILD_TIME})
+        add_dependencies(${PROJECT_NAME} PatacheClangFormat)
+    endif()
 endif()
 
 target_sources (${PROJECT_NAME} PRIVATE

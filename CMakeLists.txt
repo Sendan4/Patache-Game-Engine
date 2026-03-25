@@ -5,6 +5,7 @@ cmake_minimum_required(VERSION 3.18)
 
 option(BUILD_SHARED_LIBS "Build static or shared library" OFF)
 option(USE_GIT "Grab git information" ON)
+option(BUILD_EXAMPLES "build program examples of the engine" OFF)
 option(USE_BIN_DIR "use the bin directory as output" ON)
 set(PATACHE_USE_BIN_DIR ${USE_BIN_DIR} PARENT_SCOPE)
 
@@ -435,6 +436,12 @@ add_subdirectory(externals)
 # === Sources ===
 add_subdirectory(src)
 
+if(${BUILD_EXAMPLES})
+    add_subdirectory(examples/Empty)
+    add_subdirectory(examples/Triangle)
+    add_subdirectory(examples/MultipleTriangles)
+endif()
+
 add_subdirectory(data)
 
 if (NOT MSVC)
@@ -460,6 +467,7 @@ endif()
 if (DEFINED FORMAT_IN_BUILD_TIME)
     message(STATUS "FORMAT_IN_BUILD_TIME : ${FORMAT_IN_BUILD_TIME}")
 endif()
+message(STATUS "BUILD_EXAMPLES : ${BUILD_EXAMPLES}")
 message(STATUS "Build Type : ${CMAKE_BUILD_TYPE}")
 message(STATUS "USE_GIT : ${USE_GIT}")
 if (USE_GIT AND GIT)
