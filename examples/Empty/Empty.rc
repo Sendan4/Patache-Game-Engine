@@ -21,7 +21,7 @@ BEGIN
 			VALUE "FileDescription", "Ejemplo vacio"
 			VALUE "FileVersion", "0, 0, 0, 0"
 			VALUE "InternalName", "Ejemplo vacio"
-			VALUE "LegalCopyright", "Copyright (c) 2023 Sendan"
+			VALUE "LegalCopyright", "Copyright (c) 2026 Sendan"
 			VALUE "OriginalFilename", "Empty"
 			VALUE "ProductName", "Empty"
 			VALUE "ProductVersion", "1"

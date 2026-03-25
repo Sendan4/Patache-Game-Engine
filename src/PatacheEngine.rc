@@ -1,6 +1,6 @@
 1 VERSIONINFO
- FILEVERSION 1,0,0,0
- PRODUCTVERSION 1
+ FILEVERSION 0,0,0,0
+ PRODUCTVERSION 0
  FILEFLAGSMASK 0x17L
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -18,12 +18,12 @@ BEGIN
 			VALUE "Comments", "Motor de Videojuegos Tonto y Facil de usar"
 			VALUE "CompanyName", "Sendan"
 			VALUE "FileDescription", "Una libreria tonta y facil de usar para comenzar a hacer juegos"
-			VALUE "FileVersion", "1, 0, 0, 0"
+			VALUE "FileVersion", "0, 0, 0, 0"
 			VALUE "InternalName", "Patache Engine"
 			VALUE "LegalCopyright", "Copyright (c) 2023 Sendan"
 			VALUE "OriginalFilename", "PatacheEngine.dll"
 			VALUE "ProductName", "Patache Engine"
-			VALUE "ProductVersion", "1"
+			VALUE "ProductVersion", "0"
 		END
 	END
 	BLOCK "VarFileInfo"

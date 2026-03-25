@@ -21,7 +21,7 @@ BEGIN
 			VALUE "FileDescription", "Ejemplo de multiples triangulos"
 			VALUE "FileVersion", "0, 0, 0, 0"
 			VALUE "InternalName", "MultipleTriangles.exe"
-			VALUE "LegalCopyright", "Copyright (c) 2023 Sendan"
+			VALUE "LegalCopyright", "Copyright (c) 2026 Sendan"
 			VALUE "OriginalFilename", "MultipleTriangles.exe"
 			VALUE "ProductName", "MultipleTriangles"
 			VALUE "ProductVersion", "1"

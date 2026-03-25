@@ -21,7 +21,7 @@ BEGIN
 			VALUE "FileDescription", "Ejemplo Triangle"
 			VALUE "FileVersion", "0, 0, 0, 0"
 			VALUE "InternalName", "Ejemplo Triangle"
-			VALUE "LegalCopyright", "Copyright (c) 2023 Sendan"
+			VALUE "LegalCopyright", "Copyright (c) 2026 Sendan"
 			VALUE "OriginalFilename", "Triangle"
 			VALUE "ProductName", "Triangle"
 			VALUE "ProductVersion", "1"
