@@ -7,7 +7,6 @@ option(BUILD_SHARED_LIBS "Build static or shared library" OFF)
 option(USE_GIT "Grab git information" ON)
 option(BUILD_EXAMPLES "build program examples of the engine" OFF)
 option(USE_BIN_DIR "use the bin directory as output" ON)
-set(PATACHE_USE_BIN_DIR ${USE_BIN_DIR} PARENT_SCOPE)
 
 if (${CMAKE_BUILD_TYPE} STREQUAL "Release")
     set(DEFAULT_USE_LTO_OPT ON)
@@ -35,6 +34,10 @@ project("PatacheEngine"
     LANGUAGES CXX
     VERSION 1 
     HOMEPAGE_URL "https://codeberg.org/PatacheEngine/Patache.git")
+    
+if (NOT PatacheEngine_IS_TOP_LEVEL)
+    set(PATACHE_USE_BIN_DIR ${USE_BIN_DIR} PARENT_SCOPE)
+endif()
 
 if (${CMAKE_SYSTEM_NAME} STREQUAL "FreeBSD" OR
     ${CMAKE_SYSTEM_NAME} STREQUAL "OpenBSD" OR
@@ -426,7 +429,10 @@ if (USE_BIN_DIR)
     set(BIN_DIR ${CMAKE_SOURCE_DIR}/bin/${BUILDDIR_NAME})
     set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin/${BUILDDIR_NAME})
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin/${BUILDDIR_NAME})
-    set(PATACHE_OUTPUT_DIR ${BIN_DIR} PARENT_SCOPE)
+    
+    if (NOT PatacheEngine_IS_TOP_LEVEL)
+        set(PATACHE_OUTPUT_DIR ${BIN_DIR} PARENT_SCOPE)
+    endif()
 else()
     set(BIN_DIR ${CMAKE_BINARY_DIR})
 endif()

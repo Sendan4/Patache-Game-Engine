@@ -49,8 +49,8 @@ if (${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
     set_target_properties(
         ${PROJECT_NAME} 
         PROPERTIES 
-            OUTPUT_NAME "${PROJECT_NAME}"
-            SUFFIX ".elf64"
+            OUTPUT_NAME "${PROJECT_NAME}.${CMAKE_HOST_SYSTEM_PROCESSOR}"
+            SUFFIX ".elf"
     )
 endif()
 
