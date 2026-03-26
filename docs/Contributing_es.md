@@ -73,8 +73,9 @@ struct Example
 Patache::Example var{};
 ``` 
 
-- No subrayados '_' en los nombres de las estructuras/clases.
-- No simbolos especiales en los nombres de las variables.
+Evita
+- subrayados '_' en los nombres de las estructuras/clases.
+- simbolos especiales en los nombres de las variables.
 
 ## Tipos de variables
 - Las varibles puntero comienzan con 'p'.
@@ -149,4 +150,3 @@ Los nombres pueden estar separados por ```_``` como tambien seguir la regla [Upp
 
 Evitar
 - No caracteres especiales en nombres de archivos, excepto por subrayados '_'.
-- Los archivos fuente usan extensiones .cpp/.hpp.
