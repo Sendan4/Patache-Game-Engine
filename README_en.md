@@ -5,21 +5,17 @@
 
 <h1 align = "center">Patache Engine</h1>
 
-_Dumb and simple 2D game engine made in C++. The goal is to do fast, lightweight and portable._
+_Dumb and simple 2D game engine made in C++. The goal is to make an engine that runs fast, is lightweight, and portable._
 
 > [!IMPORTANT]
 > It is at a very early stage of development.
 
 ## Links
-<!-- - [Documentation](#)-->
-
-| [Naming convention](docs/NamingConvention_es.md) |
-| :--: |
+[Coding Style](docs/Contributing_en.md) | [Build](docs/Building_en.md)
 
 <b>Mirror repositories</b>
 
-| [Github](https://github.com/Sendan4/Patache-Game-Engine) | [Gitlab](https://gitlab.com/PatacheEngine/Patache.git) |
-| :--: | :--: |
+[Github](https://github.com/Sendan4/Patache-Game-Engine) | [Gitlab](https://gitlab.com/PatacheEngine/Patache.git)
 
 ## Platforms
 <b>PC</b>

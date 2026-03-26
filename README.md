@@ -5,21 +5,17 @@
 
 <h1 align = "center">Motor Patache</h1>
 
-_Motor de videojuegos 2D tonto y simple hecho con C++. El objetivo es hacerlo rapido, ligero y portable._
+_Motor de videojuegos 2D tonto y simple hecho con C++. El objetivo es hacer un motor que funcione rápido, que sea ligero y portable._
 
 > [!IMPORTANT]
 > Esta en un estado muy temprano de desarrollo.
 
 ## Enlaces
-<!-- - [Documentation](#)-->
-
-| [Convencion de nombres](docs/NamingConvention_es.md) |
-| :--: |
+[Estilo de Codigo](docs/Contributing_es.md) | [Construir](docs/Building_es.md)
 
 <b>Repositorios espejo</b>
 
-| [Github](https://github.com/Sendan4/Patache-Game-Engine) | [Gitlab](https://gitlab.com/PatacheEngine/Patache.git) |
-| :--: | :--: |
+[Github](https://github.com/Sendan4/Patache-Game-Engine) | [Gitlab](https://gitlab.com/PatacheEngine/Patache.git)
 
 ## Plataformas
 <b>PC</b>
