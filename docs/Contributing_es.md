@@ -1,4 +1,4 @@
-| Español | [English](NamingConvention_en.md) |
+| Español | [English](Contributing_en.md) |
 | :--: | :--: |
 
 El proposito de este documento es el ayudar a entender el estilo del codigo que debe llevar el proyecto.
