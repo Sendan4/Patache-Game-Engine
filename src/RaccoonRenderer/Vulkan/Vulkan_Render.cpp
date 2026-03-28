@@ -371,5 +371,13 @@ Patache::Engine::EndRender (SDL_Event & rEvent)
       RecreateSwapchain (this);
     }
 
+  /*No tengo ni idea del por que en freeBSD procesar y crear frames en vuelto con el
+   *numero total de imagenes del , causa un bug como de fliquering raro que en linux
+   * y windows no pasa. esto es especifico de FreeBSD*/
+#if __FreeBSD__ || __NetBSD__ || __NetBSD__ || __OpenBSD__ || __bsdi__    \
+    || __DragonFly__ || __MidnightBSD__
+  vulkan.currentFrame = (vulkan.currentFrame + 1U) % vulkan.swapchainImageCount - 1;
+#else
   vulkan.currentFrame = (vulkan.currentFrame + 1U) % vulkan.swapchainImageCount;
+#endif
 }

@@ -1,6 +1,6 @@
 find_program(CLANGFORMAT NAMES clang-format OPTIONAL)
 
-if (NOT ${CLANGFORMAT} STREQUAL "")
+if (NOT ${CLANGFORMAT} STREQUAL "CLANGFORMAT-NOTFOUND")
     message("")
     message(STATUS "clang-format Found : ${CLANGFORMAT}")
 
@@ -46,5 +46,5 @@ if (NOT ${CLANGFORMAT} STREQUAL "")
                --verbose)
     endif()
 else()
-  	message(WARNING "clang-format not found")
+  	message(WARNING "clang-format not found. still can continue, but the code cannot be formated")
 endif()
