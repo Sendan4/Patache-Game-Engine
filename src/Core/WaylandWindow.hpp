@@ -35,22 +35,22 @@ static std::uint8_t sResizeCSD{ XDG_TOPLEVEL_RESIZE_EDGE_NONE };
 static wl_surface * spPointerSelectedSurface{ nullptr };
 static SDL_Event    pushWaylandEvent{};
 
-static const char * borderFileDescriptorName[8U]{
+static char borderFileDescriptorName[8U][129U]{
   "Patache-Border-Top",        "Patache-Border-Bottom",      "Patache-Border-Left",
   "Patache-Border-Right",      "Patache-Border-TopLeft",     "Patache-Border-TopRight",
   "Patache-Border-BottomLeft", "Patache-Border-BottomRight",
 };
-static const char * shadowFileDescriptorName[8U]{
+static char shadowFileDescriptorName[8U][129U]{
   "Patache-Shadow-Top",        "Patache-Shadow-Bottom",      "Patache-Shadow-Left",
   "Patache-Shadow-Right",      "Patache-Shadow-TopLeft",     "Patache-Shadow-TopRight",
   "Patache-Shadow-BottomLeft", "Patache-Shadow-BottomRight",
 };
-static const char * buttonFileDescriptorName[3U]{
+static char buttonFileDescriptorName[3U][129U]{
   "Patache-Button-Minimize",
   "Patache-Button-Maximize",
   "Patache-Button-Close",
 };
-static const char * mainBarFileDescriptorName{ "Patache-MainBar" };
+static char mainBarFileDescriptorName[129U]{ "Patache-MainBar" };
 
 // CSD (Window Client Side Decoration) Pixel Data Buttons
 // Minimize
@@ -124,20 +124,38 @@ static const char * mainBarFileDescriptorName{ "Patache-MainBar" };
 
 #include "WaylandWindow_Funcs.hpp"
 
+#include <random>
+
+namespace Patache
+{
+void
+RandomizeFileDescriptorName (char * pFileDescriptorName, std::uint32_t size,
+                             std::uniform_int_distribution<std::uint32_t> & rFdDist,
+                             std::default_random_engine &                   rFdGenerator)
+{
+  std::uint32_t id{ rFdDist (rFdGenerator) };
+
+  char buff[64U]{};
+  std::strncpy (buff, pFileDescriptorName, 63U);
+
+  std::snprintf (pFileDescriptorName, size, "%s-%d", buff, id);
+}
+
 struct SurfaceBufferCleanup
 {
   std::size_t     mappedMemSize{ 0U };
   std::uint32_t * pMappedMem{ nullptr };
   std::int32_t    fd{ 0 };
 };
+}
 
 // wl_buffer_release
 static void
 BufferRelease (void * pData, wl_buffer * pBuffer)
 {
-  assert (pData != nullptr && "SurfaceBufferCleanup is nullptr");
+  assert (pData != nullptr && "Patache::SurfaceBufferCleanup is nullptr");
 
-  SurfaceBufferCleanup * pCleanup{ static_cast<SurfaceBufferCleanup *> (pData) };
+  Patache::SurfaceBufferCleanup * pCleanup{ static_cast<Patache::SurfaceBufferCleanup *> (pData) };
 
   if (pCleanup->pMappedMem != nullptr)
     munmap (pCleanup->pMappedMem, pCleanup->mappedMemSize);
@@ -327,8 +345,10 @@ DesktopStyleUserInterfaceConfigure (void * pData, xdg_surface * pDesktopStyleUse
                                              + (PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE * 2)),
                                             PATACHE_SHADOW_THRESHOLDEDGE_CSD_SIZE);
 
-                  SurfaceBufferCleanup * pCleanupShadow{ static_cast<SurfaceBufferCleanup *> (
-                      std::calloc (1ZU, sizeof (SurfaceBufferCleanup))) };
+                  Patache::SurfaceBufferCleanup * pCleanupShadow{
+                    static_cast<Patache::SurfaceBufferCleanup *> (
+                        std::calloc (1ZU, sizeof (Patache::SurfaceBufferCleanup)))
+                  };
 
                   pCleanupShadow->mappedMemSize = (pEngine->vulkan.swapchainExtent.width
                                                    + (PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE * 2))
@@ -428,8 +448,10 @@ DesktopStyleUserInterfaceConfigure (void * pData, xdg_surface * pDesktopStyleUse
                                              + PATACHE_MAINBAR_HEIGHT_CSD_SIZE
                                              + (PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE * 2)));
 
-                  SurfaceBufferCleanup * pCleanupShadow{ static_cast<SurfaceBufferCleanup *> (
-                      std::calloc (1ZU, sizeof (SurfaceBufferCleanup))) };
+                  Patache::SurfaceBufferCleanup * pCleanupShadow{
+                    static_cast<Patache::SurfaceBufferCleanup *> (
+                        std::calloc (1ZU, sizeof (Patache::SurfaceBufferCleanup)))
+                  };
 
                   pCleanupShadow->mappedMemSize
                       = PATACHE_SHADOW_THRESHOLDEDGE_CSD_SIZE
@@ -587,8 +609,10 @@ DesktopStyleUserInterfaceConfigure (void * pData, xdg_surface * pDesktopStyleUse
                                             pEngine->vulkan.swapchainExtent.width,
                                             PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE);
 
-                  SurfaceBufferCleanup * pCleanup{ static_cast<SurfaceBufferCleanup *> (
-                      std::calloc (1ZU, sizeof (SurfaceBufferCleanup))) };
+                  Patache::SurfaceBufferCleanup * pCleanup{
+                    static_cast<Patache::SurfaceBufferCleanup *> (
+                        std::calloc (1ZU, sizeof (Patache::SurfaceBufferCleanup)))
+                  };
 
                   pCleanup->mappedMemSize = pEngine->vulkan.swapchainExtent.width
                                             * PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE * 4;
@@ -677,8 +701,10 @@ DesktopStyleUserInterfaceConfigure (void * pData, xdg_surface * pDesktopStyleUse
                       PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE,
                       (pEngine->vulkan.swapchainExtent.height + PATACHE_MAINBAR_HEIGHT_CSD_SIZE));
 
-                  SurfaceBufferCleanup * pCleanup{ static_cast<SurfaceBufferCleanup *> (
-                      std::calloc (1ZU, sizeof (SurfaceBufferCleanup))) };
+                  Patache::SurfaceBufferCleanup * pCleanup{
+                    static_cast<Patache::SurfaceBufferCleanup *> (
+                        std::calloc (1ZU, sizeof (Patache::SurfaceBufferCleanup)))
+                  };
 
                   pCleanup->mappedMemSize
                       = PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE
@@ -763,8 +789,10 @@ DesktopStyleUserInterfaceConfigure (void * pData, xdg_surface * pDesktopStyleUse
                                             PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE,
                                             PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE);
 
-                  SurfaceBufferCleanup * pCleanup{ static_cast<SurfaceBufferCleanup *> (
-                      std::calloc (1ZU, sizeof (SurfaceBufferCleanup))) };
+                  Patache::SurfaceBufferCleanup * pCleanup{
+                    static_cast<Patache::SurfaceBufferCleanup *> (
+                        std::calloc (1ZU, sizeof (Patache::SurfaceBufferCleanup)))
+                  };
 
                   pCleanup->mappedMemSize = PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE
                                             * PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE * 4;
@@ -914,8 +942,10 @@ DesktopStyleUserInterfaceConfigure (void * pData, xdg_surface * pDesktopStyleUse
                                             PATACHE_CLOSE_BUTTON_CSD_WIDTH,
                                             PATACHE_CLOSE_BUTTON_CSD_HEIGHT);
 
-                  SurfaceBufferCleanup * pCleanup{ static_cast<SurfaceBufferCleanup *> (
-                      std::calloc (1ZU, sizeof (SurfaceBufferCleanup))) };
+                  Patache::SurfaceBufferCleanup * pCleanup{
+                    static_cast<Patache::SurfaceBufferCleanup *> (
+                        std::calloc (1ZU, sizeof (Patache::SurfaceBufferCleanup)))
+                  };
 
                   pCleanup->mappedMemSize = PATACHE_CLOSE_BUTTON_CSD_SIZE;
                   pCleanup->pMappedMem    = pButtonPixels;
@@ -991,8 +1021,10 @@ DesktopStyleUserInterfaceConfigure (void * pData, xdg_surface * pDesktopStyleUse
                                         pEngine->vulkan.swapchainExtent.width,
                                         PATACHE_MAINBAR_HEIGHT_CSD_SIZE);
 
-              SurfaceBufferCleanup * pCleanup{ static_cast<SurfaceBufferCleanup *> (
-                  std::calloc (1ZU, sizeof (SurfaceBufferCleanup))) };
+              Patache::SurfaceBufferCleanup * pCleanup{
+                static_cast<Patache::SurfaceBufferCleanup *> (
+                    std::calloc (1ZU, sizeof (Patache::SurfaceBufferCleanup)))
+              };
 
               pCleanup->mappedMemSize
                   = pEngine->vulkan.swapchainExtent.width * PATACHE_MAINBAR_HEIGHT_CSD_SIZE * 4;
@@ -1156,8 +1188,10 @@ PointerEnter (void * pData, wl_pointer * pPointer, std::uint32_t serial, wl_surf
                   pEngine->waylandWindow.pButtonSurface[Patache::ButtonIndexCSD::eClose], 0, 0,
                   PATACHE_CLOSE_BUTTON_CSD_WIDTH, PATACHE_CLOSE_BUTTON_CSD_HEIGHT);
 
-              SurfaceBufferCleanup * pCleanup{ static_cast<SurfaceBufferCleanup *> (
-                  std::calloc (1ZU, sizeof (SurfaceBufferCleanup))) };
+              Patache::SurfaceBufferCleanup * pCleanup{
+                static_cast<Patache::SurfaceBufferCleanup *> (
+                    std::calloc (1ZU, sizeof (Patache::SurfaceBufferCleanup)))
+              };
 
               pCleanup->mappedMemSize = PATACHE_CLOSE_BUTTON_CSD_SIZE;
               pCleanup->pMappedMem    = pButtonPixels;
@@ -1219,8 +1253,10 @@ PointerEnter (void * pData, wl_pointer * pPointer, std::uint32_t serial, wl_surf
                   pEngine->waylandWindow.pButtonSurface[Patache::ButtonIndexCSD::eMaximize], 0, 0,
                   PATACHE_MAXIMIZE_BUTTON_CSD_WIDTH, PATACHE_MAXIMIZE_BUTTON_CSD_HEIGHT);
 
-              SurfaceBufferCleanup * pCleanup{ static_cast<SurfaceBufferCleanup *> (
-                  std::calloc (1ZU, sizeof (SurfaceBufferCleanup))) };
+              Patache::SurfaceBufferCleanup * pCleanup{
+                static_cast<Patache::SurfaceBufferCleanup *> (
+                    std::calloc (1ZU, sizeof (Patache::SurfaceBufferCleanup)))
+              };
 
               pCleanup->mappedMemSize = PATACHE_MAXIMIZE_BUTTON_CSD_SIZE;
               pCleanup->pMappedMem    = pButtonPixels;
@@ -1272,8 +1308,10 @@ PointerEnter (void * pData, wl_pointer * pPointer, std::uint32_t serial, wl_surf
                   pEngine->waylandWindow.pButtonSurface[Patache::ButtonIndexCSD::eMinimize], 0, 0,
                   PATACHE_MINIMIZE_BUTTON_CSD_WIDTH, PATACHE_MINIMIZE_BUTTON_CSD_HEIGHT);
 
-              SurfaceBufferCleanup * pCleanup{ static_cast<SurfaceBufferCleanup *> (
-                  std::calloc (1ZU, sizeof (SurfaceBufferCleanup))) };
+              Patache::SurfaceBufferCleanup * pCleanup{
+                static_cast<Patache::SurfaceBufferCleanup *> (
+                    std::calloc (1ZU, sizeof (Patache::SurfaceBufferCleanup)))
+              };
 
               pCleanup->mappedMemSize = PATACHE_MINIMIZE_BUTTON_CSD_SIZE;
               pCleanup->pMappedMem    = pButtonPixels;
@@ -1356,8 +1394,8 @@ PointerLeave (void * pData, [[maybe_unused]] wl_pointer * pPointer,
               pEngine->waylandWindow.pButtonSurface[Patache::ButtonIndexCSD::eClose], 0, 0,
               PATACHE_CLOSE_BUTTON_CSD_WIDTH, PATACHE_CLOSE_BUTTON_CSD_HEIGHT);
 
-          SurfaceBufferCleanup * pCleanup{ static_cast<SurfaceBufferCleanup *> (
-              std::calloc (1ZU, sizeof (SurfaceBufferCleanup))) };
+          Patache::SurfaceBufferCleanup * pCleanup{ static_cast<Patache::SurfaceBufferCleanup *> (
+              std::calloc (1ZU, sizeof (Patache::SurfaceBufferCleanup))) };
 
           pCleanup->mappedMemSize = PATACHE_CLOSE_BUTTON_CSD_SIZE;
           pCleanup->pMappedMem    = pButtonPixels;
@@ -1439,8 +1477,8 @@ PointerLeave (void * pData, [[maybe_unused]] wl_pointer * pPointer,
               pEngine->waylandWindow.pButtonSurface[Patache::ButtonIndexCSD::eMaximize], 0, 0,
               PATACHE_MAXIMIZE_BUTTON_CSD_WIDTH, PATACHE_MAXIMIZE_BUTTON_CSD_HEIGHT);
 
-          SurfaceBufferCleanup * pCleanup{ static_cast<SurfaceBufferCleanup *> (
-              std::calloc (1ZU, sizeof (SurfaceBufferCleanup))) };
+          Patache::SurfaceBufferCleanup * pCleanup{ static_cast<Patache::SurfaceBufferCleanup *> (
+              std::calloc (1ZU, sizeof (Patache::SurfaceBufferCleanup))) };
 
           pCleanup->mappedMemSize = PATACHE_MAXIMIZE_BUTTON_CSD_SIZE;
           pCleanup->pMappedMem    = pButtonPixels;
@@ -1502,8 +1540,8 @@ PointerLeave (void * pData, [[maybe_unused]] wl_pointer * pPointer,
               pEngine->waylandWindow.pButtonSurface[Patache::ButtonIndexCSD::eMinimize], 0, 0,
               PATACHE_MINIMIZE_BUTTON_CSD_WIDTH, PATACHE_MINIMIZE_BUTTON_CSD_HEIGHT);
 
-          SurfaceBufferCleanup * pCleanup{ static_cast<SurfaceBufferCleanup *> (
-              std::calloc (1ZU, sizeof (SurfaceBufferCleanup))) };
+          Patache::SurfaceBufferCleanup * pCleanup{ static_cast<Patache::SurfaceBufferCleanup *> (
+              std::calloc (1ZU, sizeof (Patache::SurfaceBufferCleanup))) };
 
           pCleanup->mappedMemSize = PATACHE_MINIMIZE_BUTTON_CSD_SIZE;
           pCleanup->pMappedMem    = pButtonPixels;
@@ -1715,8 +1753,10 @@ PointerPressButton (void * pData, [[maybe_unused]] wl_pointer * pPointer, std::u
                   pEngine->waylandWindow.pButtonSurface[Patache::ButtonIndexCSD::eMinimize], 0, 0,
                   PATACHE_MINIMIZE_BUTTON_CSD_WIDTH, PATACHE_MINIMIZE_BUTTON_CSD_HEIGHT);
 
-              SurfaceBufferCleanup * pCleanup{ static_cast<SurfaceBufferCleanup *> (
-                  std::calloc (1ZU, sizeof (SurfaceBufferCleanup))) };
+              Patache::SurfaceBufferCleanup * pCleanup{
+                static_cast<Patache::SurfaceBufferCleanup *> (
+                    std::calloc (1ZU, sizeof (Patache::SurfaceBufferCleanup)))
+              };
 
               pCleanup->mappedMemSize = PATACHE_MINIMIZE_BUTTON_CSD_SIZE;
               pCleanup->pMappedMem    = pButtonPixels;
@@ -1781,8 +1821,10 @@ PointerPressButton (void * pData, [[maybe_unused]] wl_pointer * pPointer, std::u
                   pEngine->waylandWindow.pButtonSurface[Patache::ButtonIndexCSD::eMaximize], 0, 0,
                   PATACHE_MAXIMIZE_BUTTON_CSD_WIDTH, PATACHE_MAXIMIZE_BUTTON_CSD_HEIGHT);
 
-              SurfaceBufferCleanup * pCleanup{ static_cast<SurfaceBufferCleanup *> (
-                  std::calloc (1ZU, sizeof (SurfaceBufferCleanup))) };
+              Patache::SurfaceBufferCleanup * pCleanup{
+                static_cast<Patache::SurfaceBufferCleanup *> (
+                    std::calloc (1ZU, sizeof (Patache::SurfaceBufferCleanup)))
+              };
 
               pCleanup->mappedMemSize = PATACHE_MAXIMIZE_BUTTON_CSD_SIZE;
               pCleanup->pMappedMem    = pButtonPixels;
@@ -1835,8 +1877,10 @@ PointerPressButton (void * pData, [[maybe_unused]] wl_pointer * pPointer, std::u
                   pEngine->waylandWindow.pButtonSurface[Patache::ButtonIndexCSD::eClose], 0, 0,
                   PATACHE_CLOSE_BUTTON_CSD_WIDTH, PATACHE_CLOSE_BUTTON_CSD_HEIGHT);
 
-              SurfaceBufferCleanup * pCleanup{ static_cast<SurfaceBufferCleanup *> (
-                  std::calloc (1ZU, sizeof (SurfaceBufferCleanup))) };
+              Patache::SurfaceBufferCleanup * pCleanup{
+                static_cast<Patache::SurfaceBufferCleanup *> (
+                    std::calloc (1ZU, sizeof (Patache::SurfaceBufferCleanup)))
+              };
 
               pCleanup->mappedMemSize = PATACHE_CLOSE_BUTTON_CSD_SIZE;
               pCleanup->pMappedMem    = pButtonPixels;

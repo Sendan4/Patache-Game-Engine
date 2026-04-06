@@ -106,7 +106,7 @@ Patache::Engine::Init (const Patache::EngineCreateInfo & rInfo)
   // Init Window for linux wayland. do this before SDL init
 #if __unix__ || __linux__ || __FreeBSD__ || __NetBSD__ || __NetBSD__ || __OpenBSD__ || __bsdi__    \
     || __DragonFly__ || __MidnightBSD__
-  if (!CreateWaylandWindow (854, 480, PATACHE_WINDOW_TITLE, this))
+  if (!Patache::CreateWaylandWindow (854, 480, PATACHE_WINDOW_TITLE, this))
     return false;
 #endif
 

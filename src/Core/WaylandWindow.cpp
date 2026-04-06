@@ -1,8 +1,8 @@
 #include "WaylandWindow.hpp"
 
 bool
-CreateWaylandWindow (const std::uint32_t & rWidth, const std::uint32_t & rHeight,
-                     const char * const pWindowTitle, Patache::Engine * const pEngine)
+Patache::CreateWaylandWindow (const std::uint32_t & rWidth, const std::uint32_t & rHeight,
+                              const char * const pWindowTitle, Patache::Engine * const pEngine)
 {
   wl_registry * pRegistry{ nullptr };
 
@@ -133,6 +133,13 @@ CreateWaylandWindow (const std::uint32_t & rWidth, const std::uint32_t & rHeight
        * Main Bar
        * [||||||||||||||||||||||]
        */
+
+      std::random_device                           rd;
+      std::default_random_engine                   fdGenerator (rd ());
+      std::uniform_int_distribution<std::uint32_t> fdDist (0, UINT32_MAX);
+
+      Patache::RandomizeFileDescriptorName (mainBarFileDescriptorName, 128U, fdDist, fdGenerator);
+
       pEngine->waylandWindow.pMainBarSurface
           = wl_compositor_create_surface (pEngine->waylandWindow.pCompositor);
 
@@ -173,8 +180,10 @@ CreateWaylandWindow (const std::uint32_t & rWidth, const std::uint32_t & rHeight
       wl_surface_damage_buffer (pEngine->waylandWindow.pMainBarSurface, 0, 0, rWidth,
                                 PATACHE_MAINBAR_HEIGHT_CSD_SIZE);
 
-      SurfaceBufferCleanup * pCleanupMainBar{ static_cast<SurfaceBufferCleanup *> (
-          std::calloc (1ZU, sizeof (SurfaceBufferCleanup))) };
+      Patache::SurfaceBufferCleanup * pCleanupMainBar{
+        static_cast<Patache::SurfaceBufferCleanup *> (
+            std::calloc (1ZU, sizeof (Patache::SurfaceBufferCleanup)))
+      };
 
       pCleanupMainBar->mappedMemSize = rWidth * PATACHE_MAINBAR_HEIGHT_CSD_SIZE * 4;
       pCleanupMainBar->pMappedMem    = pMainBarPixels;
@@ -213,6 +222,9 @@ CreateWaylandWindow (const std::uint32_t & rWidth, const std::uint32_t & rHeight
 
       for (std::uint8_t i{ 0U }; i < PATACHE_BUTTON_CSD_SIZE; ++i)
         {
+          Patache::RandomizeFileDescriptorName (buttonFileDescriptorName[i], 128U, fdDist,
+                                                fdGenerator);
+
           std::int32_t buttonFileDescriptor{ shm_open (buttonFileDescriptorName[i],
                                                        O_RDWR | O_CREAT | O_EXCL,
                                                        S_IWUSR | S_IRUSR | S_IWOTH | S_IROTH) };
@@ -266,8 +278,8 @@ CreateWaylandWindow (const std::uint32_t & rWidth, const std::uint32_t & rHeight
                                     PATACHE_CLOSE_BUTTON_CSD_WIDTH,
                                     PATACHE_CLOSE_BUTTON_CSD_HEIGHT);
 
-          SurfaceBufferCleanup * pCleanup{ static_cast<SurfaceBufferCleanup *> (
-              std::calloc (1ZU, sizeof (SurfaceBufferCleanup))) };
+          Patache::SurfaceBufferCleanup * pCleanup{ static_cast<Patache::SurfaceBufferCleanup *> (
+              std::calloc (1ZU, sizeof (Patache::SurfaceBufferCleanup))) };
 
           pCleanupMainBar->mappedMemSize = PATACHE_CLOSE_BUTTON_CSD_SIZE;
           pCleanupMainBar->pMappedMem    = pButtonPixels;
@@ -325,6 +337,9 @@ CreateWaylandWindow (const std::uint32_t & rWidth, const std::uint32_t & rHeight
       // Horizontal border
       for (std::uint8_t i{ 0U }; i < PATACHE_BORDER_HORIZONTAL_CSD_SIZE; ++i)
         {
+          Patache::RandomizeFileDescriptorName (borderFileDescriptorName[i], 128U, fdDist,
+                                                fdGenerator);
+
           std::int32_t borderFileDescriptor{ shm_open (borderFileDescriptorName[i],
                                                        O_RDWR | O_CREAT | O_EXCL,
                                                        S_IWUSR | S_IRUSR | S_IWOTH | S_IROTH) };
@@ -357,8 +372,8 @@ CreateWaylandWindow (const std::uint32_t & rWidth, const std::uint32_t & rHeight
           wl_surface_damage_buffer (pEngine->waylandWindow.pBorderSurface[i], 0, 0, rWidth,
                                     PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE);
 
-          SurfaceBufferCleanup * pCleanup{ static_cast<SurfaceBufferCleanup *> (
-              std::calloc (1ZU, sizeof (SurfaceBufferCleanup))) };
+          Patache::SurfaceBufferCleanup * pCleanup{ static_cast<Patache::SurfaceBufferCleanup *> (
+              std::calloc (1ZU, sizeof (Patache::SurfaceBufferCleanup))) };
 
           pCleanupMainBar->mappedMemSize = rWidth * PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE * 4U;
           pCleanupMainBar->pMappedMem    = pBorderPixels;
@@ -372,6 +387,9 @@ CreateWaylandWindow (const std::uint32_t & rWidth, const std::uint32_t & rHeight
       // Vertical Border
       for (std::uint8_t i{ 2U }; i < PATACHE_BORDER_VERTICAL_CSD_SIZE; ++i)
         {
+          Patache::RandomizeFileDescriptorName (borderFileDescriptorName[i], 128U, fdDist,
+                                                fdGenerator);
+
           std::int32_t borderFileDescriptor{ shm_open (borderFileDescriptorName[i],
                                                        O_RDWR | O_CREAT | O_EXCL,
                                                        S_IWUSR | S_IRUSR | S_IWOTH | S_IROTH) };
@@ -412,8 +430,8 @@ CreateWaylandWindow (const std::uint32_t & rWidth, const std::uint32_t & rHeight
                                     PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE,
                                     (rHeight + PATACHE_MAINBAR_HEIGHT_CSD_SIZE));
 
-          SurfaceBufferCleanup * pCleanup{ static_cast<SurfaceBufferCleanup *> (
-              std::calloc (1ZU, sizeof (SurfaceBufferCleanup))) };
+          Patache::SurfaceBufferCleanup * pCleanup{ static_cast<Patache::SurfaceBufferCleanup *> (
+              std::calloc (1ZU, sizeof (Patache::SurfaceBufferCleanup))) };
 
           pCleanupMainBar->mappedMemSize = PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE
                                            * (rHeight + PATACHE_MAINBAR_HEIGHT_CSD_SIZE) * 4U;
@@ -428,6 +446,9 @@ CreateWaylandWindow (const std::uint32_t & rWidth, const std::uint32_t & rHeight
       // Corner Border
       for (std::uint8_t i{ 4U }; i < PATACHE_BORDER_CSD_SIZE; ++i)
         {
+          Patache::RandomizeFileDescriptorName (borderFileDescriptorName[i], 128U, fdDist,
+                                                fdGenerator);
+
           std::int32_t borderFileDescriptor{ shm_open (borderFileDescriptorName[i],
                                                        O_RDWR | O_CREAT | O_EXCL,
                                                        S_IWUSR | S_IRUSR | S_IWOTH | S_IROTH) };
@@ -466,8 +487,8 @@ CreateWaylandWindow (const std::uint32_t & rWidth, const std::uint32_t & rHeight
                                     PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE,
                                     PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE);
 
-          SurfaceBufferCleanup * pCleanup{ static_cast<SurfaceBufferCleanup *> (
-              std::calloc (1ZU, sizeof (SurfaceBufferCleanup))) };
+          Patache::SurfaceBufferCleanup * pCleanup{ static_cast<Patache::SurfaceBufferCleanup *> (
+              std::calloc (1ZU, sizeof (Patache::SurfaceBufferCleanup))) };
 
           pCleanupMainBar->mappedMemSize
               = PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE * PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE * 4U;
@@ -534,6 +555,9 @@ CreateWaylandWindow (const std::uint32_t & rWidth, const std::uint32_t & rHeight
       // Horizontal
       for (std::uint8_t i{ 0U }; i < PATACHE_BORDER_HORIZONTAL_CSD_SIZE; ++i)
         {
+          Patache::RandomizeFileDescriptorName (shadowFileDescriptorName[i], 128U, fdDist,
+                                                fdGenerator);
+
           std::int32_t shadowFileDescriptor{ shm_open (shadowFileDescriptorName[i],
                                                        O_RDWR | O_CREAT | O_EXCL,
                                                        S_IWUSR | S_IRUSR | S_IWOTH | S_IROTH) };
@@ -605,8 +629,10 @@ CreateWaylandWindow (const std::uint32_t & rWidth, const std::uint32_t & rHeight
                                     (rWidth + (PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE * 2)),
                                     PATACHE_SHADOW_THRESHOLDEDGE_CSD_SIZE);
 
-          SurfaceBufferCleanup * pCleanupShadow{ static_cast<SurfaceBufferCleanup *> (
-              std::calloc (1ZU, sizeof (SurfaceBufferCleanup))) };
+          Patache::SurfaceBufferCleanup * pCleanupShadow{
+            static_cast<Patache::SurfaceBufferCleanup *> (
+                std::calloc (1ZU, sizeof (Patache::SurfaceBufferCleanup)))
+          };
 
           pCleanupShadow->mappedMemSize = (rWidth + (PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE * 2))
                                           * PATACHE_SHADOW_THRESHOLDEDGE_CSD_SIZE * 4U;
@@ -622,6 +648,9 @@ CreateWaylandWindow (const std::uint32_t & rWidth, const std::uint32_t & rHeight
       for (std::uint8_t i{ PATACHE_BORDER_HORIZONTAL_CSD_SIZE };
            i < PATACHE_BORDER_VERTICAL_CSD_SIZE; ++i)
         {
+          Patache::RandomizeFileDescriptorName (shadowFileDescriptorName[i], 128U, fdDist,
+                                                fdGenerator);
+
           std::int32_t shadowFileDescriptor{ shm_open (shadowFileDescriptorName[i],
                                                        O_RDWR | O_CREAT | O_EXCL,
                                                        S_IWUSR | S_IRUSR | S_IWOTH | S_IROTH) };
@@ -698,8 +727,10 @@ CreateWaylandWindow (const std::uint32_t & rWidth, const std::uint32_t & rHeight
                                     (rHeight + PATACHE_MAINBAR_HEIGHT_CSD_SIZE
                                      + (PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE * 2)));
 
-          SurfaceBufferCleanup * pCleanupShadow{ static_cast<SurfaceBufferCleanup *> (
-              std::calloc (1ZU, sizeof (SurfaceBufferCleanup))) };
+          Patache::SurfaceBufferCleanup * pCleanupShadow{
+            static_cast<Patache::SurfaceBufferCleanup *> (
+                std::calloc (1ZU, sizeof (Patache::SurfaceBufferCleanup)))
+          };
 
           pCleanupShadow->mappedMemSize = PATACHE_SHADOW_THRESHOLDEDGE_CSD_SIZE
                                           * (rHeight + PATACHE_MAINBAR_HEIGHT_CSD_SIZE
@@ -716,6 +747,9 @@ CreateWaylandWindow (const std::uint32_t & rWidth, const std::uint32_t & rHeight
       // Corner
       for (std::uint8_t i{ PATACHE_BORDER_VERTICAL_CSD_SIZE }; i < PATACHE_BORDER_CSD_SIZE; ++i)
         {
+          Patache::RandomizeFileDescriptorName (shadowFileDescriptorName[i], 128U, fdDist,
+                                                fdGenerator);
+
           std::int32_t shadowFileDescriptor{ shm_open (shadowFileDescriptorName[i],
                                                        O_RDWR | O_CREAT | O_EXCL,
                                                        S_IWUSR | S_IRUSR | S_IWOTH | S_IROTH) };
@@ -774,8 +808,10 @@ CreateWaylandWindow (const std::uint32_t & rWidth, const std::uint32_t & rHeight
                                     PATACHE_SHADOW_THRESHOLDEDGE_CSD_SIZE,
                                     PATACHE_SHADOW_THRESHOLDEDGE_CSD_SIZE);
 
-          SurfaceBufferCleanup * pCleanupShadow{ static_cast<SurfaceBufferCleanup *> (
-              std::calloc (1ZU, sizeof (SurfaceBufferCleanup))) };
+          Patache::SurfaceBufferCleanup * pCleanupShadow{
+            static_cast<Patache::SurfaceBufferCleanup *> (
+                std::calloc (1ZU, sizeof (Patache::SurfaceBufferCleanup)))
+          };
 
           pCleanupShadow->mappedMemSize = PATACHE_SHADOW_CORNER_CSD_TOTALBYTESIZE;
           pCleanupShadow->pMappedMem    = pBorderPixels;
