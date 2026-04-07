@@ -30,9 +30,9 @@ _Motor de videojuegos 2D tonto y simple hecho con C++. El objetivo es hacer un m
 - almenos 14 GiB de espacio libre para los binarios y el codigo fuente (incluido todas las caracteristicas de depuracion).
 
 ## Capturas
-| Linux (Gnome) | Windows 10 | FreeBSD (Kde Plasma) |
+| Linux (Gnome) | Windows 10 | FreeBSD (KDE Plasma) |
 | -------- | ------- | ------- |
-| ![Linux GCC in Gnome](data/GCC_Linux_release.avif) | ![Linux GCC in Gnome](data/GCC_Linux_release.avif) | ![Linux GCC in Gnome](data/GCC_Linux_release.avif) |
+| ![Linux GCC in Gnome](data/GCC_Linux_release.avif) | ![MSVC en Windows](data/MSVC_Windows10.avif) | ![FreeBSD GCC en KDE Plasma](data/GCC_FreeBSD_release.avif) |
 
 ## Dependencias
 - [SDL3](http://www.libsdl.org/)

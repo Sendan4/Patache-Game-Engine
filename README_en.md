@@ -29,6 +29,11 @@ _Dumb and simple 2D game engine made in C++. The goal is to make an engine that 
 - At least 4 GB of RAM.
 - At least 14 GB of free space for source code and binaries (includes debug with all features).
 
+## Screenshots
+| Linux (Gnome) | Windows 10 | FreeBSD (KDE Plasma) |
+| -------- | ------- | ------- |
+| ![Linux GCC in Gnome](data/GCC_Linux_release.avif) | ![MSVC en Windows](data/MSVC_Windows10.avif) | ![FreeBSD GCC en KDE Plasma](data/GCC_FreeBSD_release.avif) |
+
 ## Dependencies used
 - [SDL3](http://www.libsdl.org/)
 - [Vulkan](https://www.vulkan.org/)
