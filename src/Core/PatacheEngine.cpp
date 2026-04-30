@@ -10,10 +10,12 @@
 #include <vulkan/vulkan.h>
 #include "PatacheEngine/VmaUsage.hpp"
 #include <SDL3/SDL.h>
+#include <fast_io.h>
 
 // Patache Engine
 #include "PatacheEngine/PatacheEngine.hpp"
 #include "CstringWrapped.hpp"
+#include "ColorTerminal.hpp"
 #if PATACHE_DEBUG == 1
   #include "CstdlibWrapped.hpp"
 #endif
@@ -55,6 +57,8 @@ extern bool  resize;
 bool
 Patache::Engine::Init (const Patache::EngineCreateInfo & rInfo)
 {
+  debugInfo.startTimer = std::chrono::high_resolution_clock::now ();
+
 #if defined(_WIN64)
   GetConsoleMode (sTerminal, &sMode);
   SetConsoleMode (sTerminal, ENABLE_VIRTUAL_TERMINAL_PROCESSING | sMode);
@@ -206,6 +210,13 @@ Patache::Engine::Init (const Patache::EngineCreateInfo & rInfo)
 
   if (!RaccoonRendererInit (this, rInfo))
     return false;
+
+  debugInfo.startTime = std::chrono::duration<float, std::chrono::milliseconds::period> (
+                            std::chrono::high_resolution_clock::now () - debugInfo.startTimer)
+                            .count ();
+
+  fast_io::println (PATACHE_TERM_BOLD, PATACHE_TERM_COLOR_PATACHE, PATACHE_ENGINE_NAME,
+                    PATACHE_TERM_RESET, " : Start time : ", debugInfo.startTime, " milliseconds");
 
   return true;
 }

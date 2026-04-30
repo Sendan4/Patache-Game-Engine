@@ -59,7 +59,9 @@ if (${CMAKE_SYSTEM_NAME} STREQUAL "Linux" OR
     enable_language(C)
 
     target_sources (${PROJECT_NAME} PRIVATE
-        "Core/WaylandWindow.cpp"
+        "Core/WaylandWindow.cpp")
+
+    target_sources (${PROJECT_NAME} PRIVATE
         ${CMAKE_BINARY_DIR}/WaylandProtocols/xdg-shell.h
         ${CMAKE_BINARY_DIR}/WaylandProtocols/xdg-shell.c
         ${CMAKE_BINARY_DIR}/WaylandProtocols/xdg-decoration-unstable-v1.h

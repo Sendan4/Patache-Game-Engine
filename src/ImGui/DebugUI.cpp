@@ -293,6 +293,8 @@ Patache::DrawDebugUI (Patache::Engine * const pEngine)
 #endif
         }
 
+      ImGui::Text ("Start Time %.2f milliseconds", pEngine->debugInfo.startTime);
+
       ImGui::PopStyleVar ();
       ImGui::End ();
     }
@@ -308,70 +310,12 @@ Patache::DrawDebugUI (Patache::Engine * const pEngine)
       ImGui::PushStyleVar (ImGuiStyleVar_CellPadding, ImVec2 (PATACHE_IMGUI_TABLE_PADDING));
 
       // Only vulkan for now. OpenGL as compability option maybe in the future
-      ImGui::Text ("API : vulkan %s", pEngine->debugInfo.versionVK);
+      ImGui::Text ("Vulkan %s", pEngine->debugInfo.versionVK);
 
       if (ImGui::IsItemHovered ())
         {
           ImGui::SetTooltip ("In Use %d.%d", VK_VERSION_MAJOR (VK_API_VERSION_1_2),
                              VK_VERSION_MINOR (VK_API_VERSION_1_2));
-        }
-
-      if (ImGui::CollapsingHeader ("LAYERS AND EXTENSIONS"))
-        {
-          // vulkan Instance Extensions list
-          if (ImGui::BeginTable ("INSTANCE##VkInstanceList", 1, PATACHE_IMGUI_TABLE_FLAGS))
-            {
-              ImGui::TableSetupColumn ("INSTANCE", ImGuiTableColumnFlags_WidthFixed);
-              ImGui::TableHeadersRow ();
-
-              for (std::uint32_t i{ 0U }; i < pEngine->debugInfo.instanceExtensionsCountVK; ++i)
-                {
-                  ImGui::TableNextRow ();
-
-                  ImGui::TableSetColumnIndex (0);
-                  ImGui::Text ("%s", pEngine->debugInfo.ppInstanceExtensionsVK[i]);
-                }
-
-              ImGui::EndTable ();
-            }
-
-          ImGui::SameLine ();
-
-          // vulkan Device Extensions List
-          if (ImGui::BeginTable ("DEVICE##VkDeviceList", 1, PATACHE_IMGUI_TABLE_FLAGS))
-            {
-              ImGui::TableSetupColumn ("DEVICE", ImGuiTableColumnFlags_WidthFixed);
-              ImGui::TableHeadersRow ();
-
-              for (std::uint32_t i{ 0U }; i < pEngine->debugInfo.deviceExtensionsCountVK; ++i)
-                {
-                  ImGui::TableNextRow ();
-
-                  ImGui::TableSetColumnIndex (0);
-                  ImGui::Text ("%s", pEngine->debugInfo.ppDeviceExtensionsVK[i]);
-                }
-
-              ImGui::EndTable ();
-            }
-
-            // vulkan Layers List
-#if defined(PATACHE_USE_VVL)
-          if (ImGui::BeginTable ("LAYERS##VkLayerList", 1, PATACHE_IMGUI_TABLE_FLAGS))
-            {
-              ImGui::TableSetupColumn ("LAYER", ImGuiTableColumnFlags_WidthFixed);
-              ImGui::TableHeadersRow ();
-
-              for (std::uint16_t i{ 0U }; i < PATACHE_LAYER_VK_COUNT; ++i)
-                {
-                  ImGui::TableNextRow ();
-
-                  ImGui::TableSetColumnIndex (0);
-                  ImGui::Text ("%s", pEngine->debugInfo.ppLayersVK[i]);
-                }
-
-              ImGui::EndTable ();
-            }
-#endif
         }
 
       ImGui::Spacing ();
@@ -487,13 +431,165 @@ Patache::DrawDebugUI (Patache::Engine * const pEngine)
       if (pEngine->debugInfo.deviceTypeVK[0U] != '\0')
         ImGui::Text ("DEVICE TYPE : %s", pEngine->debugInfo.deviceTypeVK);
 
-      ImGui::Spacing ();
+#if defined(PATACHE_USE_VVL)
+      if (ImGui::CollapsingHeader ("LAYERS AND EXTENSIONS"))
+#else
+      if (ImGui::CollapsingHeader ("EXTENSIONS"))
+#endif
+        {
+          // vulkan Instance Extensions list
+          if (ImGui::BeginTable ("INSTANCE##VkInstanceList", 1, PATACHE_IMGUI_TABLE_FLAGS))
+            {
+              ImGui::TableSetupColumn ("INSTANCE", ImGuiTableColumnFlags_WidthFixed);
+              ImGui::TableHeadersRow ();
 
-      if (ImGui::CollapsingHeader ("DEVICE MEMORY"))
+              for (std::uint32_t i{ 0U }; i < pEngine->debugInfo.instanceExtensionsCountVK; ++i)
+                {
+                  ImGui::TableNextRow ();
+
+                  ImGui::TableSetColumnIndex (0);
+                  ImGui::Text ("%s", pEngine->debugInfo.ppInstanceExtensionsVK[i]);
+                }
+
+              ImGui::EndTable ();
+            }
+
+          ImGui::SameLine ();
+
+          // vulkan Device Extensions List
+          if (ImGui::BeginTable ("DEVICE##VkDeviceList", 1, PATACHE_IMGUI_TABLE_FLAGS))
+            {
+              ImGui::TableSetupColumn ("DEVICE", ImGuiTableColumnFlags_WidthFixed);
+              ImGui::TableHeadersRow ();
+
+              for (std::uint32_t i{ 0U }; i < pEngine->debugInfo.deviceExtensionsCountVK; ++i)
+                {
+                  ImGui::TableNextRow ();
+
+                  ImGui::TableSetColumnIndex (0);
+                  ImGui::Text ("%s", pEngine->debugInfo.ppDeviceExtensionsVK[i]);
+                }
+
+              ImGui::EndTable ();
+            }
+
+            // vulkan Layers List
+#if defined(PATACHE_USE_VVL)
+          if (ImGui::BeginTable ("LAYERS##VkLayerList", 1, PATACHE_IMGUI_TABLE_FLAGS))
+            {
+              ImGui::TableSetupColumn ("LAYER", ImGuiTableColumnFlags_WidthFixed);
+              ImGui::TableHeadersRow ();
+
+              for (std::uint16_t i{ 0U }; i < PATACHE_LAYER_VK_COUNT; ++i)
+                {
+                  ImGui::TableNextRow ();
+
+                  ImGui::TableSetColumnIndex (0);
+                  ImGui::Text ("%s", pEngine->debugInfo.ppLayersVK[i]);
+                }
+
+              ImGui::EndTable ();
+            }
+#endif
+
+          ImGui::Spacing ();
+        }
+
+      if (ImGui::CollapsingHeader (
+              (pEngine->vulkan.physicalDeviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)
+                  ? "DEVICE MEMORY"
+                  : "HOST MEMORY"))
         {
           // Device Memory Size (VRAM size)
-          ImGui::Text ("DEVICE VRAM : %.2f %s", pEngine->debugInfo.vramSize,
-                       pEngine->debugInfo.vramSizeUnit);
+          ImGui::Text ((pEngine->vulkan.physicalDeviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)
+                           ? "DEVICE VRAM : %.2f %s"
+                           : "HOST VRAM : %.2f %s",
+                       pEngine->debugInfo.vramSize, pEngine->debugInfo.vramSizeUnit);
+
+          pEngine->debugInfo.memSizeBytes  = 0U;
+          pEngine->debugInfo.memSizeBytes2 = 0U;
+          vmaCalculateStatistics (pEngine->vulkan.allocator, &pEngine->debugInfo.memStats);
+          vmaGetHeapBudgets (pEngine->vulkan.allocator, pEngine->debugInfo.memBudgetInfo);
+
+          for (std::uint32_t i{ 0U }; i < pEngine->debugInfo.memProperties.memoryHeapCount; ++i)
+            {
+              if (pEngine->vulkan.physicalDeviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)
+                {
+                  if (pEngine->debugInfo.memProperties.memoryHeaps[i].flags
+                      & VK_MEMORY_HEAP_DEVICE_LOCAL_BIT)
+                    {
+                      pEngine->debugInfo.memSizeBytes += pEngine->debugInfo.memBudgetInfo[i].budget;
+                    }
+                }
+              else
+                {
+                  pEngine->debugInfo.memSizeBytes += pEngine->debugInfo.memBudgetInfo[i].budget;
+                }
+            }
+
+          pEngine->debugInfo.memSize  = pEngine->debugInfo.memSizeBytes;
+          pEngine->debugInfo.memSize2 = pEngine->debugInfo.memStats.total.statistics.blockBytes;
+
+          Patache::CalculateSizeUnit (pEngine->debugInfo.memSize, pEngine->debugInfo.pSizeUnit,
+                                      PATACHE_SIZEUNIT_STR_SIZE);
+          Patache::CalculateSizeUnit (pEngine->debugInfo.memSize2, pEngine->debugInfo.pSizeUnit2,
+                                      PATACHE_SIZEUNIT_STR_SIZE);
+
+          std::snprintf (pEngine->debugInfo.memInfo, PATACHE_MEMINFO_STR_SIZE,
+                         "%.02f %s / %.02f %s Budget", pEngine->debugInfo.memSize2,
+                         pEngine->debugInfo.pSizeUnit2, pEngine->debugInfo.memSize,
+                         pEngine->debugInfo.pSizeUnit);
+
+          pEngine->debugInfo.barProgress
+              = (float)pEngine->debugInfo.memStats.total.statistics.blockBytes
+                / pEngine->debugInfo.memSizeBytes;
+
+          ImGui::Text ((pEngine->vulkan.physicalDeviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)
+                           ? "DEVICE MEMORY ALLOCATED"
+                           : "HOST MEMORY ALLOCATED");
+          ImGui::ProgressBar (pEngine->debugInfo.barProgress, ImVec2 (400.0F, 0.0F),
+                              pEngine->debugInfo.memInfo);
+
+          if (pEngine->vulkan.physicalDeviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)
+            {
+              pEngine->debugInfo.barProgress
+                  = (float)pEngine->vulkan.renderBufferInfo[VkBufferInfo::eCurrentOffset]
+                    / pEngine->debugInfo.memStats.total.statistics.allocationBytes;
+
+              pEngine->debugInfo.memSize
+                  = pEngine->vulkan.renderBufferInfo[VkBufferInfo::eCurrentOffset];
+            }
+          else
+            {
+              pEngine->debugInfo.barProgress
+                  = (float)pEngine->vulkan.stagingBufferInfo[VkBufferInfo::eCurrentOffset]
+                    / pEngine->debugInfo.memStats.total.statistics.allocationBytes;
+
+              pEngine->debugInfo.memSize
+                  = pEngine->vulkan.stagingBufferInfo[VkBufferInfo::eCurrentOffset];
+            }
+
+          PATACHE_STRNCPY (pEngine->debugInfo.pSizeUnit, "Bytes", PATACHE_SIZEUNIT_STR_SIZE,
+                           PATACHE_SIZEUNIT_STR_SIZE);
+          Patache::CalculateSizeUnit (pEngine->debugInfo.memSize, pEngine->debugInfo.pSizeUnit,
+                                      PATACHE_SIZEUNIT_STR_SIZE);
+
+          pEngine->debugInfo.memSize2
+              = pEngine->debugInfo.memStats.total.statistics.allocationBytes;
+          PATACHE_STRNCPY (pEngine->debugInfo.pSizeUnit2, "Bytes", PATACHE_SIZEUNIT_STR_SIZE,
+                           PATACHE_SIZEUNIT_STR_SIZE);
+          Patache::CalculateSizeUnit (pEngine->debugInfo.memSize2, pEngine->debugInfo.pSizeUnit2,
+                                      PATACHE_SIZEUNIT_STR_SIZE);
+
+          std::snprintf (pEngine->debugInfo.memInfo, PATACHE_MEMINFO_STR_SIZE,
+                         "%.02f %s / %.02f %s", pEngine->debugInfo.memSize,
+                         pEngine->debugInfo.pSizeUnit, pEngine->debugInfo.memSize2,
+                         pEngine->debugInfo.pSizeUnit2);
+
+          ImGui::Text ("MEMORY BUFFER USAGE (%d BLOCKS)",
+                       pEngine->debugInfo.memStats.total.statistics.blockCount);
+          ImGui::ProgressBar (pEngine->debugInfo.barProgress, ImVec2 (400.0F, 0.0F),
+                              pEngine->debugInfo.memInfo);
 
           ImGui::Spacing ();
         }
@@ -559,9 +655,9 @@ Patache::DrawDebugUI (Patache::Engine * const pEngine)
 
               ImGui::EndTable ();
             }
-        }
 
-      ImGui::Spacing ();
+          ImGui::Spacing ();
+        }
 
       // Driver
       if (pEngine->debugInfo.driverNameVK[0U] != '\0')
@@ -616,62 +712,132 @@ Patache::DrawDebugUI (Patache::Engine * const pEngine)
 
               ImGui::EndTooltip ();
             }
+        }
+
+      if (ImGui::CollapsingHeader ("SWAPCHAIN"))
+        {
+          // Swapchain present mode
+          // Is vsync?
+          if ((pEngine->debugInfo.swapchainPresentModeVK == VK_PRESENT_MODE_FIFO_KHR
+               || pEngine->debugInfo.swapchainPresentModeVK == VK_PRESENT_MODE_FIFO_RELAXED_KHR
+               || pEngine->debugInfo.swapchainPresentModeVK
+                      == VK_PRESENT_MODE_SHARED_CONTINUOUS_REFRESH_KHR)
+              && (pEngine->configuration.vsync))
+            {
+              ImGui::BeginGroup ();
+              ImGui::Text ("SWAPCHAIN PRESENT MODE :");
+              ImGui::SameLine ();
+              ImGui::TextColored (
+                  ImVec4 (PATACHE_IMGUI_POSITIVE_VALUE), "%s",
+                  string_VkPresentModeKHR (pEngine->debugInfo.swapchainPresentModeVK));
+              ImGui::EndGroup ();
+
+              if (ImGui::BeginItemTooltip ())
+                {
+                  ImGui::TextColored (ImVec4 (PATACHE_IMGUI_POSITIVE_VALUE),
+                                      "Vertical sync Active");
+                  ImGui::EndTooltip ();
+                }
+            }
+          else
+            {
+              ImGui::BeginGroup ();
+              ImGui::Text ("SWAPCHAIN PRESENT MODE :");
+              ImGui::SameLine ();
+              ImGui::TextColored (
+                  ImVec4 (PATACHE_IMGUI_WARNING_VALUE), "%s",
+                  string_VkPresentModeKHR (pEngine->debugInfo.swapchainPresentModeVK));
+              ImGui::EndGroup ();
+
+              if (ImGui::BeginItemTooltip ())
+                {
+                  ImGui::TextColored (ImVec4 (PATACHE_IMGUI_WARNING_VALUE),
+                                      "Vertical sync Inactve");
+                  ImGui::EndTooltip ();
+                }
+            }
+
+          // Image count
+          ImGui::Text ("SWAPCHAIN IMAGE COUNT : %u", pEngine->vulkan.swapchainImageCount);
+
+          // Image Color Format
+          ImGui::Text ("COLOR FORMAT : %s",
+                       string_VkFormat (pEngine->debugInfo.swapchainImageColorFormatVK));
+
+          // Image Color Space
+          ImGui::Text ("COLOR SPACE : %s",
+                       string_VkColorSpaceKHR (pEngine->debugInfo.swapchainImageColorSpaceVK));
+
+          // Drawable Size
+          ImGui::Text ("SWAPCHAIN DRAWABLE SIZE : %u x %u", pEngine->vulkan.swapchainExtent.width,
+                       pEngine->vulkan.swapchainExtent.height);
 
           ImGui::Spacing ();
         }
 
-      // Swapchain present mode
-
-      // Is vsync?
-      if ((pEngine->debugInfo.swapchainPresentModeVK == VK_PRESENT_MODE_FIFO_KHR
-           || pEngine->debugInfo.swapchainPresentModeVK == VK_PRESENT_MODE_FIFO_RELAXED_KHR
-           || pEngine->debugInfo.swapchainPresentModeVK
-                  == VK_PRESENT_MODE_SHARED_CONTINUOUS_REFRESH_KHR)
-          && (pEngine->configuration.vsync))
+      if (ImGui::CollapsingHeader ("PERFORMANCE"))
         {
-          ImGui::BeginGroup ();
-          ImGui::Text ("SWAPCHAIN PRESENT MODE :");
-          ImGui::SameLine ();
-          ImGui::TextColored (ImVec4 (PATACHE_IMGUI_POSITIVE_VALUE), "%s",
-                              string_VkPresentModeKHR (pEngine->debugInfo.swapchainPresentModeVK));
-          ImGui::EndGroup ();
+          pEngine->debugInfo.calculatePerformanceStats = true;
 
-          if (ImGui::BeginItemTooltip ())
+          if (std::chrono::duration<float, std::chrono::seconds::period> (
+                  std::chrono::high_resolution_clock::now () - pEngine->debugInfo.frameTimer)
+              >= std::chrono::duration<float, std::chrono::seconds::period> (
+                  std::chrono::milliseconds (500)))
             {
-              ImGui::TextColored (ImVec4 (PATACHE_IMGUI_POSITIVE_VALUE), "Vertical sync Active");
-              ImGui::EndTooltip ();
+              pEngine->debugInfo.fps
+                  = pEngine->debugInfo.numFrames
+                    / std::chrono::duration<float, std::chrono::seconds::period> (
+                          std::chrono::high_resolution_clock::now ()
+                          - pEngine->debugInfo.frameTimer)
+                          .count ();
+
+              pEngine->debugInfo.fpsHistory[pEngine->debugInfo.fpsHistoryIterator]
+                  = pEngine->debugInfo.fps;
+
+              pEngine->debugInfo.fpsHistoryIterator
+                  = (pEngine->debugInfo.fpsHistoryIterator + 1) % PATACHE_FPSHISTORY_COUNT;
+
+              pEngine->debugInfo.frameTime
+                  = std::chrono::duration<float, std::chrono::milliseconds::period> (
+                        std::chrono::high_resolution_clock::now () - pEngine->debugInfo.frameTimer)
+                        .count ()
+                    / pEngine->debugInfo.numFrames;
+
+              /*pEngine->debugInfo.frameTimeHistory[pEngine->debugInfo.frameTimeHistoryIterator]
+                  = pEngine->debugInfo.frameTime;*/
+
+              /*pEngine->debugInfo.frameTimeHistoryIterator
+                  = (pEngine->debugInfo.frameTimeHistoryIterator + 1) % PATACHE_FPSHISTORY_COUNT;*/
+
+              pEngine->debugInfo.numFrames   = 0;
+              pEngine->debugInfo.timerFpsRun = true;
             }
+
+          ImGui::Text ("Frames Per Second : %.02f", pEngine->debugInfo.fps);
+          /*ImGui::PlotHistogram ("fpsHistory", pEngine->debugInfo.fpsHistory,
+                                PATACHE_FPSHISTORY_COUNT, PATACHE_FPSHISTORY_COUNT, nullptr, 0.0F,
+                                FLT_MAX, ImVec2 (0.0F, 80.0F));*/
+
+          ImGui::Text ("Frame Time : %.02f Milliseconds", pEngine->debugInfo.frameTime);
+          /*ImGui::PlotHistogram ("frametimeHistory", pEngine->debugInfo.frameTimeHistory,
+                                PATACHE_FPSHISTORY_COUNT, PATACHE_FPSHISTORY_COUNT, nullptr, 0.0F,
+                                FLT_MAX, ImVec2 (0.0F, 80.0F));*/
+
+          ImGui::Text ("Main Command Buffer Time : %.02f Milliseconds",
+                       pEngine->debugInfo.mainCmdTime);
+
+          ImGui::Text ("Main Render Pass Time : %.02f Milliseconds",
+                       pEngine->debugInfo.mainCmdTime);
+
+          ImGui::Text ("Swapchain Resize Time : %.02f Milliseconds",
+                       pEngine->debugInfo.mainSwapchainTime);
+
+          ImGui::Spacing ();
         }
       else
         {
-          ImGui::BeginGroup ();
-          ImGui::TextColored (ImVec4 (PATACHE_IMGUI_WARNING_VALUE), "%s",
-                              string_VkPresentModeKHR (pEngine->debugInfo.swapchainPresentModeVK));
-          ImGui::EndGroup ();
-
-          if (ImGui::BeginItemTooltip ())
-            {
-              ImGui::TextColored (ImVec4 (PATACHE_IMGUI_WARNING_VALUE), "Vertical sync Inactve");
-              ImGui::EndTooltip ();
-            }
+          pEngine->debugInfo.calculatePerformanceStats = false;
         }
-
-      // Image count
-      ImGui::Text ("SWAPCHAIN IMAGE COUNT : %u", pEngine->vulkan.swapchainImageCount);
-
-      // Image Color Format
-      ImGui::Text ("COLOR FORMAT : %s",
-                   string_VkFormat (pEngine->debugInfo.swapchainImageColorFormatVK));
-
-      // Image Color Space
-      ImGui::Text ("COLOR SPACE : %s",
-                   string_VkColorSpaceKHR (pEngine->debugInfo.swapchainImageColorSpaceVK));
-
-      // Drawable Size
-      ImGui::Text ("SWAPCHAIN DRAWABLE SIZE : %u x %u", pEngine->vulkan.swapchainExtent.width,
-                   pEngine->vulkan.swapchainExtent.height);
-
-      ImGui::Spacing ();
 
       ImGui::PopStyleVar ();
       ImGui::End ();

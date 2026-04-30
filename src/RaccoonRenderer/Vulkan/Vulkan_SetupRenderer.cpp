@@ -335,9 +335,9 @@ RaccoonRendererInit (Patache::Engine * pEngine, const Patache::EngineCreateInfo 
         .flags           = 0U,
         .messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT
                            | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT,
-        .messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT
-                       | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT
-                       | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT,
+        .messageType     = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT
+                           | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT
+                           | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT,
         .pfnUserCallback = &DebugMessageFunc,
         .pUserData       = nullptr
       };
@@ -963,16 +963,16 @@ EXIT_CREATE_DEVICE:
           vulkanFunctions.vkGetInstanceProcAddr = &vkGetInstanceProcAddr;
           vulkanFunctions.vkGetDeviceProcAddr   = &vkGetDeviceProcAddr;
 
-          VmaAllocatorCreateInfo vmaAllocatorInfo{ .flags                       = vmaAllocatorInfoFlags,
-                                      .physicalDevice              = pEngine->vulkan.physicalDevice,
-                                      .device                      = pEngine->vulkan.device,
-                                      .preferredLargeHeapBlockSize = 0U,
-                                      .pAllocationCallbacks        = nullptr,
-                                      .pDeviceMemoryCallbacks      = nullptr,
-                                      .pHeapSizeLimit              = nullptr,
-                                      .pVulkanFunctions            = &vulkanFunctions,
-                                      .instance                    = pEngine->vulkan.instance,
-                                      .vulkanApiVersion            = VK_API_VERSION_1_3,
+          VmaAllocatorCreateInfo vmaAllocatorInfo{ .flags          = vmaAllocatorInfoFlags,
+                                                   .physicalDevice = pEngine->vulkan.physicalDevice,
+                                                   .device         = pEngine->vulkan.device,
+                                                   .preferredLargeHeapBlockSize = 0U,
+                                                   .pAllocationCallbacks        = nullptr,
+                                                   .pDeviceMemoryCallbacks      = nullptr,
+                                                   .pHeapSizeLimit              = nullptr,
+                                                   .pVulkanFunctions            = &vulkanFunctions,
+                                                   .instance         = pEngine->vulkan.instance,
+                                                   .vulkanApiVersion = VK_API_VERSION_1_3,
 #if VMA_EXTERNAL_MEMORY
                                                    .pTypeExternalMemoryHandleTypes = nullptr
 #endif
@@ -1134,7 +1134,7 @@ EXIT_CREATE_DEVICE:
               return false;
             }
 
-          VkResult  result;
+          VkResult result;
 
           for (std::uint32_t i{ 0U }; i < pEngine->vulkan.swapchainImageCount; ++i)
             {
@@ -1375,7 +1375,7 @@ EXIT_CREATE_DEVICE:
             .dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO,
             .alphaBlendOp        = VK_BLEND_OP_ADD,
             .colorWriteMask      = VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_G_BIT
-                              | VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_A_BIT
+                                   | VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_A_BIT
           };
 
           const VkPipelineColorBlendStateCreateInfo colorBlendStateInfo{
@@ -1500,32 +1500,32 @@ EXIT_CREATE_DEVICE:
 
           // GPU-CPU visible transfer buffer
           const VkBufferCreateInfo buffStagingInfo{
-.sType                 = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
-.pNext                 = nullptr,
-.flags                 = 0U,
-.size                  = rInfo.buffStagingSize,
-.usage                 = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-.sharingMode           = VK_SHARING_MODE_EXCLUSIVE,
-.queueFamilyIndexCount = 1U,
-.pQueueFamilyIndices   = &pEngine->vulkan.graphicsQueueFamilyIndex
+            .sType       = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
+            .pNext       = nullptr,
+            .flags       = 0U,
+            .size        = rInfo.buffStagingSize,
+            .usage       = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+            .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
+            .queueFamilyIndexCount = 1U,
+            .pQueueFamilyIndices   = &pEngine->vulkan.graphicsQueueFamilyIndex
           };
 
           constexpr VmaAllocationCreateInfo allocInfo{
-.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT
+            .flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT
                      | VMA_ALLOCATION_CREATE_WITHIN_BUDGET_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT,
-.usage = VMA_MEMORY_USAGE_AUTO_PREFER_HOST,
-.requiredFlags
+            .usage = VMA_MEMORY_USAGE_AUTO_PREFER_HOST,
+            .requiredFlags
             = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-.preferredFlags = VK_MEMORY_PROPERTY_HOST_CACHED_BIT,
-.memoryTypeBits = 0U,
-.pool      = nullptr,
-.pUserData = nullptr,
-.priority  = 1.0F
+            .preferredFlags = VK_MEMORY_PROPERTY_HOST_CACHED_BIT,
+            .memoryTypeBits = 0U,
+            .pool           = nullptr,
+            .pUserData      = nullptr,
+            .priority       = 1.0F
           };
 
-          VkResult  result{ vmaCreateBuffer (pEngine->vulkan.allocator, &buffStagingInfo, &allocInfo,
-                                             &pEngine->vulkan.stagingBuffer,
-                                             &pEngine->vulkan.stagingAllocation, nullptr) };
+          VkResult result{ vmaCreateBuffer (pEngine->vulkan.allocator, &buffStagingInfo, &allocInfo,
+                                            &pEngine->vulkan.stagingBuffer,
+                                            &pEngine->vulkan.stagingAllocation, nullptr) };
 
           if (result != VK_SUCCESS)
             {
@@ -1565,8 +1565,8 @@ EXIT_CREATE_DEVICE:
               };
 
               const VmaAllocationCreateInfo allocInfo{
-                .flags = VMA_ALLOCATION_CREATE_STRATEGY_MIN_MEMORY_BIT
-                         | VMA_ALLOCATION_CREATE_WITHIN_BUDGET_BIT,
+                .flags          = VMA_ALLOCATION_CREATE_STRATEGY_MIN_MEMORY_BIT
+                                  | VMA_ALLOCATION_CREATE_WITHIN_BUDGET_BIT,
                 .usage          = VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE,
                 .requiredFlags  = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
                 .preferredFlags = VK_MEMORY_PROPERTY_DEVICE_COHERENT_BIT_AMD,
@@ -1594,7 +1594,7 @@ EXIT_CREATE_DEVICE:
               const VmaPoolCreateInfo poolCreateInfo{ .memoryTypeIndex        = memoryTypeIndex,
                                                       .flags                  = 0U,
                                                       .blockSize              = 0U,
-                                                      .minBlockCount          = 1U,
+                                                      .minBlockCount          = 0U,
                                                       .maxBlockCount          = 0U,
                                                       .priority               = 1.0F,
                                                       .minAllocationAlignment = 0U,

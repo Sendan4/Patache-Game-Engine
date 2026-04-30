@@ -3,6 +3,14 @@
 bool
 Patache::Engine::BeginRender (SDL_Event & rEvent)
 {
+#if PATACHE_DEBUG == 1
+  if (debugInfo.timerFpsRun && debugInfo.calculatePerformanceStats)
+    {
+      debugInfo.frameTimer  = std::chrono::high_resolution_clock::now ();
+      debugInfo.timerFpsRun = false;
+    }
+#endif
+
   // Wait Fences
   vulkan.renderResult = vkWaitForFences (
       vulkan.device, 1U, &vulkan.pInFlightFences[vulkan.currentFrame], VK_FALSE, UINT64_MAX);
@@ -17,7 +25,22 @@ Patache::Engine::BeginRender (SDL_Event & rEvent)
     || __DragonFly__ || __MidnightBSD__
   if (resizingPending && resize)
     {
+  #if PATACHE_DEBUG == 1
+      if (debugInfo.calculatePerformanceStats)
+        {
+          debugInfo.mainSwapchainTimer = std::chrono::high_resolution_clock::now ();
+        }
+  #endif
       RecreateSwapchain (this);
+  #if PATACHE_DEBUG == 1
+      if (debugInfo.calculatePerformanceStats)
+        {
+          debugInfo.mainSwapchainTime
+              = std::chrono::duration<float, std::chrono::milliseconds::period> (
+                    std::chrono::high_resolution_clock::now () - debugInfo.mainRenderPassTimer)
+                    .count ();
+        }
+  #endif
 
       resizingPending = false;
       resize          = false;
@@ -95,7 +118,22 @@ Patache::Engine::BeginRender (SDL_Event & rEvent)
           SDL_WaitEvent (&rEvent);
         }
 
+#if PATACHE_DEBUG == 1
+      if (debugInfo.calculatePerformanceStats)
+        {
+          debugInfo.mainSwapchainTimer = std::chrono::high_resolution_clock::now ();
+        }
+#endif
       RecreateSwapchain (this);
+#if PATACHE_DEBUG == 1
+      if (debugInfo.calculatePerformanceStats)
+        {
+          debugInfo.mainSwapchainTime
+              = std::chrono::duration<float, std::chrono::milliseconds::period> (
+                    std::chrono::high_resolution_clock::now () - debugInfo.mainRenderPassTimer)
+                    .count ();
+        }
+#endif
     }
 
   // Reset Fences
@@ -149,6 +187,11 @@ Patache::Engine::BeginRender (SDL_Event & rEvent)
     {
       std::future<void> returnVulkanCheck = std::async (
           std::launch::async, Patache::VulkanCheck, "vkBeginCommandBuffer()", vulkan.renderResult);
+    }
+
+  if (debugInfo.calculatePerformanceStats)
+    {
+      debugInfo.mainCmdTimer = std::chrono::high_resolution_clock::now ();
     }
 #endif
 
@@ -210,6 +253,13 @@ EXIT_COPY:
     };
 
     vkCmdBeginRenderPass (vulkan.pCmd[vulkan.currentFrame], &info, VK_SUBPASS_CONTENTS_INLINE);
+
+#if PATACHE_DEBUG == 1
+    if (debugInfo.calculatePerformanceStats)
+      {
+        debugInfo.mainRenderPassTimer = std::chrono::high_resolution_clock::now ();
+      }
+#endif
   }
 
   vkCmdBindPipeline (vulkan.pCmd[vulkan.currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS,
@@ -265,6 +315,16 @@ Patache::Engine::EndRender (SDL_Event & rEvent)
   // End RenderPass
   vkCmdEndRenderPass (vulkan.pCmd[vulkan.currentFrame]);
 
+#if PATACHE_DEBUG == 1
+  if (debugInfo.calculatePerformanceStats)
+    {
+      debugInfo.mainRenderPassTime
+          = std::chrono::duration<float, std::chrono::milliseconds::period> (
+                std::chrono::high_resolution_clock::now () - debugInfo.mainRenderPassTimer)
+                .count ();
+    }
+#endif
+
   // End Command Buffer
   vulkan.renderResult = vkEndCommandBuffer (vulkan.pCmd[vulkan.currentFrame]);
 
@@ -278,6 +338,14 @@ Patache::Engine::EndRender (SDL_Event & rEvent)
 
       std::future<void> returnVulkanCheck{ std::async (std::launch::async, Patache::VulkanCheck,
                                                        errorText, vulkan.renderResult) };
+    }
+
+  if (debugInfo.calculatePerformanceStats)
+    {
+      debugInfo.mainCmdTime
+          = std::chrono::duration<float, std::chrono::milliseconds::period> (
+                std::chrono::high_resolution_clock::now () - debugInfo.mainCmdTimer)
+                .count ();
     }
 #endif
 
@@ -365,8 +433,27 @@ Patache::Engine::EndRender (SDL_Event & rEvent)
           SDL_WaitEvent (&rEvent);
         }
 
+#if PATACHE_DEBUG == 1
+      if (debugInfo.calculatePerformanceStats)
+        {
+          debugInfo.mainSwapchainTimer = std::chrono::high_resolution_clock::now ();
+        }
+#endif
       RecreateSwapchain (this);
+#if PATACHE_DEBUG == 1
+      if (debugInfo.calculatePerformanceStats)
+        {
+          debugInfo.mainSwapchainTime
+              = std::chrono::duration<float, std::chrono::milliseconds::period> (
+                    std::chrono::high_resolution_clock::now () - debugInfo.mainRenderPassTimer)
+                    .count ();
+        }
+#endif
     }
 
   vulkan.currentFrame = (vulkan.currentFrame + 1U) % vulkan.swapchainImageCount;
+
+#if PATACHE_DEBUG == 1
+  ++debugInfo.numFrames;
+#endif
 }

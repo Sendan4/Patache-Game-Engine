@@ -14,7 +14,7 @@ VulkanInfo (Patache::Engine * const pEngine, const Patache::SwapchainInfo & rSwa
                                            .driverInfo{},
                                            .conformanceVersion{} };
   VkPhysicalDeviceProperties2      physicalDeviceProperties{
-         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2, .pNext = &driver, .properties{}
+    .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2, .pNext = &driver, .properties{}
   };
   vkGetPhysicalDeviceProperties2 (pEngine->vulkan.physicalDevice, &physicalDeviceProperties);
 
@@ -24,6 +24,10 @@ VulkanInfo (Patache::Engine * const pEngine, const Patache::SwapchainInfo & rSwa
 
   VkPhysicalDeviceMemoryProperties memProperties{};
   vkGetPhysicalDeviceMemoryProperties (pEngine->vulkan.physicalDevice, &memProperties);
+#if PATACHE_DEBUG == 1
+  vkGetPhysicalDeviceMemoryProperties (pEngine->vulkan.physicalDevice,
+                                       &pEngine->debugInfo.memProperties);
+#endif
 
   for (std::uint32_t i = 0; i < memProperties.memoryHeapCount; ++i)
     {
@@ -57,7 +61,7 @@ VulkanInfo (Patache::Engine * const pEngine, const Patache::SwapchainInfo & rSwa
   // Vulkan Device Type
   PATACHE_STRNCPY (pEngine->debugInfo.deviceTypeVK,
                    string_VkPhysicalDeviceType (physicalDeviceProperties.properties.deviceType),
-                   PATACHE_DEVICETYPE_VK_SIZE - 1, PATACHE_DEVICETYPE_VK_SIZE);
+                   PATACHE_DEVICETYPE_VK_SIZE, PATACHE_DEVICETYPE_VK_SIZE);
 
   // Vulkan Driver Name
   PATACHE_STRNCPY (pEngine->debugInfo.driverNameVK, driver.driverName, VK_MAX_DRIVER_NAME_SIZE,
@@ -65,7 +69,7 @@ VulkanInfo (Patache::Engine * const pEngine, const Patache::SwapchainInfo & rSwa
 
   // Vulkan Driver ID
   PATACHE_STRNCPY (pEngine->debugInfo.driverIdVK, string_VkDriverId (driver.driverID),
-                   PATACHE_DRIVERID_VK_SIZE - 1, PATACHE_DRIVERID_VK_SIZE);
+                   PATACHE_DRIVERID_VK_SIZE, PATACHE_DRIVERID_VK_SIZE);
 
   // Vulkan Driver Info
   PATACHE_STRNCPY (pEngine->debugInfo.driverInfoVK, driver.driverInfo, VK_MAX_DRIVER_INFO_SIZE,

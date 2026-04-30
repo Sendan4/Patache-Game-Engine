@@ -240,8 +240,8 @@ struct Engine
 
 // Versioning management in the style of Vulkan. // major.minor.patch.variant
 constexpr std::uint32_t
-          MakeVersion (const std::uint8_t & rMajor, const std::uint16_t & rMinor,
-                       const std::uint16_t & rPatch, const std::uint8_t & rVariant)
+MakeVersion (const std::uint8_t & rMajor, const std::uint16_t & rMinor,
+             const std::uint16_t & rPatch, const std::uint8_t & rVariant)
 {
   return ((static_cast<std::uint32_t> (rVariant)) << 29U
           | (static_cast<std::uint32_t> (rMajor)) << 22U
@@ -250,29 +250,30 @@ constexpr std::uint32_t
 
 constexpr std::uint8_t
           GetVersionMajor (const std::uint32_t & rMajor)
-{
-  // 6 bits
-  return rMajor >> 22U & 0b1111111;
-}
+          {
+            // 6 bits
+            return rMajor >> 22U & 0b1111111;
+          }
 
 constexpr std::uint16_t
           GetVersionMinor (const std::uint32_t & rMinor)
-{
-  // 9 bits
-  return rMinor >> 12U & 0b1111111111;
-}
+          {
+            // 9 bits
+            return rMinor >> 12U & 0b1111111111;
+          }
 
 constexpr std::uint16_t
           GetVersionPatch (const std::uint32_t & rPatch)
-{
-  // 11 bits
-  return rPatch & 0b111111111111;
-}
+          {
+            // 11 bits
+            return rPatch & 0b111111111111;
+          }
 
 constexpr std::uint8_t
           GetVersionVariant (const std::uint32_t & rVariant)
-{
-  // 5 bits
-  return rVariant >> 29U & 0b111111;
-}
-}
+          {
+            // 5 bits
+            return rVariant >> 29U & 0b111111;
+          }
+          }
+          

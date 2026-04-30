@@ -4,6 +4,9 @@
 #include <future>
 #include <functional>
 #include <cstdio>
+#if PATACHE_DEBUG == 1
+  #include <chrono>
+#endif
 
 #include <vulkan/vulkan.h>
 #include "PatacheEngine/VmaUsage.hpp"

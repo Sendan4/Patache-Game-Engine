@@ -353,8 +353,8 @@ DesktopStyleUserInterfaceConfigure (void * pData, xdg_surface * pDesktopStyleUse
                   pCleanupShadow->mappedMemSize = (pEngine->vulkan.swapchainExtent.width
                                                    + (PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE * 2))
                                                   * PATACHE_SHADOW_THRESHOLDEDGE_CSD_SIZE * 4U;
-                  pCleanupShadow->pMappedMem = pBorderPixels;
-                  pCleanupShadow->fd         = shadowFileDescriptor;
+                  pCleanupShadow->pMappedMem    = pBorderPixels;
+                  pCleanupShadow->fd            = shadowFileDescriptor;
 
                   wl_buffer_add_listener (pBufferTest, &wl_buffer_listener, pCleanupShadow);
 
@@ -616,8 +616,8 @@ DesktopStyleUserInterfaceConfigure (void * pData, xdg_surface * pDesktopStyleUse
 
                   pCleanup->mappedMemSize = pEngine->vulkan.swapchainExtent.width
                                             * PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE * 4;
-                  pCleanup->pMappedMem = pBorderPixels;
-                  pCleanup->fd         = borderFileDescriptor;
+                  pCleanup->pMappedMem    = pBorderPixels;
+                  pCleanup->fd            = borderFileDescriptor;
 
                   wl_buffer_add_listener (pBuffer, &wl_buffer_listener, pCleanup);
 
@@ -796,8 +796,8 @@ DesktopStyleUserInterfaceConfigure (void * pData, xdg_surface * pDesktopStyleUse
 
                   pCleanup->mappedMemSize = PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE
                                             * PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE * 4;
-                  pCleanup->pMappedMem = pBorderPixels;
-                  pCleanup->fd         = borderFileDescriptor;
+                  pCleanup->pMappedMem    = pBorderPixels;
+                  pCleanup->fd            = borderFileDescriptor;
 
                   wl_buffer_add_listener (pBuffer, &wl_buffer_listener, pCleanup);
 

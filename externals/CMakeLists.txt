@@ -42,6 +42,20 @@ if (MSVC OR CMAKE_SYSTEM_NAME STREQUAL "Linux" OR
     set (BUILD_TESTS OFF CACHE INTERNAL "..." FORCE)
     set (UPDATE_DEPS ON CACHE INTERNAL "..." FORCE)
     set (VULKAN_HEADERS_ENABLE_MODULE OFF CACHE INTERNAL "..." FORCE)
+    
+    # Vulkan Validation Layer
+    if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo" AND USE_VVL)
+        message("")
+        message("  - Vulkan Validation Layers -")
+
+        FetchContent_Declare(
+            Vulkan-ValidationLayers
+            GIT_REPOSITORY https://github.com/KhronosGroup/Vulkan-ValidationLayers.git
+            GIT_TAG v1.4.346
+        )
+    
+        FetchContent_MakeAvailable(Vulkan-ValidationLayers)
+    endif()
 
     message("")
     message("  - Vulkan Headers -")
@@ -68,20 +82,6 @@ if (MSVC OR CMAKE_SYSTEM_NAME STREQUAL "Linux" OR
             GIT_TAG v1.4.346
     	  )
     	  FetchContent_MakeAvailable(Vulkan-Loader)
-    endif()
-
-    # Vulkan Validation Layer
-    if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo" AND USE_VVL)
-    message("")
-    message("  - Vulkan Validation Layers -")
-
-    FetchContent_Declare(
-        Vulkan-ValidationLayers
-        GIT_REPOSITORY https://github.com/KhronosGroup/Vulkan-ValidationLayers.git
-        GIT_TAG v1.4.346
-    )
-    
-    FetchContent_MakeAvailable(Vulkan-ValidationLayers)
     endif()
 endif()
 
