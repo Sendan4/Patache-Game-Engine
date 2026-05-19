@@ -7,6 +7,11 @@
 // Patache Engine
 #include "PatacheEngine/VulkanBackend.hpp"
 #include "Vulkan_SetupLog.hpp"
+#include "LinuxAndUnixMacro.h"
+
+#if PATACHE_LINUX_OR_UNIX
+extern std::uint8_t scaleInt;
+#endif
 
 bool CreateFrameBuffer (Patache::VulkanBackend &);
 

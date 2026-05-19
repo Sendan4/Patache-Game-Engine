@@ -218,19 +218,31 @@ CreateSwapchain (Patache::Engine * const pEngine, Patache::SwapchainInfo & rSwap
   getDrawableSize_Async.wait ();
 #endif
 
+#if PATACHE_DEBUG == 1 && PATACHE_LINUX_OR_UNIX
+  ImGuiIO & rIO{ ImGui::GetIO () };
+
+  rIO.FontGlobalScale = scaleInt;
+#endif
+
   // Create SwapChain
   const VkSwapchainCreateInfoKHR swapchainCreateInfo{
-    .sType            = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
-    .pNext            = nullptr,
-    .flags            = 0U,
-    .surface          = pEngine->vulkan.surface,
-    .minImageCount    = (surfaceCapabilities.minImageCount + pEngine->configuration.addImageCount),
-    .imageFormat      = selectedSurfaceFormat.format,
-    .imageColorSpace  = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR,
-    .imageExtent      = pEngine->vulkan.swapchainExtent,
-    .imageArrayLayers = 1U,
-    .imageUsage       = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT,
-    .imageSharingMode = VK_SHARING_MODE_EXCLUSIVE,
+    .sType           = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
+    .pNext           = nullptr,
+    .flags           = 0U,
+    .surface         = pEngine->vulkan.surface,
+    .minImageCount   = (surfaceCapabilities.minImageCount + pEngine->configuration.addImageCount),
+    .imageFormat     = selectedSurfaceFormat.format,
+    .imageColorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR,
+#if PATACHE_LINUX_OR_UNIX
+    .imageExtent{ .width  = pEngine->vulkan.swapchainExtent.width * scaleInt,
+                  .height = pEngine->vulkan.swapchainExtent.height * scaleInt },
+#else
+    .imageExtent{ .width  = pEngine->vulkan.swapchainExtent.width,
+                  .height = pEngine->vulkan.swapchainExtent.height },
+#endif
+    .imageArrayLayers      = 1U,
+    .imageUsage            = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT,
+    .imageSharingMode      = VK_SHARING_MODE_EXCLUSIVE,
     .queueFamilyIndexCount = 1U,
     .pQueueFamilyIndices   = &pEngine->vulkan.graphicsQueueFamilyIndex,
     .preTransform          = surfaceCapabilities.currentTransform,

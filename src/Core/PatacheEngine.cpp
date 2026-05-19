@@ -57,7 +57,9 @@ extern bool  resize;
 bool
 Patache::Engine::Init (const Patache::EngineCreateInfo & rInfo)
 {
+#if PATACHE_DEBUG == 1
   debugInfo.startTimer = std::chrono::high_resolution_clock::now ();
+#endif
 
 #if defined(_WIN64)
   GetConsoleMode (sTerminal, &sMode);
@@ -211,12 +213,14 @@ Patache::Engine::Init (const Patache::EngineCreateInfo & rInfo)
   if (!RaccoonRendererInit (this, rInfo))
     return false;
 
+#if PATACHE_DEBUG == 1
   debugInfo.startTime = std::chrono::duration<float, std::chrono::milliseconds::period> (
                             std::chrono::high_resolution_clock::now () - debugInfo.startTimer)
                             .count ();
 
   fast_io::println (PATACHE_TERM_BOLD, PATACHE_TERM_COLOR_PATACHE, PATACHE_ENGINE_NAME,
                     PATACHE_TERM_RESET, " : Start time : ", debugInfo.startTime, " milliseconds");
+#endif
 
   return true;
 }

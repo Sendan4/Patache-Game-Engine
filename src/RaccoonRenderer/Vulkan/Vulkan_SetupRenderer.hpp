@@ -18,6 +18,11 @@
 #include "Vulkan_SetupLog.hpp"
 #include "Message.hpp"
 #include "Vulkan_SetupRenderer_Funcs.hpp"
+#include "LinuxAndUnixMacro.h"
+
+#if PATACHE_LINUX_OR_UNIX
+extern std::uint8_t scaleInt;
+#endif
 
 #define PATACHE_ENGINE_VERSION_VK                                                                  \
   VK_MAKE_API_VERSION (0, PATACHE_ENGINE_VERSION_MAYOR, PATACHE_ENGINE_VERSION_MINOR,              \

@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.18)
 
 project("imgui" LANGUAGES CXX C VERSION "1.92.6")
 
-set(Imgui_VERSION "v1.92.6-docking" CACHE INTERNAL "Imgui version")
+set(Imgui_VERSION "v1.92.7-docking" CACHE INTERNAL "Imgui version")
 
 message("")
 message("  - ImGui -")

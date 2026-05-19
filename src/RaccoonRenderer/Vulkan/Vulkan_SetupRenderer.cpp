@@ -1311,16 +1311,30 @@ EXIT_CREATE_DEVICE:
           // Viewport and Scissor
           pEngine->vulkan.viewport.x = 0U;
           pEngine->vulkan.viewport.y = 0U;
+
+#if PATACHE_LINUX_OR_UNIX
           pEngine->vulkan.viewport.width
-              = static_cast<float> (pEngine->vulkan.swapchainExtent.width);
+              = static_cast<float> (pEngine->vulkan.swapchainExtent.width * scaleInt);
           pEngine->vulkan.viewport.height
-              = static_cast<float> (pEngine->vulkan.swapchainExtent.height);
+              = static_cast<float> (pEngine->vulkan.swapchainExtent.height * scaleInt);
+#else
+          pEngine->vulkan.viewport.width  = pEngine->vulkan.swapchainExtent.width;
+          pEngine->vulkan.viewport.height = pEngine->vulkan.swapchainExtent.height;
+#endif
+
           pEngine->vulkan.viewport.minDepth = 0.0F;
           pEngine->vulkan.viewport.maxDepth = 1.0F;
 
           pEngine->vulkan.scissor.offset.x = 0U;
           pEngine->vulkan.scissor.offset.y = 0U;
-          pEngine->vulkan.scissor.extent   = pEngine->vulkan.swapchainExtent;
+
+#if PATACHE_LINUX_OR_UNIX
+          pEngine->vulkan.scissor.extent.width  = pEngine->vulkan.swapchainExtent.width * scaleInt;
+          pEngine->vulkan.scissor.extent.height = pEngine->vulkan.swapchainExtent.height * scaleInt;
+#else
+          pEngine->vulkan.scissor.extent.width  = pEngine->vulkan.swapchainExtent.width;
+          pEngine->vulkan.scissor.extent.height = pEngine->vulkan.swapchainExtent.height;
+#endif
 
           const VkPipelineViewportStateCreateInfo viewportStateInfo{
             .sType         = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO,

@@ -4,6 +4,7 @@
 #include <future>
 #include <functional>
 #include <cstdio>
+#include <cmath>
 #if PATACHE_DEBUG == 1
   #include <chrono>
 #endif
@@ -20,15 +21,18 @@
 // Patache Engine
 #include "PatacheEngine/PatacheEngine.hpp"
 #include "Vulkan_SetupLog.hpp"
+#include "LinuxAndUnixMacro.h"
 
 // Vulkan_Swapchain.cpp
 void RecreateSwapchain (Patache::Engine * const);
 
 #define PATACHE_ERROR_TEXT_SIZE 128
 
-#if __unix__ || __linux__ || __FreeBSD__ || __NetBSD__ || __NetBSD__ || __OpenBSD__ || __bsdi__    \
-    || __DragonFly__ || __MidnightBSD__
+#if PATACHE_LINUX_OR_UNIX
 // Input.hpp
 extern bool resize;
 extern bool resizingPending;
+// WaylandWindow.hpp
+extern std::uint8_t scaleInt;
+extern bool         scalePending;
 #endif

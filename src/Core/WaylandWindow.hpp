@@ -1,3 +1,11 @@
+// TODO: no recrear los wl_shm_poll todo el tiempo. intentar crearlos con un offset de memoria y
+// recrear solo cuando no sea suficiente, asi reduzco el overhead del CSD.
+// TODO: usar wl_surface.frame para renderizar. puede ayudar a reducir el overhead y renderizar solo
+// cuando sea necesario.
+// TODO: mover todas estas variables globales al objeto de ventana.
+// TODO: hacer que esta funcion de crear la ventana trabaje con el objeto en si y no globalmente,
+// ademas de usar un puntero del motor para conseguir informacion util.
+
 #include <future>
 #include <functional>
 #include <cstring>
@@ -22,11 +30,16 @@
 
 #include "PatacheEngine/PatacheEngine.hpp"
 #include "Message.hpp"
+#include "Vulkan_Swapchain.hpp"
 
 // Window Actions
-bool        resizingPending{ false };
-extern bool resize;
-extern bool isFullScreen;
+bool          resizingPending{ false };
+extern bool   resize;
+extern bool   isFullScreen;
+bool          scalePending{ false };
+std::uint8_t  scaleInt{ 1 };
+std::uint32_t monitorWidth{ 0U };
+std::uint32_t monitorHeight{ 0U };
 
 // CSD (Window Client Side Decoration) Actions
 static bool         sFocusCSD{ true };
@@ -1045,6 +1058,70 @@ static constexpr struct xdg_surface_listener sDesktopStyleUserInterfaceListener{
   .configure = DesktopStyleUserInterfaceConfigure
 };
 
+// Output
+static void
+OutputGeometry ([[maybe_unused]] void * pData, [[maybe_unused]] wl_output * pOutput,
+                [[maybe_unused]] int x, [[maybe_unused]] int y, [[maybe_unused]] int physicalWidth,
+                [[maybe_unused]] int physicalHeight, [[maybe_unused]] int subPixel,
+                [[maybe_unused]] const char * const pMake,
+                [[maybe_unused]] const char * const pModel, [[maybe_unused]] int geometry)
+{
+}
+
+static void
+OutputMode ([[maybe_unused]] void * pData, [[maybe_unused]] wl_output * pOutput,
+            [[maybe_unused]] std::uint32_t modes, std::int32_t width, std::int32_t height,
+            [[maybe_unused]] std::int32_t refresh)
+{
+  monitorWidth  = width;
+  monitorHeight = height;
+}
+
+static void
+OutputDone (void * pData, [[maybe_unused]] wl_output * pOutput)
+{
+  Patache::Engine * pEngine{ static_cast<Patache::Engine *> (pData) };
+
+  if (scalePending)
+    {
+      scalePending = false;
+
+      // wl_surface_set_buffer_scale (waylandWindow.pSurface, scale); Dont use this
+      if (pEngine->vulkan.device != VK_NULL_HANDLE)
+        {
+          RecreateSwapchain (pEngine);
+        }
+    }
+}
+
+static void
+OutputScale (void * pData, [[maybe_unused]] wl_output * pOutput, std::int32_t factor)
+{
+  Patache::Engine * pEngine{ static_cast<Patache::Engine *> (pData) };
+
+  scalePending = true;
+  scaleInt     = factor;
+}
+
+static void
+OutputName ([[maybe_unused]] void * pData, [[maybe_unused]] wl_output * pOutput,
+            [[maybe_unused]] const char * const pName)
+{
+}
+
+static void
+OutputDescription ([[maybe_unused]] void * pData, [[maybe_unused]] wl_output * pOutput,
+                   [[maybe_unused]] const char * const pDescription)
+{
+}
+
+static constexpr struct wl_output_listener sOutputListener{ .geometry    = OutputGeometry,
+                                                            .mode        = OutputMode,
+                                                            .done        = OutputDone,
+                                                            .scale       = OutputScale,
+                                                            .name        = OutputName,
+                                                            .description = OutputDescription };
+
 // Seat
 // Using seat input for basic windowing needs
 static void
@@ -2005,7 +2082,7 @@ AddObject (void * pData, wl_registry * pRegistry, std::uint32_t name, const char
   else if (std::strcmp (pInterface, xdg_wm_base_interface.name) == 0)
     {
       pEngine->waylandWindow.pWindowManangerBase = static_cast<xdg_wm_base *> (
-          wl_registry_bind (pRegistry, name, &xdg_wm_base_interface, 1U));
+          wl_registry_bind (pRegistry, name, &xdg_wm_base_interface, 3U));
 
       xdg_wm_base_add_listener (pEngine->waylandWindow.pWindowManangerBase,
                                 &sWindowManangerBaseListener, nullptr);
@@ -2033,9 +2110,16 @@ AddObject (void * pData, wl_registry * pRegistry, std::uint32_t name, const char
   else if (std::strcmp (pInterface, wl_seat_interface.name) == 0)
     {
       pEngine->waylandWindow.pInput
-          = static_cast<wl_seat *> (wl_registry_bind (pRegistry, name, &wl_seat_interface, 1U));
+          = static_cast<wl_seat *> (wl_registry_bind (pRegistry, name, &wl_seat_interface, 5U));
 
       wl_seat_add_listener (pEngine->waylandWindow.pInput, &sInputListener, pData);
+    }
+  else if (std::strcmp (pInterface, wl_output_interface.name) == 0)
+    {
+      pEngine->waylandWindow.pOutput
+          = static_cast<wl_output *> (wl_registry_bind (pRegistry, name, &wl_output_interface, 2U));
+
+      wl_output_add_listener (pEngine->waylandWindow.pOutput, &sOutputListener, pEngine);
     }
 }
 
@@ -2170,6 +2254,12 @@ GetWindowSize (void * pData, [[maybe_unused]] xdg_toplevel * pDesktopWindow, std
           // si el compositor no devuelve un nuevo tamaño, toca inprovisar
           if (!isFullScreen && !isMaximized)
             {
+              if (widthWindoned >= monitorWidth || heightWindoned >= monitorHeight)
+                {
+                  widthWindoned  = monitorWidth;
+                  heightWindoned = monitorHeight;
+                }
+
               width  = widthWindoned;
               height = heightWindoned;
 
@@ -2197,12 +2287,21 @@ GetWindowSize (void * pData, [[maybe_unused]] xdg_toplevel * pDesktopWindow, std
           if (!isFullScreen && !isMaximized)
             {
               // CSD Window
+              width  = ((width + scaleInt - 1) / scaleInt) * scaleInt;
+              height = ((height + scaleInt - 1) / scaleInt) * scaleInt;
+
               pEngine->vulkan.swapchainExtent.width = width - PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE
                                                       - PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE;
 
               pEngine->vulkan.swapchainExtent.height
                   = height - PATACHE_MAINBAR_HEIGHT_CSD_SIZE
                     - (PATACHE_BORDER_THRESHOLDEDGE_CSD_SIZE * 2U);
+
+              pEngine->vulkan.swapchainExtent.width
+                  = ((pEngine->vulkan.swapchainExtent.width + scaleInt - 1) / scaleInt) * scaleInt;
+
+              pEngine->vulkan.swapchainExtent.height
+                  = ((pEngine->vulkan.swapchainExtent.height + scaleInt - 1) / scaleInt) * scaleInt;
 
               widthWindoned  = width;
               heightWindoned = height;

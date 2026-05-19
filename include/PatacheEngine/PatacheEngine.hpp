@@ -82,6 +82,7 @@ struct WaylandWindow
   wl_display *    pDisplay{ nullptr };
   wl_compositor * pCompositor{ nullptr };
   wl_seat *       pInput{ nullptr };
+  wl_output *     pOutput{ nullptr };
   // Main Surface for graphics
   wl_surface *   pSurface{ nullptr }; // Used by Vulkan
   xdg_wm_base *  pWindowManangerBase{ nullptr };

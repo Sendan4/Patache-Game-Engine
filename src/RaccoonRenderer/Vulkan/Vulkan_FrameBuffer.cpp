@@ -22,9 +22,14 @@ CreateFrameBuffer (Patache::VulkanBackend & rVulkan)
         .renderPass      = rVulkan.renderPass,
         .attachmentCount = 1U,
         .pAttachments    = &rVulkan.pSwapchainColorImageViews[i],
-        .width           = rVulkan.swapchainExtent.width,
-        .height          = rVulkan.swapchainExtent.height,
-        .layers          = 1U,
+#if PATACHE_LINUX_OR_UNIX
+        .width  = rVulkan.swapchainExtent.width * scaleInt,
+        .height = rVulkan.swapchainExtent.height * scaleInt,
+#else
+        .width  = rVulkan.swapchainExtent.width,
+        .height = rVulkan.swapchainExtent.height,
+#endif
+        .layers = 1U,
       };
 
       result = vkCreateFramebuffer (rVulkan.device, &frameBufferInfo, nullptr,

@@ -21,8 +21,7 @@ Patache::Engine::BeginRender (SDL_Event & rEvent)
    * The compositor throw the new size of window
    * and advise when you should resize.
    * */
-#if __unix__ || __linux__ || __FreeBSD__ || __NetBSD__ || __NetBSD__ || __OpenBSD__ || __bsdi__    \
-    || __DragonFly__ || __MidnightBSD__
+#if PATACHE_LINUX_OR_UNIX
   if (resizingPending && resize)
     {
   #if PATACHE_DEBUG == 1
@@ -238,7 +237,14 @@ EXIT_COPY:
     vulkan.clearColor.color.float32[2] = clearColor.b;
     vulkan.clearColor.color.float32[3] = clearColor.a;
 
-    vulkan.renderArea.extent   = vulkan.swapchainExtent;
+#if PATACHE_LINUX_OR_UNIX
+    vulkan.renderArea.extent.width  = vulkan.swapchainExtent.width * scaleInt;
+    vulkan.renderArea.extent.height = vulkan.swapchainExtent.height * scaleInt;
+#else
+    vulkan.renderArea.extent.width  = vulkan.swapchainExtent.width;
+    vulkan.renderArea.extent.height = vulkan.swapchainExtent.height;
+#endif
+
     vulkan.renderArea.offset.x = 0U;
     vulkan.renderArea.offset.y = 0U;
 
@@ -265,17 +271,28 @@ EXIT_COPY:
   vkCmdBindPipeline (vulkan.pCmd[vulkan.currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS,
                      vulkan.graphicsPipeline);
 
-  vulkan.viewport.x        = 0U;
-  vulkan.viewport.y        = 0U;
-  vulkan.viewport.width    = static_cast<float> (vulkan.swapchainExtent.width);
-  vulkan.viewport.height   = static_cast<float> (vulkan.swapchainExtent.height);
+  vulkan.viewport.x = 0U;
+  vulkan.viewport.y = 0U;
+#if PATACHE_LINUX_OR_UNIX
+  vulkan.viewport.width  = static_cast<float> (vulkan.swapchainExtent.width * scaleInt);
+  vulkan.viewport.height = static_cast<float> (vulkan.swapchainExtent.height * scaleInt);
+#else
+  vulkan.viewport.width  = static_cast<float> (vulkan.swapchainExtent.width);
+  vulkan.viewport.height = static_cast<float> (vulkan.swapchainExtent.height);
+#endif
   vulkan.viewport.minDepth = 0.0F;
   vulkan.viewport.maxDepth = 1.0F;
   vkCmdSetViewport (vulkan.pCmd[vulkan.currentFrame], 0U, 1U, &vulkan.viewport);
 
   vulkan.scissor.offset.x = 0U;
   vulkan.scissor.offset.y = 0U;
-  vulkan.scissor.extent   = vulkan.swapchainExtent;
+#if PATACHE_LINUX_OR_UNIX
+  vulkan.scissor.extent.width  = vulkan.swapchainExtent.width * scaleInt;
+  vulkan.scissor.extent.height = vulkan.swapchainExtent.height * scaleInt;
+#else
+  vulkan.scissor.extent.width  = vulkan.swapchainExtent.width;
+  vulkan.scissor.extent.height = vulkan.swapchainExtent.height;
+#endif
   vkCmdSetScissor (vulkan.pCmd[vulkan.currentFrame], 0U, 1U, &vulkan.scissor);
 
 // Imgui New Frame
@@ -284,6 +301,14 @@ EXIT_COPY:
   ImGui_ImplSDL3_NewFrame ();
   ImGui::NewFrame ();
   ImGui::SetNextWindowBgAlpha (0.0F);
+
+  #if PATACHE_LINUX_OR_UNIX
+  ImGui::GetMainViewport ()->Size
+      = ImVec2 (vulkan.swapchainExtent.width * scaleInt, vulkan.swapchainExtent.height * scaleInt);
+
+  ImGui::GetMainViewport ()->FramebufferScale = ImVec2 (scaleInt, scaleInt);
+  #endif
+
   ImGui::DockSpaceOverViewport (0, ImGui::GetMainViewport ());
 #endif
 
@@ -299,7 +324,7 @@ Patache::Engine::EndRender (SDL_Event & rEvent)
 {
 #if PATACHE_DEBUG == 1
   // Imgui New Frame
-  // ImGui::ShowDemoWindow ();
+  ImGui::ShowDemoWindow ();
   Patache::DrawDebugUI (this);
   ImGui::Render ();
 
