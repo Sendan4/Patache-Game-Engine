@@ -19,8 +19,7 @@
 #include "PatacheEngine/PatacheEngine.hpp"
 #include "Message.hpp"
 
-#if __unix__ || __linux__ || __FreeBSD__ || __NetBSD__ || __NetBSD__ || __OpenBSD__ || __bsdi__    \
-    || __DragonFly__ || __MidnightBSD__
+#if PATACHE_LINUX_OR_UNIX
 extern bool isMaximized;
 extern bool returnFromFullscreen;
 extern bool waitForFullscreen;

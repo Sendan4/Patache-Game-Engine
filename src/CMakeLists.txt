@@ -194,10 +194,13 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     PATACHE_ARCH="${CMAKE_SYSTEM_PROCESSOR}"
     PATACHE_FAST_IO_GIT_COMMIT_HASH_SHORT="${Fast_io_COMMIT_SHORT_HASH}")
 
+set(LINUX_OR_UNIX_MACROS_TEXT "__unix__ || __linux__ || __FreeBSD__ || __NetBSD__ || __NetBSD__ || __OpenBSD__ || __bsdi__ || __DragonFly__ || __MidnightBSD__")
+
 target_compile_definitions(${PROJECT_NAME} PUBLIC
     VULKAN_HPP_NO_EXCEPTIONS
     VULKAN_HPP_NO_SMART_HANDLE
-    VULKAN_HPP_NO_CONSTRUCTORS)
+    VULKAN_HPP_NO_CONSTRUCTORS
+ 		PATACHE_LINUX_OR_UNIX=${LINUX_OR_UNIX_MACROS_TEXT})
 
 # Git info macros
 if (USE_GIT AND GIT)

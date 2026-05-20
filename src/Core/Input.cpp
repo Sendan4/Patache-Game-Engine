@@ -16,8 +16,7 @@ Patache::Engine::HandleEvent (const SDL_Event & rEvent)
             {
               if (!isFullScreen)
                 {
-#if __unix__ || __linux__ || __FreeBSD__ || __NetBSD__ || __NetBSD__ || __OpenBSD__ || __bsdi__    \
-    || __DragonFly__ || __MidnightBSD__
+#if PATACHE_LINUX_OR_UNIX
                   // Wayland Client Side Decoration
                   if (waylandWindow.pDecorationMananger == nullptr
                       && waylandWindow.pSubCompositor != nullptr)
@@ -96,8 +95,7 @@ Patache::Engine::HandleEvent (const SDL_Event & rEvent)
                 }
               else
                 {
-#if __unix__ || __linux__ || __FreeBSD__ || __NetBSD__ || __NetBSD__ || __OpenBSD__ || __bsdi__    \
-    || __DragonFly__ || __MidnightBSD__
+#if PATACHE_LINUX_OR_UNIX
                   // Wayland Client Side Decoration
                   returnFromFullscreen = true;
 

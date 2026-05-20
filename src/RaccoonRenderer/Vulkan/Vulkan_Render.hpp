@@ -21,7 +21,6 @@
 // Patache Engine
 #include "PatacheEngine/PatacheEngine.hpp"
 #include "Vulkan_SetupLog.hpp"
-#include "LinuxAndUnixMacro.h"
 
 // Vulkan_Swapchain.cpp
 void RecreateSwapchain (Patache::Engine * const);

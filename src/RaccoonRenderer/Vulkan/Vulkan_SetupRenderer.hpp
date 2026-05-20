@@ -18,7 +18,6 @@
 #include "Vulkan_SetupLog.hpp"
 #include "Message.hpp"
 #include "Vulkan_SetupRenderer_Funcs.hpp"
-#include "LinuxAndUnixMacro.h"
 
 #if PATACHE_LINUX_OR_UNIX
 extern std::uint8_t scaleInt;

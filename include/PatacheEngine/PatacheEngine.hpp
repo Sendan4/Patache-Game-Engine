@@ -20,8 +20,7 @@
   #pragma warning(pop)
 #endif
 
-#if __unix__ || __linux__ || __FreeBSD__ || __NetBSD__ || __NetBSD__ || __OpenBSD__ || __bsdi__    \
-    || __DragonFly__ || __MidnightBSD__
+#if PATACHE_LINUX_OR_UNIX
   #include <wayland-client.h>
   #include <wayland-cursor.h>
 
@@ -74,8 +73,7 @@ struct ClearColor
   float a{ 1.0F }; // Alpha
 };
 
-#if __unix__ || __linux__ || __FreeBSD__ || __NetBSD__ || __NetBSD__ || __OpenBSD__ || __bsdi__    \
-    || __DragonFly__ || __MidnightBSD__
+#if PATACHE_LINUX_OR_UNIX
 struct WaylandWindow
 {
   // Globals
@@ -209,8 +207,7 @@ struct Engine
   // Window
   SDL_Window * pGameWindow{ nullptr };
 
-#if __unix__ || __linux__ || __FreeBSD__ || __NetBSD__ || __NetBSD__ || __OpenBSD__ || __bsdi__    \
-    || __DragonFly__ || __MidnightBSD__
+#if PATACHE_LINUX_OR_UNIX
   Patache::WaylandWindow waylandWindow{};
 #endif
 
