@@ -194,53 +194,12 @@ if (CMAKE_SYSTEM_NAME STREQUAL "Linux" OR
     pkg_check_modules(WAYLAND wayland-client REQUIRED)
     pkg_check_modules(WAYLAND_CURSOR wayland-cursor REQUIRED)
 
-    find_program(WaylandScanner
-        wayland-scanner
-        REQUIRED)
-	
-    message(STATUS "Wayland Scanner : ${WaylandScanner}")
-
-    execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory WaylandProtocols
-        WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
-
-    message(STATUS "Wayland Protocols (.xml) dir : ${CMAKE_BINARY_DIR}/WaylandProtocols/")
-
-    if (EXISTS ${CMAKE_BINARY_DIR}/WaylandProtocols)
-        # xdg_shell protocol
-        message(STATUS "Wayland Protocol : xdg_shell")
-
-        if (NOT EXISTS ${CMAKE_BINARY_DIR}/WaylandProtocols/xdg-shell.xml)
-            file(DOWNLOAD
-                https://gitlab.freedesktop.org/wayland/wayland-protocols/-/raw/810f1adaf33521cc55fc510566efba2a1418174f/stable/xdg-shell/xdg-shell.xml?inline=false
-                ${CMAKE_BINARY_DIR}/WaylandProtocols/xdg-shell.xml
-	        SHOW_PROGRESS
-            )
-    else()
-        message(STATUS "(xdg_shell) already downloaded")
+	  if (${WAYLAND_FOUND})
+        message(STATUS "wayland-client has been found")
     endif()
 
-        execute_process(
-            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/WaylandProtocols/
-            COMMAND wayland-scanner client-header xdg-shell.xml xdg-shell.h
-            COMMAND wayland-scanner private-code xdg-shell.xml xdg-shell.c)
-
-        # xdg-decoration-unstable-v1.xml protocol
-	message(STATUS "Wayland Protocol : xdg-decoration-unstable-v1.xml")
-
-	if (NOT EXISTS ${CMAKE_BINARY_DIR}/WaylandProtocols/xdg-decoration-unstable-v1.xml)
-            file(DOWNLOAD
-                https://gitlab.freedesktop.org/wayland/wayland-protocols/-/raw/main/unstable/xdg-decoration/xdg-decoration-unstable-v1.xml?ref_type=heads&inline=false
-	        ${CMAKE_BINARY_DIR}/WaylandProtocols/xdg-decoration-unstable-v1.xml
-	        SHOW_PROGRESS
-            )
-        else()
-      	    message(STATUS "(xdg-decoration-unstable-v1) already downloaded")
-        endif()
-
-        execute_process(
-	    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/WaylandProtocols/
-            COMMAND wayland-scanner client-header xdg-decoration-unstable-v1.xml xdg-decoration-unstable-v1.h
-            COMMAND wayland-scanner private-code xdg-decoration-unstable-v1.xml xdg-decoration-unstable-v1.c)
+	  if (${WAYLAND_CURSOR_FOUND})
+        message(STATUS "wayland-cursor has been found")
     endif()
 endif()
 

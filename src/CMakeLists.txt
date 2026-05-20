@@ -62,14 +62,14 @@ if (${CMAKE_SYSTEM_NAME} STREQUAL "Linux" OR
         "Core/WaylandWindow.cpp")
 
     target_sources (${PROJECT_NAME} PRIVATE
-        ${CMAKE_BINARY_DIR}/WaylandProtocols/xdg-shell.h
-        ${CMAKE_BINARY_DIR}/WaylandProtocols/xdg-shell.c
-        ${CMAKE_BINARY_DIR}/WaylandProtocols/xdg-decoration-unstable-v1.h
-        ${CMAKE_BINARY_DIR}/WaylandProtocols/xdg-decoration-unstable-v1.c)
-		
+				${CMAKE_CURRENT_SOURCE_DIR}/Core/WaylandProtocols/xdg-shell.c
+				${CMAKE_CURRENT_SOURCE_DIR}/Core/WaylandProtocols/xdg-decoration-unstable-v1.c
+				${CMAKE_CURRENT_SOURCE_DIR}/Core/WaylandProtocols/xdg-toplevel-icon-v1.c
+				${CMAKE_CURRENT_SOURCE_DIR}/Core/WaylandProtocols/fractional-scale-v1.c)
+
     target_include_directories(${PROJECT_NAME} PRIVATE "Core/WaylandCSD/")
 
-    target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_BINARY_DIR}/WaylandProtocols/)
+    target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Core/WaylandProtocols)
 endif()
 
 # ImGui

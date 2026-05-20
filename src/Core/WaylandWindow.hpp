@@ -1095,10 +1095,9 @@ OutputDone (void * pData, [[maybe_unused]] wl_output * pOutput)
 }
 
 static void
-OutputScale (void * pData, [[maybe_unused]] wl_output * pOutput, std::int32_t factor)
+OutputScale ([[maybe_unused]] void * pData, [[maybe_unused]] wl_output * pOutput,
+             std::int32_t factor)
 {
-  Patache::Engine * pEngine{ static_cast<Patache::Engine *> (pData) };
-
   scalePending = true;
   scaleInt     = factor;
 }
