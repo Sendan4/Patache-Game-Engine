@@ -195,3 +195,9 @@ set_target_properties(${PROJECT_NAME}
     PROPERTIES
     CXX_EXTENSIONS OFF
     CXX_STANDARD 20)
+
+if (MSVC)
+    if (TARGET ${PROJECT_NAME})
+        set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER "Engine/Examples")
+    endif()
+endif()
