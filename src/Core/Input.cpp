@@ -73,23 +73,18 @@ Patache::Engine::HandleEvent (const SDL_Event & rEvent)
                     {
                       if (!SDL_SetWindowFullscreenMode (pGameWindow, pDesktopMode))
                         {
-                          std::future<void> err{ std::async (
-                              std::launch::async, Patache::ErrorMessage,
-                              "Unable to apply full screen resolution") };
+                          Patache::ErrorMessage ("Unable to apply full screen resolution");
                         }
                     }
                   else
                     {
-                      std::future<void> err{ std::async (
-                          std::launch::async, Patache::ErrorMessage,
-                          "Could not obtain Desktop Display Mode mode or "
-                          "Display ID") };
+                      Patache::ErrorMessage ("Could not obtain Desktop Display Mode mode or "
+                                             "Display ID");
                     }
 
                   if (!SDL_SetWindowFullscreen (pGameWindow, true))
                     {
-                      std::future<void> err{ std::async (std::launch::async, Patache::ErrorMessage,
-                                                         "Could not switch to full screen mode") };
+                      Patache::ErrorMessage ("Could not switch to full screen mode");
                     }
 #endif
                 }
@@ -134,8 +129,7 @@ Patache::Engine::HandleEvent (const SDL_Event & rEvent)
                   // SDL_Window
                   if (!SDL_SetWindowFullscreen (pGameWindow, false))
                     {
-                      std::future<void> err{ std::async (std::launch::async, Patache::ErrorMessage,
-                                                         "could not switch to window mode") };
+                      Patache::ErrorMessage ("could not switch to window mode");
                     }
 #endif
                   isFullScreen = false;
@@ -147,9 +141,13 @@ Patache::Engine::HandleEvent (const SDL_Event & rEvent)
 #if PATACHE_DEBUG == 1
       // (begin) CTRL + P hotkey for toggle the debug ui
       if (pKeyState[SDL_SCANCODE_LCTRL] || pKeyState[SDL_SCANCODE_RCTRL])
-        if (rEvent.key.key == SDLK_P)
-          debugInfo.showMainMenuBar ^= true;
-      // (end) CTRL + P hotkey for toggle the debug ui
+        {
+          if (rEvent.key.key == SDLK_P)
+            {
+              debugInfo.showMainMenuBar ^= true;
+            }
+        }
+        // (end) CTRL + P hotkey for toggle the debug ui
 #endif
       break;
     }

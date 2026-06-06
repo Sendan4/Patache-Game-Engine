@@ -19,18 +19,10 @@ Patache::VulkanList (const char * const pList[], const std::uint32_t & rSize,
 void
 Patache::VulkanCheck (const char * const pMessage, const VkResult & rResult)
 {
-  if (rResult != VK_SUCCESS && rResult != VK_SUBOPTIMAL_KHR)
-    {
-      fast_io::io::println (PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_BOLD,
-                            fast_io::mnp::os_c_str (pMessage), " : ", PATACHE_TERM_RESET,
-                            PATACHE_TERM_COLOR_YELLOW,
-                            fast_io::mnp::os_c_str (string_VkResult (rResult)), PATACHE_TERM_RESET);
-    }
-  else
-    {
-      fast_io::io::println (PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_BOLD,
-                            fast_io::mnp::os_c_str (pMessage), " : ", PATACHE_TERM_RESET,
-                            PATACHE_TERM_COLOR_GREEN,
-                            fast_io::mnp::os_c_str (string_VkResult (rResult)), PATACHE_TERM_RESET);
-    }
+  fast_io::io::println (PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_BOLD,
+                        fast_io::mnp::os_c_str (pMessage), " : ", PATACHE_TERM_RESET,
+                        (rResult != VK_SUCCESS && rResult != VK_SUBOPTIMAL_KHR)
+                            ? PATACHE_TERM_COLOR_YELLOW
+                            : PATACHE_TERM_COLOR_GREEN,
+                        fast_io::mnp::os_c_str (string_VkResult (rResult)), PATACHE_TERM_RESET);
 }

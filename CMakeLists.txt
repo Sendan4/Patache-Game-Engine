@@ -186,30 +186,19 @@ if (WIN32 OR ${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
 endif()
 
 # Check Headers
-include(CheckCXXSymbolExists)
-if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo")
-    if (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
-        CHECK_INCLUDE_FILE_CXX("cxxabi.h" HAVE_CXXABI_H LANGUAGE CXX)
-        
-        if (NOT HAVE_CXXABI_H)
-            message(FATAL_ERROR "include files missing")
-        endif()
-    endif()
+CHECK_INCLUDE_FILE_CXX("cstdlib" HAVE_CSTDLIB LANGUAGE CXX)
 
-    if (NOT CMAKE_SYSTEM_NAME STREQUAL "Windows")
-        CHECK_INCLUDE_FILE_CXX("cstdlib" HAVE_CSTDLIB LANGUAGE CXX)
-
-        if (NOT HAVE_CSTDLIB)
-            message(FATAL_ERROR "missing cstdlib header")
-        endif()
-    endif()
+if (NOT HAVE_CSTDLIB)
+    message(FATAL_ERROR "missing cstdlib header")
 endif()
+
 
 CHECK_INCLUDE_FILE_CXX("cstdio" HAVE_CSTDIO LANGUAGE CXX)
 if (NOT HAVE_CSTDIO)
     message(FATAL_ERROR "missing cstdio header")
 endif()
 
+include(CheckCXXSymbolExists)
 check_cxx_symbol_exists("snprintf" "cstdio" HAVE_SNPRINTF)
 if (NOT HAVE_SNPRINTF)
     message(FATAL_ERROR "missing snprintf function")

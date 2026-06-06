@@ -12,9 +12,8 @@ LoadConfiguration (Patache::Config & rConfiguration)
   // Invalid or unreadable Yaml file
   if (yamlConfig.invalid () || !yamlConfig.readable ())
     {
-      std::future<void> err
-          = std::async (std::launch::async, Patache::FatalErrorMessage, "Patache Engine - Yaml",
-                        "Yaml Config File is invalid or inreadable", rConfiguration);
+      Patache::FatalErrorMessage ("Patache Engine - Yaml",
+                                  "Yaml Config File is invalid or inreadable", rConfiguration);
 
       return false;
     }
@@ -32,15 +31,15 @@ LoadConfiguration (Patache::Config & rConfiguration)
         }
       else
         {
-          char errorText[PATACHE_ERROR_TEXT_SIZE]{ 0 };
+          char errorText[PATACHE_ERROR_TEXT_SIZE_EXTRANULL]{};
 
-          std::snprintf (errorText, PATACHE_ERROR_TEXT_SIZE - 1,
+          std::snprintf (errorText, PATACHE_ERROR_TEXT_SIZE,
                          "in YAML configure file (%s/config.yaml)\n'patache-engine : "
                          "show-fatal-error-messagebox' must "
                          "be a boolean value (True or False)",
                          SDL_GetBasePath ());
 
-          std::future<void> err = std::async (std::launch::async, Patache::ErrorMessage, errorText);
+          Patache::ErrorMessage (errorText);
         }
 
       // Bool Type
@@ -54,15 +53,15 @@ LoadConfiguration (Patache::Config & rConfiguration)
         }
       else
         {
-          char errorText[PATACHE_ERROR_TEXT_SIZE]{ 0 };
+          char errorText[PATACHE_ERROR_TEXT_SIZE_EXTRANULL]{};
 
-          std::snprintf (errorText, PATACHE_ERROR_TEXT_SIZE - 1,
+          std::snprintf (errorText, PATACHE_ERROR_TEXT_SIZE,
                          "in YAML configure file (%s/config.yaml)\n'patache-engine : "
                          "raccoon-renderer : vsync' must "
                          "be a boolean value (True or False)",
                          SDL_GetBasePath ());
 
-          std::future<void> err = std::async (std::launch::async, Patache::ErrorMessage, errorText);
+          Patache::ErrorMessage (errorText);
         }
 
       // Bool Type
@@ -77,15 +76,15 @@ LoadConfiguration (Patache::Config & rConfiguration)
         }
       else
         {
-          char errorText[PATACHE_ERROR_TEXT_SIZE]{ 0 };
+          char errorText[PATACHE_ERROR_TEXT_SIZE_EXTRANULL]{};
 
-          std::snprintf (errorText, PATACHE_ERROR_TEXT_SIZE - 1,
+          std::snprintf (errorText, PATACHE_ERROR_TEXT_SIZE,
                          "in YAML configure file (%s/config.yaml)\n'patache-engine : "
                          "raccoon-renderer : 10bit-depth' must "
                          "be a boolean value (True or False)",
                          SDL_GetBasePath ());
 
-          std::future<void> err = std::async (std::launch::async, Patache::ErrorMessage, errorText);
+          Patache::ErrorMessage (errorText);
         }
 
       // std::uint8_t type
@@ -101,28 +100,28 @@ LoadConfiguration (Patache::Config & rConfiguration)
         }
       else
         {
-          char errorText[PATACHE_ERROR_TEXT_SIZE]{ 0 };
+          char errorText[PATACHE_ERROR_TEXT_SIZE_EXTRANULL]{};
 
-          std::snprintf (errorText, PATACHE_ERROR_TEXT_SIZE - 1,
+          std::snprintf (errorText, PATACHE_ERROR_TEXT_SIZE,
                          "in YAML configure file (%s/config.yaml)\n'patache-engine : "
                          "raccoon-renderer : add-image-count' must "
                          "be a 8bit unsigned interger (0 - 4)",
                          SDL_GetBasePath ());
 
-          std::future<void> err = std::async (std::launch::async, Patache::ErrorMessage, errorText);
+          Patache::ErrorMessage (errorText);
         }
 
       if (rConfiguration.addImageCount > 4)
         {
-          char errorText[PATACHE_ERROR_TEXT_SIZE]{ 0 };
+          char errorText[PATACHE_ERROR_TEXT_SIZE_EXTRANULL]{};
 
-          std::snprintf (errorText, PATACHE_ERROR_TEXT_SIZE - 1,
+          std::snprintf (errorText, PATACHE_ERROR_TEXT_SIZE,
                          "in YAML configure file (%s/config.yaml)\n'patache-engine : "
                          "raccoon-renderer : add-image-count' The allowed "
                          "range is (0 - 4)",
                          SDL_GetBasePath ());
 
-          std::future<void> err = std::async (std::launch::async, Patache::ErrorMessage, errorText);
+          Patache::ErrorMessage (errorText);
 
           rConfiguration.addImageCount = 0;
         }

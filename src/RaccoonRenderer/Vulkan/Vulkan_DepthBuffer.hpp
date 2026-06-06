@@ -1,4 +1,4 @@
-#include <future>
+#include <cstdint>
 
 #include <vulkan/vulkan.h>
 #include "PatacheEngine/VmaUsage.hpp"

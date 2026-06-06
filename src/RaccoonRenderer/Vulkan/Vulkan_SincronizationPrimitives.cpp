@@ -10,7 +10,7 @@ CreateSemaphores (Patache::VulkanBackend & rVulkan)
   VkResult result;
 
   rVulkan.pImageAvailableSemaphores = static_cast<VkSemaphore *> (
-      std::malloc (sizeof (VkSemaphore) * rVulkan.swapchainImageCount));
+      std::calloc (rVulkan.swapchainImageCount, sizeof (VkSemaphore)));
 
   if (rVulkan.pImageAvailableSemaphores == nullptr)
     {
@@ -18,7 +18,7 @@ CreateSemaphores (Patache::VulkanBackend & rVulkan)
     }
 
   rVulkan.pImageFinishedSemaphores = static_cast<VkSemaphore *> (
-      std::malloc (sizeof (VkSemaphore) * rVulkan.swapchainImageCount));
+      std::calloc (rVulkan.swapchainImageCount, sizeof (VkSemaphore)));
 
   if (rVulkan.pImageFinishedSemaphores == nullptr)
     {
@@ -33,13 +33,12 @@ CreateSemaphores (Patache::VulkanBackend & rVulkan)
 
       if (result != VK_SUCCESS)
         {
-          char errorText[PATACHE_ERROR_TEXT_SIZE]{ 0 };
+          char errorText[PATACHE_ERROR_TEXT_SIZE_EXTRANULL]{};
 
-          std::snprintf (errorText, PATACHE_ERROR_TEXT_SIZE - 1,
+          std::snprintf (errorText, PATACHE_ERROR_TEXT_SIZE,
                          "vkCreateSemaphore() Image Available Semaphore #%.3u", i + 1);
 
-          std::future<void> returnVulkanCheck{ std::async (std::launch::async, Patache::VulkanCheck,
-                                                           errorText, result) };
+          Patache::VulkanCheck (errorText, result);
 
           return false;
         }
@@ -50,13 +49,12 @@ CreateSemaphores (Patache::VulkanBackend & rVulkan)
 
       if (result != VK_SUCCESS)
         {
-          char errorText[PATACHE_ERROR_TEXT_SIZE]{ 0 };
+          char errorText[PATACHE_ERROR_TEXT_SIZE_EXTRANULL]{ 0 };
 
-          std::snprintf (errorText, PATACHE_ERROR_TEXT_SIZE - 1,
+          std::snprintf (errorText, PATACHE_ERROR_TEXT_SIZE,
                          "vkCreateSemaphore() Image Finished Semaphore #%.3u", i + 1);
 
-          std::future<void> returnVulkanCheck{ std::async (std::launch::async, Patache::VulkanCheck,
-                                                           errorText, result) };
+          Patache::VulkanCheck (errorText, result);
 
           return false;
         }
@@ -75,7 +73,7 @@ CreateFence (Patache::VulkanBackend & rVulkan)
   VkResult result;
 
   rVulkan.pInFlightFences
-      = static_cast<VkFence *> (std::malloc (sizeof (VkFence) * rVulkan.swapchainImageCount));
+      = static_cast<VkFence *> (std::calloc (rVulkan.swapchainImageCount, sizeof (VkFence)));
 
   if (rVulkan.pInFlightFences == nullptr)
     {
@@ -88,13 +86,12 @@ CreateFence (Patache::VulkanBackend & rVulkan)
 
       if (result != VK_SUCCESS)
         {
-          char errorText[PATACHE_ERROR_TEXT_SIZE]{ 0 };
+          char errorText[PATACHE_ERROR_TEXT_SIZE_EXTRANULL]{};
 
-          std::snprintf (errorText, PATACHE_ERROR_TEXT_SIZE - 1,
+          std::snprintf (errorText, PATACHE_ERROR_TEXT_SIZE,
                          "vkCreateFence() In Flight Fence #%.3u", i + 1);
 
-          std::future<void> returnVulkanCheck{ std::async (std::launch::async, Patache::VulkanCheck,
-                                                           errorText, result) };
+          Patache::VulkanCheck (errorText, result);
 
           return false;
         }

@@ -8,9 +8,8 @@ InitImGuiCore (const Patache::Config & rConfiguration, Patache::EngineInfo & rDe
 
   if (ImGui::GetCurrentContext () == nullptr)
     {
-      std::future<void> fatalErr
-          = std::async (std::launch::async, Patache::FatalErrorMessage, "Patache Engine - ImGui",
-                        "Fail to initialize global ImGui Context", std::cref (rConfiguration));
+      Patache::FatalErrorMessage ("Patache Engine - ImGui",
+                                  "Fail to initialize global ImGui Context", rConfiguration);
 
       return;
     }
@@ -82,9 +81,8 @@ CreateImguiDescriptorPool (Patache::VulkanBackend & rVulkan)
 {
   if (ImGui::GetCurrentContext () == nullptr)
     {
-      std::future<void> err{ std::async (std::launch::async, Patache::ErrorMessage,
-                                         "You cannot initialize the descriptor pool for imgui "
-                                         "without having initialized the ImGui context first") };
+      Patache::ErrorMessage ("You cannot initialize the descriptor pool for imgui "
+                             "without having initialized the ImGui context first");
 
       return false;
     }
@@ -105,8 +103,7 @@ CreateImguiDescriptorPool (Patache::VulkanBackend & rVulkan)
 
   if (result != VK_SUCCESS)
     {
-      std::future<void> returnVulkanCheck{ std::async (std::launch::async, Patache::VulkanCheck,
-                                                       "vkCreateDescriptorPool()", result) };
+      Patache::VulkanCheck ("vkCreateDescriptorPool()", result);
 
       return false;
     }
@@ -119,9 +116,8 @@ CreateImguiPipelineCache (Patache::VulkanBackend & rVulkan)
 {
   if (ImGui::GetCurrentContext () == nullptr)
     {
-      std::future<void> err{ std::async (std::launch::async, Patache::ErrorMessage,
-                                         "You cannot initialize the pipeline cache for imgui "
-                                         "without having initialized the ImGui context first") };
+      Patache::ErrorMessage ("You cannot initialize the pipeline cache for imgui "
+                             "without having initialized the ImGui context first");
 
       return false;
     }
@@ -137,8 +133,7 @@ CreateImguiPipelineCache (Patache::VulkanBackend & rVulkan)
 
   if (result != VK_SUCCESS)
     {
-      std::future<void> returnVulkanCheck{ std::async (std::launch::async, Patache::VulkanCheck,
-                                                       "Imgui PipeLine Cache", result) };
+      Patache::VulkanCheck ("Imgui PipeLine Cache", result);
 
       return false;
     }
@@ -151,9 +146,8 @@ InitImGuiVulkan (Patache::Engine * const pEngine)
 {
   if (ImGui::GetCurrentContext () == nullptr)
     {
-      std::future<void> err = std::async (std::launch::async, Patache::ErrorMessage,
-                                          "You cannot initialize the implementation without "
-                                          "having initialized the ImGui context first");
+      Patache::ErrorMessage ("You cannot initialize the implementation without "
+                             "having initialized the ImGui context first");
 
       return false;
     }
@@ -167,9 +161,7 @@ InitImGuiVulkan (Patache::Engine * const pEngine)
 
   if (result != VK_SUCCESS)
     {
-      std::future<void> returnVulkanCheck{ std::async (
-          std::launch::async, Patache::VulkanCheck, "vkGetPhysicalDeviceSurfaceCapabilitiesKHR()",
-          result) };
+      Patache::VulkanCheck ("vkGetPhysicalDeviceSurfaceCapabilitiesKHR()", result);
 
       return false;
     }
@@ -205,10 +197,9 @@ InitImGuiVulkan (Patache::Engine * const pEngine)
 
   if (!ImGui_ImplVulkan_Init (&info))
     {
-      std::future<void> fatalErr{ std::async (
-          std::launch::async, Patache::FatalErrorMessage, "Patache Engine - ImGui",
-          "Fail to initialize ImGui Vulkan Implementation Context",
-          std::cref (pEngine->configuration)) };
+      Patache::FatalErrorMessage ("Patache Engine - ImGui",
+                                  "Fail to initialize ImGui Vulkan Implementation Context",
+                                  pEngine->configuration);
 
       return false;
     }

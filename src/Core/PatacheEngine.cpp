@@ -1,7 +1,3 @@
-#if PATACHE_DEBUG == 1 && !defined(_WIN64)
-  #include <cstdlib>
-#endif
-#include <future>
 #include <cstring>
 
 #if defined(_WIN64)
@@ -65,7 +61,7 @@ Patache::Engine::Init (const Patache::EngineCreateInfo & rInfo)
   SetConsoleMode (sTerminal, ENABLE_VIRTUAL_TERMINAL_PROCESSING | sMode);
 #endif
 
-  std::future<void> startLogInfo{ std::async (std::launch::async, StartLogInfo) };
+  StartLogInfo ();
 
   if (!LoadConfiguration (configuration))
     return false;
@@ -73,15 +69,12 @@ Patache::Engine::Init (const Patache::EngineCreateInfo & rInfo)
 #if defined(PATACHE_VVL_PATH)
   if (PATACHE_SETENV ("VK_LAYER_PATH", PATACHE_VVL_PATH) != PATACHE_SETENV_SUCCESS)
     {
-      std::future<void> err{ std::async (std::launch::async, Patache::ErrorMessage,
-                                         "Cannot set enviroment varible VK_LAYER_PATH") };
+      Patache::ErrorMessage ("Cannot set enviroment varible VK_LAYER_PATH");
     }
 #endif
 
-    // Make a window title
 #if PATACHE_DEBUG == 1
-    // Debug
-  #define PATACHE_WINDOW_TITLE windowTitle
+  // Debug
   char windowTitle[64]{ 0 };
 
   if (rInfo.pWindowTitle != nullptr)
@@ -98,14 +91,17 @@ Patache::Engine::Init (const Patache::EngineCreateInfo & rInfo)
     }
 
   PATACHE_STRNCAT (windowTitle, " (Debug / Development)", 63, 64);
+
+  #define PATACHE_WINDOW_TITLE windowTitle
 #else
   // Release
-  #define PATACHE_WINDOW_TITLE pWindowTitle
   const char * pWindowTitle{ (rInfo.pWindowTitle != nullptr) ? rInfo.pWindowTitle
                                                              : rInfo.pGameName };
 
   if (pWindowTitle == nullptr)
     pWindowTitle = PATACHE_ENGINE_NAME;
+
+  #define PATACHE_WINDOW_TITLE pWindowTitle
 #endif
 
   // Init Window for linux wayland. do this before SDL init
@@ -117,8 +113,7 @@ Patache::Engine::Init (const Patache::EngineCreateInfo & rInfo)
   // Init SDL Subsystems
   if (!SDL_Init (SDL_INIT_VIDEO | SDL_INIT_EVENTS))
     {
-      std::future<void> err{ std::async (std::launch::async, Patache::FatalErrorMessage,
-                                         "Patache Engine - SDL2", SDL_GetError (), configuration) };
+      Patache::FatalErrorMessage ("Patache Engine - SDL2", SDL_GetError (), configuration);
 
       return false;
     }
@@ -142,9 +137,8 @@ Patache::Engine::Init (const Patache::EngineCreateInfo & rInfo)
       }
     else
       {
-        std::future<void> err{ std::async (std::launch::async, Patache::ErrorMessage,
-                                           "can't get the current resolution. starting with 480p "
-                                           "(1.78)") };
+        Patache::ErrorMessage ("can't get the current resolution. starting with 480p "
+                               "(1.78)");
 
         width  = 854U;
         height = 480U;
@@ -157,9 +151,7 @@ Patache::Engine::Init (const Patache::EngineCreateInfo & rInfo)
 
     if (pGameWindow == nullptr)
       {
-        std::future<void> err{ std::async (std::launch::async, Patache::FatalErrorMessage,
-                                           "Window cannot be created", SDL_GetError (),
-                                           configuration) };
+        Patache::FatalErrorMessage ("Window cannot be created", SDL_GetError (), configuration);
 
         return false;
       }
@@ -189,8 +181,7 @@ Patache::Engine::Init (const Patache::EngineCreateInfo & rInfo)
 
     if (pWindowIcon == nullptr)
       {
-        std::future<void> err{ std::async (std::launch::async, Patache::ErrorMessage,
-                                           "Icon cannot be loaded") };
+        Patache::ErrorMessage ("Icon cannot be loaded");
       }
     else
       {
@@ -257,20 +248,20 @@ Patache::Engine::~Engine (void)
   // Debug Info
   if (debugInfo.ppLayersVK != nullptr)
     {
-      delete[] debugInfo.ppLayersVK;
+      std::free (debugInfo.ppLayersVK);
       debugInfo.ppLayersVK = nullptr;
     }
 
   if (debugInfo.ppInstanceExtensionsVK != nullptr)
     {
-      delete[] debugInfo.ppInstanceExtensionsVK;
+      std::free (debugInfo.ppInstanceExtensionsVK);
       debugInfo.ppInstanceExtensionsVK    = nullptr;
       debugInfo.instanceExtensionsCountVK = 0U;
     }
 
   if (debugInfo.ppDeviceExtensionsVK != nullptr)
     {
-      delete[] debugInfo.ppDeviceExtensionsVK;
+      std::free (debugInfo.ppDeviceExtensionsVK);
       debugInfo.ppDeviceExtensionsVK    = nullptr;
       debugInfo.deviceExtensionsCountVK = 0U;
     }

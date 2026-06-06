@@ -11,7 +11,7 @@ CreateCommandBuffer (Patache::VulkanBackend & rVulkan)
                                                .commandBufferCount = 1U };
 
   rVulkan.pCmd = static_cast<VkCommandBuffer *> (
-      std::malloc (sizeof (VkCommandBuffer) * rVulkan.swapchainImageCount));
+      std::calloc (rVulkan.swapchainImageCount, sizeof (VkCommandBuffer)));
 
   if (rVulkan.pCmd == nullptr)
     {
@@ -34,8 +34,7 @@ CreateCommandBuffer (Patache::VulkanBackend & rVulkan)
           std::snprintf (errorText, PATACHE_ERROR_TEXT_SIZE - 1,
                          "vkAllocateCommandBuffers() Primary Render Command Buffer #%.3u", i);
 
-          std::future<void> returnVulkanCheck{ std::async (std::launch::async, Patache::VulkanCheck,
-                                                           errorText, result) };
+          Patache::VulkanCheck (errorText, result);
 
           return false;
         }

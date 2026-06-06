@@ -1,6 +1,5 @@
+#include <cstdint>
 #include <cstdio>
-#include <future>
-#include <functional>
 
 #include <vulkan/vulkan.h>
 #include "PatacheEngine/VmaUsage.hpp"
@@ -12,4 +11,5 @@
 bool CreateSemaphore (Patache::VulkanBackend &);
 bool CreateFence (Patache::VulkanBackend &);
 
-#define PATACHE_ERROR_TEXT_SIZE 64
+#define PATACHE_ERROR_TEXT_SIZE           64
+#define PATACHE_ERROR_TEXT_SIZE_EXTRANULL 65

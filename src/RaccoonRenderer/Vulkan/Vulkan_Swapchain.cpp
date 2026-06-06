@@ -11,13 +11,12 @@ CreateSwapchain (Patache::Engine * const pEngine, Patache::SwapchainInfo & rSwap
 
   if (result != VK_SUCCESS)
     {
-      std::future<void> returnVulkanCheck{ std::async (
-          std::launch::async, Patache::VulkanCheck,
-          "vkGetPhysicalDeviceSurfacePresentModesKHR() Obtaining the count", result) };
+      Patache::VulkanCheck ("vkGetPhysicalDeviceSurfacePresentModesKHR() Obtaining the count",
+                            result);
     }
 
   VkPresentModeKHR * pPresentModes{ static_cast<VkPresentModeKHR *> (
-      std::malloc (sizeof (VkPresentModeKHR) * presentModesCount)) };
+      std::calloc (presentModesCount, sizeof (VkPresentModeKHR))) };
 
   if (pPresentModes == nullptr)
     {
@@ -29,9 +28,7 @@ CreateSwapchain (Patache::Engine * const pEngine, Patache::SwapchainInfo & rSwap
 
   if (result != VK_SUCCESS)
     {
-      std::future<void> returnVulkanCheck{ std::async (
-          std::launch::async, Patache::VulkanCheck, "vkGetPhysicalDeviceSurfacePresentModesKHR()",
-          result) };
+      Patache::VulkanCheck ("vkGetPhysicalDeviceSurfacePresentModesKHR()", result);
     }
 
   // Search for window surface formats
@@ -42,13 +39,11 @@ CreateSwapchain (Patache::Engine * const pEngine, Patache::SwapchainInfo & rSwap
 
   if (result != VK_SUCCESS)
     {
-      std::future<void> returnVulkanCheck{ std::async (
-          std::launch::async, Patache::VulkanCheck,
-          "vkGetPhysicalDeviceSurfaceFormatsKHR() Obtaining the count", result) };
+      Patache::VulkanCheck ("vkGetPhysicalDeviceSurfaceFormatsKHR() Obtaining the count", result);
     }
 
   VkSurfaceFormatKHR * pSurfaceFormats{ static_cast<VkSurfaceFormatKHR *> (
-      std::malloc (sizeof (VkSurfaceFormatKHR) * surfaceFormatsCount)) };
+      std::calloc (surfaceFormatsCount, sizeof (VkSurfaceFormatKHR))) };
 
   if (pSurfaceFormats == nullptr)
     {
@@ -61,9 +56,7 @@ CreateSwapchain (Patache::Engine * const pEngine, Patache::SwapchainInfo & rSwap
 
   if (result != VK_SUCCESS)
     {
-      std::future<void> returnVulkanCheck{ std::async (std::launch::async, Patache::VulkanCheck,
-                                                       "vkGetPhysicalDeviceSurfaceFormatsKHR()",
-                                                       result) };
+      Patache::VulkanCheck ("vkGetPhysicalDeviceSurfaceFormatsKHR()", result);
     }
 
     /*
@@ -142,9 +135,8 @@ CreateSwapchain (Patache::Engine * const pEngine, Patache::SwapchainInfo & rSwap
 
   if (!found)
     {
-      std::future<void> err{ std::async (
-          std::launch::async, Patache::FatalErrorMessage, "Patache Engine - Raccoon Renderer",
-          "No presentation modes found", std::cref (pEngine->configuration)) };
+      Patache::FatalErrorMessage ("Patache Engine - Raccoon Renderer",
+                                  "No presentation modes found", pEngine->configuration);
 
       return false;
     }
@@ -187,9 +179,8 @@ CreateSwapchain (Patache::Engine * const pEngine, Patache::SwapchainInfo & rSwap
 
   if (!found)
     {
-      std::future<void> err{ std::async (
-          std::launch::async, Patache::FatalErrorMessage, "Patache Engine - Raccoon Renderer",
-          "No surface formats found", std::cref (pEngine->configuration)) };
+      Patache::FatalErrorMessage ("Patache Engine - Raccoon Renderer", "No surface formats found",
+                                  pEngine->configuration);
 
       return false;
     }
@@ -201,15 +192,12 @@ CreateSwapchain (Patache::Engine * const pEngine, Patache::SwapchainInfo & rSwap
 
   if (result != VK_SUCCESS)
     {
-      std::future<void> returnVulkanCheck{ std::async (
-          std::launch::async, Patache::VulkanCheck, "vkGetPhysicalDeviceSurfaceCapabilitiesKHR()",
-          result) };
+      Patache::VulkanCheck ("vkGetPhysicalDeviceSurfaceCapabilitiesKHR()", result);
 
-      std::future<void> returnVulkanErr{ std::async (
-          std::launch::async, Patache::FatalErrorMessage, "Patache Engine - Raccoon Renderer",
-          "The surface area capabilities of this device could "
-          "not be obtained.",
-          std::cref (pEngine->configuration)) };
+      Patache::FatalErrorMessage ("Patache Engine - Raccoon Renderer",
+                                  "The surface area capabilities of this device could "
+                                  "not be obtained.",
+                                  pEngine->configuration);
 
       return false;
     }
@@ -218,7 +206,7 @@ CreateSwapchain (Patache::Engine * const pEngine, Patache::SwapchainInfo & rSwap
   getDrawableSize_Async.wait ();
 #endif
 
-#if PATACHE_DEBUG == 1 && PATACHE_LINUX_OR_UNIX
+#if PATACHE_DEBUG == 1 && (PATACHE_LINUX_OR_UNIX)
   ImGuiIO & rIO{ ImGui::GetIO () };
 
   rIO.FontGlobalScale = scaleInt;
@@ -257,24 +245,17 @@ CreateSwapchain (Patache::Engine * const pEngine, Patache::SwapchainInfo & rSwap
 
   if (result != VK_SUCCESS)
     {
-      std::future<void> returnVulkanCheck{ std::async (std::launch::async, Patache::VulkanCheck,
-                                                       "vkCreateSwapchainKHR()", result) };
+      Patache::VulkanCheck ("vkCreateSwapchainKHR()", result);
 
-      std::future<void> returnVulkanErr{ std::async (
-          std::launch::async, Patache::FatalErrorMessage, "Patache Engine - Raccoon Renderer",
-          "Swapchain creation failure", std::cref (pEngine->configuration)) };
+      Patache::FatalErrorMessage ("Patache Engine - Raccoon Renderer", "Swapchain creation failure",
+                                  pEngine->configuration);
 
       return false;
     }
 
-  std::future<void> storeSwapchainInfo_Async{ std::async (
-      std::launch::async,
-      [&rSwapchainInfo, &selectedPresentMode, &selectedSurfaceFormat] (void)
-        {
-          rSwapchainInfo.presentMode      = selectedPresentMode;
-          rSwapchainInfo.imageColorFormat = selectedSurfaceFormat.format;
-          rSwapchainInfo.imageColorSpace  = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
-        }) };
+  rSwapchainInfo.presentMode      = selectedPresentMode;
+  rSwapchainInfo.imageColorFormat = selectedSurfaceFormat.format;
+  rSwapchainInfo.imageColorSpace  = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
 
   // Swapchain Images
   result = vkGetSwapchainImagesKHR (pEngine->vulkan.device, pEngine->vulkan.swapchain,
@@ -282,9 +263,7 @@ CreateSwapchain (Patache::Engine * const pEngine, Patache::SwapchainInfo & rSwap
 
   if (result != VK_SUCCESS)
     {
-      std::future<void> returnVulkanCheck{ std::async (
-          std::launch::async, Patache::VulkanCheck, "vkGetSwapchainImagesKHR() Obtaining the count",
-          result) };
+      Patache::VulkanCheck ("vkGetSwapchainImagesKHR() Obtaining the count", result);
     }
 
   // TODO: no destruir la memoria de las imagenes rapidamente
@@ -294,7 +273,7 @@ CreateSwapchain (Patache::Engine * const pEngine, Patache::SwapchainInfo & rSwap
     }
 
   pEngine->vulkan.pSwapchainImages = static_cast<VkImage *> (
-      std::malloc (sizeof (VkImage) * pEngine->vulkan.swapchainImageCount));
+      std::calloc (pEngine->vulkan.swapchainImageCount, sizeof (VkImage)));
 
   if (pEngine->vulkan.pSwapchainImages == nullptr)
     {
@@ -307,11 +286,8 @@ CreateSwapchain (Patache::Engine * const pEngine, Patache::SwapchainInfo & rSwap
 
   if (result != VK_SUCCESS)
     {
-      std::future<void> returnVulkanCheck{ std::async (std::launch::async, Patache::VulkanCheck,
-                                                       "vkGetSwapchainImagesKHR()", result) };
+      Patache::VulkanCheck ("vkGetSwapchainImagesKHR()", result);
     }
-
-  storeSwapchainInfo_Async.wait ();
 
   return true;
 }
@@ -324,12 +300,10 @@ RecreateSwapchain (Patache::Engine * const pEngine)
 
   if (result != VK_SUCCESS)
     {
-      std::future<void> returnVulkanCheck{ std::async (std::launch::async, Patache::VulkanCheck,
-                                                       "vkDeviceWaitIdle()", result) };
+      Patache::VulkanCheck ("vkDeviceWaitIdle()", result);
 
-      std::future<void> returnVulkanErr{ std::async (
-          std::launch::async, Patache::FatalErrorMessage, "Patache Engine - Raccoon Renderer",
-          "Could not wait for the device", std::cref (pEngine->configuration)) };
+      Patache::FatalErrorMessage ("Patache Engine - Raccoon Renderer",
+                                  "Could not wait for the device", pEngine->configuration);
 
       return;
     }
@@ -357,9 +331,9 @@ RecreateSwapchain (Patache::Engine * const pEngine)
 
   if (!CreateSwapchain (pEngine, swapchainInfo))
     {
-      std::future<void> err{ std::async (
-          std::launch::async, Patache::FatalErrorMessage, "Patache Engine - Raccoon Renderer",
-          "Swapchain recreation in resize event failed", std::cref (pEngine->configuration)) };
+      Patache::FatalErrorMessage ("Patache Engine - Raccoon Renderer",
+                                  "Swapchain recreation in resize event failed",
+                                  pEngine->configuration);
 
       return;
     }
@@ -368,9 +342,8 @@ RecreateSwapchain (Patache::Engine * const pEngine)
 
   if (!CreateImageView (pEngine->vulkan, swapchainInfo))
     {
-      std::future<void> err{ std::async (
-          std::launch::async, Patache::FatalErrorMessage, "Patache Engine - Raccoon Renderer",
-          "Color image view recreation failed", std::cref (pEngine->configuration)) };
+      Patache::FatalErrorMessage ("Patache Engine - Raccoon Renderer",
+                                  "Color image view recreation failed", pEngine->configuration);
 
       return;
     }
@@ -387,9 +360,8 @@ RecreateSwapchain (Patache::Engine * const pEngine)
   createFrameBuffer_Async.wait ();
   if (!createFrameBuffer_Async.get ())
     {
-      std::future<void> err{ std::async (
-          std::launch::async, Patache::FatalErrorMessage, "Patache Engine - Raccoon Renderer",
-          "Frame buffer recreation failed", std::cref (pEngine->configuration)) };
+      Patache::FatalErrorMessage ("Patache Engine - Raccoon Renderer",
+                                  "Frame buffer recreation failed", pEngine->configuration);
 
       return;
     }
@@ -397,9 +369,8 @@ RecreateSwapchain (Patache::Engine * const pEngine)
   createSemaphores_Async.wait ();
   if (!createSemaphores_Async.get ())
     {
-      std::future<void> err{ std::async (
-          std::launch::async, Patache::FatalErrorMessage, "Patache Engine - Raccoon Renderer",
-          "Semaphore recreation failed", std::cref (pEngine->configuration)) };
+      Patache::FatalErrorMessage ("Patache Engine - Raccoon Renderer",
+                                  "Semaphore recreation failed", pEngine->configuration);
 
       return;
     }

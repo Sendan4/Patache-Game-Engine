@@ -1,6 +1,3 @@
-#if defined(__GNUC__) || defined(__MINGW64__) && !defined(__clang__)
-  #include <cxxabi.h>
-#endif
 #if PATACHE_DEBUG == 1
   #include <cstdio>
   #include <future>

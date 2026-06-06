@@ -39,9 +39,8 @@ CreateDepthBuffer (Patache::VulkanBackend & rVulkan, Patache::Config & rConfigur
 
   if (!found)
     {
-      std::future<void> err{ std::async (
-          std::launch::async, Patache::FatalErrorMessage, "Patache - Raccoon Renderer",
-          "A ImageTiling or Depth Format was not found", rConfiguration) };
+      Patache::FatalErrorMessage ("Patache - Raccoon Renderer",
+                                  "A ImageTiling or Depth Format was not found", rConfiguration);
 
       return false;
     }
@@ -68,8 +67,7 @@ CreateDepthBuffer (Patache::VulkanBackend & rVulkan, Patache::Config & rConfigur
 
   if (result != VK_SUCCESS)
     {
-      std::future<void> returnVulkanCheck{ std::async (std::launch::async, Patache::VulkanCheck,
-                                                       "vkCreateImage()", result) };
+      Patache::VulkanCheck ("vkCreateImage()", result);
 
       return false;
     }
@@ -112,8 +110,7 @@ CreateDepthBuffer (Patache::VulkanBackend & rVulkan, Patache::Config & rConfigur
 
   if (result != VK_SUCCESS)
     {
-      std::future<void> returnVulkanCheck{ std::async (std::launch::async, Patache::VulkanCheck,
-                                                       "vkAllocateMemory()", result) };
+      Patache::VulkanCheck ("vkAllocateMemory()", result);
 
       return false;
     }
@@ -122,8 +119,7 @@ CreateDepthBuffer (Patache::VulkanBackend & rVulkan, Patache::Config & rConfigur
 
   if (result != VK_SUCCESS)
     {
-      std::future<void> returnVulkanCheck{ std::async (std::launch::async, Patache::VulkanCheck,
-                                                       "vkBindImageMemory()", result) };
+      Patache::VulkanCheck ("vkBindImageMemory()", result);
 
       return false;
     }
@@ -149,8 +145,7 @@ CreateDepthBuffer (Patache::VulkanBackend & rVulkan, Patache::Config & rConfigur
 
   if (result != VK_SUCCESS)
     {
-      std::future<void> returnVulkanCheck{ std::async (std::launch::async, Patache::VulkanCheck,
-                                                       "vkCreateImageView()", result) };
+      Patache::VulkanCheck ("vkCreateImageView()", result);
 
       return false;
     }

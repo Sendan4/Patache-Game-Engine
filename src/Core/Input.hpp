@@ -1,5 +1,3 @@
-#include <future>
-
 #include <fast_io.h>
 #include <vulkan/vulkan.h>
 #include "PatacheEngine/VmaUsage.hpp"
@@ -8,7 +6,7 @@
   #include <imgui_impl_sdl3.h>
   #include <imgui_impl_vulkan.h>
 #endif
-#if defined(__linux__)
+#if PATACHE_LINUX_OR_UNIX
   #include <wayland-client.h>
 
   // Wayland Protocols

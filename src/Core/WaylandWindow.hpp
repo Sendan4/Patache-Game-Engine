@@ -6,8 +6,6 @@
 // TODO: hacer que esta funcion de crear la ventana trabaje con el objeto en si y no globalmente,
 // ademas de usar un puntero del motor para conseguir informacion util.
 
-#include <future>
-#include <functional>
 #include <cstring>
 
 #include <sys/types.h>

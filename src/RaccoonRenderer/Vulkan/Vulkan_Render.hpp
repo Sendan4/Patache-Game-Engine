@@ -1,10 +1,6 @@
-#if defined(__GNUC__) || defined(__MINGW64__)
-  #include <cxxabi.h>
-#endif
-#include <future>
+#include <cstdint>
 #include <functional>
 #include <cstdio>
-#include <cmath>
 #if PATACHE_DEBUG == 1
   #include <chrono>
 #endif

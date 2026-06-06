@@ -56,8 +56,7 @@ Patache::Engine::BeginRender (SDL_Event & rEvent)
       std::snprintf (errorText, PATACHE_ERROR_TEXT_SIZE - 1, "vkWaitForFences() Fence #%.3u",
                      vulkan.currentFrame);
 
-      std::future<void> returnVulkanCheck{ std::async (std::launch::async, Patache::VulkanCheck,
-                                                       errorText, vulkan.renderResult) };
+      Patache::VulkanCheck (errorText, vulkan.renderResult);
     }
 #endif
 
@@ -77,9 +76,7 @@ Patache::Engine::BeginRender (SDL_Event & rEvent)
 #if PATACHE_DEBUG == 1
   if (vulkan.renderResult != VK_SUCCESS)
     {
-      std::future<void> returnVulkanCheck{ std::async (std::launch::async, Patache::VulkanCheck,
-                                                       "vkAcquireNextImage2KHR()",
-                                                       vulkan.renderResult) };
+      Patache::VulkanCheck ("vkAcquireNextImage2KHR()", vulkan.renderResult);
     }
 #endif
 
@@ -93,9 +90,7 @@ Patache::Engine::BeginRender (SDL_Event & rEvent)
 
       if (result4 != VK_SUCCESS)
         {
-          std::future<void> returnVulkanCheck{ std::async (
-              std::launch::async, Patache::VulkanCheck,
-              "vkGetPhysicalDeviceSurfaceCapabilitiesKHR()", result4) };
+          Patache::VulkanCheck ("vkGetPhysicalDeviceSurfaceCapabilitiesKHR()", result4);
 
           return false;
         }
@@ -107,9 +102,7 @@ Patache::Engine::BeginRender (SDL_Event & rEvent)
 
           if (result4 != VK_SUCCESS)
             {
-              std::future<void> returnVulkanCheck{ std::async (
-                  std::launch::async, Patache::VulkanCheck,
-                  "vkGetPhysicalDeviceSurfaceCapabilitiesKHR()", result4) };
+              Patache::VulkanCheck ("vkGetPhysicalDeviceSurfaceCapabilitiesKHR()", result4);
 
               return false;
             }
@@ -147,8 +140,7 @@ Patache::Engine::BeginRender (SDL_Event & rEvent)
       std::snprintf (errorText, PATACHE_ERROR_TEXT_SIZE - 1, "vkResetFences() Fence #%.3u",
                      vulkan.currentFrame);
 
-      std::future<void> returnVulkanCheck{ std::async (std::launch::async, Patache::VulkanCheck,
-                                                       errorText, vulkan.renderResult) };
+      Patache::VulkanCheck (errorText, vulkan.renderResult);
     }
 #endif
 
@@ -165,8 +157,7 @@ Patache::Engine::BeginRender (SDL_Event & rEvent)
       std::snprintf (errorText, PATACHE_ERROR_TEXT_SIZE - 1,
                      "vkResetCommandPool() Command Pool #%.3u", vulkan.currentFrame);
 
-      std::future<void> returnVulkanCheck
-          = std::async (std::launch::async, Patache::VulkanCheck, errorText, vulkan.renderResult);
+      Patache::VulkanCheck (errorText, vulkan.renderResult);
     }
 #endif
 
@@ -184,8 +175,7 @@ Patache::Engine::BeginRender (SDL_Event & rEvent)
 #if PATACHE_DEBUG == 1
   if (vulkan.renderResult != VK_SUCCESS)
     {
-      std::future<void> returnVulkanCheck = std::async (
-          std::launch::async, Patache::VulkanCheck, "vkBeginCommandBuffer()", vulkan.renderResult);
+      Patache::VulkanCheck ("vkBeginCommandBuffer()", vulkan.renderResult);
     }
 
   if (debugInfo.calculatePerformanceStats)
@@ -361,8 +351,7 @@ Patache::Engine::EndRender (SDL_Event & rEvent)
       std::snprintf (errorText, PATACHE_ERROR_TEXT_SIZE - 1,
                      "vkEndCommandBuffer() Command Buffer #%.3u", vulkan.currentFrame);
 
-      std::future<void> returnVulkanCheck{ std::async (std::launch::async, Patache::VulkanCheck,
-                                                       errorText, vulkan.renderResult) };
+      Patache::VulkanCheck (errorText, vulkan.renderResult);
     }
 
   if (debugInfo.calculatePerformanceStats)
@@ -398,8 +387,7 @@ Patache::Engine::EndRender (SDL_Event & rEvent)
 #if PATACHE_DEBUG == 1
   if (vulkan.renderResult != VK_SUCCESS)
     {
-      std::future<void> returnVulkanCheck{ std::async (std::launch::async, Patache::VulkanCheck,
-                                                       "vkQueueSubmit()", vulkan.renderResult) };
+      Patache::VulkanCheck ("vkQueueSubmit()", vulkan.renderResult);
     }
 #endif
 
@@ -419,8 +407,7 @@ Patache::Engine::EndRender (SDL_Event & rEvent)
 #if PATACHE_DEBUG == 1
   if (vulkan.renderResult != VK_SUCCESS)
     {
-      std::future<void> returnVulkanCheck{ std::async (
-          std::launch::async, Patache::VulkanCheck, "vkQueuePresentKHR()", vulkan.renderResult) };
+      Patache::VulkanCheck ("vkQueuePresentKHR()", vulkan.renderResult);
     }
 #endif
 
@@ -434,9 +421,7 @@ Patache::Engine::EndRender (SDL_Event & rEvent)
 
       if (result3 != VK_SUCCESS)
         {
-          std::future<void> returnVulkanCheck{ std::async (
-              std::launch::async, Patache::VulkanCheck,
-              "vkGetPhysicalDeviceSurfaceCapabilitiesKHR()", result3) };
+          Patache::VulkanCheck ("vkGetPhysicalDeviceSurfaceCapabilitiesKHR()", result3);
 
           return;
         }
@@ -448,9 +433,7 @@ Patache::Engine::EndRender (SDL_Event & rEvent)
 
           if (result3 != VK_SUCCESS)
             {
-              std::future<void> returnVulkanCheck{ std::async (
-                  std::launch::async, Patache::VulkanCheck,
-                  "vkGetPhysicalDeviceSurfaceCapabilitiesKHR()", result3) };
+              Patache::VulkanCheck ("vkGetPhysicalDeviceSurfaceCapabilitiesKHR()", result3);
 
               return;
             }

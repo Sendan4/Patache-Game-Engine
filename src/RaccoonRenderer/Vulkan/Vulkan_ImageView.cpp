@@ -4,7 +4,7 @@ bool
 CreateImageView (Patache::VulkanBackend & rVulkan, const Patache::SwapchainInfo & rSwapchainInfo)
 {
   rVulkan.pSwapchainColorImageViews = static_cast<VkImageView *> (
-      std::malloc (sizeof (VkImageView) * rVulkan.swapchainImageCount));
+      std::calloc (rVulkan.swapchainImageCount, sizeof (VkImageView)));
 
   if (rVulkan.pSwapchainColorImageViews == nullptr)
     {
@@ -44,8 +44,7 @@ CreateImageView (Patache::VulkanBackend & rVulkan, const Patache::SwapchainInfo 
           std::snprintf (errorText, PATACHE_ERROR_TEXT_SIZE - 1,
                          "vkCreateImageView() Color Image View #%.3u", i + 1);
 
-          std::future<void> returnVulkanCheck{ std::async (std::launch::async, Patache::VulkanCheck,
-                                                           errorText, result) };
+          Patache::VulkanCheck (errorText, result);
 
           return false;
         }

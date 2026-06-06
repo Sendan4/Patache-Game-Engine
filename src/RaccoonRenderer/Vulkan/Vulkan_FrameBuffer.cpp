@@ -4,7 +4,7 @@ bool
 CreateFrameBuffer (Patache::VulkanBackend & rVulkan)
 {
   rVulkan.pSwapchainFrameBuffers = static_cast<VkFramebuffer *> (
-      std::malloc (sizeof (VkFramebuffer) * rVulkan.swapchainImageCount));
+      std::calloc (rVulkan.swapchainImageCount, sizeof (VkFramebuffer)));
 
   if (rVulkan.pSwapchainFrameBuffers == nullptr)
     {
@@ -42,8 +42,7 @@ CreateFrameBuffer (Patache::VulkanBackend & rVulkan)
           std::snprintf (errorText, PATACHE_ERROR_TEXT_SIZE - 1,
                          "vkCreateFramebuffer() Frame Buffer #%.3u", i + 1);
 
-          std::future<void> returnVulkanCheck{ std::async (std::launch::async, Patache::VulkanCheck,
-                                                           errorText, result) };
+          Patache::VulkanCheck (errorText, result);
 
           return false;
         }

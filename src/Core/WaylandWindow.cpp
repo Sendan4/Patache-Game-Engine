@@ -11,10 +11,9 @@ Patache::CreateWaylandWindow (const std::uint32_t & rWidth, const std::uint32_t 
 
   if (pEngine->waylandWindow.pDisplay == nullptr)
     {
-      std::future<void> err
-          = std::async (std::launch::async, Patache::FatalErrorMessage, "Patache pEngine - Wayland",
-                        "Cannot connect to wayland display. Use a wayland session",
-                        std::cref (pEngine->configuration));
+      Patache::FatalErrorMessage ("Patache pEngine - Wayland",
+                                  "Cannot connect to wayland display. Use a wayland session",
+                                  pEngine->configuration);
 
       return false;
     }
@@ -24,10 +23,9 @@ Patache::CreateWaylandWindow (const std::uint32_t & rWidth, const std::uint32_t 
 
   if (pRegistry == nullptr)
     {
-      std::future<void> err
-          = std::async (std::launch::async, Patache::FatalErrorMessage, "Patache pEngine - Wayland",
-                        "Cannot get a registry from a display. Use a wayland session",
-                        std::cref (pEngine->configuration));
+      Patache::FatalErrorMessage ("Patache pEngine - Wayland",
+                                  "Cannot get a registry from a display. Use a wayland session",
+                                  pEngine->configuration);
 
       return false;
     }
@@ -42,17 +40,16 @@ Patache::CreateWaylandWindow (const std::uint32_t & rWidth, const std::uint32_t 
   // Errors
   if (pEngine->waylandWindow.pCompositor == nullptr)
     {
-      std::future<void> err = std::async (
-          std::launch::async, Patache::FatalErrorMessage, "Patache pEngine - Wayland",
-          "Missing wl_compositor in this compositor", std::cref (pEngine->configuration));
+      Patache::FatalErrorMessage ("Patache pEngine - Wayland",
+                                  "Missing wl_compositor in this compositor",
+                                  pEngine->configuration);
 
       return false;
     }
   else if (pEngine->waylandWindow.pWindowManangerBase == nullptr)
     {
-      std::future<void> err = std::async (
-          std::launch::async, Patache::FatalErrorMessage, "Patache pEngine - Wayland",
-          "Missing xdg_wm_base in this compositor", std::cref (pEngine->configuration));
+      Patache::FatalErrorMessage ("Patache pEngine - Wayland",
+                                  "Missing xdg_wm_base in this compositor", pEngine->configuration);
 
       return false;
     }
@@ -93,25 +90,22 @@ Patache::CreateWaylandWindow (const std::uint32_t & rWidth, const std::uint32_t 
     {
       if (pEngine->waylandWindow.pSubCompositor == nullptr)
         {
-          std::future<void> err = std::async (std::launch::async, Patache::WarningMessage,
-                                              "Missing wl_subcompositor in this compositor. "
-                                              "continuing without CSD");
+          Patache::WarningMessage ("Missing wl_subcompositor in this compositor. "
+                                   "continuing without CSD");
 
           goto SKIP_CSD_CREATION;
         }
       else if (pEngine->waylandWindow.pDecorationSharedMemory == nullptr)
         {
-          std::future<void> err = std::async (
-              std::launch::async, Patache::FatalErrorMessage, "Patache pEngine - Wayland",
-              "Missing wl_shm in this compositor", std::cref (pEngine->configuration));
+          Patache::FatalErrorMessage ("Patache pEngine - Wayland",
+                                      "Missing wl_shm in this compositor", pEngine->configuration);
 
           return false;
         }
       else if (pEngine->waylandWindow.pInput == nullptr)
         {
-          std::future<void> err = std::async (
-              std::launch::async, Patache::FatalErrorMessage, "Patache pEngine - Wayland",
-              "Missing wl_seat in this compositor", std::cref (pEngine->configuration));
+          Patache::FatalErrorMessage ("Patache pEngine - Wayland",
+                                      "Missing wl_seat in this compositor", pEngine->configuration);
 
           return false;
         }
@@ -873,11 +867,10 @@ SKIP_CSD_CREATION:
 
   if (pEngine->pGameWindow == nullptr)
     {
-      std::future<void> err = std::async (std::launch::async, Patache::FatalErrorMessage,
-                                          "Patache Engine - SDL & Wayland",
-                                          "SDL Cannot import external surfaces. if you are "
-                                          "using Gamescope try with --expose-wayland",
-                                          std::cref (pEngine->configuration));
+      Patache::FatalErrorMessage ("Patache Engine - SDL & Wayland",
+                                  "SDL Cannot import external surfaces. if you are "
+                                  "using Gamescope try with --expose-wayland",
+                                  pEngine->configuration);
 
       return false;
     }
