@@ -1,7 +1,21 @@
+#include <cstdio>
+
+#include <SDL3/SDL.h>
+#include <fast_io.h>
+#include <fast_io_device.h>
+#include <ryml.hpp>
+
+// Patache Engine
+#include "PatacheEngine/StructConfig.hpp"
+#include "Message.hpp"
+
+#define PATACHE_ERROR_TEXT_SIZE           1024
+#define PATACHE_ERROR_TEXT_SIZE_EXTRANULL 1025
+
 #include "Configuration.hpp"
 
 bool
-LoadConfiguration (Patache::Config & rConfiguration)
+Patache::LoadConfiguration (Patache::Config & rConfiguration)
 {
   fast_io::dir_file           executableDirectory (fast_io::mnp::os_c_str (SDL_GetBasePath ()));
   fast_io::native_file_loader yamlConfigFile (at (executableDirectory), "config.yaml");

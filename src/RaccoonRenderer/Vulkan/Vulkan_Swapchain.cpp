@@ -1,7 +1,28 @@
+#include <future>
+#include <functional>
+
+#include <vulkan/vulkan.h>
+#include "PatacheEngine/VmaUsage.hpp"
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_vulkan.h>
+
+// Patache Engine
+#include "PatacheEngine/PatacheEngine.hpp"
+#include "Vulkan_SetupLog.hpp"
+#include "Message.hpp"
+
+#if PATACHE_LINUX_OR_UNIX
+extern std::uint8_t scaleInt;
+#endif
+
+#include "Vulkan_ImageView.hpp"
+#include "Vulkan_FrameBuffer.hpp"
+#include "Vulkan_SincronizationPrimitives.hpp"
+
 #include "Vulkan_Swapchain.hpp"
 
 bool
-CreateSwapchain (Patache::Engine * const pEngine, Patache::SwapchainInfo & rSwapchainInfo)
+Patache::CreateSwapchain (Patache::Engine * const pEngine, Patache::SwapchainInfo & rSwapchainInfo)
 {
   // Search Presentation modes
   std::uint32_t presentModesCount{ 0U };
@@ -294,7 +315,7 @@ CreateSwapchain (Patache::Engine * const pEngine, Patache::SwapchainInfo & rSwap
 
 // Recreate SwapChain
 void
-RecreateSwapchain (Patache::Engine * const pEngine)
+Patache::RecreateSwapchain (Patache::Engine * const pEngine)
 {
   VkResult result{ vkDeviceWaitIdle (pEngine->vulkan.device) };
 
@@ -329,7 +350,7 @@ RecreateSwapchain (Patache::Engine * const pEngine)
 
   Patache::SwapchainInfo swapchainInfo;
 
-  if (!CreateSwapchain (pEngine, swapchainInfo))
+  if (!Patache::CreateSwapchain (pEngine, swapchainInfo))
     {
       Patache::FatalErrorMessage ("Patache Engine - Raccoon Renderer",
                                   "Swapchain recreation in resize event failed",
@@ -340,7 +361,7 @@ RecreateSwapchain (Patache::Engine * const pEngine)
 
   destroyObjects_Async.wait ();
 
-  if (!CreateImageView (pEngine->vulkan, swapchainInfo))
+  if (!Patache::CreateImageView (pEngine->vulkan, swapchainInfo))
     {
       Patache::FatalErrorMessage ("Patache Engine - Raccoon Renderer",
                                   "Color image view recreation failed", pEngine->configuration);
@@ -348,11 +369,11 @@ RecreateSwapchain (Patache::Engine * const pEngine)
       return;
     }
 
-  std::future<bool> createFrameBuffer_Async{ std::async (std::launch::async, CreateFrameBuffer,
-                                                         std::ref (pEngine->vulkan)) };
+  std::future<bool> createFrameBuffer_Async{ std::async (
+      std::launch::async, Patache::CreateFrameBuffer, std::ref (pEngine->vulkan)) };
 
-  std::future<bool> createSemaphores_Async{ std::async (std::launch::async, CreateSemaphores,
-                                                        std::ref (pEngine->vulkan)) };
+  std::future<bool> createSemaphores_Async{ std::async (
+      std::launch::async, Patache::CreateSemaphores, std::ref (pEngine->vulkan)) };
 
   vkDestroySwapchainKHR (pEngine->vulkan.device, pEngine->vulkan.oldSwapchain, nullptr);
   pEngine->vulkan.oldSwapchain = VK_NULL_HANDLE;

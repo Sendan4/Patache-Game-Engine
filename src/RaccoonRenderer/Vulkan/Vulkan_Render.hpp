@@ -18,9 +18,6 @@
 #include "PatacheEngine/PatacheEngine.hpp"
 #include "Vulkan_SetupLog.hpp"
 
-// Vulkan_Swapchain.cpp
-void RecreateSwapchain (Patache::Engine * const);
-
 #define PATACHE_ERROR_TEXT_SIZE 128
 
 #if PATACHE_LINUX_OR_UNIX
@@ -31,3 +28,5 @@ extern bool resizingPending;
 extern std::uint8_t scaleInt;
 extern bool         scalePending;
 #endif
+
+#include "Vulkan_Swapchain.hpp"

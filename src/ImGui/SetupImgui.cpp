@@ -1,7 +1,23 @@
+#include <vulkan/vulkan.h>
+#include "PatacheEngine/VmaUsage.hpp"
+#include <SDL3/SDL.h>
+#if PATACHE_DEBUG == 1
+  #include <imgui_impl_sdl3.h>
+  #include <imgui_impl_vulkan.h>
+  #include <imgui_freetype.h>
+#endif
+
+// Patache Engine
+#include "PatacheEngine/PatacheEngine.hpp"
+#include "Message.hpp"
+#include "Vulkan_SetupLog.hpp"
+
+#include "InterDisplay-Medium.hpp"
+
 #include "SetupImgui.hpp"
 
 void
-InitImGuiCore (const Patache::Config & rConfiguration, Patache::EngineInfo & rDebugInfo)
+Patache::InitImGuiCore (const Patache::Config & rConfiguration, Patache::EngineInfo & rDebugInfo)
 {
   IMGUI_CHECKVERSION ();
   ImGui::CreateContext ();
@@ -77,7 +93,7 @@ InitImGuiCore (const Patache::Config & rConfiguration, Patache::EngineInfo & rDe
 }
 
 bool
-CreateImguiDescriptorPool (Patache::VulkanBackend & rVulkan)
+Patache::CreateImguiDescriptorPool (Patache::VulkanBackend & rVulkan)
 {
   if (ImGui::GetCurrentContext () == nullptr)
     {
@@ -112,7 +128,7 @@ CreateImguiDescriptorPool (Patache::VulkanBackend & rVulkan)
 }
 
 bool
-CreateImguiPipelineCache (Patache::VulkanBackend & rVulkan)
+Patache::CreateImguiPipelineCache (Patache::VulkanBackend & rVulkan)
 {
   if (ImGui::GetCurrentContext () == nullptr)
     {
@@ -142,7 +158,7 @@ CreateImguiPipelineCache (Patache::VulkanBackend & rVulkan)
 }
 
 bool
-InitImGuiVulkan (Patache::Engine * const pEngine)
+Patache::InitImGuiVulkan (Patache::Engine * const pEngine)
 {
   if (ImGui::GetCurrentContext () == nullptr)
     {

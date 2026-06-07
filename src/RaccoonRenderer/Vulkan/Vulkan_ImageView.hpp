@@ -1,13 +1,9 @@
-#include <cstdio>
-#include <cstdint>
+#ifndef VULKAN_IMAGEVIEW_HPP
+#define VULKAN_IMAGEVIEW_HPP
 
-#include <vulkan/vulkan.h>
-#include "PatacheEngine/VmaUsage.hpp"
-
-// Patache Engine
-#include "PatacheEngine/VulkanBackend.hpp"
-#include "Vulkan_SetupLog.hpp"
-
+namespace Patache
+{
 bool CreateImageView (Patache::VulkanBackend &, const Patache::SwapchainInfo &);
+}
 
-#define PATACHE_ERROR_TEXT_SIZE 64
+#endif

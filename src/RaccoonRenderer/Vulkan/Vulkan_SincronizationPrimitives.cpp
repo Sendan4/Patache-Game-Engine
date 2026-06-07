@@ -1,7 +1,21 @@
+#include <cstdint>
+#include <cstdio>
+#include <cstdlib>
+
+#include <vulkan/vulkan.h>
+#include "PatacheEngine/VmaUsage.hpp"
+
+// Patache Engine
+#include "PatacheEngine/VulkanBackend.hpp"
+#include "Vulkan_SetupLog.hpp"
+
+#define PATACHE_ERROR_TEXT_SIZE           64
+#define PATACHE_ERROR_TEXT_SIZE_EXTRANULL 65
+
 #include "Vulkan_SincronizationPrimitives.hpp"
 
 bool
-CreateSemaphores (Patache::VulkanBackend & rVulkan)
+Patache::CreateSemaphores (Patache::VulkanBackend & rVulkan)
 {
   static constexpr VkSemaphoreCreateInfo semaphoreInfo{
     .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO, .pNext = nullptr, .flags = 0U
@@ -64,7 +78,7 @@ CreateSemaphores (Patache::VulkanBackend & rVulkan)
 }
 
 bool
-CreateFence (Patache::VulkanBackend & rVulkan)
+Patache::CreateFence (Patache::VulkanBackend & rVulkan)
 {
   static constexpr VkFenceCreateInfo fenceInfo{ .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
                                                 .pNext = nullptr,

@@ -37,17 +37,17 @@ static DWORD  sMode     = 0;
   #define PATACHE_VVL_PATH PATACHE_VVL_SDK_PATH
 #endif
 
-#include "Configuration_Funcs.hpp"
+#include "Configuration.hpp"
 
 #if PATACHE_LINUX_OR_UNIX
-  #include "WaylandWindow_Funcs.hpp"
+  #include "WaylandWindow.hpp"
 #else
 // Event Filter for Window Resize | Input.cpp Func
 bool SDLCALL HandleResize (void *, SDL_Event *);
 extern bool  resize;
 #endif
 
-#include "Vulkan_SetupRenderer_Funcs.hpp"
+#include "Vulkan_SetupRenderer.hpp"
 
 bool
 Patache::Engine::Init (const Patache::EngineCreateInfo & rInfo)
@@ -63,7 +63,7 @@ Patache::Engine::Init (const Patache::EngineCreateInfo & rInfo)
 
   StartLogInfo ();
 
-  if (!LoadConfiguration (configuration))
+  if (!Patache::LoadConfiguration (configuration))
     return false;
 
 #if defined(PATACHE_VVL_PATH)
@@ -199,7 +199,7 @@ Patache::Engine::Init (const Patache::EngineCreateInfo & rInfo)
   debugInfo.windowCreationFlags = SDL_GetWindowFlags (pGameWindow);
 #endif
 
-  if (!RaccoonRendererInit (this, rInfo))
+  if (!Patache::RaccoonRendererInit (this, rInfo))
     return false;
 
 #if PATACHE_DEBUG == 1
@@ -229,7 +229,7 @@ Patache::Engine::Engine (const Patache::EngineCreateInfo & rInfo, bool * pErr)
 
 Patache::Engine::~Engine (void)
 {
-  RaccoonRendererClose (vulkan);
+  Patache::RaccoonRendererClose (vulkan);
 
 #if PATACHE_DEBUG == 1
   // Imgui

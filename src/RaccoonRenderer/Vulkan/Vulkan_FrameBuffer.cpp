@@ -1,7 +1,25 @@
+#include <cstdio>
+#include <cstdint>
+#include <cstdlib>
+
+#include <vulkan/vulkan.h>
+#include "PatacheEngine/VmaUsage.hpp"
+
+// Patache Engine
+#include "PatacheEngine/VulkanBackend.hpp"
+#include "Vulkan_SetupLog.hpp"
+
+#if PATACHE_LINUX_OR_UNIX
+extern std::uint8_t scaleInt;
+#endif
+
+#define PATACHE_ERROR_TEXT_SIZE           64
+#define PATACHE_ERROR_TEXT_SIZE_EXTRANULL 65
+
 #include "Vulkan_FrameBuffer.hpp"
 
 bool
-CreateFrameBuffer (Patache::VulkanBackend & rVulkan)
+Patache::CreateFrameBuffer (Patache::VulkanBackend & rVulkan)
 {
   rVulkan.pSwapchainFrameBuffers = static_cast<VkFramebuffer *> (
       std::calloc (rVulkan.swapchainImageCount, sizeof (VkFramebuffer)));
@@ -37,9 +55,9 @@ CreateFrameBuffer (Patache::VulkanBackend & rVulkan)
 
       if (result != VK_SUCCESS)
         {
-          char errorText[PATACHE_ERROR_TEXT_SIZE]{ 0 };
+          char errorText[PATACHE_ERROR_TEXT_SIZE_EXTRANULL]{};
 
-          std::snprintf (errorText, PATACHE_ERROR_TEXT_SIZE - 1,
+          std::snprintf (errorText, PATACHE_ERROR_TEXT_SIZE,
                          "vkCreateFramebuffer() Frame Buffer #%.3u", i + 1);
 
           Patache::VulkanCheck (errorText, result);

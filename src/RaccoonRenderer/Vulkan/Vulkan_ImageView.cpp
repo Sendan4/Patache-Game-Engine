@@ -1,14 +1,32 @@
+#include <cstdio>
+#include <cstdint>
+#include <cstdlib>
+
+#include <vulkan/vulkan.h>
+#include "PatacheEngine/VmaUsage.hpp"
+
+// Patache Engine
+#include "PatacheEngine/VulkanBackend.hpp"
+#include "Vulkan_SetupLog.hpp"
+
+#define PATACHE_ERROR_TEXT_SIZE           64
+#define PATACHE_ERROR_TEXT_SIZE_EXTRANULL 64
+
 #include "Vulkan_ImageView.hpp"
 
 bool
-CreateImageView (Patache::VulkanBackend & rVulkan, const Patache::SwapchainInfo & rSwapchainInfo)
+Patache::CreateImageView (Patache::VulkanBackend &       rVulkan,
+                          const Patache::SwapchainInfo & rSwapchainInfo)
 {
-  rVulkan.pSwapchainColorImageViews = static_cast<VkImageView *> (
-      std::calloc (rVulkan.swapchainImageCount, sizeof (VkImageView)));
-
   if (rVulkan.pSwapchainColorImageViews == nullptr)
     {
-      return false;
+      rVulkan.pSwapchainColorImageViews = static_cast<VkImageView *> (
+          std::calloc (rVulkan.swapchainImageCount, sizeof (VkImageView)));
+
+      if (rVulkan.pSwapchainColorImageViews == nullptr)
+        {
+          return false;
+        }
     }
 
   VkResult result;
@@ -39,9 +57,9 @@ CreateImageView (Patache::VulkanBackend & rVulkan, const Patache::SwapchainInfo 
 
       if (result != VK_SUCCESS)
         {
-          char errorText[PATACHE_ERROR_TEXT_SIZE]{ 0 };
+          char errorText[PATACHE_ERROR_TEXT_SIZE_EXTRANULL]{};
 
-          std::snprintf (errorText, PATACHE_ERROR_TEXT_SIZE - 1,
+          std::snprintf (errorText, PATACHE_ERROR_TEXT_SIZE,
                          "vkCreateImageView() Color Image View #%.3u", i + 1);
 
           Patache::VulkanCheck (errorText, result);

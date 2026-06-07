@@ -1,12 +1,13 @@
 #include <fast_io.h>
 
 // Patache Engine
-#include "StartLogInfo.hpp"
 #include "ColorTerminal.hpp"
 #include "FastIOBuff.hpp"
 
+#include "StartLogInfo.hpp"
+
 void
-StartLogInfo (void)
+Patache::StartLogInfo (void)
 {
   fast_io::io::println (PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_COLOR_PATACHE, PATACHE_ENGINE_NAME,
                         PATACHE_TERM_RESET, " INFO");

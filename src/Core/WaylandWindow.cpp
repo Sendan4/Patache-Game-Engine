@@ -1,4 +1,4 @@
-#include "WaylandWindow.hpp"
+#include "Wayland.hpp"
 
 bool
 Patache::CreateWaylandWindow (const std::uint32_t & rWidth, const std::uint32_t & rHeight,

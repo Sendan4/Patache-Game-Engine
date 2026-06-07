@@ -1,13 +1,9 @@
-#include <cstdint>
-#include <cstdio>
+#ifndef VULKAN_COMMANDBUFFER_HPP
+#define VULKAN_COMMANDBUFFER_HPP
 
-#include <vulkan/vulkan.h>
-#include "PatacheEngine/VmaUsage.hpp"
-
-// Patache Engine
-#include "PatacheEngine/VulkanBackend.hpp"
-#include "Vulkan_SetupLog.hpp"
-
+namespace Patache
+{
 bool CreateCommandBuffer (Patache::VulkanBackend &);
+}
 
-#define PATACHE_ERROR_TEXT_SIZE 70
+#endif

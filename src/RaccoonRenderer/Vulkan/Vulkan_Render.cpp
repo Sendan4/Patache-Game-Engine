@@ -30,7 +30,7 @@ Patache::Engine::BeginRender (SDL_Event & rEvent)
           debugInfo.mainSwapchainTimer = std::chrono::high_resolution_clock::now ();
         }
   #endif
-      RecreateSwapchain (this);
+      Patache::RecreateSwapchain (this);
   #if PATACHE_DEBUG == 1
       if (debugInfo.calculatePerformanceStats)
         {
@@ -116,7 +116,7 @@ Patache::Engine::BeginRender (SDL_Event & rEvent)
           debugInfo.mainSwapchainTimer = std::chrono::high_resolution_clock::now ();
         }
 #endif
-      RecreateSwapchain (this);
+      Patache::RecreateSwapchain (this);
 #if PATACHE_DEBUG == 1
       if (debugInfo.calculatePerformanceStats)
         {
@@ -447,7 +447,7 @@ Patache::Engine::EndRender (SDL_Event & rEvent)
           debugInfo.mainSwapchainTimer = std::chrono::high_resolution_clock::now ();
         }
 #endif
-      RecreateSwapchain (this);
+      Patache::RecreateSwapchain (this);
 #if PATACHE_DEBUG == 1
       if (debugInfo.calculatePerformanceStats)
         {

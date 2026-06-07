@@ -1,7 +1,21 @@
+#include <cstdint>
+#include <cstdio>
+#include <cstdlib>
+
+#include <vulkan/vulkan.h>
+#include "PatacheEngine/VmaUsage.hpp"
+
+// Patache Engine
+#include "PatacheEngine/VulkanBackend.hpp"
+#include "Vulkan_SetupLog.hpp"
+
+#define PATACHE_ERROR_TEXT_SIZE           70
+#define PATACHE_ERROR_TEXT_SIZE_EXTRANULL 71
+
 #include "Vulkan_CommandBuffer.hpp"
 
 bool
-CreateCommandBuffer (Patache::VulkanBackend & rVulkan)
+Patache::CreateCommandBuffer (Patache::VulkanBackend & rVulkan)
 {
   VkCommandBufferAllocateInfo cmdAllocateInfo{ .sType
                                                = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,

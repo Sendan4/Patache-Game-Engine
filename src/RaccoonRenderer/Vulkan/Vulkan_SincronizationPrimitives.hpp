@@ -1,15 +1,10 @@
-#include <cstdint>
-#include <cstdio>
+#ifndef VULKAN_SINCRONIZATIONPRIMITIVES_HPP
+#define VULKAN_SINCRONIZATIONPRIMITIVES_HPP
 
-#include <vulkan/vulkan.h>
-#include "PatacheEngine/VmaUsage.hpp"
-
-// Patache Engine
-#include "PatacheEngine/VulkanBackend.hpp"
-#include "Vulkan_SetupLog.hpp"
-
-bool CreateSemaphore (Patache::VulkanBackend &);
+namespace Patache
+{
+bool CreateSemaphores (Patache::VulkanBackend &);
 bool CreateFence (Patache::VulkanBackend &);
+}
 
-#define PATACHE_ERROR_TEXT_SIZE           64
-#define PATACHE_ERROR_TEXT_SIZE_EXTRANULL 65
+#endif

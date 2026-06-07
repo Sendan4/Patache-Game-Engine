@@ -1,7 +1,19 @@
+#include <cstdint>
+
+#include <vulkan/vulkan.h>
+#include "PatacheEngine/VmaUsage.hpp"
+#include <fast_io.h>
+
+// Patache Engine
+#include "PatacheEngine/StructConfig.hpp"
+#include "PatacheEngine/VulkanBackend.hpp"
+#include "Vulkan_SetupLog.hpp"
+#include "Message.hpp"
+
 #include "Vulkan_DepthBuffer.hpp"
 
 bool
-CreateDepthBuffer (Patache::VulkanBackend & rVulkan, Patache::Config & rConfiguration)
+Patache::CreateDepthBuffer (Patache::VulkanBackend & rVulkan, Patache::Config & rConfiguration)
 {
   VkImageTiling tiling{ VK_IMAGE_TILING_OPTIMAL };
 
