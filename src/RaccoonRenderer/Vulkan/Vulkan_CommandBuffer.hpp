@@ -1,10 +1,9 @@
-#include <future>
-#include <cstdio>
+#ifndef VULKAN_COMMANDBUFFER_HPP
+#define VULKAN_COMMANDBUFFER_HPP
 
-#include <SDL3/SDL.h>
+namespace Patache
+{
+bool CreateCommandBuffer (Patache::VulkanBackend &);
+}
 
-// Patache Engine
-#include "PatacheEngine/PatacheEngine.hpp"
-#include "Log.hpp"
-
-#define PATACHE_ERROR_TEXT_SIZE 64
+#endif

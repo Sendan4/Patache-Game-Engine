@@ -1,33 +1,47 @@
 | Español | [English](README_en.md) |
 | :--: | :--: |
 
-<p align = "center"><img draggable = false src = "data/assets/patache.svg?ref_type=heads&inline=false" width=64></p>
+<p align = "center"><img draggable = false src = "data/patache.svg?ref_type=heads&inline=false" width=64></p>
 
 <h1 align = "center">Motor Patache</h1>
 
-_Motor tonto y simple de videojuegos hecho en C++._
+_Motor de videojuegos 2D tonto y simple hecho con C++. El objetivo es hacer un motor que funcione rápido, que sea ligero y portable._
 
-<p><strong>Es un motor 2D sencillo y ligero</strong> con el enfoque en el desarrollo de videojuegos utilizando C++.</p>
+> [!IMPORTANT]
+> Esta en un estado muy temprano de desarrollo.
 
-<p>Este motor esta hecho para ser utilizado junto con <a href = "http://www.libsdl.org/">SDL3</a>. Se abstrae la creación de la ventana, el renderizado de graficos, el sonido y la configuración en una API sencilla de utilizar.</p>
+## Enlaces
+[Estilo de Codigo](docs/Contributing_es.md) | [Construir](docs/Building_es.md)
 
-<p><strong>Es portable</strong>, funciona en varios sistemas operativos.</p>
+<b>Repositorios espejo</b>
 
-| Windows | GNU/Linux |
-| :-----: | :-----: |
-|<b>x86_64</b> | <b>x86_64</b> |
+[Github](https://github.com/Sendan4/Patache-Game-Engine) | [Gitlab](https://gitlab.com/PatacheEngine/Patache.git)
 
-<p>⚠️ <strong>Advertencia</strong>: Esta en un estado muy temprano de desarrollo y no es estable.</p>
+## Plataformas
+<b>PC</b>
+|     Windows    |    GNU/Linux   |           Unix BSD            |
+| :------------: | :------------: | :---------------------------: |
+| x86_64 / AMD64 <span style="color: #FF6347;">(64-bits)</span> | x86_64 / AMD64 <span style="color: #FF6347;">(64-bits)</span> | x86_64 / AMD64 <span style="color: #FF6347;">(64-bits)</span> <br> <span style="color: yellow;">_Solo GNU GCC_</span> |
 
-## Gamescope
-Si el motor o el juego no se ejecuta dentro de gamescope, prueba con ```--expose-wayland```.
+## Requerimentos de sistema
+- CPU multinucleo x86_64 con las extensiones AVX y SSE4.2 (MMX si usas GCC). basicamente una CPU Intel Sandy Bridge de segunda generacion o AMD Bulldozer conocido como FX.
+- GPU compatible con vulkan.
+- almenos 200 MiB de memoria RAM disponible.
+- almenos 14 GiB de espacio libre para los binarios y el codigo fuente (incluido todas las caracteristicas de depuracion).
 
-## Dependencias usadas en este proyecto
+## Capturas
+| Linux (Gnome) | Windows 10 | FreeBSD (KDE Plasma) |
+| -------- | ------- | ------- |
+| ![Linux GCC in Gnome](data/GCC_Linux_release.avif) | ![MSVC en Windows](data/MSVC_Windows10.avif) | ![FreeBSD GCC en KDE Plasma](data/GCC_FreeBSD_release.avif) |
+
+## Dependencias
 - [SDL3](http://www.libsdl.org/)
 - [Vulkan](https://www.vulkan.org/)
 	- [Vulkan-Headers](https://github.com/KhronosGroup/Vulkan-Headers.git)
 	- [Vulkan-Loader](https://github.com/KhronosGroup/Vulkan-Loader.git)
 	- [Vulkan-Validation-Layers](https://github.com/KhronosGroup/Vulkan-ValidationLayers.git)
+	- [Vulkan-Utility-Libraries](https://github.com/KhronosGroup/Vulkan-Utility-Libraries.git) *modificado*
+    - [VulkanMemoryAllocator](https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git)
 	- [Glslang](https://github.com/KhronosGroup/glslang.git)
 - [fast_io](https://github.com/cppfastio/fast_io.git)
 - [RapidYaml](https://github.com/biojppm/rapidyaml.git)
@@ -35,18 +49,14 @@ Si el motor o el juego no se ejecuta dentro de gamescope, prueba con ```--expose
 - [ImGui](https://github.com/ocornut/imgui.git)
 - [cglm](https://github.com/recp/cglm.git)
 
-#### GNU/Linux
+#### GNU/Linux | Unix BSD
  - [Wayland](https://wayland.freedesktop.org/)
 	- [Wayland Client](https://gitlab.freedesktop.org/wayland/wayland)
 	- [Wayland Protocols](https://gitlab.freedesktop.org/wayland/wayland-protocols.git)
 
-## Enlaces
-- [Documentación](#)
-#### Espejos Oficiales
-- [Github](https://github.com/Sendan4/Patache-Game-Engine)
-- [Codeberg](https://codeberg.org/PatacheEngine/Patache.git)
+## Gamescope
+Si el motor o juego no inicia dentro de gamescope, prueba con ```--expose-wayland```.
 
 <hr>
 
-Patache esta bajo la licencia [MIT](LICENSE.txt)
-
+Patache esta bajo la licencia [GPLv3.0](LICENSE)

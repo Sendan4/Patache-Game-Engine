@@ -1,162 +1,166 @@
+#include <cstdint>
+
+#include <vulkan/vulkan.h>
+#include "PatacheEngine/VmaUsage.hpp"
+#include <fast_io.h>
+
+// Patache Engine
+#include "PatacheEngine/StructConfig.hpp"
+#include "PatacheEngine/VulkanBackend.hpp"
+#include "Vulkan_SetupLog.hpp"
+#include "Message.hpp"
+
 #include "Vulkan_DepthBuffer.hpp"
 
 bool
-CreateDepthBuffer (Patache::VulkanBackend & Vulkan,
-                   Patache::Config &        configuration)
+Patache::CreateDepthBuffer (Patache::VulkanBackend & rVulkan, Patache::Config & rConfiguration)
 {
-  vk::ImageTiling Tiling = vk::ImageTiling::eOptimal;
+  VkImageTiling tiling{ VK_IMAGE_TILING_OPTIMAL };
 
-  vk::Format DepthFormatsToCheck[4]
-      = { vk::Format::eD32SfloatS8Uint, // Priority
-          vk::Format::eD32Sfloat, vk::Format::eD24UnormS8Uint,
-          vk::Format::eD16Unorm };
+  constexpr VkFormat depthFormatsToCheck[4U]{ VK_FORMAT_D32_SFLOAT_S8_UINT, // Priority
+                                              VK_FORMAT_D32_SFLOAT, VK_FORMAT_D24_UNORM_S8_UINT,
+                                              VK_FORMAT_D16_UNORM };
 
-  vk::Format SelectedDepthFormat = vk::Format::eUndefined;
-  bool       Found               = false;
+  VkFormat selectedDepthFormat{ VK_FORMAT_UNDEFINED };
+  bool     found{ false };
 
   // Depth Image And Image Tiling
-  for (std::uint8_t i = 0; i < 4; ++i)
-    {
-      vk::FormatProperties2 FormatProperties
-          = Vulkan.PhysicalDevice.getFormatProperties2 (
-              DepthFormatsToCheck[i]);
+  VkFormatProperties2 formatProperties{};
 
-      if (FormatProperties.formatProperties.optimalTilingFeatures
-          & vk::FormatFeatureFlagBits::eDepthStencilAttachment) // Priority
+  for (std::uint8_t i{ 0U }; i < 4U; ++i)
+    {
+      vkGetPhysicalDeviceFormatProperties2 (rVulkan.physicalDevice, depthFormatsToCheck[i],
+                                            &formatProperties);
+
+      if (formatProperties.formatProperties.optimalTilingFeatures
+          & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT) // Priority
         {
-          Tiling              = vk::ImageTiling::eOptimal;
-          SelectedDepthFormat = DepthFormatsToCheck[i];
-          Found               = true;
+          selectedDepthFormat = depthFormatsToCheck[i];
+          found               = true;
           break;
         }
-      else if (FormatProperties.formatProperties.linearTilingFeatures
-               & vk::FormatFeatureFlagBits::eDepthStencilAttachment)
+      else if (formatProperties.formatProperties.linearTilingFeatures
+               & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT)
         {
-          Tiling              = vk::ImageTiling::eLinear;
-          SelectedDepthFormat = DepthFormatsToCheck[i];
-          Found               = true;
+          tiling              = VK_IMAGE_TILING_LINEAR;
+          selectedDepthFormat = depthFormatsToCheck[i];
+          found               = true;
           break;
         }
     }
 
-  if (!Found)
+  if (!found)
     {
-      std::future<void> Err = std::async (
-          std::launch::async, Patache::Log::FatalErrorMessage,
-          "Patache - Raccoon Renderer",
-          "A ImageTiling or Depth Format was not found", configuration);
+      Patache::FatalErrorMessage ("Patache - Raccoon Renderer",
+                                  "A ImageTiling or Depth Format was not found", rConfiguration);
 
       return false;
     }
 
-  vk::Extent3D Extent{ .width  = Vulkan.SwapChainExtent.width,
-                       .height = Vulkan.SwapChainExtent.height,
-                       .depth  = 1 };
+  const VkImageCreateInfo imageInfo{ .sType     = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
+                                     .pNext     = nullptr,
+                                     .flags     = 0U,
+                                     .imageType = VK_IMAGE_TYPE_2D,
+                                     .format    = selectedDepthFormat,
+                                     .extent{ .width  = rVulkan.swapchainExtent.width,
+                                              .height = rVulkan.swapchainExtent.height,
+                                              .depth  = 1U },
+                                     .mipLevels   = 1U,
+                                     .arrayLayers = 1U,
+                                     .samples     = VK_SAMPLE_COUNT_1_BIT,
+                                     .tiling      = tiling,
+                                     .usage       = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+                                     .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
+                                     .queueFamilyIndexCount = 0U,
+                                     .pQueueFamilyIndices   = nullptr,
+                                     .initialLayout         = VK_IMAGE_LAYOUT_UNDEFINED };
 
-  vk::ImageCreateInfo ImageInfo{
-    .imageType             = vk::ImageType::e2D,
-    .format                = SelectedDepthFormat,
-    .extent                = Extent,
-    .mipLevels             = 1,
-    .arrayLayers           = 1,
-    .samples               = vk::SampleCountFlagBits::e1,
-    .tiling                = Tiling,
-    .usage                 = vk::ImageUsageFlagBits::eDepthStencilAttachment,
-    .sharingMode           = vk::SharingMode::eExclusive,
-    .queueFamilyIndexCount = 0,
-    .initialLayout         = vk::ImageLayout::eUndefined
-  };
+  VkResult result{ vkCreateImage (rVulkan.device, &imageInfo, nullptr, &rVulkan.depthImage) };
 
-  vk::Result Result
-      = Vulkan.Device.createImage (&ImageInfo, nullptr, &Vulkan.DepthImage);
-  if (Result != vk::Result::eSuccess)
+  if (result != VK_SUCCESS)
     {
-      std::future<void> ReturnVulkanCheck
-          = std::async (std::launch::async, Patache::Log::VulkanCheck,
-                        "Depth Image", Result);
+      Patache::VulkanCheck ("vkCreateImage()", result);
 
       return false;
     }
 
   // Depth View
-  vk::PhysicalDeviceMemoryProperties2 MemoryProperties
-      = Vulkan.PhysicalDevice.getMemoryProperties2 ();
+  VkPhysicalDeviceMemoryProperties2 memoryProperties{};
+  vkGetPhysicalDeviceMemoryProperties2 (rVulkan.physicalDevice, &memoryProperties);
 
-  vk::MemoryRequirements  mr;
-  vk::MemoryRequirements2 MemoryRequirements{ .memoryRequirements = mr };
+  VkMemoryRequirements  mr{};
+  VkMemoryRequirements2 memoryRequirements{};
+  memoryRequirements.memoryRequirements = mr;
 
-  vk::ImageMemoryRequirementsInfo2 ImageMemoryRequirementInfo{
-    .image = Vulkan.DepthImage
-  };
+  VkImageMemoryRequirementsInfo2 imageMemoryRequirementInfo{};
+  imageMemoryRequirementInfo.image = rVulkan.depthImage;
 
-  Vulkan.Device.getImageMemoryRequirements2 (&ImageMemoryRequirementInfo,
-                                             &MemoryRequirements);
+  vkGetImageMemoryRequirements2 (rVulkan.device, &imageMemoryRequirementInfo, &memoryRequirements);
 
-  std::uint32_t TypeIndex = 0;
+  std::uint32_t typeIndex{ 0U };
 
-  for (std::uint32_t i = 0;
-       i < MemoryProperties.memoryProperties.memoryTypeCount; ++i)
+  for (std::uint32_t i{ 0U }; i < memoryProperties.memoryProperties.memoryTypeCount; ++i)
     {
-      if ((MemoryRequirements.memoryRequirements.memoryTypeBits & 1)
-          && (MemoryProperties.memoryProperties.memoryTypes[i].propertyFlags
-              & vk::MemoryPropertyFlagBits::eDeviceLocal))
+      if ((memoryRequirements.memoryRequirements.memoryTypeBits & 1U)
+          && (memoryProperties.memoryProperties.memoryTypes[i].propertyFlags
+              & VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT))
         {
-          TypeIndex = i;
+          typeIndex = i;
           break;
         }
     }
 
-  vk::MemoryAllocateInfo DepthMemoryAllocateInfo{
-    .allocationSize  = MemoryRequirements.memoryRequirements.size,
-    .memoryTypeIndex = TypeIndex,
+  const VkMemoryAllocateInfo depthMemoryAllocateInfo{
+    .sType           = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
+    .pNext           = nullptr,
+    .allocationSize  = memoryRequirements.memoryRequirements.size,
+    .memoryTypeIndex = typeIndex,
   };
 
-  Result = Vulkan.Device.allocateMemory (&DepthMemoryAllocateInfo, nullptr,
-                                         &Vulkan.DepthMemory);
-  if (Result != vk::Result::eSuccess)
+  result
+      = vkAllocateMemory (rVulkan.device, &depthMemoryAllocateInfo, nullptr, &rVulkan.depthMemory);
+
+  if (result != VK_SUCCESS)
     {
-      std::future<void> ReturnVulkanCheck
-          = std::async (std::launch::async, Patache::Log::VulkanCheck,
-                        "Allocate Depth Memory", Result);
+      Patache::VulkanCheck ("vkAllocateMemory()", result);
 
       return false;
     }
 
-  Result = Vulkan.Device.bindImageMemory (Vulkan.DepthImage,
-                                          Vulkan.DepthMemory, 0);
-  if (Result != vk::Result::eSuccess)
+  result = vkBindImageMemory (rVulkan.device, rVulkan.depthImage, rVulkan.depthMemory, 0U);
+
+  if (result != VK_SUCCESS)
     {
-      std::future<void> ReturnVulkanCheck
-          = std::async (std::launch::async, Patache::Log::VulkanCheck,
-                        "Bind Image Depth Memory", Result);
+      Patache::VulkanCheck ("vkBindImageMemory()", result);
 
       return false;
     }
 
-  vk::ComponentMapping Components{};
+  const VkImageViewCreateInfo imageDepthViewInfo{ .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+                                                  .pNext = nullptr,
+                                                  .flags = 0U,
+                                                  .image = rVulkan.depthImage,
+                                                  .viewType = VK_IMAGE_VIEW_TYPE_2D,
+                                                  .format   = selectedDepthFormat,
+                                                  .components{ .r = VK_COMPONENT_SWIZZLE_R,
+                                                               .g = VK_COMPONENT_SWIZZLE_G,
+                                                               .b = VK_COMPONENT_SWIZZLE_B,
+                                                               .a = VK_COMPONENT_SWIZZLE_A },
+                                                  .subresourceRange{ .aspectMask
+                                                                     = VK_IMAGE_ASPECT_DEPTH_BIT,
+                                                                     .baseMipLevel   = 0U,
+                                                                     .levelCount     = 1U,
+                                                                     .baseArrayLayer = 0U,
+                                                                     .layerCount     = 1U } };
 
-  vk::ImageViewCreateInfo ImageDepthViewInfo{
-    .image      = Vulkan.DepthImage,
-    .viewType   = vk::ImageViewType::e2D,
-    .format     = SelectedDepthFormat,
-    .components = Components,
-    .subresourceRange{ .aspectMask     = vk::ImageAspectFlagBits::eDepth,
-                       .baseMipLevel   = 0,
-                       .levelCount     = 1,
-                       .baseArrayLayer = 0,
-                       .layerCount     = 1 }
-  };
+  result = vkCreateImageView (rVulkan.device, &imageDepthViewInfo, nullptr, &rVulkan.depthView);
 
-  Result = Vulkan.Device.createImageView (&ImageDepthViewInfo, nullptr,
-                                          &Vulkan.DepthView);
-  if (Result != vk::Result::eSuccess)
+  if (result != VK_SUCCESS)
     {
-      std::future<void> ReturnVulkanCheck
-          = std::async (std::launch::async, Patache::Log::VulkanCheck,
-                        "Depth Image View", Result);
+      Patache::VulkanCheck ("vkCreateImageView()", result);
 
       return false;
     }
-  else
-    return true;
+
+  return true;
 }

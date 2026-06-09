@@ -8,20 +8,29 @@ add_subdirectory(RaccoonRenderer/Shaders)
 
 add_dependencies(${PROJECT_NAME} PatacheFiles PatacheCompileShaders)
 
+if (NOT MSVC)
+    if (${FORMAT_IN_BUILD_TIME})
+        add_dependencies(${PROJECT_NAME} PatacheClangFormat)
+    endif()
+endif()
+
 target_sources (${PROJECT_NAME} PRIVATE
     "Core/PatacheEngine.cpp"
     "Core/Configuration.cpp"
     "Core/Input.cpp"
     "Core/ClearColor.cpp"
     "RaccoonRenderer/Vulkan/Vulkan_SetupRenderer.cpp"
-    "RaccoonRenderer/Vulkan/Vulkan_SwapChain.cpp"
+    "RaccoonRenderer/Vulkan/Vulkan_Swapchain.cpp"
     "RaccoonRenderer/Vulkan/Vulkan_ImageView.cpp"
     "RaccoonRenderer/Vulkan/Vulkan_CommandBuffer.cpp"
     "RaccoonRenderer/Vulkan/Vulkan_FrameBuffer.cpp"
     "RaccoonRenderer/Vulkan/Vulkan_DepthBuffer.cpp"
     "RaccoonRenderer/Vulkan/Vulkan_SincronizationPrimitives.cpp"
     "RaccoonRenderer/Vulkan/Vulkan_Render.cpp"
-    "Log/Messages.cpp"
+    "RaccoonRenderer/Vulkan/VmaUsage.cpp"
+    "RaccoonRenderer/BufferSubAllocation.cpp"
+    "RaccoonRenderer/Draw.cpp"
+    "Log/Message.cpp"
     "Log/StartLogInfo.cpp"
     "Log/Vulkan_SetupLog.cpp"
     "Log/Vulkan_Info.cpp")
@@ -34,43 +43,57 @@ if (MSVC)
     target_sources(${PROJECT_NAME} PRIVATE ${Include} ${IncludeInternal})
 endif()
 
+# Windows resource file
 if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows" OR WIN32)
     enable_language(RC)
 
-    target_sources (${PROJECT_NAME} PRIVATE "PatacheEngine.rc")
+    target_sources (${PROJECT_NAME} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/PatacheEngine.rc")
 endif()
 
-if (${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+# Wayland impl for unix
+if (${CMAKE_SYSTEM_NAME} STREQUAL "Linux" OR
+    ${CMAKE_SYSTEM_NAME} STREQUAL "FreeBSD" OR
+    ${CMAKE_SYSTEM_NAME} STREQUAL "OpenBSD" OR
+    ${CMAKE_SYSTEM_NAME} STREQUAL "DragonFly" OR
+    ${CMAKE_SYSTEM_NAME} STREQUAL "NetBSD")
     enable_language(C)
 
     target_sources (${PROJECT_NAME} PRIVATE
-	"Core/WaylandWindow.cpp"
-	${CMAKE_BINARY_DIR}/WaylandProtocols/xdg-shell.h
-	${CMAKE_BINARY_DIR}/WaylandProtocols/xdg-shell.c
-	${CMAKE_BINARY_DIR}/WaylandProtocols/xdg-decoration-unstable-v1.h
-	${CMAKE_BINARY_DIR}/WaylandProtocols/xdg-decoration-unstable-v1.c)
-		
-    target_include_directories(${PROJECT_NAME} PRIVATE
-	"Core/WaylandCSD/")
+        "Core/WaylandWindow.cpp")
 
-    target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_BINARY_DIR}/WaylandProtocols/)
+    target_sources (${PROJECT_NAME} PRIVATE
+				${CMAKE_CURRENT_SOURCE_DIR}/Core/WaylandProtocols/xdg-shell.c
+				${CMAKE_CURRENT_SOURCE_DIR}/Core/WaylandProtocols/xdg-decoration-unstable-v1.c
+				${CMAKE_CURRENT_SOURCE_DIR}/Core/WaylandProtocols/xdg-toplevel-icon-v1.c
+				${CMAKE_CURRENT_SOURCE_DIR}/Core/WaylandProtocols/fractional-scale-v1.c)
+
+    target_include_directories(${PROJECT_NAME} PRIVATE "Core/WaylandCSD/")
+
+    target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Core/WaylandProtocols)
 endif()
 
+# ImGui
 if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo")
-    target_sources(${PROJECT_NAME} PRIVATE "ImGui/SetupImgui.cpp")
+    target_sources(${PROJECT_NAME} PRIVATE
+        "ImGui/SetupImgui.cpp"
+        "ImGui/DebugUI.cpp")
+
+    target_include_directories(${PROJECT_NAME} PRIVATE
+        "${CMAKE_CURRENT_SOURCE_DIR}/ImGui/")
 endif()
 
+# Engine includes
 target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../include/")
 target_include_directories(${PROJECT_NAME} PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/Core/"
-    "${CMAKE_CURRENT_SOURCE_DIR}/ImGui/"
     "${CMAKE_CURRENT_SOURCE_DIR}/Log/"
-    "${CMAKE_CURRENT_SOURCE_DIR}/RaccoonRenderer/")
+    "${CMAKE_CURRENT_SOURCE_DIR}/RaccoonRenderer/Vulkan/")
 
 # Compiler Flags
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     # GNU & Clang
-    if (MINGW AND (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo") AND COMPILER_SUPPORTS_FPERMISSIVE)
+    if (MINGW AND (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR
+        ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo") AND COMPILER_SUPPORTS_FPERMISSIVE)
         # Mingw specific function conversion in vulkan
         target_compile_options(${PROJECT_NAME} PRIVATE "-fpermissive")
     endif()
@@ -129,10 +152,11 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
         endif()
     endif()
 
+    # Disable MSVC C++ STL exceptions
     target_compile_definitions(${PROJECT_NAME} PRIVATE _HAS_EXCEPTIONS=0)
 endif()
 
-# Macros
+# Main engine macros
 if (${CMAKE_BUILD_TYPE} STREQUAL "Release")
     target_compile_definitions(${PROJECT_NAME} PRIVATE PATACHE_BUILD_TYPE="Release")
     target_compile_definitions(${PROJECT_NAME} PUBLIC PATACHE_DEBUG=0)
@@ -147,9 +171,13 @@ elseif(${CMAKE_BUILD_TYPE} STREQUAL "MinSizeRel")
     target_compile_definitions(${PROJECT_NAME} PUBLIC PATACHE_DEBUG=0)
 endif()
 
+# Build info macros
 if (NOT "${CMAKE_GENERATOR_VERSION}" STREQUAL "")
     target_compile_definitions(${PROJECT_NAME} PRIVATE
         PATACHE_BUILD_SYSTEM_GENERATOR_VERSION="${CMAKE_GENERATOR_VERSION}")
+else()
+    target_compile_definitions(${PROJECT_NAME} PRIVATE
+        PATACHE_BUILD_SYSTEM_GENERATOR_VERSION="")
 endif()
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE
@@ -165,42 +193,69 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     PATACHE_COMPILER_VERSION="${CMAKE_CXX_COMPILER_VERSION}"
     PATACHE_ARCH="${CMAKE_SYSTEM_PROCESSOR}"
     PATACHE_FAST_IO_GIT_COMMIT_HASH_SHORT="${Fast_io_COMMIT_SHORT_HASH}"
-    VULKAN_HPP_NO_EXCEPTIONS
-    VULKAN_HPP_NO_SMART_HANDLE
-    VULKAN_HPP_NO_CONSTRUCTORS)
+    PATACHE_OS="${CMAKE_SYSTEM_NAME}"
+    PATACHE_COMPILER="${CMAKE_CXX_COMPILER_ID}")
 
-if (MSVC OR CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-    target_compile_definitions(${PROJECT_NAME} PRIVATE _HAS_EXCEPTIONS=0)
+set(LINUX_OR_UNIX_MACROS_TEXT "__unix__ || __linux__ || __FreeBSD__ || __NetBSD__ || __NetBSD__ || __OpenBSD__ || __bsdi__ || __DragonFly__ || __MidnightBSD__")
+
+if ("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
+    set(LINUX_OR_UNIX_MACROS_TEXT 0)
 endif()
 
-# Git
+target_compile_definitions(${PROJECT_NAME} PUBLIC
+    VULKAN_HPP_NO_EXCEPTIONS
+    VULKAN_HPP_NO_SMART_HANDLE
+    VULKAN_HPP_NO_CONSTRUCTORS
+ 	PATACHE_LINUX_OR_UNIX=${LINUX_OR_UNIX_MACROS_TEXT})
+
+# Git info macros
 if (USE_GIT AND GIT)
-    target_compile_definitions(${PROJECT_NAME} PRIVATE
-        PATACHE_GIT_BRANCH="${PATACHE_GIT_BRANCH}"
-        PATACHE_GIT_HASH_LONG="${PATACHE_GIT_HASH_LONG}"
-        PATACHE_GIT_HASH_SHORT="${PATACHE_GIT_HASH_SHORT}"
-        PATACHE_GIT_WORK_DIR_IS_CLEAN="${PATACHE_GIT_WORK_DIR_IS_CLEAN}"
-        PATACHE_GIT_WORK_DIR_IS_CLEAN_BOOL=${PATACHE_GIT_WORK_DIR_IS_CLEAN_BOOL}
-        PATACHE_GIT_WORK_DIR_IS_STAGED="${PATACHE_GIT_WORK_DIR_IS_STAGED}"
-        PATACHE_GIT_WORK_DIR_IS_STAGED_BOOL=${PATACHE_GIT_WORK_DIR_IS_STAGED_BOOL})
+target_compile_definitions(${PROJECT_NAME} PRIVATE
+    PATACHE_USE_GIT
+    PATACHE_GIT_BRANCH="${GIT_BRANCH}"
+    PATACHE_GIT_HASH_LONG="${GIT_HASH_LONG}"
+    PATACHE_GIT_HASH_SHORT="${GIT_HASH_SHORT}"
+    PATACHE_GIT_DIRTY=${GIT_DIRTY}
+    PATACHE_GIT_STAGE=${GIT_STAGE})
 endif()
 
 if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo")
     target_compile_definitions(${PROJECT_NAME} PRIVATE PATACHE_IMGUI_VERSION="${Imgui_VERSION}")
 endif()
 
+# Vulkan Validation Layer macro
 if (USE_VVL)
     target_compile_definitions(${PROJECT_NAME} PRIVATE PATACHE_USE_VVL)
 endif()
 
 # Link Libraries
 # Wayland
-if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    target_link_libraries(${PROJECT_NAME} PRIVATE ${WAYLAND_LIBRARIES} ${WAYLAND_CURSOR_LIBRARIES})
-    target_include_directories(${PROJECT_NAME} PRIVATE ${WAYLAND_INCLUDE_DIRS} ${WAYLAND_CURSOR_INCLUDE_DIRS})
+if (${CMAKE_SYSTEM_NAME} STREQUAL "Linux" OR
+    ${CMAKE_SYSTEM_NAME} STREQUAL "FreeBSD" OR
+    ${CMAKE_SYSTEM_NAME} STREQUAL "OpenBSD" OR
+    ${CMAKE_SYSTEM_NAME} STREQUAL "DragonFly" OR
+    ${CMAKE_SYSTEM_NAME} STREQUAL "NetBSD")
+    if (${WAYLAND_FOUND} AND ${WAYLAND_CURSOR_FOUND})
+        target_link_libraries(${PROJECT_NAME} PUBLIC
+            ${WAYLAND_LIBRARIES}
+            ${WAYLAND_CURSOR_LIBRARIES})
+
+        target_include_directories(${PROJECT_NAME} PUBLIC
+            ${WAYLAND_INCLUDE_DIRS}
+            ${WAYLAND_CURSOR_INCLUDE_DIRS})
+    endif()
+
+    # Always define wayland macro for SDL
+    target_compile_definitions(${PROJECT_NAME} PRIVATE SDL_VIDEO_DRIVER_WAYLAND)
 endif()
 
-if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" OR (CMAKE_SYSTEM_NAME STREQUAL "Linux" AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU"))
+# Vulkan
+if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" OR
+    ${CMAKE_SYSTEM_NAME} STREQUAL "Linux" OR
+    ${CMAKE_SYSTEM_NAME} STREQUAL "FreeBSD" OR
+    ${CMAKE_SYSTEM_NAME} STREQUAL "OpenBSD" OR
+    ${CMAKE_SYSTEM_NAME} STREQUAL "DragonFly" OR
+    ${CMAKE_SYSTEM_NAME} STREQUAL "NetBSD")
     # Using VVL
     if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo" AND USE_VVL)
         target_compile_definitions(${PROJECT_NAME} PRIVATE PATACHE_FIND_VVL_IN_THE_CURRENT_PATH)
@@ -208,7 +263,7 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" OR (CMAKE_SYSTEM_NAME STREQUAL "Linux"
 
     target_link_libraries(${PROJECT_NAME} PUBLIC
         vulkan
-	Vulkan::Headers)
+        Vulkan::Headers)
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
     # Link Vulkan from SDK
     message("")
@@ -239,13 +294,7 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
     endif()
 endif()
 
-if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    target_compile_definitions(${PROJECT_NAME} PRIVATE SDL_VIDEO_DRIVER_WAYLAND)
-    if (XORG_SUPPORT)
-        target_compile_definitions(${PROJECT_NAME} PRIVATE SDL_VIDEO_DRIVER_X11)
-    endif()
-endif()
-
+# Move this binaries to a build dir instead of bin build
 if (TARGET asm_offset)
     set_target_properties(asm_offset
         PROPERTIES
@@ -254,12 +303,13 @@ if (TARGET asm_offset)
         RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 endif()
 
-target_link_libraries(${PROJECT_NAME} PUBLIC Fast_io SDL3::SDL3)
-target_link_libraries(${PROJECT_NAME} PRIVATE ryml::ryml freetype cglm)
-target_include_directories(${PROJECT_NAME} PRIVATE ${FREETYPE_INCLUDE_DIRS} ${SDL2_INCLUDE_DIRS})
+# Link libraries
+target_link_libraries(${PROJECT_NAME} PUBLIC fast_io SDL3::SDL3 cglm GPUOpen::VulkanMemoryAllocator)
+target_link_libraries(${PROJECT_NAME} PRIVATE ryml::ryml freetype Vulkan::UtilityHeaders)
+target_include_directories(${PROJECT_NAME} PRIVATE ${FREETYPE_INCLUDE_DIRS})
 
 if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo")
-    target_link_libraries(${PROJECT_NAME} PUBLIC Imgui)
+    target_link_libraries(${PROJECT_NAME} PUBLIC imgui)
 endif()
 
 # MSVC Folders
@@ -324,12 +374,27 @@ if (MSVC)
     if (TARGET loader_asm_gen_files)
         set_target_properties(loader_asm_gen_files PROPERTIES FOLDER "Engine/Dependencies/Vulkan")
     endif()
+    if (TARGET VulkanLayerSettings)
+        set_target_properties(VulkanLayerSettings PROPERTIES FOLDER "Engine/Dependencies/Vulkan")
+    endif()
+    if (TARGET VulkanSafeStruct)
+        set_target_properties(VulkanSafeStruct PROPERTIES FOLDER "Engine/Dependencies/Vulkan")
+    endif()
+    if (TARGET VulkanUtilityHeaders)
+        set_target_properties(VulkanUtilityHeaders PROPERTIES FOLDER "Engine/Dependencies/Vulkan")
+    endif()
     if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo" OR USE_VVL)
         if (TARGET vvl)
             set_target_properties(vvl PROPERTIES FOLDER "Engine/Dependencies/Vulkan")
         endif()
         if (TARGET VkLayer_utils)
             set_target_properties(VkLayer_utils PROPERTIES FOLDER "Engine/Dependencies/Vulkan")
+        endif()
+        if (TARGET vvl_generated_setting_files)
+            set_target_properties(vvl_generated_setting_files PROPERTIES FOLDER "Engine/Dependencies/Vulkan")
+        endif()
+        if (TARGET vvl_gpu_av_shaders_spirv)
+            set_target_properties(vvl_gpu_av_shaders_spirv PROPERTIES FOLDER "Engine/Dependencies/Vulkan")
         endif()
     endif()
     set_target_properties(vulkan PROPERTIES FOLDER "Engine/Dependencies/Vulkan")
@@ -467,10 +532,19 @@ if (MSVC)
     if (TARGET extinst_tables)
         set_target_properties(extinst_tables PROPERTIES FOLDER "Engine/Dependencies/Glslang")
     endif()
+    if (TARGET External)
+        set_target_properties(External PROPERTIES FOLDER "Engine/Dependencies/Glslang")
+    endif()
+    if (TARGET Scripts)
+        set_target_properties(Scripts PROPERTIES FOLDER "Engine/Dependencies/Glslang")
+    endif()
+    if (TARGET Shaders)
+        set_target_properties(Shaders PROPERTIES FOLDER "Engine/Dependencies/Glslang")
+    endif()
 
     #Imgui
     if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo")
-        set_target_properties(Imgui PROPERTIES FOLDER "Engine/Dependencies")
+        set_target_properties(imgui PROPERTIES FOLDER "Engine/Dependencies")
     endif()
 endif()
 

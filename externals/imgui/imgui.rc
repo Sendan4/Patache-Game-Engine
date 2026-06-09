@@ -1,6 +1,6 @@
 1 VERSIONINFO
- FILEVERSION 1,91,9,0
- PRODUCTVERSION 1,90
+ FILEVERSION 1,92,6,0
+ PRODUCTVERSION 1,92
  FILEFLAGSMASK 0x17L
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -18,12 +18,12 @@ BEGIN
 			VALUE "Comments", "Dear ImGui is a bloat-free graphical user interface library for C++"
 			VALUE "CompanyName", ""
 			VALUE "FileDescription", "Bloat-free Graphical User interface for C++ with minimal dependencies"
-			VALUE "FileVersion", "1, 91, 9, 0"
+			VALUE "FileVersion", "1, 92, 6, 0"
 			VALUE "InternalName", "ImGui"
 			VALUE "LegalCopyright", "Copyright (c) 2014-2023 Omar Cornut"
 			VALUE "OriginalFilename", "ImGui.dll"
 			VALUE "ProductName", "ImGui"
-			VALUE "ProductVersion", "1, 91"
+			VALUE "ProductVersion", "1, 92"
 		END
 	END
 	BLOCK "VarFileInfo"

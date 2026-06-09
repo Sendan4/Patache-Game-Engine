@@ -1,41 +1,70 @@
+#include <cstdio>
+#include <cstdint>
+#include <cstdlib>
+
+#include <vulkan/vulkan.h>
+#include "PatacheEngine/VmaUsage.hpp"
+
+// Patache Engine
+#include "PatacheEngine/VulkanBackend.hpp"
+#include "Vulkan_SetupLog.hpp"
+
+#if PATACHE_LINUX_OR_UNIX
+extern std::uint8_t scaleInt;
+#endif
+
+#define PATACHE_ERROR_TEXT_SIZE           64
+#define PATACHE_ERROR_TEXT_SIZE_EXTRANULL 65
+
 #include "Vulkan_FrameBuffer.hpp"
 
 bool
-CreateFrameBuffer (Patache::VulkanBackend & Vulkan)
+Patache::CreateFrameBuffer (Patache::VulkanBackend & rVulkan)
 {
-  if (Vulkan.SwapChainFrameBuffer == VK_NULL_HANDLE)
-    Vulkan.SwapChainFrameBuffer
-        = new vk::Framebuffer[Vulkan.SwapChainImageCount];
+  rVulkan.pSwapchainFrameBuffers = static_cast<VkFramebuffer *> (
+      std::calloc (rVulkan.swapchainImageCount, sizeof (VkFramebuffer)));
 
-  vk::Result Result;
-
-  for (std::uint8_t i = 0; i < Vulkan.SwapChainImageCount; ++i)
+  if (rVulkan.pSwapchainFrameBuffers == nullptr)
     {
-      const vk::FramebufferCreateInfo FrameBufferInfo{
-        .renderPass      = Vulkan.RenderPass,
-        .attachmentCount = 1,
-        .pAttachments    = &Vulkan.SwapChainColorImageView[i],
-        .width           = Vulkan.SwapChainExtent.width,
-        .height          = Vulkan.SwapChainExtent.height,
-        .layers          = 1,
+      return false;
+    }
+
+  VkResult result;
+
+  for (std::uint8_t i{ 0U }; i < rVulkan.swapchainImageCount; ++i)
+    {
+      const VkFramebufferCreateInfo frameBufferInfo{
+        .sType           = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
+        .pNext           = nullptr,
+        .flags           = 0U,
+        .renderPass      = rVulkan.renderPass,
+        .attachmentCount = 1U,
+        .pAttachments    = &rVulkan.pSwapchainColorImageViews[i],
+#if PATACHE_LINUX_OR_UNIX
+        .width  = rVulkan.swapchainExtent.width * scaleInt,
+        .height = rVulkan.swapchainExtent.height * scaleInt,
+#else
+        .width  = rVulkan.swapchainExtent.width,
+        .height = rVulkan.swapchainExtent.height,
+#endif
+        .layers = 1U,
       };
 
-      Result = Vulkan.Device.createFramebuffer (
-          &FrameBufferInfo, nullptr, &Vulkan.SwapChainFrameBuffer[i]);
+      result = vkCreateFramebuffer (rVulkan.device, &frameBufferInfo, nullptr,
+                                    &rVulkan.pSwapchainFrameBuffers[i]);
 
-      if (Result != vk::Result::eSuccess)
+      if (result != VK_SUCCESS)
         {
-          char ErrorText[PATACHE_ERROR_TEXT_SIZE]{ 0 };
+          char errorText[PATACHE_ERROR_TEXT_SIZE_EXTRANULL]{};
 
-          std::snprintf (ErrorText, PATACHE_ERROR_TEXT_SIZE - 1,
-                         "Frame Buffer #%.3u", i + 1);
+          std::snprintf (errorText, PATACHE_ERROR_TEXT_SIZE,
+                         "vkCreateFramebuffer() Frame Buffer #%.3u", i + 1);
 
-          std::future<void> ReturnVulkanCheck
-              = std::async (std::launch::async, Patache::Log::VulkanCheck,
-                            ErrorText, Result);
+          Patache::VulkanCheck (errorText, result);
 
           return false;
         }
     }
+
   return true;
 }

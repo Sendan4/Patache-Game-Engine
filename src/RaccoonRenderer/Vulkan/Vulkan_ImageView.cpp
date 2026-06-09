@@ -1,53 +1,68 @@
+#include <cstdio>
+#include <cstdint>
+#include <cstdlib>
+
+#include <vulkan/vulkan.h>
+#include "PatacheEngine/VmaUsage.hpp"
+
+// Patache Engine
+#include "PatacheEngine/VulkanBackend.hpp"
+#include "Vulkan_SetupLog.hpp"
+
+#define PATACHE_ERROR_TEXT_SIZE           64
+#define PATACHE_ERROR_TEXT_SIZE_EXTRANULL 64
+
 #include "Vulkan_ImageView.hpp"
 
 bool
-CreateImageView (Patache::VulkanBackend &       Vulkan,
-                 const Patache::SwapChainInfo & SwapChainInfo)
+Patache::CreateImageView (Patache::VulkanBackend &       rVulkan,
+                          const Patache::SwapchainInfo & rSwapchainInfo)
 {
-  if (Vulkan.SwapChainColorImageView == VK_NULL_HANDLE)
-    Vulkan.SwapChainColorImageView
-        = new vk::ImageView[Vulkan.SwapChainImageCount];
-
-  vk::Result Result;
-
-  static constexpr vk::ComponentMapping ComponentMapping{
-    .r = vk::ComponentSwizzle::eIdentity,
-    .g = vk::ComponentSwizzle::eIdentity,
-    .b = vk::ComponentSwizzle::eIdentity,
-    .a = vk::ComponentSwizzle::eIdentity
-  };
-
-  static constexpr vk::ImageSubresourceRange ImageSubresourceRange{
-    .aspectMask     = vk::ImageAspectFlagBits::eColor,
-    .baseMipLevel   = 0,
-    .levelCount     = 1,
-    .baseArrayLayer = 0,
-    .layerCount     = 1
-  };
-
-  for (std::uint8_t i = 0; i < Vulkan.SwapChainImageCount; ++i)
+  if (rVulkan.pSwapchainColorImageViews == nullptr)
     {
-      const vk::ImageViewCreateInfo ColorImageViewInfo{
-        .image            = Vulkan.SwapChainImages[i],
-        .viewType         = vk::ImageViewType::e2D,
-        .format           = SwapChainInfo.ImageColorFormat,
-        .components       = ComponentMapping,
-        .subresourceRange = ImageSubresourceRange
-      };
+      rVulkan.pSwapchainColorImageViews = static_cast<VkImageView *> (
+          std::calloc (rVulkan.swapchainImageCount, sizeof (VkImageView)));
 
-      Result = Vulkan.Device.createImageView (
-          &ColorImageViewInfo, nullptr, &Vulkan.SwapChainColorImageView[i]);
-
-      if (Result != vk::Result::eSuccess)
+      if (rVulkan.pSwapchainColorImageViews == nullptr)
         {
-          char ErrorText[PATACHE_ERROR_TEXT_SIZE]{ 0 };
+          return false;
+        }
+    }
 
-          std::snprintf (ErrorText, PATACHE_ERROR_TEXT_SIZE - 1,
-                         "Color Image View #%.3u", i + 1);
+  VkResult result;
 
-          std::future<void> ReturnVulkanCheck
-              = std::async (std::launch::async, Patache::Log::VulkanCheck,
-                            ErrorText, Result);
+  VkImageViewCreateInfo colorImageViewInfo{ .sType    = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+                                            .pNext    = nullptr,
+                                            .flags    = 0U,
+                                            .image    = VK_NULL_HANDLE,
+                                            .viewType = VK_IMAGE_VIEW_TYPE_2D,
+                                            .format   = rSwapchainInfo.imageColorFormat,
+                                            .components{ .r = VK_COMPONENT_SWIZZLE_IDENTITY,
+                                                         .g = VK_COMPONENT_SWIZZLE_IDENTITY,
+                                                         .b = VK_COMPONENT_SWIZZLE_IDENTITY,
+                                                         .a = VK_COMPONENT_SWIZZLE_IDENTITY },
+                                            .subresourceRange{ .aspectMask
+                                                               = VK_IMAGE_ASPECT_COLOR_BIT,
+                                                               .baseMipLevel   = 0U,
+                                                               .levelCount     = 1U,
+                                                               .baseArrayLayer = 0U,
+                                                               .layerCount     = 1U } };
+
+  for (std::uint8_t i{ 0U }; i < rVulkan.swapchainImageCount; ++i)
+    {
+      colorImageViewInfo.image = rVulkan.pSwapchainImages[i];
+
+      result = vkCreateImageView (rVulkan.device, &colorImageViewInfo, nullptr,
+                                  &rVulkan.pSwapchainColorImageViews[i]);
+
+      if (result != VK_SUCCESS)
+        {
+          char errorText[PATACHE_ERROR_TEXT_SIZE_EXTRANULL]{};
+
+          std::snprintf (errorText, PATACHE_ERROR_TEXT_SIZE,
+                         "vkCreateImageView() Color Image View #%.3u", i + 1);
+
+          Patache::VulkanCheck (errorText, result);
 
           return false;
         }

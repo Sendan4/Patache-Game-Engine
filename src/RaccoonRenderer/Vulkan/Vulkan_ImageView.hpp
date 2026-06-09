@@ -1,13 +1,9 @@
-#include <cstdio>
-#include <future>
+#ifndef VULKAN_IMAGEVIEW_HPP
+#define VULKAN_IMAGEVIEW_HPP
 
-#include <SDL3/SDL.h>
+namespace Patache
+{
+bool CreateImageView (Patache::VulkanBackend &, const Patache::SwapchainInfo &);
+}
 
-// Patache Engine
-#include "PatacheEngine/PatacheEngine.hpp"
-#include "Log.hpp"
-
-bool CreateImageView (Patache::VulkanBackend &,
-                      const Patache::SwapChainInfo &);
-
-#define PATACHE_ERROR_TEXT_SIZE 64
+#endif

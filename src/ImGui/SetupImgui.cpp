@@ -1,188 +1,224 @@
+#include <vulkan/vulkan.h>
+#include "PatacheEngine/VmaUsage.hpp"
+#include <SDL3/SDL.h>
+#if PATACHE_DEBUG == 1
+  #include <imgui_impl_sdl3.h>
+  #include <imgui_impl_vulkan.h>
+  #include <imgui_freetype.h>
+#endif
+
+// Patache Engine
+#include "PatacheEngine/PatacheEngine.hpp"
+#include "Message.hpp"
+#include "Vulkan_SetupLog.hpp"
+
+#include "InterDisplay-Medium.hpp"
+
 #include "SetupImgui.hpp"
 
 void
-InitImgui (const Patache::Config & configuration)
+Patache::InitImGuiCore (const Patache::Config & rConfiguration, Patache::EngineInfo & rDebugInfo)
 {
   IMGUI_CHECKVERSION ();
   ImGui::CreateContext ();
 
   if (ImGui::GetCurrentContext () == nullptr)
     {
-      std::future<void> FatalErr = std::async (
-          std::launch::async, Patache::Log::FatalErrorMessage,
-          "Patache Engine - ImGui", "Fail to initialize global ImGui Context",
-          configuration);
+      Patache::FatalErrorMessage ("Patache Engine - ImGui",
+                                  "Fail to initialize global ImGui Context", rConfiguration);
 
       return;
     }
 
-  ImGuiIO & io = ImGui::GetIO ();
-  static_cast<void> (io);
-  io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard
-                    | ImGuiConfigFlags_NavEnableGamepad
-                    | ImGuiConfigFlags_DockingEnable;
-  io.IniSavingRate = 0;
-  io.IniFilename   = nullptr;
-  io.LogFilename   = nullptr;
+  [[maybe_unused]] ImGuiIO & rIO{ ImGui::GetIO () };
+  rIO.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard | ImGuiConfigFlags_NavEnableGamepad
+                     | ImGuiConfigFlags_DockingEnable | ImGuiConfigFlags_DpiEnableScaleFonts;
+  rIO.IniSavingRate   = 0;
+  rIO.IniFilename     = nullptr;
+  rIO.LogFilename     = nullptr;
+  rIO.FontGlobalScale = 1.0F;
+  // rIO.MouseDrawCursor = true;
 
-  ImFontConfig FontConfig;
-  FontConfig.RasterizerDensity = 4.0f;
-  FontConfig.OversampleH       = 4;
-  FontConfig.OversampleV       = 4;
-  // FontConfig.GlyphExtraSpacing.x = 1.008f;
-  io.Fonts->AddFontDefault ();
-  io.FontGlobalScale = 1.0f;
-  io.Fonts->Build ();
+  ImFontConfig fontConfig{};
+  fontConfig.RasterizerDensity = 4.0F;
+  fontConfig.OversampleH       = 1;
+  fontConfig.OversampleV       = 1;
 
+  rIO.Fonts->AddFontFromMemoryCompressedTTF (sInterDisplay_Medium_compressed_data,
+                                             sInterDisplay_Medium_compressed_size, 16.0F,
+                                             &fontConfig, nullptr);
+
+  // constexpr ImWchar ranges[] = { 0x1, 0x1FFFF, 0 };
+  // FontConfig.FontBuilderFlags |= ImGuiFreeTypeBuilderFlags_LoadColor;
+  // FontConfig.MergeMode = true;
+
+  // General styles
   ImGui::StyleColorsDark ();
-  ImGui::GetStyle ().FrameBorderSize             = 0.0f;
-  ImGui::GetStyle ().FrameRounding               = 0.0f;
-  ImGui::GetStyle ().GrabRounding                = 0.0f;
-  ImGui::GetStyle ().WindowBorderSize            = 0.0f;
-  ImGui::GetStyle ().PopupBorderSize             = 0.0f;
-  ImGui::GetStyle ().ChildBorderSize             = 1.0f;
-  ImGui::GetStyle ().TabRounding                 = 0.0f;
-  ImGui::GetStyle ().TabBorderSize               = 0.0f;
-  ImGui::GetStyle ().TabBarBorderSize            = 0.0f;
-  ImGui::GetStyle ().ScrollbarRounding           = 0.0f;
-  ImGui::GetStyle ().ItemSpacing                 = ImVec2 (8.0f, 12.0f);
-  ImGui::GetStyle ().WindowPadding               = ImVec2 (20, 6);
-  ImGui::GetStyle ().Colors[ImGuiCol_WindowBg].w = 0.82f;
-  ImGui::GetStyle ().Colors[ImGuiCol_TitleBg]
-      = ImGui::GetStyle ().Colors[ImGuiCol_WindowBg];
-  ImGui::GetStyle ().Colors[ImGuiCol_DockingEmptyBg]
-      = ImVec4 (0.0f, 0.0f, 0.0f, 0.0f);
+  ImGui::GetStyle ().FrameRounding                   = 0.0F;
+  ImGui::GetStyle ().GrabRounding                    = 0.0F;
+  ImGui::GetStyle ().PopupBorderSize                 = 0.0F;
+  ImGui::GetStyle ().ChildBorderSize                 = 1.0F;
+  ImGui::GetStyle ().TabRounding                     = 0.0F;
+  ImGui::GetStyle ().TabBorderSize                   = 0.0F;
+  ImGui::GetStyle ().TabBarBorderSize                = 0.0F;
+  ImGui::GetStyle ().ScrollbarRounding               = 0.0F;
+  ImGui::GetStyle ().ItemSpacing                     = ImVec2 (8.0F, 12.0F);
+  ImGui::GetStyle ().WindowPadding                   = ImVec2 (20.0F, 6.0F);
+  ImGui::GetStyle ().Colors[ImGuiCol_WindowBg].w     = 0.90F;
+  ImGui::GetStyle ().Colors[ImGuiCol_TitleBg]        = ImGui::GetStyle ().Colors[ImGuiCol_WindowBg];
+  ImGui::GetStyle ().Colors[ImGuiCol_DockingEmptyBg] = ImVec4 (0.0F, 0.0F, 0.0F, 0.0F);
+
+  // specific window engine styles
+  rDebugInfo.engineStyles[0U]  = ImGui::GetStyle ().Colors[ImGuiCol_TitleBgActive];
+  rDebugInfo.engineStyles[1U]  = ImGui::GetStyle ().Colors[ImGuiCol_ResizeGrip];
+  rDebugInfo.engineStyles[2U]  = ImGui::GetStyle ().Colors[ImGuiCol_ResizeGripActive];
+  rDebugInfo.engineStyles[3U]  = ImGui::GetStyle ().Colors[ImGuiCol_ResizeGripHovered];
+  rDebugInfo.engineStyles[4U]  = ImGui::GetStyle ().Colors[ImGuiCol_SeparatorHovered];
+  rDebugInfo.engineStyles[5U]  = ImGui::GetStyle ().Colors[ImGuiCol_SeparatorActive];
+  rDebugInfo.engineStyles[6U]  = ImGui::GetStyle ().Colors[ImGuiCol_Tab];
+  rDebugInfo.engineStyles[7U]  = ImGui::GetStyle ().Colors[ImGuiCol_TabSelected];
+  rDebugInfo.engineStyles[8U]  = ImGui::GetStyle ().Colors[ImGuiCol_TabHovered];
+  rDebugInfo.engineStyles[9U]  = ImGui::GetStyle ().Colors[ImGuiCol_Header];
+  rDebugInfo.engineStyles[10U] = ImGui::GetStyle ().Colors[ImGuiCol_HeaderActive];
+  rDebugInfo.engineStyles[11U] = ImGui::GetStyle ().Colors[ImGuiCol_HeaderHovered];
+  rDebugInfo.engineStyles[12U] = ImGui::GetStyle ().Colors[ImGuiCol_Button];
+  rDebugInfo.engineStyles[13U] = ImGui::GetStyle ().Colors[ImGuiCol_ButtonHovered];
+  rDebugInfo.engineStyles[14U] = ImGui::GetStyle ().Colors[ImGuiCol_ButtonActive];
+  rDebugInfo.engineStyles[15U] = ImGui::GetStyle ().Colors[ImGuiCol_FrameBg];
+  rDebugInfo.engineStyles[16U] = ImGui::GetStyle ().Colors[ImGuiCol_FrameBgHovered];
+  rDebugInfo.engineStyles[17U] = ImGui::GetStyle ().Colors[ImGuiCol_FrameBgActive];
+  rDebugInfo.engineStyles[18U] = ImGui::GetStyle ().Colors[ImGuiCol_CheckMark];
+  rDebugInfo.engineStyles[19U] = ImGui::GetStyle ().Colors[ImGuiCol_SliderGrab];
+  rDebugInfo.engineStyles[20U] = ImGui::GetStyle ().Colors[ImGuiCol_SliderGrabActive];
 }
 
 bool
-CreateImguiDescriptorPool (Patache::VulkanBackend & Vulkan)
+Patache::CreateImguiDescriptorPool (Patache::VulkanBackend & rVulkan)
 {
   if (ImGui::GetCurrentContext () == nullptr)
     {
-      std::future<void> Err
-          = std::async (std::launch::async, Patache::Log::ErrorMessage,
-                        "You cannot initialize the descriptor pool for imgui "
-                        "without having initialized the ImGui context first");
+      Patache::ErrorMessage ("You cannot initialize the descriptor pool for imgui "
+                             "without having initialized the ImGui context first");
 
       return false;
     }
 
-  constexpr vk::DescriptorPoolSize PoolSize
-      = { vk::DescriptorType::eCombinedImageSampler, 1 };
+  constexpr VkDescriptorPoolSize poolSize{ .type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                                           .descriptorCount
+                                           = IMGUI_IMPL_VULKAN_MINIMUM_IMAGE_SAMPLER_POOL_SIZE };
 
-  const vk::DescriptorPoolCreateInfo Info{
-    .flags         = vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet,
-    .maxSets       = 1,
-    .poolSizeCount = 1,
-    .pPoolSizes    = &PoolSize
-  };
+  const VkDescriptorPoolCreateInfo info{ .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
+                                         .pNext = nullptr,
+                                         .flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT,
+                                         .maxSets       = 12U,
+                                         .poolSizeCount = 1U,
+                                         .pPoolSizes    = &poolSize };
 
-  vk::Result Result = Vulkan.Device.createDescriptorPool (
-      &Info, nullptr, &Vulkan.ImguiDescriptorPool);
+  const VkResult result{ vkCreateDescriptorPool (rVulkan.device, &info, nullptr,
+                                                 &rVulkan.imguiDescriptorPool) };
 
-  if (Result != vk::Result::eSuccess)
+  if (result != VK_SUCCESS)
     {
-      std::future<void> ReturnVulkanCheck
-          = std::async (std::launch::async, Patache::Log::VulkanCheck,
-                        "Imgui Descriptor Pool", Result);
+      Patache::VulkanCheck ("vkCreateDescriptorPool()", result);
 
       return false;
     }
-  else
-    return true;
+
+  return true;
 }
 
 bool
-CreateImguiPipelineCache (Patache::VulkanBackend & Vulkan)
+Patache::CreateImguiPipelineCache (Patache::VulkanBackend & rVulkan)
 {
   if (ImGui::GetCurrentContext () == nullptr)
     {
-      std::future<void> Err
-          = std::async (std::launch::async, Patache::Log::ErrorMessage,
-                        "You cannot initialize the pipeline cache for imgui "
-                        "without having initialized the ImGui context first");
+      Patache::ErrorMessage ("You cannot initialize the pipeline cache for imgui "
+                             "without having initialized the ImGui context first");
 
       return false;
     }
 
-  const vk::PipelineCacheCreateInfo Info{};
+  constexpr VkPipelineCacheCreateInfo info{ .sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO,
+                                            .pNext = nullptr,
+                                            .flags = 0U,
+                                            .initialDataSize = 0U,
+                                            .pInitialData    = nullptr };
 
-  vk::Result Result = Vulkan.Device.createPipelineCache (
-      &Info, nullptr, &Vulkan.ImguiPipelineCache);
-  if (Result != vk::Result::eSuccess)
+  const VkResult result{ vkCreatePipelineCache (rVulkan.device, &info, nullptr,
+                                                &rVulkan.imguiPipelineCache) };
+
+  if (result != VK_SUCCESS)
     {
-      std::future<void> ReturnVulkanCheck
-          = std::async (std::launch::async, Patache::Log::VulkanCheck,
-                        "Imgui PipeLine Cache", Result);
+      Patache::VulkanCheck ("Imgui PipeLine Cache", result);
+
       return false;
     }
-  else
-    return true;
+
+  return true;
 }
 
 bool
-InitImguiVulkan (Patache::Engine * const Engine)
+Patache::InitImGuiVulkan (Patache::Engine * const pEngine)
 {
   if (ImGui::GetCurrentContext () == nullptr)
     {
-      std::future<void> Err
-          = std::async (std::launch::async, Patache::Log::ErrorMessage,
-                        "You cannot initialize the implementation without "
-                        "having initialized the ImGui context first");
+      Patache::ErrorMessage ("You cannot initialize the implementation without "
+                             "having initialized the ImGui context first");
 
       return false;
     }
 
-  ImGui_ImplSDL3_InitForVulkan (Engine->GameWindow);
+  ImGui_ImplSDL3_InitForVulkan (pEngine->pGameWindow);
 
-  vk::SurfaceCapabilitiesKHR SurfaceCapabilities;
+  VkSurfaceCapabilitiesKHR surfaceCapabilities{};
 
-  vk::Result Result = Engine->Vulkan.PhysicalDevice.getSurfaceCapabilitiesKHR (
-      Engine->Vulkan.Surface, &SurfaceCapabilities);
-  if (Result != vk::Result::eSuccess)
+  const VkResult result{ vkGetPhysicalDeviceSurfaceCapabilitiesKHR (
+      pEngine->vulkan.physicalDevice, pEngine->vulkan.surface, &surfaceCapabilities) };
+
+  if (result != VK_SUCCESS)
     {
-      std::future<void> ReturnVulkanCheck
-          = std::async (std::launch::async, Patache::Log::VulkanCheck,
-                        "Get Surface Capabilities KHR", Result);
+      Patache::VulkanCheck ("vkGetPhysicalDeviceSurfaceCapabilitiesKHR()", result);
 
       return false;
     }
 
-  ImGui_ImplVulkan_InitInfo ImGuiImplInitInfo{
-    .ApiVersion = VK_API_VERSION_1_3,
-    .Instance   = static_cast<VkInstance> (Engine->Vulkan.Instance),
-    .PhysicalDevice
-    = static_cast<VkPhysicalDevice> (Engine->Vulkan.PhysicalDevice),
-    .Device      = static_cast<VkDevice> (Engine->Vulkan.Device),
-    .QueueFamily = Engine->Vulkan.GraphicsQueueFamilyIndex,
-    .Queue       = static_cast<VkQueue> (Engine->Vulkan.Queue),
-    .DescriptorPool
-    = static_cast<VkDescriptorPool> (Engine->Vulkan.ImguiDescriptorPool),
-    .RenderPass    = static_cast<VkRenderPass> (Engine->Vulkan.RenderPass),
-    .MinImageCount = SurfaceCapabilities.minImageCount,
-    .ImageCount    = Engine->Vulkan.SwapChainImageCount,
-    .MSAASamples   = VK_SAMPLE_COUNT_1_BIT,
-    .PipelineCache
-    = static_cast<VkPipelineCache> (Engine->Vulkan.ImguiPipelineCache),
-    .Subpass                     = 0,
-    .DescriptorPoolSize          = 0,
-    .UseDynamicRendering         = false,
-    .PipelineRenderingCreateInfo = {},
-    .Allocator                   = nullptr,
-    .CheckVkResultFn             = nullptr,
-    .MinAllocationSize           = 1048576
-  };
+  ImGui_ImplVulkan_InitInfo info{ .ApiVersion         = VK_API_VERSION_1_3,
+                                  .Instance           = pEngine->vulkan.instance,
+                                  .PhysicalDevice     = pEngine->vulkan.physicalDevice,
+                                  .Device             = pEngine->vulkan.device,
+                                  .QueueFamily        = pEngine->vulkan.graphicsQueueFamilyIndex,
+                                  .Queue              = pEngine->vulkan.queue,
+                                  .DescriptorPool     = pEngine->vulkan.imguiDescriptorPool,
+                                  .DescriptorPoolSize = 0U,
+                                  .MinImageCount      = surfaceCapabilities.minImageCount,
+                                  .ImageCount         = pEngine->vulkan.swapchainImageCount,
+                                  .PipelineCache      = pEngine->vulkan.imguiPipelineCache,
+                                  .PipelineInfoMain{
+                                      .RenderPass  = pEngine->vulkan.renderPass,
+                                      .Subpass     = 0U,
+                                      .MSAASamples = VK_SAMPLE_COUNT_1_BIT,
+                                      .ExtraDynamicStates{},
+#ifdef IMGUI_IMPL_VULKAN_HAS_DYNAMIC_RENDERING
+                                      .PipelineRenderingCreateInfo{},
+#endif
+                                      .SwapChainImageUsage = 0U,
+                                  },
+                                  .PipelineInfoForViewports{},
+                                  .UseDynamicRendering = false,
+                                  .Allocator           = nullptr,
+                                  .CheckVkResultFn     = nullptr,
+                                  .MinAllocationSize   = 1048576U,
+                                  .CustomShaderVertCreateInfo{},
+                                  .CustomShaderFragCreateInfo{} };
 
-  if (!ImGui_ImplVulkan_Init (&ImGuiImplInitInfo))
+  if (!ImGui_ImplVulkan_Init (&info))
     {
-      std::future<void> FatalErr = std::async (
-          std::launch::async, Patache::Log::FatalErrorMessage,
-          "Patache Engine - ImGui",
-          "Fail to initialize ImGui Vulkan Implementation Context",
-          Engine->configuration);
+      Patache::FatalErrorMessage ("Patache Engine - ImGui",
+                                  "Fail to initialize ImGui Vulkan Implementation Context",
+                                  pEngine->configuration);
 
       return false;
     }
-  else
-    return true;
+
+  return true;
 }

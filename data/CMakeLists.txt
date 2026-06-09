@@ -12,6 +12,7 @@ if (MSVC)
     add_custom_command(
         POST_BUILD
         TARGET PatacheFiles
+				COMMAND ${CMAKE_COMMAND} -E cmake_echo_color --blue --bold "Copying YAML configuration file"
         COMMAND ${CMAKE_COMMAND} -E copy
             ${CMAKE_CURRENT_SOURCE_DIR}/config.yaml
             ${BIN_DIR}/${CMAKE_BUILD_TYPE}
@@ -20,6 +21,7 @@ if (MSVC)
     add_custom_command(
         POST_BUILD
         TARGET PatacheFiles
+				COMMAND ${CMAKE_COMMAND} -E cmake_echo_color --blue --bold "Copying FOLDER with licences"
         COMMAND ${CMAKE_COMMAND} -E copy_directory
             ${CMAKE_CURRENT_SOURCE_DIR}/LICENSES
             ${BIN_DIR}/${CMAKE_BUILD_TYPE}/LICENSES
@@ -29,6 +31,7 @@ if (MSVC)
     add_custom_command(
         POST_BUILD
         TARGET PatacheFiles
+				COMMAND ${CMAKE_COMMAND} -E cmake_echo_color --blue --bold "Copying YAML configuration file in MSVC build dir"
         COMMAND ${CMAKE_COMMAND} -E copy
             ${CMAKE_CURRENT_SOURCE_DIR}/config.yaml
             ${CMAKE_BINARY_DIR}
@@ -38,6 +41,7 @@ else ()
     add_custom_command(
         POST_BUILD
         TARGET PatacheFiles
+				COMMAND ${CMAKE_COMMAND} -E cmake_echo_color --blue --bold "Copying YAML configuration file"
         COMMAND ${CMAKE_COMMAND} -E copy
             ${CMAKE_CURRENT_SOURCE_DIR}/config.yaml
             ${BIN_DIR}
@@ -46,6 +50,7 @@ else ()
     add_custom_command(
         POST_BUILD
         TARGET PatacheFiles
+				COMMAND ${CMAKE_COMMAND} -E cmake_echo_color --blue --bold "Copying FOLDER with licences"
         COMMAND ${CMAKE_COMMAND} -E copy_directory
             ${CMAKE_CURRENT_SOURCE_DIR}/LICENSES
             ${BIN_DIR}/LICENSES

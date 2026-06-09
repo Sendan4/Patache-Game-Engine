@@ -1,11 +1,15 @@
 [submodule "externals/Vulkan-Headers"]
 	path = externals/Vulkan-Headers
 	url = https://github.com/KhronosGroup/Vulkan-Headers.git
-	branch = vulkan-sdk-1.4.309
+	branch = v1.4.315
 [submodule "externals/Vulkan-Loader"]
 	path = externals/Vulkan-Loader
 	url = https://github.com/KhronosGroup/Vulkan-Loader.git
-	branch = vulkan-sdk-1.4.309
+	branch = v1.4.315
+[submodule "externals/VulkanMemoryAllocator"]
+	path = externals/VulkanMemoryAllocator
+	url = https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git
+	branch = v3.3.0
 [submodule "externals/rapidyaml"]
 	path = externals/rapidyaml
 	url = https://github.com/biojppm/rapidyaml.git
@@ -13,11 +17,11 @@
 [submodule "externals/SDL"]
 	path = externals/SDL
 	url = https://github.com/libsdl-org/SDL.git
-	branch = release-2.30.x
+	branch = release-3.2.x
 [submodule "externals/freetype"]
 	path = externals/freetype
-  url = https://gitlab.freedesktop.org/freetype/freetype.git
-  branch = VER-2-13-3
+        url = https://gitlab.freedesktop.org/freetype/freetype.git
+        branch = VER-2-13-3
 [submodule "externals/glslang"]
 	path = externals/glslang
 	url = https://github.com/KhronosGroup/glslang.git
@@ -26,3 +30,9 @@
 	path = externals/cglm
 	url = https://github.com/recp/cglm.git
 	branch = v0.9.6
+[submodule "externals/fast_io/fast_io"]
+	path = externals/fast_io/fast_io
+	url = https://github.com/cppfastio/fast_io.git
+[submodule "externals/Vulkan-Utility-Libraries"]
+	path = externals/Vulkan-Utility-Libraries
+	url = https://codeberg.org/PatacheEngine/Vulkan-Utility-Libraries.git

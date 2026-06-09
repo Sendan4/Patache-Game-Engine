@@ -1,9 +1,19 @@
 #include "Vulkan_Render.hpp"
 
 bool
-Patache::Engine::BeginRender (SDL_Event & Event)
+Patache::Engine::BeginRender (SDL_Event & rEvent)
 {
-  vk::Result Result;
+#if PATACHE_DEBUG == 1
+  if (debugInfo.timerFpsRun && debugInfo.calculatePerformanceStats)
+    {
+      debugInfo.frameTimer  = std::chrono::high_resolution_clock::now ();
+      debugInfo.timerFpsRun = false;
+    }
+#endif
+
+  // Wait Fences
+  vulkan.renderResult = vkWaitForFences (
+      vulkan.device, 1U, &vulkan.pInFlightFences[vulkan.currentFrame], VK_FALSE, UINT64_MAX);
 
   /*
    * Resizing Window is diferent in Linux with wayland
@@ -11,176 +21,284 @@ Patache::Engine::BeginRender (SDL_Event & Event)
    * The compositor throw the new size of window
    * and advise when you should resize.
    * */
-#if defined(__linux__)
-  if (ResizingPending && Resize)
+#if PATACHE_LINUX_OR_UNIX
+  if (resizingPending && resize)
     {
-      RecreateSwapChain (this);
+  #if PATACHE_DEBUG == 1
+      if (debugInfo.calculatePerformanceStats)
+        {
+          debugInfo.mainSwapchainTimer = std::chrono::high_resolution_clock::now ();
+        }
+  #endif
+      Patache::RecreateSwapchain (this);
+  #if PATACHE_DEBUG == 1
+      if (debugInfo.calculatePerformanceStats)
+        {
+          debugInfo.mainSwapchainTime
+              = std::chrono::duration<float, std::chrono::milliseconds::period> (
+                    std::chrono::high_resolution_clock::now () - debugInfo.mainRenderPassTimer)
+                    .count ();
+        }
+  #endif
 
-      ResizingPending = false;
-      Resize          = false;
+      resizingPending = false;
+      resize          = false;
 
-      Vulkan.CurrentFrame = 0;
-      Vulkan.ImageIndex   = 0;
-
-      wl_surface_commit (WaylandWindow.Surface);
+      wl_surface_commit (waylandWindow.pSurface);
     }
 #endif
 
-  // Wait Fences
-  Result = Vulkan.Device.waitForFences (
-      1, &Vulkan.InFlightFences[Vulkan.CurrentFrame], VK_TRUE, UINT64_MAX);
-
 #if PATACHE_DEBUG == 1
-  if (Result != vk::Result::eSuccess)
+  if (vulkan.renderResult != VK_SUCCESS)
     {
-      char ErrorText[PATACHE_ERROR_TEXT_SIZE]{ 0 };
+      char errorText[PATACHE_ERROR_TEXT_SIZE]{ 0 };
 
-      std::snprintf (ErrorText, PATACHE_ERROR_TEXT_SIZE - 1,
-                     "Wait For Fence #%.3u", Vulkan.CurrentFrame);
+      std::snprintf (errorText, PATACHE_ERROR_TEXT_SIZE - 1, "vkWaitForFences() Fence #%.3u",
+                     vulkan.currentFrame);
 
-      std::future<void> ReturnVulkanCheck = std::async (
-          std::launch::async, Patache::Log::VulkanCheck, ErrorText, Result);
+      Patache::VulkanCheck (errorText, vulkan.renderResult);
     }
 #endif
 
   // Acquire Next Image
-  const vk::AcquireNextImageInfoKHR NextImageInfo{
-    .swapchain  = Vulkan.SwapChain,
+  const VkAcquireNextImageInfoKHR nextImageInfo{
+    .sType      = VK_STRUCTURE_TYPE_ACQUIRE_NEXT_IMAGE_INFO_KHR,
+    .pNext      = nullptr,
+    .swapchain  = vulkan.swapchain,
     .timeout    = UINT64_MAX,
-    .semaphore  = Vulkan.ImageAvailableSemaphore[Vulkan.CurrentFrame],
+    .semaphore  = vulkan.pImageAvailableSemaphores[vulkan.currentFrame],
     .fence      = VK_NULL_HANDLE,
-    .deviceMask = 1
+    .deviceMask = 1U
   };
 
-  Result = Vulkan.Device.acquireNextImage2KHR (&NextImageInfo,
-                                               &Vulkan.ImageIndex);
+  vulkan.renderResult = vkAcquireNextImage2KHR (vulkan.device, &nextImageInfo, &vulkan.imageIndex);
 
 #if PATACHE_DEBUG == 1
-  if (Result != vk::Result::eSuccess)
-    std::future<void> ReturnVulkanCheck
-        = std::async (std::launch::async, Patache::Log::VulkanCheck,
-                      "Acquire Next Image 2 KHR", Result);
+  if (vulkan.renderResult != VK_SUCCESS)
+    {
+      Patache::VulkanCheck ("vkAcquireNextImage2KHR()", vulkan.renderResult);
+    }
 #endif
 
   // Resize
-  if (Result == vk::Result::eErrorOutOfDateKHR)
+  if (vulkan.renderResult == VK_ERROR_OUT_OF_DATE_KHR)
     {
       // Minimization
-      vk::SurfaceCapabilitiesKHR Sc;
-      vk::Result Result = Vulkan.PhysicalDevice.getSurfaceCapabilitiesKHR (
-          Vulkan.Surface, &Sc);
+      VkSurfaceCapabilitiesKHR sc{};
+      VkResult result4{ vkGetPhysicalDeviceSurfaceCapabilitiesKHR (vulkan.physicalDevice,
+                                                                   vulkan.surface, &sc) };
 
-      if (Result != vk::Result::eSuccess)
+      if (result4 != VK_SUCCESS)
         {
-          std::future<void> ReturnVulkanCheck
-              = std::async (std::launch::async, Patache::Log::VulkanCheck,
-                            "Get Surface Capabilities KHR", Result);
+          Patache::VulkanCheck ("vkGetPhysicalDeviceSurfaceCapabilitiesKHR()", result4);
 
           return false;
         }
 
-      while (Sc.currentExtent.width <= 0 && Sc.currentExtent.height <= 0)
+      while (sc.currentExtent.width <= 0U && sc.currentExtent.height <= 0U)
         {
-          Result = Vulkan.PhysicalDevice.getSurfaceCapabilitiesKHR (
-              Vulkan.Surface, &Sc);
+          result4 = vkGetPhysicalDeviceSurfaceCapabilitiesKHR (vulkan.physicalDevice,
+                                                               vulkan.surface, &sc);
 
-          if (Result != vk::Result::eSuccess)
+          if (result4 != VK_SUCCESS)
             {
-              std::future<void> ReturnVulkanCheck
-                  = std::async (std::launch::async, Patache::Log::VulkanCheck,
-                                "Get Surface Capabilities KHR", Result);
+              Patache::VulkanCheck ("vkGetPhysicalDeviceSurfaceCapabilitiesKHR()", result4);
 
               return false;
             }
 
-          SDL_WaitEvent (&Event);
+          SDL_WaitEvent (&rEvent);
         }
 
-      RecreateSwapChain (this);
+#if PATACHE_DEBUG == 1
+      if (debugInfo.calculatePerformanceStats)
+        {
+          debugInfo.mainSwapchainTimer = std::chrono::high_resolution_clock::now ();
+        }
+#endif
+      Patache::RecreateSwapchain (this);
+#if PATACHE_DEBUG == 1
+      if (debugInfo.calculatePerformanceStats)
+        {
+          debugInfo.mainSwapchainTime
+              = std::chrono::duration<float, std::chrono::milliseconds::period> (
+                    std::chrono::high_resolution_clock::now () - debugInfo.mainRenderPassTimer)
+                    .count ();
+        }
+#endif
     }
 
   // Reset Fences
-  Result = Vulkan.Device.resetFences (
-      1, &Vulkan.InFlightFences[Vulkan.CurrentFrame]);
+  vulkan.renderResult
+      = vkResetFences (vulkan.device, 1U, &vulkan.pInFlightFences[vulkan.currentFrame]);
 
 #if PATACHE_DEBUG == 1
-  if (Result != vk::Result::eSuccess)
+  if (vulkan.renderResult != VK_SUCCESS)
     {
-      char ErrorText[PATACHE_ERROR_TEXT_SIZE]{ 0 };
+      char errorText[PATACHE_ERROR_TEXT_SIZE]{ 0 };
 
-      std::snprintf (ErrorText, PATACHE_ERROR_TEXT_SIZE - 1,
-                     "Reset Fence #%.3u", Vulkan.CurrentFrame);
+      std::snprintf (errorText, PATACHE_ERROR_TEXT_SIZE - 1, "vkResetFences() Fence #%.3u",
+                     vulkan.currentFrame);
 
-      std::future<void> ReturnVulkanCheck = std::async (
-          std::launch::async, Patache::Log::VulkanCheck, ErrorText, Result);
+      Patache::VulkanCheck (errorText, vulkan.renderResult);
     }
 #endif
 
-  static constexpr vk::CommandBufferBeginInfo cmdBufferBeginInfo{
-    .flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit
-  };
-
-  // Begin Command Buffer
-  Result = Vulkan.Cmd[Vulkan.CurrentFrame].begin (&cmdBufferBeginInfo);
+  // Reset Command Pool
+  vulkan.renderResult
+      = vkResetCommandPool (vulkan.device, vulkan.pCommandPools[vulkan.currentFrame],
+                            VK_COMMAND_POOL_RESET_RELEASE_RESOURCES_BIT);
 
 #if PATACHE_DEBUG == 1
-  if (Result != vk::Result::eSuccess)
-    std::future<void> ReturnVulkanCheck
-        = std::async (std::launch::async, Patache::Log::VulkanCheck,
-                      "Command Buffer Begin", Result);
+  if (vulkan.renderResult != VK_SUCCESS)
+    {
+      char errorText[PATACHE_ERROR_TEXT_SIZE]{ 0 };
+
+      std::snprintf (errorText, PATACHE_ERROR_TEXT_SIZE - 1,
+                     "vkResetCommandPool() Command Pool #%.3u", vulkan.currentFrame);
+
+      Patache::VulkanCheck (errorText, vulkan.renderResult);
+    }
 #endif
+
+  // Begin Command Buffer
+  static constexpr VkCommandBufferBeginInfo cmdBufferBeginInfo{
+    .sType            = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+    .pNext            = nullptr,
+    .flags            = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
+    .pInheritanceInfo = nullptr
+  };
+
+  vulkan.renderResult
+      = vkBeginCommandBuffer (vulkan.pCmd[vulkan.currentFrame], &cmdBufferBeginInfo);
+
+#if PATACHE_DEBUG == 1
+  if (vulkan.renderResult != VK_SUCCESS)
+    {
+      Patache::VulkanCheck ("vkBeginCommandBuffer()", vulkan.renderResult);
+    }
+
+  if (debugInfo.calculatePerformanceStats)
+    {
+      debugInfo.mainCmdTimer = std::chrono::high_resolution_clock::now ();
+    }
+#endif
+
+  if (vulkan.stagingBufferInfo[Patache::VkBufferInfo::eCurrentOffset] > 0U
+      && vulkan.physicalDeviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)
+    {
+      if (vulkan.copiesCount >= vulkan.swapchainImageCount)
+        {
+          // resetear la posicion del apuntador de memoria al inicio
+          // para invalidad la memoria existente y sobreescribirla
+          vulkan.stagingBufferInfo[Patache::VkBufferInfo::eCurrentOffset] = 0U;
+          vulkan.copiesCount                                              = 0U; // reset count
+
+          goto EXIT_COPY;
+        }
+
+      vulkan.bufferCopy.srcOffset = 0U;
+      vulkan.bufferCopy.dstOffset = 0U;
+      vulkan.bufferCopy.size      = vulkan.stagingBufferInfo[Patache::VkBufferInfo::eSize];
+
+      vkCmdCopyBuffer (vulkan.pCmd[vulkan.currentFrame], vulkan.stagingBuffer,
+                       vulkan.pRenderBuffer[vulkan.currentFrame], 1U, &vulkan.bufferCopy);
+
+      vulkan.bufferBarrier.srcAccessMask       = VK_ACCESS_TRANSFER_WRITE_BIT;
+      vulkan.bufferBarrier.dstAccessMask       = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
+      vulkan.bufferBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+      vulkan.bufferBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+      vulkan.bufferBarrier.buffer              = vulkan.pRenderBuffer[vulkan.currentFrame];
+      vulkan.bufferBarrier.offset              = 0U;
+      vulkan.bufferBarrier.size = vulkan.renderBufferInfo[Patache::VkBufferInfo::eSize];
+
+      vkCmdPipelineBarrier (vulkan.pCmd[vulkan.currentFrame], VK_PIPELINE_STAGE_TRANSFER_BIT,
+                            VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, VK_DEPENDENCY_BY_REGION_BIT, 0U,
+                            nullptr, 1U, &vulkan.bufferBarrier, 0U, nullptr);
+
+      ++vulkan.copiesCount;
+    }
+EXIT_COPY:
 
   // Begin RenderPass
   {
-    Vulkan.ClearColor.color.float32[0] = clearColor.r;
-    Vulkan.ClearColor.color.float32[1] = clearColor.g;
-    Vulkan.ClearColor.color.float32[2] = clearColor.b;
-    Vulkan.ClearColor.color.float32[3] = clearColor.a;
+    vulkan.clearColor.color.float32[0] = clearColor.r;
+    vulkan.clearColor.color.float32[1] = clearColor.g;
+    vulkan.clearColor.color.float32[2] = clearColor.b;
+    vulkan.clearColor.color.float32[3] = clearColor.a;
 
-    Vulkan.RenderArea.extent   = vk::Extent2D{ Vulkan.SwapChainExtent.width,
-                                             Vulkan.SwapChainExtent.height };
-    Vulkan.RenderArea.offset.x = 0;
-    Vulkan.RenderArea.offset.y = 0;
+#if PATACHE_LINUX_OR_UNIX
+    vulkan.renderArea.extent.width  = vulkan.swapchainExtent.width * scaleInt;
+    vulkan.renderArea.extent.height = vulkan.swapchainExtent.height * scaleInt;
+#else
+    vulkan.renderArea.extent.width  = vulkan.swapchainExtent.width;
+    vulkan.renderArea.extent.height = vulkan.swapchainExtent.height;
+#endif
 
-    const vk::RenderPassBeginInfo Info{
-      .renderPass      = Vulkan.RenderPass,
-      .framebuffer     = Vulkan.SwapChainFrameBuffer[Vulkan.ImageIndex],
-      .renderArea      = Vulkan.RenderArea,
-      .clearValueCount = 1,
-      .pClearValues    = &Vulkan.ClearColor,
+    vulkan.renderArea.offset.x = 0U;
+    vulkan.renderArea.offset.y = 0U;
+
+    const VkRenderPassBeginInfo info{
+      .sType           = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
+      .pNext           = nullptr,
+      .renderPass      = vulkan.renderPass,
+      .framebuffer     = vulkan.pSwapchainFrameBuffers[vulkan.imageIndex],
+      .renderArea      = vulkan.renderArea,
+      .clearValueCount = 1U,
+      .pClearValues    = &vulkan.clearColor,
     };
 
-    Vulkan.Cmd[Vulkan.CurrentFrame].beginRenderPass (
-        Info, vk::SubpassContents::eInline);
+    vkCmdBeginRenderPass (vulkan.pCmd[vulkan.currentFrame], &info, VK_SUBPASS_CONTENTS_INLINE);
+
+#if PATACHE_DEBUG == 1
+    if (debugInfo.calculatePerformanceStats)
+      {
+        debugInfo.mainRenderPassTimer = std::chrono::high_resolution_clock::now ();
+      }
+#endif
   }
 
-  Vulkan.Cmd[Vulkan.CurrentFrame].bindPipeline (
-      vk::PipelineBindPoint::eGraphics, Vulkan.GraphicsPipeline);
+  vkCmdBindPipeline (vulkan.pCmd[vulkan.currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS,
+                     vulkan.graphicsPipeline);
 
-  /*vk::DeviceSize offsets[] = { 0 };
-  Vulkan.Cmd[Vulkan.CurrentFrame].bindVertexBuffers (
-      0, 1, &Vulkan.VertexBuffer, offsets);*/
+  vulkan.viewport.x = 0U;
+  vulkan.viewport.y = 0U;
+#if PATACHE_LINUX_OR_UNIX
+  vulkan.viewport.width  = static_cast<float> (vulkan.swapchainExtent.width * scaleInt);
+  vulkan.viewport.height = static_cast<float> (vulkan.swapchainExtent.height * scaleInt);
+#else
+  vulkan.viewport.width  = static_cast<float> (vulkan.swapchainExtent.width);
+  vulkan.viewport.height = static_cast<float> (vulkan.swapchainExtent.height);
+#endif
+  vulkan.viewport.minDepth = 0.0F;
+  vulkan.viewport.maxDepth = 1.0F;
+  vkCmdSetViewport (vulkan.pCmd[vulkan.currentFrame], 0U, 1U, &vulkan.viewport);
 
-  Vulkan.Viewport.x      = 0;
-  Vulkan.Viewport.y      = 0;
-  Vulkan.Viewport.width  = static_cast<float> (Vulkan.SwapChainExtent.width);
-  Vulkan.Viewport.height = static_cast<float> (Vulkan.SwapChainExtent.height);
-  Vulkan.Viewport.minDepth = 0.0f;
-  Vulkan.Viewport.maxDepth = 1.0f;
-  Vulkan.Cmd[Vulkan.CurrentFrame].setViewport (0, 1, &Vulkan.Viewport);
-
-  Vulkan.Scissor.offset = vk::Offset2D (0, 0);
-  Vulkan.Scissor.extent = Vulkan.SwapChainExtent;
-  Vulkan.Cmd[Vulkan.CurrentFrame].setScissor (0, 1, &Vulkan.Scissor);
-
-  Vulkan.Cmd[Vulkan.CurrentFrame].draw (3, 1, 0, 0);
+  vulkan.scissor.offset.x = 0U;
+  vulkan.scissor.offset.y = 0U;
+#if PATACHE_LINUX_OR_UNIX
+  vulkan.scissor.extent.width  = vulkan.swapchainExtent.width * scaleInt;
+  vulkan.scissor.extent.height = vulkan.swapchainExtent.height * scaleInt;
+#else
+  vulkan.scissor.extent.width  = vulkan.swapchainExtent.width;
+  vulkan.scissor.extent.height = vulkan.swapchainExtent.height;
+#endif
+  vkCmdSetScissor (vulkan.pCmd[vulkan.currentFrame], 0U, 1U, &vulkan.scissor);
 
 // Imgui New Frame
 #if PATACHE_DEBUG == 1
   ImGui_ImplVulkan_NewFrame ();
   ImGui_ImplSDL3_NewFrame ();
   ImGui::NewFrame ();
-  ImGui::SetNextWindowBgAlpha (0.0f);
+  ImGui::SetNextWindowBgAlpha (0.0F);
+
+  #if PATACHE_LINUX_OR_UNIX
+  ImGui::GetMainViewport ()->Size
+      = ImVec2 (vulkan.swapchainExtent.width * scaleInt, vulkan.swapchainExtent.height * scaleInt);
+
+  ImGui::GetMainViewport ()->FramebufferScale = ImVec2 (scaleInt, scaleInt);
+  #endif
+
   ImGui::DockSpaceOverViewport (0, ImGui::GetMainViewport ());
 #endif
 
@@ -188,133 +306,162 @@ Patache::Engine::BeginRender (SDL_Event & Event)
 }
 
 #if PATACHE_DEBUG == 1
-#include "DrawDebugUI.hpp"
+  #include "DebugUI.hpp"
 #endif
 
 void
-Patache::Engine::EndRender (SDL_Event & Event)
+Patache::Engine::EndRender (SDL_Event & rEvent)
 {
 #if PATACHE_DEBUG == 1
   // Imgui New Frame
-  // ImGui::ShowDemoWindow ();
-  Patache::DrawDebugUI (&engineInfo, configuration, Vulkan.SwapChainImageCount,
-                        Vulkan.SwapChainExtent,
-                        Vulkan.GraphicsQueueFamilyIndex);
-
+  ImGui::ShowDemoWindow ();
+  Patache::DrawDebugUI (this);
   ImGui::Render ();
 
-  if (engineInfo.ShowMainMenuBar || engineInfo.PatacheInfoWindow
-      || engineInfo.PatacheConfigWindow)
-    ImGui_ImplVulkan_RenderDrawData (
-        ImGui::GetDrawData (),
-        static_cast<VkCommandBuffer> (Vulkan.Cmd[Vulkan.CurrentFrame]),
-        static_cast<VkPipeline> (Vulkan.ImguiPipeLine));
+  if ((debugInfo.showMainMenuBar || debugInfo.infoWindow || debugInfo.configWindow
+       || debugInfo.raccoonRendererInfoWindow)
+      && (ImGui::GetDrawData ()->TotalVtxCount > 0))
+    {
+      ImGui_ImplVulkan_RenderDrawData (ImGui::GetDrawData (), vulkan.pCmd[vulkan.currentFrame],
+                                       vulkan.imguiPipeLine);
+    }
 #endif
 
   // End RenderPass
-  Vulkan.Cmd[Vulkan.CurrentFrame].endRenderPass ();
-
-  // End Command Buffer
-  vk::Result Result = Vulkan.Cmd[Vulkan.CurrentFrame].end ();
+  vkCmdEndRenderPass (vulkan.pCmd[vulkan.currentFrame]);
 
 #if PATACHE_DEBUG == 1
-  if (Result != vk::Result::eSuccess)
+  if (debugInfo.calculatePerformanceStats)
     {
-      char ErrorText[PATACHE_ERROR_TEXT_SIZE]{ 0 };
+      debugInfo.mainRenderPassTime
+          = std::chrono::duration<float, std::chrono::milliseconds::period> (
+                std::chrono::high_resolution_clock::now () - debugInfo.mainRenderPassTimer)
+                .count ();
+    }
+#endif
 
-      std::snprintf (ErrorText, PATACHE_ERROR_TEXT_SIZE - 1,
-                     "End Command Buffer #%.3u", Vulkan.CurrentFrame);
+  // End Command Buffer
+  vulkan.renderResult = vkEndCommandBuffer (vulkan.pCmd[vulkan.currentFrame]);
 
-      std::future<void> ReturnVulkanCheck = std::async (
-          std::launch::async, Patache::Log::VulkanCheck, ErrorText, Result);
+#if PATACHE_DEBUG == 1
+  if (vulkan.renderResult != VK_SUCCESS)
+    {
+      char errorText[PATACHE_ERROR_TEXT_SIZE]{ 0 };
+
+      std::snprintf (errorText, PATACHE_ERROR_TEXT_SIZE - 1,
+                     "vkEndCommandBuffer() Command Buffer #%.3u", vulkan.currentFrame);
+
+      Patache::VulkanCheck (errorText, vulkan.renderResult);
+    }
+
+  if (debugInfo.calculatePerformanceStats)
+    {
+      debugInfo.mainCmdTime
+          = std::chrono::duration<float, std::chrono::milliseconds::period> (
+                std::chrono::high_resolution_clock::now () - debugInfo.mainCmdTimer)
+                .count ();
     }
 #endif
 
   // Submit Queue
   {
-    static constexpr vk::PipelineStageFlags WaitStages
-        = vk::PipelineStageFlagBits::eTopOfPipe
-          | vk::PipelineStageFlagBits::eColorAttachmentOutput;
+    static constexpr VkPipelineStageFlags waitStages{ static_cast<VkPipelineStageFlagBits> (
+        VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT | VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT) };
 
-    const vk::SubmitInfo SubmitInfo{
-      .waitSemaphoreCount = 1,
-      .pWaitSemaphores = &Vulkan.ImageAvailableSemaphore[Vulkan.CurrentFrame],
-      .pWaitDstStageMask    = &WaitStages,
-      .commandBufferCount   = 1,
-      .pCommandBuffers      = &Vulkan.Cmd[Vulkan.CurrentFrame],
-      .signalSemaphoreCount = 1,
-      .pSignalSemaphores = &Vulkan.ImageFinishedSemaphore[Vulkan.CurrentFrame]
-    };
+    const VkSubmitInfo submitInfo{ .sType              = VK_STRUCTURE_TYPE_SUBMIT_INFO,
+                                   .pNext              = nullptr,
+                                   .waitSemaphoreCount = 1U,
+                                   .pWaitSemaphores
+                                   = &vulkan.pImageAvailableSemaphores[vulkan.currentFrame],
+                                   .pWaitDstStageMask    = &waitStages,
+                                   .commandBufferCount   = 1U,
+                                   .pCommandBuffers      = &vulkan.pCmd[vulkan.currentFrame],
+                                   .signalSemaphoreCount = 1U,
+                                   .pSignalSemaphores
+                                   = &vulkan.pImageFinishedSemaphores[vulkan.currentFrame] };
 
-    Result = Vulkan.Queue.submit (1, &SubmitInfo,
-                                  Vulkan.InFlightFences[Vulkan.CurrentFrame]);
+    vulkan.renderResult = vkQueueSubmit (vulkan.queue, 1U, &submitInfo,
+                                         vulkan.pInFlightFences[vulkan.currentFrame]);
   }
 
 #if PATACHE_DEBUG == 1
-  if (Result != vk::Result::eSuccess)
-    std::future<void> ReturnVulkanCheck
-        = std::async (std::launch::async, Patache::Log::VulkanCheck,
-                      "Queue Submit 2", Result);
+  if (vulkan.renderResult != VK_SUCCESS)
+    {
+      Patache::VulkanCheck ("vkQueueSubmit()", vulkan.renderResult);
+    }
 #endif
 
   // Present to surface
-  const vk::PresentInfoKHR PresentInfo{
-    .waitSemaphoreCount = 1,
-    .pWaitSemaphores    = &Vulkan.ImageFinishedSemaphore[Vulkan.CurrentFrame],
-    .swapchainCount     = 1,
-    .pSwapchains        = &Vulkan.SwapChain,
-    .pImageIndices      = &Vulkan.ImageIndex,
-  };
+  const VkPresentInfoKHR presentInfo{ .sType              = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
+                                      .pNext              = nullptr,
+                                      .waitSemaphoreCount = 1U,
+                                      .pWaitSemaphores
+                                      = &vulkan.pImageFinishedSemaphores[vulkan.currentFrame],
+                                      .swapchainCount = 1U,
+                                      .pSwapchains    = &vulkan.swapchain,
+                                      .pImageIndices  = &vulkan.imageIndex,
+                                      .pResults       = nullptr };
 
-  Result = Vulkan.Queue.presentKHR (&PresentInfo);
+  vulkan.renderResult = vkQueuePresentKHR (vulkan.queue, &presentInfo);
 
 #if PATACHE_DEBUG == 1
-  if (Result != vk::Result::eSuccess)
-    std::future<void> ReturnVulkanCheck = std::async (
-        std::launch::async, Patache::Log::VulkanCheck, "Present KHR", Result);
+  if (vulkan.renderResult != VK_SUCCESS)
+    {
+      Patache::VulkanCheck ("vkQueuePresentKHR()", vulkan.renderResult);
+    }
 #endif
 
   // Resize
-  if (Result == vk::Result::eErrorOutOfDateKHR
-      || Result == vk::Result::eSuboptimalKHR)
+  if (vulkan.renderResult == VK_ERROR_OUT_OF_DATE_KHR || vulkan.renderResult == VK_SUBOPTIMAL_KHR)
     {
       // Minimization
-      vk::SurfaceCapabilitiesKHR Sc;
-      vk::Result Result = Vulkan.PhysicalDevice.getSurfaceCapabilitiesKHR (
-          Vulkan.Surface, &Sc);
+      VkSurfaceCapabilitiesKHR sc{};
+      VkResult result3{ vkGetPhysicalDeviceSurfaceCapabilitiesKHR (vulkan.physicalDevice,
+                                                                   vulkan.surface, &sc) };
 
-      if (Result != vk::Result::eSuccess)
+      if (result3 != VK_SUCCESS)
         {
-          std::future<void> ReturnVulkanCheck
-              = std::async (std::launch::async, Patache::Log::VulkanCheck,
-                            "Get Surface Capabilities KHR", Result);
+          Patache::VulkanCheck ("vkGetPhysicalDeviceSurfaceCapabilitiesKHR()", result3);
 
           return;
         }
 
-      while (Sc.currentExtent.width <= 0 && Sc.currentExtent.height <= 0)
+      while (sc.currentExtent.width <= 0U && sc.currentExtent.height <= 0U)
         {
-          Result = Vulkan.PhysicalDevice.getSurfaceCapabilitiesKHR (
-              Vulkan.Surface, &Sc);
+          result3 = vkGetPhysicalDeviceSurfaceCapabilitiesKHR (vulkan.physicalDevice,
+                                                               vulkan.surface, &sc);
 
-          if (Result != vk::Result::eSuccess)
+          if (result3 != VK_SUCCESS)
             {
-              std::future<void> ReturnVulkanCheck
-                  = std::async (std::launch::async, Patache::Log::VulkanCheck,
-                                "Get Surface Capabilities KHR", Result);
+              Patache::VulkanCheck ("vkGetPhysicalDeviceSurfaceCapabilitiesKHR()", result3);
 
               return;
             }
 
-          SDL_WaitEvent (&Event);
+          SDL_WaitEvent (&rEvent);
         }
 
-      RecreateSwapChain (this);
+#if PATACHE_DEBUG == 1
+      if (debugInfo.calculatePerformanceStats)
+        {
+          debugInfo.mainSwapchainTimer = std::chrono::high_resolution_clock::now ();
+        }
+#endif
+      Patache::RecreateSwapchain (this);
+#if PATACHE_DEBUG == 1
+      if (debugInfo.calculatePerformanceStats)
+        {
+          debugInfo.mainSwapchainTime
+              = std::chrono::duration<float, std::chrono::milliseconds::period> (
+                    std::chrono::high_resolution_clock::now () - debugInfo.mainRenderPassTimer)
+                    .count ();
+        }
+#endif
     }
 
-  Vulkan.CurrentFrame = (Vulkan.CurrentFrame + 1) % Vulkan.SwapChainImageCount;
+  vulkan.currentFrame = (vulkan.currentFrame + 1U) % vulkan.swapchainImageCount;
 
-#if defined(__linux__)
-  // wl_display_roundtrip (WaylandWindow.Display);
+#if PATACHE_DEBUG == 1
+  ++debugInfo.numFrames;
 #endif
 }

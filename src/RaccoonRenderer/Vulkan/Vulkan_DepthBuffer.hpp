@@ -1,9 +1,9 @@
-#include <future>
+#ifndef VULKAN_DEPTHBUFFER_HPP
+#define VULKAN_DEPTHBUFFER_HPP
 
-#include <SDL3/SDL.h>
-
-// Patache Engine
-#include "PatacheEngine/PatacheEngine.hpp"
-#include "Log.hpp"
-
+namespace Patache
+{
 bool CreateDepthBuffer (Patache::VulkanBackend &, Patache::Config &);
+}
+
+#endif

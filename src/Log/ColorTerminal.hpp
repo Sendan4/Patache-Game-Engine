@@ -10,10 +10,10 @@
 // Others
 // Bold And Dim not supported in Windows
 #if defined(_WIN64)
-#define PATACHE_TERM_DIM  ""
-#define PATACHE_TERM_BOLD "\033[38;5;15m"
+  #define PATACHE_TERM_DIM  ""
+  #define PATACHE_TERM_BOLD "\033[38;5;15m"
 #else
-#define PATACHE_TERM_BOLD "\033[1m"
-#define PATACHE_TERM_DIM  "\033[2m"
+  #define PATACHE_TERM_BOLD "\033[1m"
+  #define PATACHE_TERM_DIM  "\033[2m"
 #endif
 #define PATACHE_TERM_RESET "\033[0m"

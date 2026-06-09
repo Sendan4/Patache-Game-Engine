@@ -1,12 +1,9 @@
-#include <cstdio>
-#include <future>
+#ifndef VULKAN_FRAMEBUFFER_HPP
+#define VULKAN_FRAMEBUFFER_HPP
 
-#include <SDL3/SDL.h>
-
-// Patache Engine
-#include "PatacheEngine/PatacheEngine.hpp"
-#include "Log.hpp"
-
+namespace Patache
+{
 bool CreateFrameBuffer (Patache::VulkanBackend &);
+}
 
-#define PATACHE_ERROR_TEXT_SIZE 64
+#endif

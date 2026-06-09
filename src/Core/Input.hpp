@@ -1,28 +1,29 @@
-#include <future>
-
 #include <fast_io.h>
+#include <vulkan/vulkan.h>
+#include "PatacheEngine/VmaUsage.hpp"
 #include <SDL3/SDL.h>
 #if PATACHE_DEBUG == 1
-#include <imgui_impl_sdl3.h>
-#include <imgui_impl_vulkan.h>
+  #include <imgui_impl_sdl3.h>
+  #include <imgui_impl_vulkan.h>
 #endif
-#if defined(__linux__)
-#include <wayland-client.h>
+#if PATACHE_LINUX_OR_UNIX
+  #include <wayland-client.h>
 
-// Wayland Protocols
-#include <xdg-shell.h>
+  // Wayland Protocols
+  #include <xdg-shell.h>
 #endif
 
 // Patache Engine
 #include "PatacheEngine/PatacheEngine.hpp"
-#include "ColorTerminal.hpp"
-#include "Log.hpp"
+#include "Message.hpp"
 
-#if defined(__linux__)
-extern bool IsMaximized;
+#if PATACHE_LINUX_OR_UNIX
+extern bool isMaximized;
+extern bool returnFromFullscreen;
+extern bool waitForFullscreen;
 #else
-bool SDLCALL HandleResize (void * userdata, SDL_Event * event);
+bool SDLCALL HandleResize (void *, SDL_Event *);
 #endif
 
-bool IsFullScreen = false;
-bool Resize       = false;
+bool isFullScreen{ false };
+bool resize{ false };

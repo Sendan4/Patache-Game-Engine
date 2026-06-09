@@ -1,33 +1,47 @@
 | [Español](README.md) | English |
 | :--: | :--: |
 
-<p align = "center"><img draggable = false src = "data/assets/patache.svg?ref_type=heads&inline=false" width=64></p>
+<p align = "center"><img draggable = false src = "data/patache.svg?ref_type=heads&inline=false" width=64></p>
 
 <h1 align = "center">Patache Engine</h1>
 
-_Dumb and simple game engine made in C++._
+_Dumb and simple 2D game engine made in C++. The goal is to make an engine that runs fast, is lightweight, and portable._
 
-<p><strong>Is a 2D engine, simple and lightweight</strong> with a focus on game development using C++.</p>
+> [!IMPORTANT]
+> It is at a very early stage of development.
 
-<p>This engine is intended to be used in conjunction with <a href = "http://www.libsdl.org/">SDL3</a>. Abstracts window creation, graphics rendering, sound and configuration into one easy-to-use API.</p>
+## Links
+[Coding Style](docs/Contributing_en.md) | [Build](docs/Building_en.md)
 
-<p><strong>It is portable</strong>, works on various operating systems.</p>
+<b>Mirror repositories</b>
 
-| Windows | GNU/Linux |
-| :-----: | :-----: |
-|<b>x86_64</b> | <b>x86_64</b> |
+[Github](https://github.com/Sendan4/Patache-Game-Engine) | [Gitlab](https://gitlab.com/PatacheEngine/Patache.git)
 
-<p>⚠️ <strong>WARNING</strong>: It is at a very early stage of development and is not stable.</p>
+## Platforms
+<b>PC</b>
+|     Windows    |   GNU/Linux    |            Unix BSD           |
+| :------------: | :------------: | :---------------------------: |
+| x86_64 / AMD64 <span style="color: #FF6347;">(64-bits)</span> | x86_64 / AMD64 <span style="color: #FF6347;">(64-bits)</span> | x86_64 / AMD64 <span style="color: #FF6347;">(64-bits)</span> <br> <span style="color: yellow;">_Only GNU GCC_</span> |
 
-## Gamescope
-If the engine or game does not run inside gamescope, try with ```--expose-wayland```.
+## System requirements
+- Multi-core CPU with instructions AVX y SSE4.2 (MMX if you use GCC). basically a second-generation Intel Sandy Bridge CPU or AMD Bulldozer known as FX.
+- Vulkan compatible GPU.
+- At least 4 GB of RAM.
+- At least 14 GB of free space for source code and binaries (includes debug with all features).
 
-## Dependencies used in this project
+## Screenshots
+| Linux (Gnome) | Windows 10 | FreeBSD (KDE Plasma) |
+| -------- | ------- | ------- |
+| ![Linux GCC in Gnome](data/GCC_Linux_release.avif) | ![MSVC en Windows](data/MSVC_Windows10.avif) | ![FreeBSD GCC en KDE Plasma](data/GCC_FreeBSD_release.avif) |
+
+## Dependencies used
 - [SDL3](http://www.libsdl.org/)
 - [Vulkan](https://www.vulkan.org/)
 	- [Vulkan-Headers](https://github.com/KhronosGroup/Vulkan-Headers.git)
 	- [Vulkan-Loader](https://github.com/KhronosGroup/Vulkan-Loader.git)
 	- [Vulkan-Validation-Layers](https://github.com/KhronosGroup/Vulkan-ValidationLayers.git)
+	- [Vulkan-Utility-Libraries](https://github.com/KhronosGroup/Vulkan-Utility-Libraries.git) *modified*
+    - [VulkanMemoryAllocator](https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git)
 	- [Glslang](https://github.com/KhronosGroup/glslang.git)
 - [fast_io](https://github.com/cppfastio/fast_io.git)
 - [RapidYaml](https://github.com/biojppm/rapidyaml.git)
@@ -35,17 +49,14 @@ If the engine or game does not run inside gamescope, try with ```--expose-waylan
 - [ImGui](https://github.com/ocornut/imgui.git)
 - [cglm](https://github.com/recp/cglm.git)
 
-#### GNU/Linux
+#### GNU/Linux | Unix BSD
  - [Wayland](https://wayland.freedesktop.org/)
 	- [Wayland Client](https://gitlab.freedesktop.org/wayland/wayland)
 	- [Wayland Protocols](https://gitlab.freedesktop.org/wayland/wayland-protocols.git)
 
-## Links
-- [Documentation](#)
-#### Official Mirrors
-- [Github](https://github.com/Sendan4/Patache-Game-Engine)
-- [Codeberg](https://codeberg.org/PatacheEngine/Patache.git)
+## Gamescope
+If the engine or game does not run inside gamescope, try with ```--expose-wayland```.
 
 <hr>
 
-Patache is under the [MIT](LICENSE.txt) license
+Patache is under the [GPLv3.0](LICENSE) license
