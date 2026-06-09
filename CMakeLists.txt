@@ -32,7 +32,7 @@ set (CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 project("PatacheEngine"
     LANGUAGES CXX
-    VERSION 1 
+    VERSION 0.0.0
     HOMEPAGE_URL "https://codeberg.org/PatacheEngine/Patache.git")
     
 if (NOT PatacheEngine_IS_TOP_LEVEL)
@@ -49,7 +49,7 @@ endif()
 set (PATACHE_ENGINE_VERSION_MAYOR 0)
 set (PATACHE_ENGINE_VERSION_MINOR 0)
 set (PATACHE_ENGINE_VERSION_PATCH 0)
-set (PATACHE_ENGINE_VERSION "0.0.0")
+set (PATACHE_ENGINE_VERSION "0.0.0-pre-alpha")
 
 include(CheckCXXCompilerFlag)
 include(CheckIncludeFileCXX)
