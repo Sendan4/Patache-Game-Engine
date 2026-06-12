@@ -50,6 +50,29 @@ target_include_directories(${PROJECT_NAME} PUBLIC "${imgui_SOURCE_DIR}/backends/
 target_include_directories(${PROJECT_NAME} PUBLIC "${imgui_SOURCE_DIR}/misc/freetype")
 
 # Link Libraries
+if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" OR
+    CMAKE_SYSTEM_NAME STREQUAL "Linux" OR
+    CMAKE_SYSTEM_NAME STREQUAL "FreeBSD" OR
+    CMAKE_SYSTEM_NAME STREQUAL "OpenBSD" OR
+    CMAKE_SYSTEM_NAME STREQUAL "DragonFly" OR
+    CMAKE_SYSTEM_NAME STREQUAL "NetBSD")
+    # build Vulkan
+    target_link_libraries(${PROJECT_NAME} PRIVATE vulkan Vulkan::Headers)
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    # Link Vulkan from SDK
+    find_package(Vulkan REQUIRED)
+
+    set (VULKANSDK_LIBS_PATH "${Vulkan_LIBRARIES}")
+    string(REPLACE "vulkan-1.lib" "" VULKANSDK_LIBS_PATH ${VULKANSDK_LIBS_PATH})
+    string(STRIP VULKANSDK_LIBS_PATH ${VULKANSDK_LIBS_PATH})
+
+    target_link_libraries(${PROJECT_NAME} PRIVATE
+        -lvulkan-1
+        -L${VULKANSDK_LIBS_PATH})
+
+    target_include_directories(${PROJECT_NAME} PUBLIC "${Vulkan_INCLUDE_DIRS}")
+endif()
+
 # Move this binaries to a build dir instead of bin build
 if (TARGET asm_offset)
     set_target_properties(asm_offset
@@ -59,7 +82,7 @@ if (TARGET asm_offset)
         RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 endif()
 
-target_link_libraries(${PROJECT_NAME} PRIVATE freetype SDL3::SDL3 vulkan Vulkan::Headers)
+target_link_libraries(${PROJECT_NAME} PRIVATE freetype SDL3::SDL3)
 target_include_directories(${PROJECT_NAME} PRIVATE ${FREETYPE_INCLUDE_DIRS} ${SDL3_INCLUDE_DIRS})
 
 set_target_properties(${PROJECT_NAME}
@@ -77,4 +100,3 @@ target_sources(${PROJECT_NAME} PRIVATE
     "${imgui_SOURCE_DIR}/misc/freetype/imgui_freetype.cpp")
 
 write_file("${imgui_SOURCE_DIR}/imconfig.h" "#define IMGUI_ENABLE_FREETYPE" APPEND)
-write_file("${imgui_SOURCE_DIR}/imconfig.h" "#define IMGUI_DISABLE_OBSOLETE_FUNCTIONS" APPEND)
