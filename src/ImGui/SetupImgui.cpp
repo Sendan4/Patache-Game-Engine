@@ -32,12 +32,10 @@ Patache::InitImGuiCore (const Patache::Config & rConfiguration, Patache::EngineI
 
   [[maybe_unused]] ImGuiIO & rIO{ ImGui::GetIO () };
   rIO.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard | ImGuiConfigFlags_NavEnableGamepad
-                     | ImGuiConfigFlags_DockingEnable | ImGuiConfigFlags_DpiEnableScaleFonts;
+                     | ImGuiConfigFlags_DockingEnable;
   rIO.IniSavingRate   = 0;
   rIO.IniFilename     = nullptr;
   rIO.LogFilename     = nullptr;
-  rIO.FontGlobalScale = 1.0F;
-  // rIO.MouseDrawCursor = true;
 
   ImFontConfig fontConfig{};
   fontConfig.RasterizerDensity = 4.0F;

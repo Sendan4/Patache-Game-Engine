@@ -34,55 +34,49 @@ if (CMAKE_SYSTEM_NAME STREQUAL "Linux" OR
     set (BUILD_WSI_XLIB_SUPPORT OFF CACHE BOOL "..." FORCE)
 endif()
 
-if (MSVC OR CMAKE_SYSTEM_NAME STREQUAL "Linux" OR
-    CMAKE_SYSTEM_NAME STREQUAL "FreeBSD" OR
-    CMAKE_SYSTEM_NAME STREQUAL "OpenBSD" OR
-    CMAKE_SYSTEM_NAME STREQUAL "DragonFly" OR
-    CMAKE_SYSTEM_NAME STREQUAL "NetBSD")
-    set (BUILD_TESTS OFF CACHE INTERNAL "..." FORCE)
-    set (UPDATE_DEPS ON CACHE INTERNAL "..." FORCE)
-    set (VULKAN_HEADERS_ENABLE_MODULE OFF CACHE INTERNAL "..." FORCE)
+set (BUILD_TESTS OFF CACHE INTERNAL "..." FORCE)
+set (UPDATE_DEPS ON CACHE INTERNAL "..." FORCE)
+set (VULKAN_HEADERS_ENABLE_MODULE OFF CACHE INTERNAL "..." FORCE)
     
-    # Vulkan Validation Layer
-    if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo" AND USE_VVL)
-        message("")
-        message("  - Vulkan Validation Layers -")
+# Vulkan Validation Layer
+if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo" AND USE_VVL)
+    message("")
+    message("  - Vulkan Validation Layers -")
 
-        FetchContent_Declare(
-            Vulkan-ValidationLayers
-            GIT_REPOSITORY https://github.com/KhronosGroup/Vulkan-ValidationLayers.git
-            GIT_TAG v1.4.346
-        )
+    FetchContent_Declare(
+        Vulkan-ValidationLayers
+        GIT_REPOSITORY https://github.com/KhronosGroup/Vulkan-ValidationLayers.git
+        GIT_TAG v1.4.346
+    )
     
-        FetchContent_MakeAvailable(Vulkan-ValidationLayers)
-    endif()
+    FetchContent_MakeAvailable(Vulkan-ValidationLayers)
+endif()
 
-    message("")
-    message("  - Vulkan Headers -")
-    if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/Vulkan-Headers/CMakeLists.txt)
-    	add_subdirectory(Vulkan-Headers)
-    else()
-    	FetchContent_Declare(
-      		Vulkan-Headers
-      		GIT_REPOSITORY https://github.com/KhronosGroup/Vulkan-Headers.git
-      		GIT_TAG v1.4.346
-    	)
-    	FetchContent_MakeAvailable(Vulkan-Headers)
-    endif()
+message("")
+message("  - Vulkan Headers -")
+if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/Vulkan-Headers/CMakeLists.txt)
+	add_subdirectory(Vulkan-Headers)
+else()
+	FetchContent_Declare(
+  		Vulkan-Headers
+  		GIT_REPOSITORY https://github.com/KhronosGroup/Vulkan-Headers.git
+  		GIT_TAG v1.4.346
+	)
+	FetchContent_MakeAvailable(Vulkan-Headers)
+endif()
 
-    message("")
-    message("  - Vulkan Loader -")
+message("")
+message("  - Vulkan Loader -")
    
-    if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/Vulkan-Loader/CMakeLists.txt)
-        add_subdirectory(Vulkan-Loader)
-    else()
-    	  FetchContent_Declare(
-            Vulkan-Loader
-            GIT_REPOSITORY https://github.com/KhronosGroup/Vulkan-Loader.git
-            GIT_TAG v1.4.346
-    	  )
-    	  FetchContent_MakeAvailable(Vulkan-Loader)
-    endif()
+if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/Vulkan-Loader/CMakeLists.txt)
+    add_subdirectory(Vulkan-Loader)
+else()
+    FetchContent_Declare(
+        Vulkan-Loader
+        GIT_REPOSITORY https://github.com/KhronosGroup/Vulkan-Loader.git
+        GIT_TAG v1.4.346
+    )
+    FetchContent_MakeAvailable(Vulkan-Loader)
 endif()
 
 message("")

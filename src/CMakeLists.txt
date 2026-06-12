@@ -250,48 +250,9 @@ if (${CMAKE_SYSTEM_NAME} STREQUAL "Linux" OR
 endif()
 
 # Vulkan
-if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" OR
-    ${CMAKE_SYSTEM_NAME} STREQUAL "Linux" OR
-    ${CMAKE_SYSTEM_NAME} STREQUAL "FreeBSD" OR
-    ${CMAKE_SYSTEM_NAME} STREQUAL "OpenBSD" OR
-    ${CMAKE_SYSTEM_NAME} STREQUAL "DragonFly" OR
-    ${CMAKE_SYSTEM_NAME} STREQUAL "NetBSD")
-    # Using VVL
-    if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo" AND USE_VVL)
-        target_compile_definitions(${PROJECT_NAME} PRIVATE PATACHE_FIND_VVL_IN_THE_CURRENT_PATH)
-    endif()
-
-    target_link_libraries(${PROJECT_NAME} PUBLIC
-        vulkan
-        Vulkan::Headers)
-elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
-    # Link Vulkan from SDK
-    message("")
-    message("  - Vulkan SDK -")
-    find_package(Vulkan REQUIRED)
-
-    set (VULKANSDK_LIBS_PATH "${Vulkan_LIBRARIES}")
-    string(REPLACE "/vulkan-1.lib" "" VULKANSDK_LIBS_PATH ${VULKANSDK_LIBS_PATH})
-    string(STRIP VULKANSDK_LIBS_PATH ${VULKANSDK_LIBS_PATH})
-
-    message(STATUS "Vulkan Libs Path : ${VULKANSDK_LIBS_PATH}")
-
-    target_link_libraries(${PROJECT_NAME} PUBLIC
-        -lvulkan-1
-        -L${VULKANSDK_LIBS_PATH})
-
-    target_include_directories(${PROJECT_NAME} PUBLIC "${Vulkan_INCLUDE_DIRS}")
-
-    if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo" AND USE_VVL)
-        set (VULKANSDK_VVL_PATH "${Vulkan_LIBRARIES}")
-        string(REPLACE "/Lib/vulkan-1.lib" "" VULKANSDK_VVL_PATH ${VULKANSDK_VVL_PATH})
-        string(STRIP VULKANSDK_VVL_PATH ${VULKANSDK_VVL_PATH})
-        set (VULKANSDK_VVL_PATH "${VULKANSDK_VVL_PATH}/Bin")
-        message(STATUS "Validation Layer Path : ${VULKANSDK_VVL_PATH}")
-
-        target_compile_definitions(${PROJECT_NAME} PRIVATE
-            PATACHE_FIND_VVL_FROM_SDK PATACHE_VVL_SDK_PATH="${VULKANSDK_VVL_PATH}")
-    endif()
+# Using VVL
+if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo" AND USE_VVL)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE PATACHE_FIND_VVL_IN_THE_CURRENT_PATH)
 endif()
 
 # Move this binaries to a build dir instead of bin build
@@ -304,8 +265,17 @@ if (TARGET asm_offset)
 endif()
 
 # Link libraries
-target_link_libraries(${PROJECT_NAME} PUBLIC fast_io SDL3::SDL3 cglm GPUOpen::VulkanMemoryAllocator)
-target_link_libraries(${PROJECT_NAME} PRIVATE ryml::ryml freetype Vulkan::UtilityHeaders)
+target_link_libraries(${PROJECT_NAME} PUBLIC
+    fast_io
+    SDL3::SDL3
+    cglm
+    GPUOpen::VulkanMemoryAllocator
+    vulkan
+    Vulkan::Headers)
+target_link_libraries(${PROJECT_NAME} PRIVATE
+    ryml::ryml
+    freetype
+    Vulkan::UtilityHeaders)
 target_include_directories(${PROJECT_NAME} PRIVATE ${FREETYPE_INCLUDE_DIRS})
 
 if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo")
