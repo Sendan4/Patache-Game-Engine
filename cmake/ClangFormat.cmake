@@ -2,7 +2,7 @@ find_program(CLANGFORMAT NAMES clang-format OPTIONAL)
 
 if (NOT ${CLANGFORMAT} STREQUAL "CLANGFORMAT-NOTFOUND")
     message("")
-    message(STATUS "clang-format Found : ${CLANGFORMAT}")
+    message(STATUS "EXECUTABLE clang-format found : ${CLANGFORMAT}")
 
     add_custom_target(PatacheClangFormat)
 

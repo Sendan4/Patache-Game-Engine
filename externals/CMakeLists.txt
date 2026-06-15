@@ -34,7 +34,21 @@ if (CMAKE_SYSTEM_NAME STREQUAL "Linux" OR
     set (BUILD_WSI_XLIB_SUPPORT OFF CACHE BOOL "..." FORCE)
 endif()
 
-if (MSVC OR CMAKE_SYSTEM_NAME STREQUAL "Linux" OR
+message("")
+message("  - Vulkan Headers -")
+if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/Vulkan-Headers/CMakeLists.txt)
+    add_subdirectory(Vulkan-Headers)
+else()
+    FetchContent_Declare(
+        Vulkan-Headers
+      	GIT_REPOSITORY https://github.com/KhronosGroup/Vulkan-Headers.git
+      	GIT_TAG v1.4.346)
+
+    FetchContent_MakeAvailable(Vulkan-Headers)
+endif()
+
+if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" OR
+    CMAKE_SYSTEM_NAME STREQUAL "Linux" OR
     CMAKE_SYSTEM_NAME STREQUAL "FreeBSD" OR
     CMAKE_SYSTEM_NAME STREQUAL "OpenBSD" OR
     CMAKE_SYSTEM_NAME STREQUAL "DragonFly" OR
@@ -58,19 +72,6 @@ if (MSVC OR CMAKE_SYSTEM_NAME STREQUAL "Linux" OR
     endif()
 
     message("")
-    message("  - Vulkan Headers -")
-    if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/Vulkan-Headers/CMakeLists.txt)
-    	add_subdirectory(Vulkan-Headers)
-    else()
-    	FetchContent_Declare(
-      		Vulkan-Headers
-      		GIT_REPOSITORY https://github.com/KhronosGroup/Vulkan-Headers.git
-      		GIT_TAG v1.4.346
-    	)
-    	FetchContent_MakeAvailable(Vulkan-Headers)
-    endif()
-
-    message("")
     message("  - Vulkan Loader -")
    
     if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/Vulkan-Loader/CMakeLists.txt)
@@ -83,6 +84,9 @@ if (MSVC OR CMAKE_SYSTEM_NAME STREQUAL "Linux" OR
     	  )
     	  FetchContent_MakeAvailable(Vulkan-Loader)
     endif()
+elseif("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows"
+    AND ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang"))
+    include(../cmake/WindowsVulkanSDK.cmake)
 endif()
 
 message("")
@@ -118,44 +122,51 @@ else()
     FetchContent_MakeAvailable(Vulkan-Utility-Libraries)
 endif()
 
-message("")
-message("  - Glslang -")
-set (CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
-set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
-set (ENABLE_RTTI OFF CACHE INTERNAL "..." FORCE)
-set (ENABLE_EXCEPTIONS OFF CACHE INTERNAL "..." FORCE)
-set (GLSLANG_TESTS OFF CACHE INTERNAL "..." FORCE)
-set (ENABLE_HLSL OFF CACHE INTERNAL "..." FORCE)
-set (ENABLE_PCH OFF CACHE INTERNAL "..." FORCE)
-set (GLSLANG_ENABLE_INSTALL OFF CACHE INTERNAL "..." FORCE)
-set (ENABLE_SPVREMAPPER OFF CACHE INTERNAL "..." FORCE)
-set (ALLOW_EXTERNAL_SPIRV_TOOLS OFF CACHE INTERNAL "..." FORCE)
-set (BUILD_EXTERNAL ON CACHE INTERNAL "..." FORCE)
+if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" OR
+    CMAKE_SYSTEM_NAME STREQUAL "Linux" OR
+    CMAKE_SYSTEM_NAME STREQUAL "FreeBSD" OR
+    CMAKE_SYSTEM_NAME STREQUAL "OpenBSD" OR
+    CMAKE_SYSTEM_NAME STREQUAL "DragonFly" OR
+    CMAKE_SYSTEM_NAME STREQUAL "NetBSD")
+    message("")
+    message("  - Glslang -")
+    set (CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+    set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+    set (ENABLE_RTTI OFF CACHE INTERNAL "..." FORCE)
+    set (ENABLE_EXCEPTIONS OFF CACHE INTERNAL "..." FORCE)
+    set (GLSLANG_TESTS OFF CACHE INTERNAL "..." FORCE)
+    set (ENABLE_HLSL OFF CACHE INTERNAL "..." FORCE)
+    set (ENABLE_PCH OFF CACHE INTERNAL "..." FORCE)
+    set (GLSLANG_ENABLE_INSTALL OFF CACHE INTERNAL "..." FORCE)
+    set (ENABLE_SPVREMAPPER OFF CACHE INTERNAL "..." FORCE)
+    set (ALLOW_EXTERNAL_SPIRV_TOOLS OFF CACHE INTERNAL "..." FORCE)
+    set (BUILD_EXTERNAL ON CACHE INTERNAL "..." FORCE)
 
-if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/glslang/CMakeLists.txt)
-    find_package(Python 3 REQUIRED COMPONENTS Interpreter)
+    if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/glslang/CMakeLists.txt)
+        find_package(Python 3 REQUIRED COMPONENTS Interpreter)
 
-    execute_process(
-        COMMAND ${Python_EXECUTABLE} update_glslang_sources.py
-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/glslang)
+        execute_process(
+            COMMAND ${Python_EXECUTABLE} update_glslang_sources.py
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/glslang)
 
-    add_subdirectory(glslang)
-else()
-    set (BUILD_EXTERNAL OFF CACHE INTERNAL "..." FORCE)
-    set (ENABLE_OPT OFF CACHE INTERNAL "..." FORCE)
+        add_subdirectory(glslang)
+    else()
+        set (BUILD_EXTERNAL OFF CACHE INTERNAL "..." FORCE)
+        set (ENABLE_OPT OFF CACHE INTERNAL "..." FORCE)
 
-    FetchContent_Declare(
-        Glslang
-        GIT_REPOSITORY https://github.com/KhronosGroup/glslang.git
-        GIT_TAG 15.3.0
-    )
+        FetchContent_Declare(
+            Glslang
+            GIT_REPOSITORY https://github.com/KhronosGroup/glslang.git
+            GIT_TAG 15.3.0
+        )
 
-    FetchContent_MakeAvailable(Glslang)
+        FetchContent_MakeAvailable(Glslang)
+    endif()
+
+    get_filename_component(BUILDDIR_NAME ${CMAKE_BINARY_DIR} NAME)
+    set (CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin/${BUILDDIR_NAME})
+    set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin/${BUILDDIR_NAME})
 endif()
-
-get_filename_component(BUILDDIR_NAME ${CMAKE_BINARY_DIR} NAME)
-set (CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin/${BUILDDIR_NAME})
-set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin/${BUILDDIR_NAME})
 
 #cglm
 message("")
@@ -194,11 +205,11 @@ if (CMAKE_SYSTEM_NAME STREQUAL "Linux" OR
     pkg_check_modules(WAYLAND wayland-client REQUIRED)
     pkg_check_modules(WAYLAND_CURSOR wayland-cursor REQUIRED)
 
-	  if (${WAYLAND_FOUND})
+	if (${WAYLAND_FOUND})
         message(STATUS "wayland-client has been found")
     endif()
 
-	  if (${WAYLAND_CURSOR_FOUND})
+	if (${WAYLAND_CURSOR_FOUND})
         message(STATUS "wayland-cursor has been found")
     endif()
 endif()

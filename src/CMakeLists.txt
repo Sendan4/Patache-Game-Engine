@@ -8,6 +8,10 @@ add_subdirectory(RaccoonRenderer/Shaders)
 
 add_dependencies(${PROJECT_NAME} PatacheFiles PatacheCompileShaders)
 
+if (TARGET PatacheVulkanSDKFiles)
+    add_dependencies(${PROJECT_NAME} PatacheVulkanSDKFiles)
+endif()
+
 if (NOT MSVC)
     if (${FORMAT_IN_BUILD_TIME})
         add_dependencies(${PROJECT_NAME} PatacheClangFormat)
@@ -250,48 +254,20 @@ if (${CMAKE_SYSTEM_NAME} STREQUAL "Linux" OR
 endif()
 
 # Vulkan
-if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" OR
+if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo" AND USE_VVL)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE PATACHE_FIND_VVL_IN_THE_CURRENT_PATH)
+endif()
+
+if (${CMAKE_CXX_COMPILER_ID} STREQUAL "MSVC" OR
     ${CMAKE_SYSTEM_NAME} STREQUAL "Linux" OR
     ${CMAKE_SYSTEM_NAME} STREQUAL "FreeBSD" OR
     ${CMAKE_SYSTEM_NAME} STREQUAL "OpenBSD" OR
     ${CMAKE_SYSTEM_NAME} STREQUAL "DragonFly" OR
     ${CMAKE_SYSTEM_NAME} STREQUAL "NetBSD")
-    # Using VVL
-    if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo" AND USE_VVL)
-        target_compile_definitions(${PROJECT_NAME} PRIVATE PATACHE_FIND_VVL_IN_THE_CURRENT_PATH)
-    endif()
-
-    target_link_libraries(${PROJECT_NAME} PUBLIC
-        vulkan
-        Vulkan::Headers)
-elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
-    # Link Vulkan from SDK
-    message("")
-    message("  - Vulkan SDK -")
-    find_package(Vulkan REQUIRED)
-
-    set (VULKANSDK_LIBS_PATH "${Vulkan_LIBRARIES}")
-    string(REPLACE "/vulkan-1.lib" "" VULKANSDK_LIBS_PATH ${VULKANSDK_LIBS_PATH})
-    string(STRIP VULKANSDK_LIBS_PATH ${VULKANSDK_LIBS_PATH})
-
-    message(STATUS "Vulkan Libs Path : ${VULKANSDK_LIBS_PATH}")
-
-    target_link_libraries(${PROJECT_NAME} PUBLIC
-        -lvulkan-1
-        -L${VULKANSDK_LIBS_PATH})
-
-    target_include_directories(${PROJECT_NAME} PUBLIC "${Vulkan_INCLUDE_DIRS}")
-
-    if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo" AND USE_VVL)
-        set (VULKANSDK_VVL_PATH "${Vulkan_LIBRARIES}")
-        string(REPLACE "/Lib/vulkan-1.lib" "" VULKANSDK_VVL_PATH ${VULKANSDK_VVL_PATH})
-        string(STRIP VULKANSDK_VVL_PATH ${VULKANSDK_VVL_PATH})
-        set (VULKANSDK_VVL_PATH "${VULKANSDK_VVL_PATH}/Bin")
-        message(STATUS "Validation Layer Path : ${VULKANSDK_VVL_PATH}")
-
-        target_compile_definitions(${PROJECT_NAME} PRIVATE
-            PATACHE_FIND_VVL_FROM_SDK PATACHE_VVL_SDK_PATH="${VULKANSDK_VVL_PATH}")
-    endif()
+    target_link_libraries(${PROJECT_NAME} PUBLIC vulkan)
+elseif("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows"
+    AND ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang"))
+    target_link_libraries(${PROJECT_NAME} PUBLIC -L${VULKAN_RT_DLL_DIR} -lvulkan-1)
 endif()
 
 # Move this binaries to a build dir instead of bin build
@@ -304,7 +280,7 @@ if (TARGET asm_offset)
 endif()
 
 # Link libraries
-target_link_libraries(${PROJECT_NAME} PUBLIC fast_io SDL3::SDL3 cglm GPUOpen::VulkanMemoryAllocator)
+target_link_libraries(${PROJECT_NAME} PUBLIC fast_io SDL3::SDL3 cglm GPUOpen::VulkanMemoryAllocator Vulkan::Headers)
 target_link_libraries(${PROJECT_NAME} PRIVATE ryml::ryml freetype Vulkan::UtilityHeaders)
 target_include_directories(${PROJECT_NAME} PRIVATE ${FREETYPE_INCLUDE_DIRS})
 
@@ -397,7 +373,10 @@ if (MSVC)
             set_target_properties(vvl_gpu_av_shaders_spirv PROPERTIES FOLDER "Engine/Dependencies/Vulkan")
         endif()
     endif()
-    set_target_properties(vulkan PROPERTIES FOLDER "Engine/Dependencies/Vulkan")
+
+    if (TARGET vulkan)
+        set_target_properties(vulkan PROPERTIES FOLDER "Engine/Dependencies/Vulkan")
+    endif()
 
     # Freetype
     set_target_properties(freetype PROPERTIES FOLDER "Engine/Dependencies")

@@ -47,8 +47,10 @@ else()
 endif()
 
 # Mingw in Msys2
-if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_SYSTEM_NAME STREQUAL "Windows")
-    target_link_libraries(${PROJECT_NAME} INTERFACE "-lntdll")
+if("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows"
+    AND ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang"))
+    message(STATUS "Using -lntdll")
+    target_link_libraries(${PROJECT_NAME} INTERFACE -lntdll)
 endif()
 
 set_target_properties(${PROJECT_NAME}
