@@ -240,13 +240,23 @@ if (${CMAKE_SYSTEM_NAME} STREQUAL "Linux" OR
     ${CMAKE_SYSTEM_NAME} STREQUAL "DragonFly" OR
     ${CMAKE_SYSTEM_NAME} STREQUAL "NetBSD")
     if (${WAYLAND_FOUND} AND ${WAYLAND_CURSOR_FOUND})
-        target_link_libraries(${PROJECT_NAME} PUBLIC
-            ${WAYLAND_LIBRARIES}
-            ${WAYLAND_CURSOR_LIBRARIES})
+        if (NOT ${CMAKE_SYSTEM_NAME} STREQUAL "Linux" AND CMAKE_C_COMPILER_ID STREQUAL "Clang")
+            target_link_libraries(${PROJECT_NAME} PUBLIC
+                -L/usr/local/lib
+                -L/lib
+                ${WAYLAND_LIBRARIES}
+                ${WAYLAND_CURSOR_LIBRARIES})
+        else()
+            target_link_libraries(${PROJECT_NAME} PUBLIC
+                ${WAYLAND_LIBRARIES}
+                ${WAYLAND_CURSOR_LIBRARIES})
+        endif()
 
         target_include_directories(${PROJECT_NAME} PUBLIC
             ${WAYLAND_INCLUDE_DIRS}
             ${WAYLAND_CURSOR_INCLUDE_DIRS})
+    else()
+        message(FATAL_ERROR "Wayland not found")
     endif()
 
     # Always define wayland macro for SDL
