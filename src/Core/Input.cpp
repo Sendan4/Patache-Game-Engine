@@ -86,6 +86,8 @@ Patache::Engine::HandleEvent (const SDL_Event & rEvent)
                     {
                       Patache::ErrorMessage ("Could not switch to full screen mode");
                     }
+
+                  isFullScreen = true;
 #endif
                 }
               else
