@@ -13,11 +13,9 @@
 
   #if __GNUC__
     #if __clang__
-      #ifndef __MINGW64__
-        #pragma GCC diagnostic ignored "-Wnullability-extension"
-        #pragma GCC diagnostic ignored "-Wunused-private-field"
-        #pragma GCC diagnostic ignored "-Wnullability-completeness"
-      #endif
+      #pragma GCC diagnostic ignored "-Wnullability-extension"
+      #pragma GCC diagnostic ignored "-Wunused-private-field"
+      #pragma GCC diagnostic ignored "-Wnullability-completeness"
     #endif
   #endif
 
