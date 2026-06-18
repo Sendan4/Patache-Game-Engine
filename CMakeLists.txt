@@ -48,8 +48,8 @@ endif()
 
 set (PATACHE_ENGINE_VERSION_MAYOR 0)
 set (PATACHE_ENGINE_VERSION_MINOR 0)
-set (PATACHE_ENGINE_VERSION_PATCH 0)
-set (PATACHE_ENGINE_VERSION "0.0.0-pre-alpha")
+set (PATACHE_ENGINE_VERSION_PATCH 1)
+set (PATACHE_ENGINE_VERSION "0.0.1-pre-alpha")
 
 include(CheckCXXCompilerFlag)
 include(CheckIncludeFileCXX)
