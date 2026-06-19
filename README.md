@@ -21,7 +21,7 @@ _Motor de videojuegos 2D tonto y simple hecho con C++. El objetivo es hacer un m
 <b>PC</b>
 |     Windows    |    GNU/Linux   |           Unix BSD            |
 | :------------: | :------------: | :---------------------------: |
-| x86_64 / AMD64 <span style="color: #FF6347;">(64-bits)</span> | x86_64 / AMD64 <span style="color: #FF6347;">(64-bits)</span> | x86_64 / AMD64 <span style="color: #FF6347;">(64-bits)</span> <br> <span style="color: yellow;">_Solo GNU GCC_</span> |
+| x86_64 / AMD64 <span style="color: #FF6347;">(64-bits)</span> | x86_64 / AMD64 <span style="color: #FF6347;">(64-bits)</span> | x86_64 / AMD64 <span style="color: #FF6347;">(64-bits)</span> |
 
 ## Requerimentos de sistema
 - CPU multinucleo x86_64 con las extensiones AVX y SSE4.2 (MMX si usas GCC). basicamente una CPU Intel Sandy Bridge de segunda generacion o AMD Bulldozer conocido como FX.
