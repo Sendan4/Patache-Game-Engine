@@ -21,7 +21,7 @@ _Dumb and simple 2D game engine made in C++. The goal is to make an engine that 
 <b>PC</b>
 |     Windows    |   GNU/Linux    |            Unix BSD           |
 | :------------: | :------------: | :---------------------------: |
-| x86_64 / AMD64 <span style="color: #FF6347;">(64-bits)</span> | x86_64 / AMD64 <span style="color: #FF6347;">(64-bits)</span> | x86_64 / AMD64 <span style="color: #FF6347;">(64-bits)</span> <br> <span style="color: yellow;">_Only GNU GCC_</span> |
+| x86_64 / AMD64 <span style="color: #FF6347;">(64-bits)</span> | x86_64 / AMD64 <span style="color: #FF6347;">(64-bits)</span> | x86_64 / AMD64 <span style="color: #FF6347;">(64-bits)</span> |
 
 ## System requirements
 - Multi-core CPU with instructions AVX y SSE4.2 (MMX if you use GCC). basically a second-generation Intel Sandy Bridge CPU or AMD Bulldozer known as FX.
