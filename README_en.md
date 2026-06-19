@@ -25,7 +25,7 @@ _Dumb and simple 2D game engine made in C++. The goal is to make an engine that 
 
 ## System requirements
 - Multi-core CPU with instructions AVX y SSE4.2 (MMX if you use GCC). basically a second-generation Intel Sandy Bridge CPU or AMD Bulldozer known as FX.
-- Vulkan compatible GPU.
+- Vulkan 1.2 compatible GPU.
 - At least 4 GB of RAM.
 - At least 14 GB of free space for source code and binaries (includes debug with all features).
 
