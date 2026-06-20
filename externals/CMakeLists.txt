@@ -18,7 +18,7 @@ else()
     FetchContent_Declare(
         RapidYaml
         GIT_REPOSITORY https://github.com/biojppm/rapidyaml.git
-        GIT_TAG v0.11.0
+        GIT_TAG v0.15.2
     )
     FetchContent_MakeAvailable(RapidYaml)
 endif()
