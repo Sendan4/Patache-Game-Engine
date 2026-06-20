@@ -42,7 +42,7 @@ else()
     FetchContent_Declare(
         Vulkan-Headers
       	GIT_REPOSITORY https://github.com/KhronosGroup/Vulkan-Headers.git
-      	GIT_TAG v1.4.346)
+      	GIT_TAG vulkan-sdk-1.4.350.0)
 
     FetchContent_MakeAvailable(Vulkan-Headers)
 endif()
@@ -65,7 +65,7 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" OR
         FetchContent_Declare(
             Vulkan-ValidationLayers
             GIT_REPOSITORY https://github.com/KhronosGroup/Vulkan-ValidationLayers.git
-            GIT_TAG v1.4.346
+            GIT_TAG vulkan-sdk-1.4.350.0
         )
     
         FetchContent_MakeAvailable(Vulkan-ValidationLayers)
@@ -80,7 +80,7 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" OR
     	  FetchContent_Declare(
             Vulkan-Loader
             GIT_REPOSITORY https://github.com/KhronosGroup/Vulkan-Loader.git
-            GIT_TAG v1.4.346
+            GIT_TAG vulkan-sdk-1.4.350.0
     	  )
     	  FetchContent_MakeAvailable(Vulkan-Loader)
     endif()
@@ -157,7 +157,7 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" OR
         FetchContent_Declare(
             Glslang
             GIT_REPOSITORY https://github.com/KhronosGroup/glslang.git
-            GIT_TAG 15.3.0
+            GIT_TAG vulkan-sdk-1.4.350.0
         )
 
         FetchContent_MakeAvailable(Glslang)
