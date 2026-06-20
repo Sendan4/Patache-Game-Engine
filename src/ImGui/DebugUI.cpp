@@ -188,12 +188,12 @@ Patache::DrawDebugUI (Patache::Engine * const pEngine)
           if constexpr (PATACHE_GIT_STAGE)
             {
               ImGui::SameLine ();
-              ImGui::TextColored (ImVec4 (PATACHE_IMGUI_POSITIVE_VALUE), "In stage area");
+              ImGui::TextColored (ImVec4 (PATACHE_IMGUI_WARNING_VALUE), "In stage area");
             }
           else
             {
               ImGui::SameLine ();
-              ImGui::TextColored (ImVec4 (PATACHE_IMGUI_WARNING_VALUE), "Un-staged changes");
+              ImGui::TextColored (ImVec4 (PATACHE_IMGUI_POSITIVE_VALUE), "Off Stage");
             }
 
           ImGui::Spacing ();
