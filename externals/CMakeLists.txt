@@ -104,23 +104,7 @@ else()
     FetchContent_MakeAvailable(VulkanMemoryAllocator)
 endif()
 
-message("")
-message("  - Vulkan Utility Libraries -")
-
-if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/Vulkan-Utility-Libraries/CMakeLists.txt)
-    set (UPDATE_DEPS ON CACHE INTERNAL "..." FORCE)
-    add_subdirectory(Vulkan-Utility-Libraries)
-else()
-    set (UPDATE_DEPS ON CACHE INTERNAL "..." FORCE)
-
-    FetchContent_Declare(
-        Vulkan-Utility-Libraries
-        GIT_REPOSITORY https://codeberg.org/PatacheEngine/Vulkan-Utility-Libraries.git
-        GIT_TAG v1.4.346-Patache
-    )
-
-    FetchContent_MakeAvailable(Vulkan-Utility-Libraries)
-endif()
+add_subdirectory(vk_enum_string_helper)
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" OR
     CMAKE_SYSTEM_NAME STREQUAL "Linux" OR
