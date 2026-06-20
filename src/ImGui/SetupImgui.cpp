@@ -105,7 +105,7 @@ Patache::CreateImguiDescriptorPool (Patache::VulkanBackend & rVulkan)
 
   constexpr VkDescriptorPoolSize poolSize{ .type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
                                            .descriptorCount
-                                           = IMGUI_IMPL_VULKAN_MINIMUM_IMAGE_SAMPLER_POOL_SIZE };
+                                           = IMGUI_IMPL_VULKAN_MINIMUM_SAMPLER_POOL_SIZE };
 
   const VkDescriptorPoolCreateInfo info{ .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
                                          .pNext = nullptr,
