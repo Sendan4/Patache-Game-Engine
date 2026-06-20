@@ -176,24 +176,17 @@ elseif(${CMAKE_BUILD_TYPE} STREQUAL "MinSizeRel")
 endif()
 
 # Build info macros
-if (NOT "${CMAKE_GENERATOR_VERSION}" STREQUAL "")
-    target_compile_definitions(${PROJECT_NAME} PRIVATE
-        PATACHE_BUILD_SYSTEM_GENERATOR_VERSION="${CMAKE_GENERATOR_VERSION}")
-else()
-    target_compile_definitions(${PROJECT_NAME} PRIVATE
-        PATACHE_BUILD_SYSTEM_GENERATOR_VERSION="")
-endif()
-
 target_compile_definitions(${PROJECT_NAME} PRIVATE
     PATACHE_BUILD_SYSTEM="CMake"
     PATACHE_BUILD_SYSTEM_VERSION="${CMAKE_VERSION}"
-    PATACHE_BUILD_SYSTEM_GENERATOR="${CMAKE_GENERATOR}"
+    PATACHE_BUILD_SYSTEM_GENERATOR="${PATACHE_GENERATOR}"
+    PATACHE_BUILD_SYSTEM_GENERATOR_VERSION="${PATACHE_GENERATOR_VERSION}"
     PATACHE_ENGINE_VERSION="${PATACHE_ENGINE_VERSION}"
     PATACHE_ENGINE_VERSION_MAYOR=${PATACHE_ENGINE_VERSION_MAYOR}
     PATACHE_ENGINE_VERSION_MINOR=${PATACHE_ENGINE_VERSION_MINOR}
     PATACHE_ENGINE_VERSION_PATCH=${PATACHE_ENGINE_VERSION_PATCH}
     PATACHE_ENGINE_NAME="Patache Engine"
-    PATACHE_COMPILER_PROGRAM="${compiler_program}"
+    PATACHE_COMPILER_PROGRAM="${PATACHE_COMILER_PROGRAM}"
     PATACHE_COMPILER_VERSION="${CMAKE_CXX_COMPILER_VERSION}"
     PATACHE_ARCH="${CMAKE_SYSTEM_PROCESSOR}"
     PATACHE_FAST_IO_GIT_COMMIT_HASH_SHORT="${Fast_io_COMMIT_SHORT_HASH}"
@@ -210,17 +203,17 @@ target_compile_definitions(${PROJECT_NAME} PUBLIC
     VULKAN_HPP_NO_EXCEPTIONS
     VULKAN_HPP_NO_SMART_HANDLE
     VULKAN_HPP_NO_CONSTRUCTORS
- 	PATACHE_LINUX_OR_UNIX=${LINUX_OR_UNIX_MACROS_TEXT})
+    PATACHE_LINUX_OR_UNIX=${LINUX_OR_UNIX_MACROS_TEXT})
 
 # Git info macros
 if (USE_GIT AND GIT)
-target_compile_definitions(${PROJECT_NAME} PRIVATE
-    PATACHE_USE_GIT
-    PATACHE_GIT_BRANCH="${GIT_BRANCH}"
-    PATACHE_GIT_HASH_LONG="${GIT_HASH_LONG}"
-    PATACHE_GIT_HASH_SHORT="${GIT_HASH_SHORT}"
-    PATACHE_GIT_DIRTY=${GIT_DIRTY}
-    PATACHE_GIT_STAGE=${GIT_STAGE})
+    target_compile_definitions(${PROJECT_NAME} PRIVATE
+        PATACHE_USE_GIT
+        PATACHE_GIT_BRANCH="${GIT_BRANCH}"
+        PATACHE_GIT_HASH_LONG="${GIT_HASH_LONG}"
+        PATACHE_GIT_HASH_SHORT="${GIT_HASH_SHORT}"
+        PATACHE_GIT_DIRTY=${GIT_DIRTY}
+        PATACHE_GIT_STAGE=${GIT_STAGE})
 endif()
 
 if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo")
@@ -240,13 +233,23 @@ if (${CMAKE_SYSTEM_NAME} STREQUAL "Linux" OR
     ${CMAKE_SYSTEM_NAME} STREQUAL "DragonFly" OR
     ${CMAKE_SYSTEM_NAME} STREQUAL "NetBSD")
     if (${WAYLAND_FOUND} AND ${WAYLAND_CURSOR_FOUND})
-        target_link_libraries(${PROJECT_NAME} PUBLIC
-            ${WAYLAND_LIBRARIES}
-            ${WAYLAND_CURSOR_LIBRARIES})
+        if (NOT ${CMAKE_SYSTEM_NAME} STREQUAL "Linux" AND CMAKE_C_COMPILER_ID STREQUAL "Clang")
+            target_link_libraries(${PROJECT_NAME} PUBLIC
+                -L/usr/local/lib
+                -L/lib
+                ${WAYLAND_LIBRARIES}
+                ${WAYLAND_CURSOR_LIBRARIES})
+        else()
+            target_link_libraries(${PROJECT_NAME} PUBLIC
+                ${WAYLAND_LIBRARIES}
+                ${WAYLAND_CURSOR_LIBRARIES})
+        endif()
 
         target_include_directories(${PROJECT_NAME} PUBLIC
             ${WAYLAND_INCLUDE_DIRS}
             ${WAYLAND_CURSOR_INCLUDE_DIRS})
+    else()
+        message(FATAL_ERROR "Wayland not found")
     endif()
 
     # Always define wayland macro for SDL
@@ -281,7 +284,7 @@ endif()
 
 # Link libraries
 target_link_libraries(${PROJECT_NAME} PUBLIC fast_io SDL3::SDL3 cglm GPUOpen::VulkanMemoryAllocator Vulkan::Headers)
-target_link_libraries(${PROJECT_NAME} PRIVATE ryml::ryml freetype Vulkan::UtilityHeaders)
+target_link_libraries(${PROJECT_NAME} PRIVATE ryml::ryml freetype Vulkan::EnumStringHelper)
 target_include_directories(${PROJECT_NAME} PRIVATE ${FREETYPE_INCLUDE_DIRS})
 
 if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo")

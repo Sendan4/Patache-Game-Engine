@@ -18,7 +18,7 @@ else()
     FetchContent_Declare(
         RapidYaml
         GIT_REPOSITORY https://github.com/biojppm/rapidyaml.git
-        GIT_TAG v0.11.0
+        GIT_TAG v0.15.2
     )
     FetchContent_MakeAvailable(RapidYaml)
 endif()
@@ -42,7 +42,7 @@ else()
     FetchContent_Declare(
         Vulkan-Headers
       	GIT_REPOSITORY https://github.com/KhronosGroup/Vulkan-Headers.git
-      	GIT_TAG v1.4.346)
+      	GIT_TAG vulkan-sdk-1.4.350.0)
 
     FetchContent_MakeAvailable(Vulkan-Headers)
 endif()
@@ -65,7 +65,7 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" OR
         FetchContent_Declare(
             Vulkan-ValidationLayers
             GIT_REPOSITORY https://github.com/KhronosGroup/Vulkan-ValidationLayers.git
-            GIT_TAG v1.4.346
+            GIT_TAG vulkan-sdk-1.4.350.0
         )
     
         FetchContent_MakeAvailable(Vulkan-ValidationLayers)
@@ -80,7 +80,7 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" OR
     	  FetchContent_Declare(
             Vulkan-Loader
             GIT_REPOSITORY https://github.com/KhronosGroup/Vulkan-Loader.git
-            GIT_TAG v1.4.346
+            GIT_TAG vulkan-sdk-1.4.350.0
     	  )
     	  FetchContent_MakeAvailable(Vulkan-Loader)
     endif()
@@ -99,28 +99,12 @@ else()
     FetchContent_Declare(
         VulkanMemoryAllocator
         GIT_REPOSITORY https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git
-        GIT_TAG v3.3.0
+        GIT_TAG v3.4.0
     )
     FetchContent_MakeAvailable(VulkanMemoryAllocator)
 endif()
 
-message("")
-message("  - Vulkan Utility Libraries -")
-
-if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/Vulkan-Utility-Libraries/CMakeLists.txt)
-    set (UPDATE_DEPS ON CACHE INTERNAL "..." FORCE)
-    add_subdirectory(Vulkan-Utility-Libraries)
-else()
-    set (UPDATE_DEPS ON CACHE INTERNAL "..." FORCE)
-
-    FetchContent_Declare(
-        Vulkan-Utility-Libraries
-        GIT_REPOSITORY https://codeberg.org/PatacheEngine/Vulkan-Utility-Libraries.git
-        GIT_TAG v1.4.346-Patache
-    )
-
-    FetchContent_MakeAvailable(Vulkan-Utility-Libraries)
-endif()
+add_subdirectory(vk_enum_string_helper)
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" OR
     CMAKE_SYSTEM_NAME STREQUAL "Linux" OR
@@ -157,7 +141,7 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" OR
         FetchContent_Declare(
             Glslang
             GIT_REPOSITORY https://github.com/KhronosGroup/glslang.git
-            GIT_TAG 15.3.0
+            GIT_TAG vulkan-sdk-1.4.350.0
         )
 
         FetchContent_MakeAvailable(Glslang)
@@ -214,7 +198,7 @@ if (CMAKE_SYSTEM_NAME STREQUAL "Linux" OR
     endif()
 endif()
 
-# SDL2
+# SDL3
 message("")
 message("  - SDL3 -")
 
@@ -302,7 +286,7 @@ else()
     FetchContent_Declare(
         SDL
         GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
-        GIT_TAG release-3.4.2
+        GIT_TAG release-3.4.10
     )
     FetchContent_MakeAvailable(SDL)
 endif()
@@ -322,7 +306,7 @@ else()
     FetchContent_Declare(
         FreeType
         GIT_REPOSITORY https://gitlab.freedesktop.org/freetype/freetype.git
-        GIT_TAG VER-2-14-1
+        GIT_TAG VER-2-14-3
     )
     FetchContent_MakeAvailable(FreeType)
 endif()

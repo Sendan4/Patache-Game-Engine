@@ -32,7 +32,7 @@ set (CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 project("PatacheEngine"
     LANGUAGES CXX
-    VERSION 0.0.0
+    VERSION 0.0.2
     HOMEPAGE_URL "https://codeberg.org/PatacheEngine/Patache.git")
     
 if (NOT PatacheEngine_IS_TOP_LEVEL)
@@ -48,8 +48,8 @@ endif()
 
 set (PATACHE_ENGINE_VERSION_MAYOR 0)
 set (PATACHE_ENGINE_VERSION_MINOR 0)
-set (PATACHE_ENGINE_VERSION_PATCH 1)
-set (PATACHE_ENGINE_VERSION "0.0.1-pre-alpha")
+set (PATACHE_ENGINE_VERSION_PATCH 2)
+set (PATACHE_ENGINE_VERSION "0.0.2-pre-alpha")
 
 include(CheckCXXCompilerFlag)
 include(CheckIncludeFileCXX)
@@ -323,87 +323,13 @@ void test(void) { uint8_t c = 0; c++;};
     set(CMAKE_REQUIRED_FLAGS ${CMAKE_REQUIRED_FLAGS_BACKUP})
 endif()
 
-find_program(GIT NAMES git)
+include(cmake/GetGitInfo.cmake)
+GetGitInfo(GIT_BRANCH GIT_HASH_LONG GIT_HASH_SHORT GIT_DIRTY GIT_STAGE)
 
-if (USE_GIT AND GIT)
-    message (STATUS "Git Found : ${GIT}")
+include(cmake/GeneratorMacroDetect.cmake)
+GeneratorMacroDetect(PATACHE_GENERATOR PATACHE_GENERATOR_VERSION)
 
-    # Git Macros
-    execute_process(
-        COMMAND git branch --show-current HEAD
-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-        OUTPUT_VARIABLE GIT_BRANCH
-        OUTPUT_STRIP_TRAILING_WHITESPACE)
-
-    execute_process(
-        COMMAND git rev-parse HEAD
-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-        OUTPUT_VARIABLE GIT_HASH_LONG
-        OUTPUT_STRIP_TRAILING_WHITESPACE)
-
-    execute_process(
-        COMMAND git rev-parse --short HEAD
-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-        OUTPUT_VARIABLE GIT_HASH_SHORT
-        OUTPUT_STRIP_TRAILING_WHITESPACE)
-
-    execute_process(
-        COMMAND git diff HEAD --shortstat
-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-        OUTPUT_VARIABLE PATACHE_GIT_IS_DIRTY
-        OUTPUT_STRIP_TRAILING_WHITESPACE)
-
-    execute_process(
-        COMMAND git diff HEAD --shortstat --staged
-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-        OUTPUT_VARIABLE PATACHE_GIT_COMMIT_IS_IN_STAGE
-        OUTPUT_STRIP_TRAILING_WHITESPACE)
-
-    # The commit is Dirty?
-    if (NOT "${PATACHE_GIT_IS_DIRTY}" STREQUAL "")
-        set (GIT_DIRTY 1)
-    else()
-        set (GIT_DIRTY 0)
-    endif()
-
-    # The Changes are in the stage?
-    if (NOT "${PATACHE_GIT_COMMIT_IS_IN_STAGE}" STREQUAL "")
-        set (GIT_STAGE 1)
-    else()
-        set (GIT_STAGE 0)
-    endif()
-endif()
-
-# Search Generator Version
-if ("${CMAKE_GENERATOR}" STREQUAL "Ninja" OR "${CMAKE_GENERATOR}" STREQUAL "Eclipse CDT4 - Ninja")
-    execute_process(
-        COMMAND ninja --version
-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-        OUTPUT_VARIABLE CMAKE_GENERATOR_VERSION
-        OUTPUT_STRIP_TRAILING_WHITESPACE)
-elseif ("${CMAKE_GENERATOR}" STREQUAL "Borland Makefiles" OR
-        "${CMAKE_GENERATOR}" STREQUAL "Unix Makefiles" OR
-        "${CMAKE_GENERATOR}" STREQUAL "MSYS Makefiles" OR
-        "${CMAKE_GENERATOR}" STREQUAL "MinGW Makefiles" OR
-        "${CMAKE_GENERATOR}" STREQUAL "Eclipse CDT4 - MinGW Makefiles" OR
-        "${CMAKE_GENERATOR}" STREQUAL "Eclipse CDT4 - Unix Makefiles" OR
-        "${CMAKE_GENERATOR}" STREQUAL "KDevelop3 - Unix Makefiles")
-    execute_process(
-        COMMAND make --version
-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-        OUTPUT_VARIABLE CMAKE_GENERATOR_VERSION
-        OUTPUT_STRIP_TRAILING_WHITESPACE)
-
-    if (NOT ${CMAKE_GENERATOR_VERSION} STREQUAL "")
-        string(REGEX MATCH "[0-9]+\.[0-9]+\.[0-9]"
-            CMAKE_GENERATOR_VERSION
-            ${CMAKE_GENERATOR_VERSION})
-    endif()
-else()
-    set (CMAKE_GENERATOR_VERSION "")
-endif()
-
-get_filename_component(compiler_program ${CMAKE_CXX_COMPILER} NAME)
+get_filename_component(PATACHE_COMILER_PROGRAM ${CMAKE_CXX_COMPILER} NAME)
 
 # shared library
 if (BUILD_SHARED_LIBS)

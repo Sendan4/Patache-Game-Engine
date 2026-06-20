@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.18)
 
-project("imgui" LANGUAGES CXX C VERSION "1.92.6")
+project("imgui" LANGUAGES CXX C VERSION "v1.92.8")
 
-set(Imgui_VERSION "v1.92.7-docking" CACHE INTERNAL "Imgui version")
+set(Imgui_VERSION "v1.92.8-docking" CACHE INTERNAL "Imgui version")
 
 message("")
 message("  - ImGui -")
@@ -78,7 +78,8 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${FREETYPE_INCLUDE_DIRS} ${SD
 
 set_target_properties(${PROJECT_NAME}
     PROPERTIES
-    VERSION "${Imgui_VERSION}")
+    VERSION "${Imgui_VERSION}"
+    CXX_EXTENSIONS OFF)
 
 target_sources(${PROJECT_NAME} PRIVATE
     "${imgui_SOURCE_DIR}/imgui.cpp"

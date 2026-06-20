@@ -21,11 +21,11 @@ _Dumb and simple 2D game engine made in C++. The goal is to make an engine that 
 <b>PC</b>
 |     Windows    |   GNU/Linux    |            Unix BSD           |
 | :------------: | :------------: | :---------------------------: |
-| x86_64 / AMD64 <span style="color: #FF6347;">(64-bits)</span> | x86_64 / AMD64 <span style="color: #FF6347;">(64-bits)</span> | x86_64 / AMD64 <span style="color: #FF6347;">(64-bits)</span> <br> <span style="color: yellow;">_Only GNU GCC_</span> |
+| x86_64 / AMD64 <span style="color: #FF6347;">(64-bits)</span> | x86_64 / AMD64 <span style="color: #FF6347;">(64-bits)</span> | x86_64 / AMD64 <span style="color: #FF6347;">(64-bits)</span> |
 
 ## System requirements
 - Multi-core CPU with instructions AVX y SSE4.2 (MMX if you use GCC). basically a second-generation Intel Sandy Bridge CPU or AMD Bulldozer known as FX.
-- Vulkan compatible GPU.
+- Vulkan 1.2 compatible GPU.
 - At least 4 GB of RAM.
 - At least 14 GB of free space for source code and binaries (includes debug with all features).
 
@@ -40,7 +40,7 @@ _Dumb and simple 2D game engine made in C++. The goal is to make an engine that 
 	- [Vulkan-Headers](https://github.com/KhronosGroup/Vulkan-Headers.git)
 	- [Vulkan-Loader](https://github.com/KhronosGroup/Vulkan-Loader.git)
 	- [Vulkan-Validation-Layers](https://github.com/KhronosGroup/Vulkan-ValidationLayers.git)
-	- [Vulkan-Utility-Libraries](https://github.com/KhronosGroup/Vulkan-Utility-Libraries.git) *modified*
+	- ```vk_enum_string_helper.h``` of [Vulkan-Utility-Libraries](https://github.com/KhronosGroup/Vulkan-Utility-Libraries.git)
     - [VulkanMemoryAllocator](https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git)
 	- [Glslang](https://github.com/KhronosGroup/glslang.git)
 - [fast_io](https://github.com/cppfastio/fast_io.git)
