@@ -209,8 +209,8 @@ Patache::Engine::Init (const Patache::EngineCreateInfo & rInfo)
                             .count ();
 
   fast_io::println (PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_BOLD, PATACHE_TERM_COLOR_PATACHE,
-                    PATACHE_ENGINE_NAME,
-                    PATACHE_TERM_RESET, " : Start time : ", debugInfo.startTime, " milliseconds");
+                    PATACHE_ENGINE_NAME, PATACHE_TERM_RESET,
+                    " : Start time : ", debugInfo.startTime, " milliseconds");
 #endif
 
   return true;

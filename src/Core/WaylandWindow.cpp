@@ -132,7 +132,8 @@ Patache::CreateWaylandWindow (const std::uint32_t & rWidth, const std::uint32_t 
       std::default_random_engine                   fdGenerator (rd ());
       std::uniform_int_distribution<std::uint32_t> fdDist (0, UINT32_MAX);
 
-      Patache::RandomizeFileDescriptorName (mainBarFileDescriptorName, 128U, fdDist, fdGenerator);
+      Patache::RandomizeFileDescriptorName (
+          mainBarFileDescriptorName, PATACHE_RANDOMIZE_FD_STR_BUFF_SIZE, fdDist, fdGenerator);
 
       pEngine->waylandWindow.pMainBarSurface
           = wl_compositor_create_surface (pEngine->waylandWindow.pCompositor);
@@ -216,8 +217,8 @@ Patache::CreateWaylandWindow (const std::uint32_t & rWidth, const std::uint32_t 
 
       for (std::uint8_t i{ 0U }; i < PATACHE_BUTTON_CSD_SIZE; ++i)
         {
-          Patache::RandomizeFileDescriptorName (buttonFileDescriptorName[i], 128U, fdDist,
-                                                fdGenerator);
+          Patache::RandomizeFileDescriptorName (
+              buttonFileDescriptorName[i], PATACHE_RANDOMIZE_FD_STR_BUFF_SIZE, fdDist, fdGenerator);
 
           std::int32_t buttonFileDescriptor{ shm_open (buttonFileDescriptorName[i],
                                                        O_RDWR | O_CREAT | O_EXCL,
@@ -331,8 +332,8 @@ Patache::CreateWaylandWindow (const std::uint32_t & rWidth, const std::uint32_t 
       // Horizontal border
       for (std::uint8_t i{ 0U }; i < PATACHE_BORDER_HORIZONTAL_CSD_SIZE; ++i)
         {
-          Patache::RandomizeFileDescriptorName (borderFileDescriptorName[i], 128U, fdDist,
-                                                fdGenerator);
+          Patache::RandomizeFileDescriptorName (
+              borderFileDescriptorName[i], PATACHE_RANDOMIZE_FD_STR_BUFF_SIZE, fdDist, fdGenerator);
 
           std::int32_t borderFileDescriptor{ shm_open (borderFileDescriptorName[i],
                                                        O_RDWR | O_CREAT | O_EXCL,
@@ -381,8 +382,8 @@ Patache::CreateWaylandWindow (const std::uint32_t & rWidth, const std::uint32_t 
       // Vertical Border
       for (std::uint8_t i{ 2U }; i < PATACHE_BORDER_VERTICAL_CSD_SIZE; ++i)
         {
-          Patache::RandomizeFileDescriptorName (borderFileDescriptorName[i], 128U, fdDist,
-                                                fdGenerator);
+          Patache::RandomizeFileDescriptorName (
+              borderFileDescriptorName[i], PATACHE_RANDOMIZE_FD_STR_BUFF_SIZE, fdDist, fdGenerator);
 
           std::int32_t borderFileDescriptor{ shm_open (borderFileDescriptorName[i],
                                                        O_RDWR | O_CREAT | O_EXCL,
@@ -440,8 +441,8 @@ Patache::CreateWaylandWindow (const std::uint32_t & rWidth, const std::uint32_t 
       // Corner Border
       for (std::uint8_t i{ 4U }; i < PATACHE_BORDER_CSD_SIZE; ++i)
         {
-          Patache::RandomizeFileDescriptorName (borderFileDescriptorName[i], 128U, fdDist,
-                                                fdGenerator);
+          Patache::RandomizeFileDescriptorName (
+              borderFileDescriptorName[i], PATACHE_RANDOMIZE_FD_STR_BUFF_SIZE, fdDist, fdGenerator);
 
           std::int32_t borderFileDescriptor{ shm_open (borderFileDescriptorName[i],
                                                        O_RDWR | O_CREAT | O_EXCL,
@@ -549,8 +550,8 @@ Patache::CreateWaylandWindow (const std::uint32_t & rWidth, const std::uint32_t 
       // Horizontal
       for (std::uint8_t i{ 0U }; i < PATACHE_BORDER_HORIZONTAL_CSD_SIZE; ++i)
         {
-          Patache::RandomizeFileDescriptorName (shadowFileDescriptorName[i], 128U, fdDist,
-                                                fdGenerator);
+          Patache::RandomizeFileDescriptorName (
+              shadowFileDescriptorName[i], PATACHE_RANDOMIZE_FD_STR_BUFF_SIZE, fdDist, fdGenerator);
 
           std::int32_t shadowFileDescriptor{ shm_open (shadowFileDescriptorName[i],
                                                        O_RDWR | O_CREAT | O_EXCL,
@@ -642,8 +643,8 @@ Patache::CreateWaylandWindow (const std::uint32_t & rWidth, const std::uint32_t 
       for (std::uint8_t i{ PATACHE_BORDER_HORIZONTAL_CSD_SIZE };
            i < PATACHE_BORDER_VERTICAL_CSD_SIZE; ++i)
         {
-          Patache::RandomizeFileDescriptorName (shadowFileDescriptorName[i], 128U, fdDist,
-                                                fdGenerator);
+          Patache::RandomizeFileDescriptorName (
+              shadowFileDescriptorName[i], PATACHE_RANDOMIZE_FD_STR_BUFF_SIZE, fdDist, fdGenerator);
 
           std::int32_t shadowFileDescriptor{ shm_open (shadowFileDescriptorName[i],
                                                        O_RDWR | O_CREAT | O_EXCL,
@@ -741,8 +742,8 @@ Patache::CreateWaylandWindow (const std::uint32_t & rWidth, const std::uint32_t 
       // Corner
       for (std::uint8_t i{ PATACHE_BORDER_VERTICAL_CSD_SIZE }; i < PATACHE_BORDER_CSD_SIZE; ++i)
         {
-          Patache::RandomizeFileDescriptorName (shadowFileDescriptorName[i], 128U, fdDist,
-                                                fdGenerator);
+          Patache::RandomizeFileDescriptorName (
+              shadowFileDescriptorName[i], PATACHE_RANDOMIZE_FD_STR_BUFF_SIZE, fdDist, fdGenerator);
 
           std::int32_t shadowFileDescriptor{ shm_open (shadowFileDescriptorName[i],
                                                        O_RDWR | O_CREAT | O_EXCL,

@@ -314,7 +314,7 @@ Patache::Engine::EndRender (SDL_Event & rEvent)
 {
 #if PATACHE_DEBUG == 1
   // Imgui New Frame
-  //ImGui::ShowDemoWindow ();
+  // ImGui::ShowDemoWindow ();
   Patache::DrawDebugUI (this);
   ImGui::Render ();
 

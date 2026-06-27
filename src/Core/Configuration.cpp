@@ -3,7 +3,14 @@
 #include <SDL3/SDL.h>
 #include <fast_io.h>
 #include <fast_io_device.h>
-#include <ryml.hpp>
+#if __clang__
+  #pragma clang diagnostic push
+  #pragma clang diagnostic ignored "-Wnan-infinity-disabled"
+  #include <ryml.hpp>
+  #pragma clang diagnostic pop
+#else
+  #include <ryml.hpp>
+#endif
 
 // Patache Engine
 #include "PatacheEngine/StructConfig.hpp"

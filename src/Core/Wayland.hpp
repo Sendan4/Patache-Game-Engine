@@ -145,8 +145,11 @@ RandomizeFileDescriptorName (char * pFileDescriptorName, std::uint32_t size,
 {
   std::uint32_t id{ rFdDist (rFdGenerator) };
 
-  char buff[64U]{};
-  std::strncpy (buff, pFileDescriptorName, 63U);
+#define PATACHE_RANDOMIZE_FD_STR_BUFF_SIZE_EXTRANULL 1034U
+#define PATACHE_RANDOMIZE_FD_STR_BUFF_SIZE           1033U
+
+  char buff[PATACHE_RANDOMIZE_FD_STR_BUFF_SIZE_EXTRANULL]{};
+  std::strncpy (buff, pFileDescriptorName, size);
 
   std::snprintf (pFileDescriptorName, size, "%s-%d", buff, id);
 }
