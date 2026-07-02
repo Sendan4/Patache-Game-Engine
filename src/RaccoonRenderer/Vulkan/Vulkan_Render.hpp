@@ -18,7 +18,11 @@
 #include "PatacheEngine/PatacheEngine.hpp"
 #include "Vulkan_SetupLog.hpp"
 
-#define PATACHE_ERROR_TEXT_SIZE 128
+namespace Patache
+{
+static constexpr std::uint8_t sErrorTextSize{ 128U };
+static constexpr std::uint8_t sErrorTextSizeExtraNull{ 129U };
+}
 
 #if PATACHE_LINUX_OR_UNIX
 // Input.hpp

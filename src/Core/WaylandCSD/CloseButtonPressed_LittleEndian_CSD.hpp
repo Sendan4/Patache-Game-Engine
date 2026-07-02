@@ -1,6 +1,10 @@
-// ARGB 8888 Format
+#ifndef CLOSEBUTTONPRESSED_LITTLEENDIAN_CSD_HPP
+#define CLOSEBUTTONPRESSED_LITTLEENDIAN_CSD_HPP
 
-static constexpr std::uint32_t sCloseButtonPressedCSD[] = {
+// ARGB 8888 Format
+namespace Patache
+{
+static constexpr std::uint32_t sCloseButtonPressedCSD[]{
   0x00000000, 0xff1c0e0e, 0xff1c0e0e, 0xff1c0e0e, 0xff1c0e0e, 0xff1c0e0e, 0xff1c0e0e, 0xff1c0e0e,
   0xff1c0e0e, 0xff1c0e0e, 0xff1c0e0e, 0xff1c0e0e, 0xff1c0e0e, 0xff1c0e0e, 0xff1c0e0e, 0xff1c0e0e,
   0xff1c0e0e, 0xff1c0e0e, 0xff1c0e0e, 0xff1c0e0e, 0xff1c0e0e, 0xff1c0e0e, 0xff1c0e0e, 0xff1c0e0e,
@@ -63,3 +67,6 @@ static constexpr std::uint32_t sCloseButtonPressedCSD[] = {
   0xff1c0e0e, 0xff1c0e0e, 0xff1c0e0e, 0xff1c0e0e, 0xff1c0e0e, 0xff1c0e0e, 0xff1c0e0e, 0xff1c0e0e,
   0xff1c0e0e, 0xff1c0e0e, 0xff1c0e0e, 0xff1c0e0e, 0xff1c0e0e, 0x00000000
 };
+}
+
+#endif

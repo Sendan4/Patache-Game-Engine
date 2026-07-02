@@ -1,17 +1,18 @@
+#ifndef PATACHERELEASEICON_HPP
+#define PATACHERELEASEICON_HPP
+
 // Release Icon
 // Pixel Format BGRA
 namespace Patache
 {
-namespace Icon
-{
-static constexpr uint8_t  Height        = 64;
-static constexpr uint8_t  Width         = 64;
-static constexpr uint8_t  BytesPerPixel = 4;
-static constexpr uint8_t  Bitdepth      = 32;
-static constexpr uint16_t Pitch         = 256;
+static constexpr std::uint8_t sDefaultIconHeight{ 64U };
+static constexpr std::uint8_t sDefaultIconWidth{ 64U };
+static constexpr std::uint8_t sDefaultIconBytesPerPixel{ 4U };
+static constexpr std::uint8_t sDefaultIconBitdepth{ 32U };
+static constexpr std::uint16_t sDefaultIconPitch{ 256U };
 
 // array size is 65536
-static constexpr std::uint32_t Data[] = {
+static constexpr std::uint32_t sDefaultIcon[] = {
   0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
   0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
   0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
@@ -526,4 +527,5 @@ static constexpr std::uint32_t Data[] = {
   0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000
 };
 }
-}
+
+#endif

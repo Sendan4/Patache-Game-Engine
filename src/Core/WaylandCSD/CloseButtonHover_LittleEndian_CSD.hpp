@@ -1,6 +1,10 @@
-// ARGB 8888 Format
+#ifndef CLOSEBUTTONHOVER_LITTLEENDIAN_CSD_HPP
+#define CLOSEBUTTONHOVER_LITTLEENDIAN_CSD_HPP
 
-static constexpr std::uint32_t sCloseButtonHoverCSD[] = {
+// ARGB 8888 Format
+namespace Patache
+{
+static constexpr std::uint32_t sCloseButtonHoverCSD[]{
   0x00000000, 0xff462828, 0xff462828, 0xff462828, 0xff462828, 0xff462828, 0xff462828, 0xff462828,
   0xff462828, 0xff462828, 0xff462828, 0xff462828, 0xff462828, 0xff462828, 0xff462828, 0xff462828,
   0xff462828, 0xff462828, 0xff462828, 0xff462828, 0xff462828, 0xff462828, 0xff462828, 0xff462828,
@@ -63,3 +67,6 @@ static constexpr std::uint32_t sCloseButtonHoverCSD[] = {
   0xff462828, 0xff462828, 0xff462828, 0xff462828, 0xff462828, 0xff462828, 0xff462828, 0xff462828,
   0xff462828, 0xff462828, 0xff462828, 0xff462828, 0xff462828, 0x00000000
 };
+}
+
+#endif

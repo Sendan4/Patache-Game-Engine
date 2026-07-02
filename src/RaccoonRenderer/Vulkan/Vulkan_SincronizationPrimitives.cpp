@@ -9,8 +9,11 @@
 #include "PatacheEngine/VulkanBackend.hpp"
 #include "Vulkan_SetupLog.hpp"
 
-#define PATACHE_ERROR_TEXT_SIZE           64
-#define PATACHE_ERROR_TEXT_SIZE_EXTRANULL 65
+namespace Patache
+{
+static constexpr std::uint8_t sErrorTextSize{ 64U };
+static constexpr std::uint8_t sErrorTextSizeExtraNull{ 65U };
+}
 
 #include "Vulkan_SincronizationPrimitives.hpp"
 
@@ -47,9 +50,9 @@ Patache::CreateSemaphores (Patache::VulkanBackend & rVulkan)
 
       if (result != VK_SUCCESS)
         {
-          char errorText[PATACHE_ERROR_TEXT_SIZE_EXTRANULL]{};
+          char errorText[Patache::sErrorTextSizeExtraNull]{};
 
-          std::snprintf (errorText, PATACHE_ERROR_TEXT_SIZE,
+          std::snprintf (errorText, Patache::sErrorTextSize,
                          "vkCreateSemaphore() Image Available Semaphore #%.3u", i + 1);
 
           Patache::VulkanCheck (errorText, result);
@@ -63,9 +66,9 @@ Patache::CreateSemaphores (Patache::VulkanBackend & rVulkan)
 
       if (result != VK_SUCCESS)
         {
-          char errorText[PATACHE_ERROR_TEXT_SIZE_EXTRANULL]{ 0 };
+          char errorText[Patache::sErrorTextSizeExtraNull]{};
 
-          std::snprintf (errorText, PATACHE_ERROR_TEXT_SIZE,
+          std::snprintf (errorText, Patache::sErrorTextSize,
                          "vkCreateSemaphore() Image Finished Semaphore #%.3u", i + 1);
 
           Patache::VulkanCheck (errorText, result);
@@ -100,9 +103,9 @@ Patache::CreateFence (Patache::VulkanBackend & rVulkan)
 
       if (result != VK_SUCCESS)
         {
-          char errorText[PATACHE_ERROR_TEXT_SIZE_EXTRANULL]{};
+          char errorText[Patache::sErrorTextSizeExtraNull]{};
 
-          std::snprintf (errorText, PATACHE_ERROR_TEXT_SIZE,
+          std::snprintf (errorText, Patache::sErrorTextSize,
                          "vkCreateFence() In Flight Fence #%.3u", i + 1);
 
           Patache::VulkanCheck (errorText, result);

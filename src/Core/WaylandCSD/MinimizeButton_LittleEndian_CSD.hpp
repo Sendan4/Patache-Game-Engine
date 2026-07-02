@@ -1,8 +1,13 @@
+#ifndef MINIMIZEBUTTON_LITTLEENDIAN_CSD_HPP
+#define MINIMIZEBUTTON_LITTLEENDIAN_CSD_HPP
+
 // ARGB 8888 Format
-#define PATACHE_MINIMIZE_BUTTON_CSD_HEIGHT     18
-#define PATACHE_MINIMIZE_BUTTON_CSD_WIDTH      27
-#define PATACHE_MINIMIZE_BUTTON_CSD_SIZE       1944 // W * H * 4
-#define PATACHE_MINIMIZE_BUTTON_CSD_PIXELCOUNT 486  // W * H
+namespace Patache
+{
+static constexpr std::uint8_t sMinimizeButtonCSDHeight{ 18U };
+static constexpr std::uint8_t sMinimizeButtonCSDWidth{ 27U };
+static constexpr std::uint16_t sMinimizeButtonCSDSize{ 1944U };      // W * H * 4
+static constexpr std::uint16_t sMinimizeButtonCSDPixelCount{ 486U }; // W * H
 
 static constexpr std::uint32_t sMinimizeButtonCSD[] = {
   0x00000000, 0xff433f35, 0xff433f35, 0xff433f35, 0xff433f35, 0xff433f35, 0xff433f35, 0xff433f35,
@@ -67,3 +72,6 @@ static constexpr std::uint32_t sMinimizeButtonCSD[] = {
   0xff433f35, 0xff433f35, 0xff433f35, 0xff433f35, 0xff433f35, 0xff433f35, 0xff433f35, 0xff433f35,
   0xff433f35, 0xff433f35, 0xff433f35, 0xff433f35, 0xff433f35, 0x00000000
 };
+}
+
+#endif

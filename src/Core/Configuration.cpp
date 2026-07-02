@@ -16,8 +16,11 @@
 #include "PatacheEngine/StructConfig.hpp"
 #include "Message.hpp"
 
-#define PATACHE_ERROR_TEXT_SIZE           1024
-#define PATACHE_ERROR_TEXT_SIZE_EXTRANULL 1025
+namespace Patache
+{
+static constexpr std::uint32_t errorTextSize{ 1024U };
+static constexpr std::uint32_t errorTextSizeExtraNull{ 10245 };
+}
 
 #include "Configuration.hpp"
 
@@ -52,9 +55,9 @@ Patache::LoadConfiguration (Patache::Config & rConfiguration)
         }
       else
         {
-          char errorText[PATACHE_ERROR_TEXT_SIZE_EXTRANULL]{};
+          char errorText[Patache::errorTextSizeExtraNull]{};
 
-          std::snprintf (errorText, PATACHE_ERROR_TEXT_SIZE,
+          std::snprintf (errorText, Patache::errorTextSize,
                          "in YAML configure file (%s/config.yaml)\n'patache-engine : "
                          "show-fatal-error-messagebox' must "
                          "be a boolean value (True or False)",
@@ -74,9 +77,9 @@ Patache::LoadConfiguration (Patache::Config & rConfiguration)
         }
       else
         {
-          char errorText[PATACHE_ERROR_TEXT_SIZE_EXTRANULL]{};
+          char errorText[Patache::errorTextSizeExtraNull]{};
 
-          std::snprintf (errorText, PATACHE_ERROR_TEXT_SIZE,
+          std::snprintf (errorText, Patache::errorTextSize,
                          "in YAML configure file (%s/config.yaml)\n'patache-engine : "
                          "raccoon-renderer : vsync' must "
                          "be a boolean value (True or False)",
@@ -97,9 +100,9 @@ Patache::LoadConfiguration (Patache::Config & rConfiguration)
         }
       else
         {
-          char errorText[PATACHE_ERROR_TEXT_SIZE_EXTRANULL]{};
+          char errorText[Patache::errorTextSizeExtraNull]{};
 
-          std::snprintf (errorText, PATACHE_ERROR_TEXT_SIZE,
+          std::snprintf (errorText, Patache::errorTextSize,
                          "in YAML configure file (%s/config.yaml)\n'patache-engine : "
                          "raccoon-renderer : 10bit-depth' must "
                          "be a boolean value (True or False)",
@@ -121,9 +124,9 @@ Patache::LoadConfiguration (Patache::Config & rConfiguration)
         }
       else
         {
-          char errorText[PATACHE_ERROR_TEXT_SIZE_EXTRANULL]{};
+          char errorText[Patache::errorTextSizeExtraNull]{};
 
-          std::snprintf (errorText, PATACHE_ERROR_TEXT_SIZE,
+          std::snprintf (errorText, Patache::errorTextSize,
                          "in YAML configure file (%s/config.yaml)\n'patache-engine : "
                          "raccoon-renderer : add-image-count' must "
                          "be a 8bit unsigned interger (0 - 4)",
@@ -134,9 +137,9 @@ Patache::LoadConfiguration (Patache::Config & rConfiguration)
 
       if (rConfiguration.addImageCount > 4)
         {
-          char errorText[PATACHE_ERROR_TEXT_SIZE_EXTRANULL]{};
+          char errorText[Patache::errorTextSizeExtraNull]{};
 
-          std::snprintf (errorText, PATACHE_ERROR_TEXT_SIZE,
+          std::snprintf (errorText, Patache::errorTextSize,
                          "in YAML configure file (%s/config.yaml)\n'patache-engine : "
                          "raccoon-renderer : add-image-count' The allowed "
                          "range is (0 - 4)",

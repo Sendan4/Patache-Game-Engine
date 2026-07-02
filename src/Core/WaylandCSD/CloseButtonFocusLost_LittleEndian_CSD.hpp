@@ -1,6 +1,10 @@
-// ARGB 8888 Format
+#ifndef CLOSEBUTTONFOCUSLOST_LITTLEENDIAN_CSD_HPP
+#define CLOSEBUTTONFOCUSLOST_LITTLEENDIAN_CSD_HPP
 
-static constexpr std::uint32_t sCloseButtonFocusLostCSD[] = {
+// ARGB 8888 Format
+namespace Patache
+{
+static constexpr std::uint32_t sCloseButtonFocusLostCSD[]{
   0x00000000, 0xff414141, 0xff414141, 0xff414141, 0xff414141, 0xff414141, 0xff414141, 0xff414141,
   0xff414141, 0xff414141, 0xff414141, 0xff414141, 0xff414141, 0xff414141, 0xff414141, 0xff414141,
   0xff414141, 0xff414141, 0xff414141, 0xff414141, 0xff414141, 0xff414141, 0xff414141, 0xff414141,
@@ -63,3 +67,6 @@ static constexpr std::uint32_t sCloseButtonFocusLostCSD[] = {
   0xff414141, 0xff414141, 0xff414141, 0xff414141, 0xff414141, 0xff414141, 0xff414141, 0xff414141,
   0xff414141, 0xff414141, 0xff414141, 0xff414141, 0xff414141, 0x00000000
 };
+}
+
+#endif

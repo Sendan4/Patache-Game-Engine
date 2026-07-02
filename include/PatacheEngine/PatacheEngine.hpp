@@ -1,5 +1,5 @@
-#pragma once
-
+#ifndef PATACHEENGINE_HPP
+#define PATACHEENGINE_HPP
 #include <cstdint>
 #include <cassert>
 
@@ -113,11 +113,11 @@ struct WaylandWindow
   wl_cursor_theme * pCursorTheme{ nullptr };
 };
 
-  /*
-   * CSD Buttons Layout
-   * [MINIMIZE | MAXIMIZE | CLOSE]
-   */
-  #define PATACHE_BUTTON_CSD_SIZE 3U
+/*
+ * CSD Buttons Layout
+ * [MINIMIZE | MAXIMIZE | CLOSE]
+ */
+static constexpr std::uint8_t sButtonCSDSize{ 3U };
 
 enum ButtonIndexCSD : std::uint8_t
 {
@@ -126,20 +126,20 @@ enum ButtonIndexCSD : std::uint8_t
   eClose
 };
 
-  /*
-   * CSD Borders Layout
-   * TOP
-   * BOTTOM
-   * LEFT
-   * RIGHT
-   * TOP LEFT
-   * TOP RIGHT
-   * BOTTOM LEFT
-   * BOTTOM RIGHT
-   */
-  #define PATACHE_BORDER_HORIZONTAL_CSD_SIZE 2U
-  #define PATACHE_BORDER_VERTICAL_CSD_SIZE   4U
-  #define PATACHE_BORDER_CSD_SIZE            8U
+/*
+ * CSD Borders Layout
+ * TOP
+ * BOTTOM
+ * LEFT
+ * RIGHT
+ * TOP LEFT
+ * TOP RIGHT
+ * BOTTOM LEFT
+ * BOTTOM RIGHT
+ */
+static constexpr std::uint8_t sBorderHorizontalCSDSize{ 2U };
+static constexpr std::uint8_t sBorderVerticalCSDSize{ 4U };
+static constexpr std::uint8_t sBorderCSDSize{ 8U };
 
 enum BorderIndexCSD : std::uint8_t
 {
@@ -274,4 +274,5 @@ constexpr std::uint8_t
             return rVariant >> 29U & 0b111111;
           }
           }
+          #endif
           

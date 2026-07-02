@@ -1,4 +1,5 @@
-#pragma once
+#ifndef VULKANBACKEND_HPP
+#define VULKANBACKEND_HPP
 namespace Patache
 {
 struct VulkanBackend
@@ -118,3 +119,4 @@ struct SwapchainInfo
   VkColorSpaceKHR  imageColorSpace;
 };
 }
+#endif

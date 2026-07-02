@@ -23,21 +23,22 @@ Patache::FatalErrorMessage (const char * const pTitle, const char * const pMessa
     }
   else
     {
-      fast_io::io::perrln (PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_BOLD, PATACHE_TERM_COLOR_RED,
-                           "ERROR FATAL : ", PATACHE_TERM_RESET, fast_io::mnp::os_c_str (pMessage));
+      fast_io::io::perrln (PATACHE_FASTIO_BUFFOUT, Patache::sTermBold, Patache::sTermColorRed,
+                           "ERROR FATAL : ", Patache::sTermReset,
+                           fast_io::mnp::os_c_str (pMessage));
     }
 }
 
 void
 Patache::ErrorMessage (const char * const pMessage)
 {
-  fast_io::io::perrln (PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_BOLD, PATACHE_TERM_COLOR_RED,
-                       "ERROR : ", PATACHE_TERM_RESET, fast_io::mnp::os_c_str (pMessage));
+  fast_io::io::perrln (PATACHE_FASTIO_BUFFOUT, Patache::sTermBold, Patache::sTermColorRed,
+                       "ERROR : ", Patache::sTermReset, fast_io::mnp::os_c_str (pMessage));
 }
 
 void
 Patache::WarningMessage (const char * const pMessage)
 {
-  fast_io::io::perrln (PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_BOLD, PATACHE_TERM_COLOR_YELLOW,
-                       "WARNING : ", PATACHE_TERM_RESET, fast_io::mnp::os_c_str (pMessage));
+  fast_io::io::perrln (PATACHE_FASTIO_BUFFOUT, Patache::sTermBold, Patache::sTermColorYellow,
+                       "WARNING : ", Patache::sTermReset, fast_io::mnp::os_c_str (pMessage));
 }

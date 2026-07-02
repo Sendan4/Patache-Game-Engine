@@ -13,8 +13,11 @@
 extern std::uint8_t scaleInt;
 #endif
 
-#define PATACHE_ERROR_TEXT_SIZE           64
-#define PATACHE_ERROR_TEXT_SIZE_EXTRANULL 65
+namespace Patache
+{
+static constexpr std::uint8_t sErrorTextSize{ 64U };
+static constexpr std::uint8_t sErrorTextSizeExtraNull{ 65U };
+}
 
 #include "Vulkan_FrameBuffer.hpp"
 
@@ -55,9 +58,9 @@ Patache::CreateFrameBuffer (Patache::VulkanBackend & rVulkan)
 
       if (result != VK_SUCCESS)
         {
-          char errorText[PATACHE_ERROR_TEXT_SIZE_EXTRANULL]{};
+          char errorText[Patache::sErrorTextSizeExtraNull]{};
 
-          std::snprintf (errorText, PATACHE_ERROR_TEXT_SIZE,
+          std::snprintf (errorText, Patache::sErrorTextSize,
                          "vkCreateFramebuffer() Frame Buffer #%.3u", i + 1);
 
           Patache::VulkanCheck (errorText, result);

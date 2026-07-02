@@ -9,8 +9,11 @@
 #include "PatacheEngine/VulkanBackend.hpp"
 #include "Vulkan_SetupLog.hpp"
 
-#define PATACHE_ERROR_TEXT_SIZE           64
-#define PATACHE_ERROR_TEXT_SIZE_EXTRANULL 64
+namespace Patache
+{
+static constexpr std::uint8_t sErrorTextSize{ 64U };
+static constexpr std::uint8_t sErrorTextSizeExtraNull{ 65U };
+}
 
 #include "Vulkan_ImageView.hpp"
 
@@ -57,9 +60,9 @@ Patache::CreateImageView (Patache::VulkanBackend &       rVulkan,
 
       if (result != VK_SUCCESS)
         {
-          char errorText[PATACHE_ERROR_TEXT_SIZE_EXTRANULL]{};
+          char errorText[Patache::sErrorTextSizeExtraNull]{};
 
-          std::snprintf (errorText, PATACHE_ERROR_TEXT_SIZE,
+          std::snprintf (errorText, Patache::sErrorTextSize,
                          "vkCreateImageView() Color Image View #%.3u", i + 1);
 
           Patache::VulkanCheck (errorText, result);

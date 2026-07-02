@@ -9,50 +9,63 @@
 #include "StartLogInfo.hpp"
 #include "UnitSize.hpp"
 
-// Custom ImGui Styles
-// Vulkan Vendor
-#define PATACHE_IMGUI_INTEL_COLOR          0.314F, 0.759F, 0.950F, 1.0F
-#define PATACHE_IMGUI_AMD_COLOR            1.0F, 0.396F, 0.396F, 1.0F
-#define PATACHE_IMGUI_NVIDIA_COLOR         0.463F, 0.725F, 0.0F, 1.0F
-#define PATACHE_IMGUI_MESA_COLOR           0.844F, 0.867F, 0.870F, 1.0F
-#define PATACHE_IMGUI_UNKNOWN_VENDOR_COLOR 0.640F, 0.646F, 0.646F, 1.0F
+namespace Patache
+{
+// Vendor
+static constexpr ImVec4                  sImGuiIntelColor{ ImVec4 (0.314F, 0.759F, 0.950F, 1.0F) };
+static constexpr ImVec4                  sImGuiAMDColor{ ImVec4 (1.0F, 0.396F, 0.396F, 1.0F) };
+static constexpr ImVec4                  sImGuiNvidiaColor{ ImVec4 (0.463F, 0.725F, 0.0F, 1.0F) };
+static constexpr ImVec4                  sImGuiMesaColor{ ImVec4 (0.844F, 0.867F, 0.870F, 1.0F) };
+[[maybe_unused]] static constexpr ImVec4 sImGuiUnknownColor{ ImVec4 (0.640F, 0.646F, 0.646F,
+                                                                     1.0F) };
 
-// table
-#define PATACHE_IMGUI_TABLE_PADDING     10, 4
-#define PATACHE_IMGUI_TITLE_TABLE_COLOR 0.930F, 0.718F, 0.223F, 1.0F
-#define PATACHE_IMGUI_TABLE_FLAGS                                                                  \
-  ImGuiTableFlags_NoHostExtendX | ImGuiTableFlags_RowBg | ImGuiTableFlags_BordersH                 \
-      | ImGuiTableFlags_BordersV
+// Table
+static constexpr ImVec2                  sImGuiTablePadding{ ImVec2 (10, 4) };
+[[maybe_unused]] static constexpr ImVec4 sImGuiTableTitleColor{ ImVec4 (0.930F, 0.718F, 0.223F,
+                                                                        1.0F) };
+static constexpr ImGuiTableFlags         sImGuiTableFlags{ ImGuiTableFlags_NoHostExtendX
+                                                           | ImGuiTableFlags_RowBg
+                                                           | ImGuiTableFlags_BordersH
+                                                           | ImGuiTableFlags_BordersV };
 
-// Error, Warning and positive values
-#define PATACHE_IMGUI_POSITIVE_VALUE 0.634F, 0.990F, 0.657F, 1.0F
-#define PATACHE_IMGUI_WARNING_VALUE  0.984F, 0.990F, 0.634F, 1.0F
-#define PATACHE_IMGUI_ERROR_VALUE    0.990F, 0.669F, 0.634F, 1.0F
+// Colors -> Positive, Warning, Error
+static constexpr ImVec4 sImGuiPositiveValue{ ImVec4 (0.634F, 0.990F, 0.657F, 1.0F) };
+static constexpr ImVec4 sImGuiWarningValue{ ImVec4 (0.984F, 0.990F, 0.634F, 1.0F) };
+[[maybe_unused]] static constexpr ImVec4 sImGuiErrorValue{ ImVec4 (0.990F, 0.669F, 0.634F, 1.0F) };
 
 // Accent Color
-#define PATACHE_IMGUI_PATACHE_COLOR  0.596F, 0.463F, 0.278F, 1.0F
-#define PATACHE_IMGUI_SELECTED_COLOR 0.868F, 0.663F, 0.380F, 1.0F
-#define PATACHE_IMGUI_DARKER_COLOR   0.353F, 0.267F, 0.153F, 1.0F
+static constexpr ImVec4 sImGuiPatacheColor{ ImVec4 (0.596F, 0.463F, 0.278F, 1.0F) };
+static constexpr ImVec4 sImGuiSelectedColor{ ImVec4 (0.868F, 0.663F, 0.380F, 1.0F) };
+static constexpr ImVec4 sImGuiDarkerColor{ ImVec4 (0.353F, 0.267F, 0.153F, 1.0F) };
 
-// Collapse Header color
-#define PATACHE_IMGUI_INFO_COLOR          0.341F, 0.341F, 0.341F, 1.0F
-#define PATACHE_IMGUI_INFO_DARKER_COLOR   0.200F, 0.200F, 0.200F, 1.0F
-#define PATACHE_IMGUI_INFO_SELECTED_COLOR 0.404F, 0.404F, 0.404F, 1.0F
+// Collapse Header Color
+static constexpr ImVec4 sImGuiCollapseHeaderColor{ ImVec4 (0.341F, 0.341F, 0.341F, 1.0F) };
+static constexpr ImVec4 sImGuiCollapseHeaderDarkerColor{ ImVec4 (0.200F, 0.200F, 0.200F, 1.0F) };
+static constexpr ImVec4 sImGuiCollapseHeaderSelectedColor{ ImVec4 (0.404F, 0.404F, 0.404F, 1.0F) };
 
-#define PATACHE_IMGUI_CORNERBORDER_COLOR 1.0F, 1.0F, 1.0F, 1.0F
-#define PATACHE_IMGUI_FRAMEBG_COLOR                                                                \
-  0.21176470588235294F, 0.1803921568627451F, 0.12549019607843137F, 1.0F
-#define PATACHE_IMGUI_FRAMEBG_HOVERED_COLOR                                                        \
-  0.36470588235294116F, 0.28627450980392155F, 0.1450980392156863F, 1.0F
-#define PATACHE_IMGUI_FRAMEBG_ACTIVE_COLOR                                                         \
-  0.5372549019607843F, 0.4235294117647059F, 0.21568627450980393F, 1.0F
-#define PATACHE_IMGUI_CHECKMARK_COLOR                                                              \
-  0.9647058823529412F, 0.7568627450980392F, 0.3803921568627451F, 1.0F
-#define PATACHE_IMGUI_SLIDERGRAB_COLOR                                                             \
-  0.8156862745098039F, 0.6392156862745098F, 0.3176470588235294F, 1.0F
-#define PATACHE_IMGUI_SLIDERGRABACTIVE_COLOR                                                       \
-  0.8941176470588236F, 0.6980392156862745F, 0.3411764705882353F, 1.0F
-#define PATACHE_IMGUI_NONE 0.0F, 0.0F, 0.0F, 1.0F
+// Corner Border
+static constexpr ImVec4 sImGuiCornerBorderColor{ ImVec4 (1.0F, 1.0F, 1.0F, 1.0F) };
+
+// FrameBG
+static constexpr ImVec4 sImGuiFrameBGColor{ ImVec4 (0.21176470588235294F, 0.1803921568627451F,
+                                                    0.12549019607843137F, 1.0F) };
+static constexpr ImVec4 sImGuiFrameBGHoveredColor{ ImVec4 (
+    0.36470588235294116F, 0.28627450980392155F, 0.1450980392156863F, 1.0F) };
+static constexpr ImVec4 sImGuiFrameBGActiveColor{ ImVec4 (0.5372549019607843F, 0.4235294117647059F,
+                                                          0.21568627450980393F, 1.0F) };
+
+// Chec kMark
+static constexpr ImVec4 sImGuiCheckMarkColor{ ImVec4 (0.9647058823529412F, 0.7568627450980392F,
+                                                      0.3803921568627451F, 1.0F) };
+
+// Slider Grab
+static constexpr ImVec4 sImGuiSliderGrabColor{ ImVec4 (0.8156862745098039F, 0.6392156862745098F,
+                                                       0.3176470588235294F, 1.0F) };
+static constexpr ImVec4 sImGuiSliderGrabActiveColor{ ImVec4 (
+    0.8941176470588236F, 0.6980392156862745F, 0.3411764705882353F, 1.0F) };
+
+[[maybe_unused]] static constexpr ImVec4 sImGuiNoneColor{ ImVec4 (0.0F, 0.0F, 0.0F, 1.0F) };
+}
 
 #include "DebugUI.hpp"
 
@@ -60,36 +73,37 @@ void
 Patache::DrawDebugUI (Patache::Engine * const pEngine)
 {
   // Patache Style
-  ImGui::GetStyle ().Colors[ImGuiCol_TitleBgActive] = ImVec4 (PATACHE_IMGUI_PATACHE_COLOR);
+  ImGui::GetStyle ().Colors[ImGuiCol_TitleBgActive] = ImVec4 (Patache::sImGuiPatacheColor);
 
-  ImGui::GetStyle ().Colors[ImGuiCol_ResizeGrip]        = ImVec4 (PATACHE_IMGUI_PATACHE_COLOR);
-  ImGui::GetStyle ().Colors[ImGuiCol_ResizeGripActive]  = ImVec4 (PATACHE_IMGUI_PATACHE_COLOR);
-  ImGui::GetStyle ().Colors[ImGuiCol_ResizeGripHovered] = ImVec4 (PATACHE_IMGUI_SELECTED_COLOR);
+  ImGui::GetStyle ().Colors[ImGuiCol_ResizeGrip]        = ImVec4 (Patache::sImGuiPatacheColor);
+  ImGui::GetStyle ().Colors[ImGuiCol_ResizeGripActive]  = ImVec4 (Patache::sImGuiPatacheColor);
+  ImGui::GetStyle ().Colors[ImGuiCol_ResizeGripHovered] = ImVec4 (Patache::sImGuiSelectedColor);
 
-  ImGui::GetStyle ().Colors[ImGuiCol_SeparatorHovered] = ImVec4 (PATACHE_IMGUI_CORNERBORDER_COLOR);
-  ImGui::GetStyle ().Colors[ImGuiCol_SeparatorActive]  = ImVec4 (PATACHE_IMGUI_CORNERBORDER_COLOR);
+  ImGui::GetStyle ().Colors[ImGuiCol_SeparatorHovered] = ImVec4 (Patache::sImGuiCornerBorderColor);
+  ImGui::GetStyle ().Colors[ImGuiCol_SeparatorActive]  = ImVec4 (Patache::sImGuiCornerBorderColor);
 
-  ImGui::GetStyle ().Colors[ImGuiCol_Tab]         = ImVec4 (PATACHE_IMGUI_DARKER_COLOR);
-  ImGui::GetStyle ().Colors[ImGuiCol_TabSelected] = ImVec4 (PATACHE_IMGUI_PATACHE_COLOR);
-  ImGui::GetStyle ().Colors[ImGuiCol_TabHovered]  = ImVec4 (PATACHE_IMGUI_SELECTED_COLOR);
+  ImGui::GetStyle ().Colors[ImGuiCol_Tab]         = ImVec4 (Patache::sImGuiDarkerColor);
+  ImGui::GetStyle ().Colors[ImGuiCol_TabSelected] = ImVec4 (Patache::sImGuiPatacheColor);
+  ImGui::GetStyle ().Colors[ImGuiCol_TabHovered]  = ImVec4 (Patache::sImGuiSelectedColor);
 
-  ImGui::GetStyle ().Colors[ImGuiCol_Button]        = ImVec4 (PATACHE_IMGUI_PATACHE_COLOR);
-  ImGui::GetStyle ().Colors[ImGuiCol_ButtonHovered] = ImVec4 (PATACHE_IMGUI_SELECTED_COLOR);
-  ImGui::GetStyle ().Colors[ImGuiCol_ButtonActive]  = ImVec4 (PATACHE_IMGUI_DARKER_COLOR);
+  ImGui::GetStyle ().Colors[ImGuiCol_Button]        = ImVec4 (Patache::sImGuiPatacheColor);
+  ImGui::GetStyle ().Colors[ImGuiCol_ButtonHovered] = ImVec4 (Patache::sImGuiSelectedColor);
+  ImGui::GetStyle ().Colors[ImGuiCol_ButtonActive]  = ImVec4 (Patache::sImGuiDarkerColor);
 
-  ImGui::GetStyle ().Colors[ImGuiCol_Header]        = ImVec4 (PATACHE_IMGUI_INFO_DARKER_COLOR);
-  ImGui::GetStyle ().Colors[ImGuiCol_HeaderActive]  = ImVec4 (PATACHE_IMGUI_INFO_COLOR);
-  ImGui::GetStyle ().Colors[ImGuiCol_HeaderHovered] = ImVec4 (PATACHE_IMGUI_INFO_SELECTED_COLOR);
+  ImGui::GetStyle ().Colors[ImGuiCol_Header] = ImVec4 (Patache::sImGuiCollapseHeaderDarkerColor);
+  ImGui::GetStyle ().Colors[ImGuiCol_HeaderActive] = ImVec4 (Patache::sImGuiCollapseHeaderColor);
+  ImGui::GetStyle ().Colors[ImGuiCol_HeaderHovered]
+      = ImVec4 (Patache::sImGuiCollapseHeaderSelectedColor);
 
-  ImGui::GetStyle ().Colors[ImGuiCol_FrameBg]        = ImVec4 (PATACHE_IMGUI_FRAMEBG_COLOR);
-  ImGui::GetStyle ().Colors[ImGuiCol_FrameBgHovered] = ImVec4 (PATACHE_IMGUI_FRAMEBG_HOVERED_COLOR);
-  ImGui::GetStyle ().Colors[ImGuiCol_FrameBgActive]  = ImVec4 (PATACHE_IMGUI_FRAMEBG_ACTIVE_COLOR);
+  ImGui::GetStyle ().Colors[ImGuiCol_FrameBg]        = ImVec4 (Patache::sImGuiFrameBGColor);
+  ImGui::GetStyle ().Colors[ImGuiCol_FrameBgHovered] = ImVec4 (Patache::sImGuiFrameBGHoveredColor);
+  ImGui::GetStyle ().Colors[ImGuiCol_FrameBgActive]  = ImVec4 (Patache::sImGuiFrameBGActiveColor);
 
-  ImGui::GetStyle ().Colors[ImGuiCol_CheckMark] = ImVec4 (PATACHE_IMGUI_CHECKMARK_COLOR);
+  ImGui::GetStyle ().Colors[ImGuiCol_CheckMark] = ImVec4 (Patache::sImGuiCheckMarkColor);
 
-  ImGui::GetStyle ().Colors[ImGuiCol_SliderGrab] = ImVec4 (PATACHE_IMGUI_SLIDERGRAB_COLOR);
+  ImGui::GetStyle ().Colors[ImGuiCol_SliderGrab] = ImVec4 (Patache::sImGuiSliderGrabColor);
   ImGui::GetStyle ().Colors[ImGuiCol_SliderGrabActive]
-      = ImVec4 (PATACHE_IMGUI_SLIDERGRABACTIVE_COLOR);
+      = ImVec4 (Patache::sImGuiSliderGrabActiveColor);
   // End Patache Style
 
   // Menu Bar
@@ -131,7 +145,7 @@ Patache::DrawDebugUI (Patache::Engine * const pEngine)
           ImGui::EndMainMenuBar ();
         }
 
-      ImGui::GetStyle ().Colors[ImGuiCol_Button] = ImVec4 (PATACHE_IMGUI_PATACHE_COLOR);
+      ImGui::GetStyle ().Colors[ImGuiCol_Button] = ImVec4 (Patache::sImGuiPatacheColor);
     }
   // End Menu Bar
 
@@ -142,7 +156,7 @@ Patache::DrawDebugUI (Patache::Engine * const pEngine)
 
       ImGui::Begin (PATACHE_ENGINE_NAME, &pEngine->debugInfo.infoWindow);
 
-      ImGui::PushStyleVar (ImGuiStyleVar_CellPadding, ImVec2 (PATACHE_IMGUI_TABLE_PADDING));
+      ImGui::PushStyleVar (ImGuiStyleVar_CellPadding, ImVec2 (Patache::sImGuiTablePadding));
 
       // Basic info
 #if defined(PATACHE_ENGINE_VERSION)
@@ -177,23 +191,23 @@ Patache::DrawDebugUI (Patache::Engine * const pEngine)
           if constexpr (PATACHE_GIT_DIRTY)
             {
               ImGui::SameLine ();
-              ImGui::TextColored (ImVec4 (PATACHE_IMGUI_WARNING_VALUE), "Dirty");
+              ImGui::TextColored (ImVec4 (Patache::sImGuiWarningValue), "Dirty");
             }
           else
             {
               ImGui::SameLine ();
-              ImGui::TextColored (ImVec4 (PATACHE_IMGUI_POSITIVE_VALUE), "Clean");
+              ImGui::TextColored (ImVec4 (Patache::sImGuiPositiveValue), "Clean");
             }
 
           if constexpr (PATACHE_GIT_STAGE)
             {
               ImGui::SameLine ();
-              ImGui::TextColored (ImVec4 (PATACHE_IMGUI_WARNING_VALUE), "In stage area");
+              ImGui::TextColored (ImVec4 (Patache::sImGuiWarningValue), "In stage area");
             }
           else
             {
               ImGui::SameLine ();
-              ImGui::TextColored (ImVec4 (PATACHE_IMGUI_POSITIVE_VALUE), "Off Stage");
+              ImGui::TextColored (ImVec4 (Patache::sImGuiPositiveValue), "Off Stage");
             }
 
           ImGui::Spacing ();
@@ -363,7 +377,7 @@ Patache::DrawDebugUI (Patache::Engine * const pEngine)
 
       ImGui::Begin ("Raccoon Renderer", &pEngine->debugInfo.raccoonRendererInfoWindow);
 
-      ImGui::PushStyleVar (ImGuiStyleVar_CellPadding, ImVec2 (PATACHE_IMGUI_TABLE_PADDING));
+      ImGui::PushStyleVar (ImGuiStyleVar_CellPadding, ImVec2 (Patache::sImGuiTablePadding));
 
       // Only vulkan for now. OpenGL as compability option maybe in the future
       ImGui::Text ("Vulkan %s", pEngine->debugInfo.versionVK);
@@ -386,22 +400,22 @@ Patache::DrawDebugUI (Patache::Engine * const pEngine)
           switch (pEngine->debugInfo.deviceVendorIdVK)
             {
             case 32902:
-              ImGui::TextColored (ImVec4 (PATACHE_IMGUI_INTEL_COLOR), "%s",
+              ImGui::TextColored (ImVec4 (Patache::sImGuiIntelColor), "%s",
                                   pEngine->debugInfo.deviceNameVK);
               break;
 
             case 4098:
-              ImGui::TextColored (ImVec4 (PATACHE_IMGUI_AMD_COLOR), "%s",
+              ImGui::TextColored (ImVec4 (Patache::sImGuiAMDColor), "%s",
                                   pEngine->debugInfo.deviceNameVK);
               break;
 
             case 4318:
-              ImGui::TextColored (ImVec4 (PATACHE_IMGUI_NVIDIA_COLOR), "%s",
+              ImGui::TextColored (ImVec4 (Patache::sImGuiNvidiaColor), "%s",
                                   pEngine->debugInfo.deviceNameVK);
               break;
 
             case 65541:
-              ImGui::TextColored (ImVec4 (PATACHE_IMGUI_MESA_COLOR), "%s",
+              ImGui::TextColored (ImVec4 (Patache::sImGuiMesaColor), "%s",
                                   pEngine->debugInfo.deviceNameVK);
               break;
 
@@ -424,19 +438,19 @@ Patache::DrawDebugUI (Patache::Engine * const pEngine)
               switch (pEngine->debugInfo.deviceVendorIdVK)
                 {
                 case 32902:
-                  ImGui::TextColored (ImVec4 (PATACHE_IMGUI_INTEL_COLOR), "Intel");
+                  ImGui::TextColored (ImVec4 (Patache::sImGuiIntelColor), "Intel");
                   break;
 
                 case 4098:
-                  ImGui::TextColored (ImVec4 (PATACHE_IMGUI_AMD_COLOR), "AMD");
+                  ImGui::TextColored (ImVec4 (Patache::sImGuiAMDColor), "AMD");
                   break;
 
                 case 4318:
-                  ImGui::TextColored (ImVec4 (PATACHE_IMGUI_NVIDIA_COLOR), "Nvidia");
+                  ImGui::TextColored (ImVec4 (Patache::sImGuiNvidiaColor), "Nvidia");
                   break;
 
                 case 65541:
-                  ImGui::TextColored (ImVec4 (PATACHE_IMGUI_MESA_COLOR), "Mesa");
+                  ImGui::TextColored (ImVec4 (Patache::sImGuiMesaColor), "Mesa");
                   break;
 
                 default:
@@ -451,25 +465,25 @@ Patache::DrawDebugUI (Patache::Engine * const pEngine)
               switch (pEngine->debugInfo.deviceVendorIdVK)
                 {
                 case 32902:
-                  ImGui::TextColored (ImVec4 (PATACHE_IMGUI_INTEL_COLOR), "%u 0x%X",
+                  ImGui::TextColored (ImVec4 (Patache::sImGuiIntelColor), "%u 0x%X",
                                       pEngine->debugInfo.deviceVendorIdVK,
                                       pEngine->debugInfo.deviceVendorIdVK);
                   break;
 
                 case 4098:
-                  ImGui::TextColored (ImVec4 (PATACHE_IMGUI_AMD_COLOR), "%u 0x%X",
+                  ImGui::TextColored (ImVec4 (Patache::sImGuiAMDColor), "%u 0x%X",
                                       pEngine->debugInfo.deviceVendorIdVK,
                                       pEngine->debugInfo.deviceVendorIdVK);
                   break;
 
                 case 4318:
-                  ImGui::TextColored (ImVec4 (PATACHE_IMGUI_NVIDIA_COLOR), "%u 0x%X",
+                  ImGui::TextColored (ImVec4 (Patache::sImGuiNvidiaColor), "%u 0x%X",
                                       pEngine->debugInfo.deviceVendorIdVK,
                                       pEngine->debugInfo.deviceVendorIdVK);
                   break;
 
                 case 65541:
-                  ImGui::TextColored (ImVec4 (PATACHE_IMGUI_MESA_COLOR), "%u 0x%X",
+                  ImGui::TextColored (ImVec4 (Patache::sImGuiMesaColor), "%u 0x%X",
                                       pEngine->debugInfo.deviceVendorIdVK,
                                       pEngine->debugInfo.deviceVendorIdVK);
                   break;
@@ -494,7 +508,7 @@ Patache::DrawDebugUI (Patache::Engine * const pEngine)
 #endif
         {
           // vulkan Instance Extensions list
-          if (ImGui::BeginTable ("INSTANCE##VkInstanceList", 1, PATACHE_IMGUI_TABLE_FLAGS))
+          if (ImGui::BeginTable ("INSTANCE##VkInstanceList", 1, Patache::sImGuiTableFlags))
             {
               ImGui::TableSetupColumn ("INSTANCE", ImGuiTableColumnFlags_WidthFixed);
               ImGui::TableHeadersRow ();
@@ -513,7 +527,7 @@ Patache::DrawDebugUI (Patache::Engine * const pEngine)
           ImGui::SameLine ();
 
           // vulkan Device Extensions List
-          if (ImGui::BeginTable ("DEVICE##VkDeviceList", 1, PATACHE_IMGUI_TABLE_FLAGS))
+          if (ImGui::BeginTable ("DEVICE##VkDeviceList", 1, Patache::sImGuiTableFlags))
             {
               ImGui::TableSetupColumn ("DEVICE", ImGuiTableColumnFlags_WidthFixed);
               ImGui::TableHeadersRow ();
@@ -531,7 +545,7 @@ Patache::DrawDebugUI (Patache::Engine * const pEngine)
 
             // vulkan Layers List
 #if defined(PATACHE_USE_VVL)
-          if (ImGui::BeginTable ("LAYERS##VkLayerList", 1, PATACHE_IMGUI_TABLE_FLAGS))
+          if (ImGui::BeginTable ("LAYERS##VkLayerList", 1, Patache::sImGuiTableFlags))
             {
               ImGui::TableSetupColumn ("LAYER", ImGuiTableColumnFlags_WidthFixed);
               ImGui::TableHeadersRow ();
@@ -653,7 +667,7 @@ Patache::DrawDebugUI (Patache::Engine * const pEngine)
       // Queues in use
       if (ImGui::CollapsingHeader ("DEVICE QUEUES"))
         {
-          if (ImGui::BeginTable ("Queues##AboutQueues", 3, PATACHE_IMGUI_TABLE_FLAGS))
+          if (ImGui::BeginTable ("Queues##AboutQueues", 3, Patache::sImGuiTableFlags))
             {
               ImGui::TableSetupColumn ("INDEX", ImGuiTableColumnFlags_WidthFixed);
               ImGui::TableSetupColumn ("FAMILY PROPERTIES", ImGuiTableColumnFlags_WidthFixed);
@@ -726,19 +740,19 @@ Patache::DrawDebugUI (Patache::Engine * const pEngine)
           switch (pEngine->debugInfo.deviceVendorIdVK)
             {
             case 32902:
-              ImGui::TextColored (ImVec4 (PATACHE_IMGUI_INTEL_COLOR), "%s",
+              ImGui::TextColored (ImVec4 (Patache::sImGuiIntelColor), "%s",
                                   pEngine->debugInfo.driverNameVK);
               break;
             case 4098:
-              ImGui::TextColored (ImVec4 (PATACHE_IMGUI_AMD_COLOR), "%s",
+              ImGui::TextColored (ImVec4 (Patache::sImGuiAMDColor), "%s",
                                   pEngine->debugInfo.driverNameVK);
               break;
             case 4318:
-              ImGui::TextColored (ImVec4 (PATACHE_IMGUI_NVIDIA_COLOR), "%s",
+              ImGui::TextColored (ImVec4 (Patache::sImGuiNvidiaColor), "%s",
                                   pEngine->debugInfo.driverNameVK);
               break;
             case 65541:
-              ImGui::TextColored (ImVec4 (PATACHE_IMGUI_MESA_COLOR), "%s",
+              ImGui::TextColored (ImVec4 (Patache::sImGuiMesaColor), "%s",
                                   pEngine->debugInfo.driverNameVK);
               break;
 
@@ -784,13 +798,13 @@ Patache::DrawDebugUI (Patache::Engine * const pEngine)
               ImGui::Text ("SWAPCHAIN PRESENT MODE :");
               ImGui::SameLine ();
               ImGui::TextColored (
-                  ImVec4 (PATACHE_IMGUI_POSITIVE_VALUE), "%s",
+                  ImVec4 (Patache::sImGuiPositiveValue), "%s",
                   string_VkPresentModeKHR (pEngine->debugInfo.swapchainPresentModeVK));
               ImGui::EndGroup ();
 
               if (ImGui::BeginItemTooltip ())
                 {
-                  ImGui::TextColored (ImVec4 (PATACHE_IMGUI_POSITIVE_VALUE),
+                  ImGui::TextColored (ImVec4 (Patache::sImGuiPositiveValue),
                                       "Vertical sync Active");
                   ImGui::EndTooltip ();
                 }
@@ -801,13 +815,13 @@ Patache::DrawDebugUI (Patache::Engine * const pEngine)
               ImGui::Text ("SWAPCHAIN PRESENT MODE :");
               ImGui::SameLine ();
               ImGui::TextColored (
-                  ImVec4 (PATACHE_IMGUI_WARNING_VALUE), "%s",
+                  ImVec4 (Patache::sImGuiWarningValue), "%s",
                   string_VkPresentModeKHR (pEngine->debugInfo.swapchainPresentModeVK));
               ImGui::EndGroup ();
 
               if (ImGui::BeginItemTooltip ())
                 {
-                  ImGui::TextColored (ImVec4 (PATACHE_IMGUI_WARNING_VALUE),
+                  ImGui::TextColored (ImVec4 (Patache::sImGuiWarningValue),
                                       "Vertical sync Inactve");
                   ImGui::EndTooltip ();
                 }
@@ -904,7 +918,7 @@ Patache::DrawDebugUI (Patache::Engine * const pEngine)
   if (pEngine->debugInfo.configWindow)
     {
       ImGui::Begin ("Configuration##ConfigView", &pEngine->debugInfo.configWindow);
-      ImGui::TextColored (ImVec4 (PATACHE_IMGUI_WARNING_VALUE), "Danger Zone");
+      ImGui::TextColored (ImVec4 (Patache::sImGuiWarningValue), "Danger Zone");
 
       // Show Fatal Error MessageBox
       if (ImGui::Checkbox ("Show Fatal Error "

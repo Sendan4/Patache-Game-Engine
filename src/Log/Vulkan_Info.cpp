@@ -24,8 +24,8 @@
 void
 Patache::VulkanInfo (Patache::Engine * const pEngine, const Patache::SwapchainInfo & rSwapchainInfo)
 {
-  fast_io::io::println (PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_BOLD, PATACHE_TERM_COLOR_PATACHE,
-                        "Raccoon Renderer ", PATACHE_TERM_RESET, "INFO");
+  fast_io::io::println (PATACHE_FASTIO_BUFFOUT, Patache::sTermBold, Patache::sTermColorPatache,
+                        "Raccoon Renderer ", Patache::sTermReset, "INFO");
 
   VkPhysicalDeviceDriverProperties driver{ .sType
                                            = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DRIVER_PROPERTIES,
@@ -143,41 +143,41 @@ END_CHECK_SIZE_UNIT:
 
   // =================== Vulkan Version ===========================
   fast_io::io::println (
-      PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_BOLD, fast_io::mnp::right ("Vulkan Version : ", 19U),
-      PATACHE_TERM_RESET, VK_VERSION_MAJOR (physicalDeviceProperties.properties.apiVersion), ".",
+      PATACHE_FASTIO_BUFFOUT, Patache::sTermBold, fast_io::mnp::right ("Vulkan Version : ", 19U),
+      Patache::sTermReset, VK_VERSION_MAJOR (physicalDeviceProperties.properties.apiVersion), ".",
       VK_VERSION_MINOR (physicalDeviceProperties.properties.apiVersion), ".",
       VK_VERSION_PATCH (physicalDeviceProperties.properties.apiVersion), ".",
       VK_API_VERSION_VARIANT (physicalDeviceProperties.properties.apiVersion), " | ",
-      PATACHE_TERM_BOLD, "In Use ", PATACHE_TERM_RESET, VK_VERSION_MAJOR (VK_API_VERSION_1_2), ".",
-      VK_VERSION_MINOR (VK_API_VERSION_1_2), "\n");
+      Patache::sTermBold, "In Use ", Patache::sTermReset, VK_VERSION_MAJOR (VK_API_VERSION_1_2),
+      ".", VK_VERSION_MINOR (VK_API_VERSION_1_2), "\n");
 
   // =================== Device ===================================
-  fast_io::io::println (PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_BOLD,
-                        fast_io::mnp::right ("Device", 8U), PATACHE_TERM_RESET);
+  fast_io::io::println (PATACHE_FASTIO_BUFFOUT, Patache::sTermBold,
+                        fast_io::mnp::right ("Device", 8U), Patache::sTermReset);
 
   // =================== Device Name ==============================
   {
-    fast_io::io::print (PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_BOLD,
-                        fast_io::mnp::right ("Name : ", 11U), PATACHE_TERM_RESET);
+    fast_io::io::print (PATACHE_FASTIO_BUFFOUT, Patache::sTermBold,
+                        fast_io::mnp::right ("Name : ", 11U), Patache::sTermReset);
 
     switch (physicalDeviceProperties.properties.vendorID)
       {
       case 32902:
-        fast_io::io::print (PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_COLOR_BLUE);
+        fast_io::io::print (PATACHE_FASTIO_BUFFOUT, Patache::sTermColorBlue);
         break;
 
       case 4098:
-        fast_io::io::print (PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_COLOR_RED);
+        fast_io::io::print (PATACHE_FASTIO_BUFFOUT, Patache::sTermColorRed);
         break;
 
       case 4318:
-        fast_io::io::print (PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_COLOR_GREEN);
+        fast_io::io::print (PATACHE_FASTIO_BUFFOUT, Patache::sTermColorGreen);
         break;
       }
 
     fast_io::io::println (PATACHE_FASTIO_BUFFOUT,
                           fast_io::mnp::os_c_str (physicalDeviceProperties.properties.deviceName),
-                          PATACHE_TERM_RESET);
+                          Patache::sTermReset);
   }
 
   // =================== Device Vendor ============================
@@ -207,30 +207,30 @@ END_CHECK_SIZE_UNIT:
         break;
       }
 
-    fast_io::io::print (PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_BOLD,
-                        fast_io::mnp::right ("Vendor : ", 13U), PATACHE_TERM_RESET);
+    fast_io::io::print (PATACHE_FASTIO_BUFFOUT, Patache::sTermBold,
+                        fast_io::mnp::right ("Vendor : ", 13U), Patache::sTermReset);
 
     // String Vendor
     switch (physicalDeviceProperties.properties.vendorID)
       {
       case 32902:
-        fast_io::io::print (PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_COLOR_BLUE,
-                            fast_io::mnp::os_c_str (pVendor), PATACHE_TERM_RESET);
+        fast_io::io::print (PATACHE_FASTIO_BUFFOUT, Patache::sTermColorBlue,
+                            fast_io::mnp::os_c_str (pVendor), Patache::sTermReset);
         break;
 
       case 4098:
-        fast_io::io::print (PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_COLOR_RED,
-                            fast_io::mnp::os_c_str (pVendor), PATACHE_TERM_RESET);
+        fast_io::io::print (PATACHE_FASTIO_BUFFOUT, Patache::sTermColorRed,
+                            fast_io::mnp::os_c_str (pVendor), Patache::sTermReset);
         break;
 
       case 4318:
-        fast_io::io::print (PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_COLOR_GREEN,
-                            fast_io::mnp::os_c_str (pVendor), PATACHE_TERM_RESET);
+        fast_io::io::print (PATACHE_FASTIO_BUFFOUT, Patache::sTermColorGreen,
+                            fast_io::mnp::os_c_str (pVendor), Patache::sTermReset);
         break;
 
       case 65541:
-        fast_io::io::print (PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_COLOR_GRAY1,
-                            fast_io::mnp::os_c_str (pVendor), PATACHE_TERM_RESET);
+        fast_io::io::print (PATACHE_FASTIO_BUFFOUT, Patache::sTermColorGray1,
+                            fast_io::mnp::os_c_str (pVendor), Patache::sTermReset);
         break;
 
       default:
@@ -239,97 +239,97 @@ END_CHECK_SIZE_UNIT:
       }
 
     // Hexadecimal VendorID
-    fast_io::io::print (PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_DIM, PATACHE_TERM_COLOR_GRAY0,
-                        " | [Hexadecimal] ", PATACHE_TERM_RESET);
+    fast_io::io::print (PATACHE_FASTIO_BUFFOUT, Patache::sTermDim, Patache::sTermColorGray0,
+                        " | [Hexadecimal] ", Patache::sTermReset);
 
     switch (physicalDeviceProperties.properties.vendorID)
       {
       case 32902:
-        fast_io::io::print (PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_COLOR_BLUE);
+        fast_io::io::print (PATACHE_FASTIO_BUFFOUT, Patache::sTermColorBlue);
         break;
 
       case 4098:
-        fast_io::io::print (PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_COLOR_RED);
+        fast_io::io::print (PATACHE_FASTIO_BUFFOUT, Patache::sTermColorRed);
         break;
 
       case 4318:
-        fast_io::io::print (PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_COLOR_GREEN);
+        fast_io::io::print (PATACHE_FASTIO_BUFFOUT, Patache::sTermColorGreen);
         break;
       }
 
     fast_io::io::print (PATACHE_FASTIO_BUFFOUT,
                         fast_io::mnp::hex (physicalDeviceProperties.properties.vendorID),
-                        PATACHE_TERM_RESET, " ");
+                        Patache::sTermReset, " ");
 
     // Decimal VendorID
-    fast_io::io::print (PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_DIM, PATACHE_TERM_COLOR_GRAY0,
-                        "| [Decimal] ", PATACHE_TERM_RESET);
+    fast_io::io::print (PATACHE_FASTIO_BUFFOUT, Patache::sTermDim, Patache::sTermColorGray0,
+                        "| [Decimal] ", Patache::sTermReset);
 
     switch (physicalDeviceProperties.properties.vendorID)
       {
       case 32902:
-        fast_io::io::print (PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_COLOR_BLUE);
+        fast_io::io::print (PATACHE_FASTIO_BUFFOUT, Patache::sTermColorBlue);
         break;
 
       case 4098:
-        fast_io::io::print (PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_COLOR_RED);
+        fast_io::io::print (PATACHE_FASTIO_BUFFOUT, Patache::sTermColorRed);
         break;
 
       case 4318:
-        fast_io::io::print (PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_COLOR_GREEN);
+        fast_io::io::print (PATACHE_FASTIO_BUFFOUT, Patache::sTermColorGreen);
         break;
       }
     fast_io::io::println (PATACHE_FASTIO_BUFFOUT, physicalDeviceProperties.properties.vendorID,
-                          PATACHE_TERM_RESET);
+                          Patache::sTermReset);
   }
 
   // =================== Device Type ==============================
   // Device Type
-  fast_io::io::println (PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_BOLD,
-                        fast_io::mnp::right ("Type : ", 11U), PATACHE_TERM_RESET,
+  fast_io::io::println (PATACHE_FASTIO_BUFFOUT, Patache::sTermBold,
+                        fast_io::mnp::right ("Type : ", 11U), Patache::sTermReset,
                         fast_io::mnp::os_c_str (string_VkPhysicalDeviceType (
                             physicalDeviceProperties.properties.deviceType)));
 
   // =================== Device Vram Size =========================
-  fast_io::io::println (PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_RESET, PATACHE_TERM_BOLD,
-                        fast_io::mnp::right ("Vram Size : ", 16U), PATACHE_TERM_RESET, vramSize,
+  fast_io::io::println (PATACHE_FASTIO_BUFFOUT, Patache::sTermReset, Patache::sTermBold,
+                        fast_io::mnp::right ("Vram Size : ", 16U), Patache::sTermReset, vramSize,
                         " ", fast_io::mnp::os_c_str (vramSizeUnit), "\n");
 
   // =================== Driver ===================================
-  fast_io::io::println (PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_BOLD,
-                        fast_io::mnp::right ("Driver", 8U), PATACHE_TERM_RESET);
+  fast_io::io::println (PATACHE_FASTIO_BUFFOUT, Patache::sTermBold,
+                        fast_io::mnp::right ("Driver", 8U), Patache::sTermReset);
 
   // =================== Driver Name ==============================
 
-  fast_io::io::println (PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_BOLD,
-                        fast_io::mnp::right ("Name : ", 11U), PATACHE_TERM_RESET,
+  fast_io::io::println (PATACHE_FASTIO_BUFFOUT, Patache::sTermBold,
+                        fast_io::mnp::right ("Name : ", 11U), Patache::sTermReset,
                         fast_io::mnp::os_c_str (driver.driverName));
 
   // =================== Driver ID ================================
-  fast_io::io::println (PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_BOLD,
-                        fast_io::mnp::right ("ID : ", 9U), PATACHE_TERM_RESET,
+  fast_io::io::println (PATACHE_FASTIO_BUFFOUT, Patache::sTermBold,
+                        fast_io::mnp::right ("ID : ", 9U), Patache::sTermReset,
                         fast_io::mnp::os_c_str (string_VkDriverId (driver.driverID)));
 
   // =================== Driver Info ==============================
-  fast_io::io::println (PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_BOLD,
-                        fast_io::mnp::right ("Info : ", 11U), PATACHE_TERM_RESET,
+  fast_io::io::println (PATACHE_FASTIO_BUFFOUT, Patache::sTermBold,
+                        fast_io::mnp::right ("Info : ", 11U), Patache::sTermReset,
                         fast_io::mnp::os_c_str (driver.driverInfo));
 
   // =================== Driver Version ===========================
   fast_io::io::println (
-      PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_BOLD, fast_io::mnp::right ("Version : ", 14U),
-      PATACHE_TERM_RESET, VK_VERSION_MAJOR (physicalDeviceProperties.properties.driverVersion), ".",
-      VK_VERSION_MINOR (physicalDeviceProperties.properties.driverVersion), ".",
+      PATACHE_FASTIO_BUFFOUT, Patache::sTermBold, fast_io::mnp::right ("Version : ", 14U),
+      Patache::sTermReset, VK_VERSION_MAJOR (physicalDeviceProperties.properties.driverVersion),
+      ".", VK_VERSION_MINOR (physicalDeviceProperties.properties.driverVersion), ".",
       VK_VERSION_PATCH (physicalDeviceProperties.properties.driverVersion), ".",
       VK_API_VERSION_VARIANT (physicalDeviceProperties.properties.driverVersion), "\n");
 
   // =================== Swapchain ================================
-  fast_io::io::println (PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_BOLD,
-                        fast_io::mnp::right ("Swapchain", 11U), PATACHE_TERM_RESET);
+  fast_io::io::println (PATACHE_FASTIO_BUFFOUT, Patache::sTermBold,
+                        fast_io::mnp::right ("Swapchain", 11U), Patache::sTermReset);
 
   // =================== Swapchain Present Mode ===================
-  fast_io::io::print (PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_BOLD,
-                      fast_io::mnp::right ("Present Mode : ", 19U), PATACHE_TERM_RESET,
+  fast_io::io::print (PATACHE_FASTIO_BUFFOUT, Patache::sTermBold,
+                      fast_io::mnp::right ("Present Mode : ", 19U), Patache::sTermReset,
                       fast_io::mnp::os_c_str (string_VkPresentModeKHR (rSwapchainInfo.presentMode)),
                       " ");
 
@@ -338,8 +338,8 @@ END_CHECK_SIZE_UNIT:
        || rSwapchainInfo.presentMode == VK_PRESENT_MODE_FIFO_RELAXED_KHR)
       && pEngine->configuration.vsync)
     {
-      fast_io::io::println (PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_COLOR_GREEN, "Vertical Sync",
-                            PATACHE_TERM_RESET);
+      fast_io::io::println (PATACHE_FASTIO_BUFFOUT, Patache::sTermColorGreen, "Vertical Sync",
+                            Patache::sTermReset);
     }
   else
     {
@@ -347,26 +347,26 @@ END_CHECK_SIZE_UNIT:
     }
 
   // =================== Swapchain Images =========================
-  fast_io::io::println (PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_BOLD,
-                        fast_io::mnp::right ("Image Count : ", 18U), PATACHE_TERM_RESET,
+  fast_io::io::println (PATACHE_FASTIO_BUFFOUT, Patache::sTermBold,
+                        fast_io::mnp::right ("Image Count : ", 18U), Patache::sTermReset,
                         pEngine->vulkan.swapchainImageCount);
 
   // =================== Swapchain Image Color Format =============
-  fast_io::io::println (PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_BOLD,
-                        fast_io::mnp::right ("Surface Color Format : ", 27U), PATACHE_TERM_RESET,
+  fast_io::io::println (PATACHE_FASTIO_BUFFOUT, Patache::sTermBold,
+                        fast_io::mnp::right ("Surface Color Format : ", 27U), Patache::sTermReset,
                         fast_io::mnp::os_c_str (string_VkFormat (rSwapchainInfo.imageColorFormat)));
 
   // =================== Swapchain Image Color Format =============
   fast_io::io::println (
-      PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_BOLD,
-      fast_io::mnp::right ("Surface Color Space : ", 26U), PATACHE_TERM_RESET,
+      PATACHE_FASTIO_BUFFOUT, Patache::sTermBold,
+      fast_io::mnp::right ("Surface Color Space : ", 26U), Patache::sTermReset,
       fast_io::mnp::os_c_str (string_VkColorSpaceKHR (rSwapchainInfo.imageColorSpace)), "\n");
 
   // =================== Debug ====================================
 #if PATACHE_DEBUG == 1
   #if defined(PATACHE_IMGUI_VERSION)
-  fast_io::io::println (PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_BOLD,
-                        fast_io::mnp::right ("ImGui Version : ", 18U), PATACHE_TERM_RESET,
+  fast_io::io::println (PATACHE_FASTIO_BUFFOUT, Patache::sTermBold,
+                        fast_io::mnp::right ("ImGui Version : ", 18U), Patache::sTermReset,
                         PATACHE_IMGUI_VERSION);
   #endif
 #endif

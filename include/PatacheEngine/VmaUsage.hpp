@@ -1,3 +1,5 @@
+#ifndef VMAUSAGE_HPP
+#define VMAUSAGE_HPP
 #define VMA_DYNAMIC_VULKAN_FUNCTIONS 1
 #define VMA_STATIC_VULKAN_FUNCTIONS  0
 #if defined(_MSC_VER)
@@ -24,4 +26,5 @@
   #pragma GCC diagnostic ignored "-Wunused-variable"
   #include <vk_mem_alloc.h>
   #pragma GCC diagnostic pop
+#endif
 #endif

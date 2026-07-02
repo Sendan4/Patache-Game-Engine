@@ -22,11 +22,13 @@
 extern std::uint8_t scaleInt;
 #endif
 
-#define PATACHE_ENGINE_VERSION_VK                                                                  \
-  VK_MAKE_API_VERSION (0, PATACHE_ENGINE_VERSION_MAYOR, PATACHE_ENGINE_VERSION_MINOR,              \
-                       PATACHE_ENGINE_VERSION_PATCH)
-
-#define PATACHE_ERROR_TEXT_SIZE 256
+namespace Patache
+{
+static constexpr std::uint16_t sErrorTextSize{ 256U };
+static constexpr std::uint16_t sErrorTextSizeExtraNull{ 257U };
+static constexpr std::uint32_t sEngineVersionVk{ Patache::MakeVersion (
+    PATACHE_ENGINE_VERSION_MAYOR, PATACHE_ENGINE_VERSION_MINOR, PATACHE_ENGINE_VERSION_PATCH, 0) };
+}
 
 #if PATACHE_DEBUG == 1
 // Function pointers
@@ -59,8 +61,8 @@ DebugMessageFunc (VkDebugUtilsMessageSeverityFlagBitsEXT       messageSeverity,
                   VkDebugUtilsMessageTypeFlagsEXT              messageTypes,
                   VkDebugUtilsMessengerCallbackDataEXT const * pCallbackData, void * /*pUserData*/)
 {
-  fast_io::io::println (PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_BOLD, PATACHE_TERM_COLOR_RED,
-                        "Vulkan Validation Layers :", PATACHE_TERM_RESET);
+  fast_io::io::println (PATACHE_FASTIO_BUFFOUT, Patache::sTermBold, Patache::sTermColorRed,
+                        "Vulkan Validation Layers :", Patache::sTermReset);
 
   // Message Severity
   switch (messageSeverity)
@@ -76,16 +78,16 @@ DebugMessageFunc (VkDebugUtilsMessageSeverityFlagBitsEXT       messageSeverity,
     case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
       fast_io::io::println (
           PATACHE_FASTIO_BUFFOUT, fast_io::mnp::right ("Severity : ", 13),
-          PATACHE_TERM_COLOR_YELLOW,
+          Patache::sTermColorYellow,
           fast_io::mnp::os_c_str (string_VkDebugUtilsMessageSeverityFlagBitsEXT (messageSeverity)),
-          PATACHE_TERM_RESET);
+          Patache::sTermReset);
       break;
 
     case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
       fast_io::io::println (
-          PATACHE_FASTIO_BUFFOUT, fast_io::mnp::right ("Severity : ", 13), PATACHE_TERM_COLOR_RED,
+          PATACHE_FASTIO_BUFFOUT, fast_io::mnp::right ("Severity : ", 13), Patache::sTermColorRed,
           fast_io::mnp::os_c_str (string_VkDebugUtilsMessageSeverityFlagBitsEXT (messageSeverity)),
-          PATACHE_TERM_RESET);
+          Patache::sTermReset);
       break;
     }
 
@@ -99,20 +101,20 @@ DebugMessageFunc (VkDebugUtilsMessageSeverityFlagBitsEXT       messageSeverity,
 
     case VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT:
       fast_io::io::println (PATACHE_FASTIO_BUFFOUT, fast_io::mnp::right ("Type : ", 9),
-                            PATACHE_TERM_COLOR_YELLOW,
-                            "VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT", PATACHE_TERM_RESET);
+                            Patache::sTermColorYellow,
+                            "VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT", Patache::sTermReset);
       break;
 
     case VK_DEBUG_UTILS_MESSAGE_TYPE_DEVICE_ADDRESS_BINDING_BIT_EXT:
       fast_io::io::println (
-          PATACHE_FASTIO_BUFFOUT, fast_io::mnp::right ("Type : ", 9), PATACHE_TERM_COLOR_YELLOW,
-          "VK_DEBUG_UTILS_MESSAGE_TYPE_DEVICE_ADDRESS_BINDING_BIT_EXT", PATACHE_TERM_RESET);
+          PATACHE_FASTIO_BUFFOUT, fast_io::mnp::right ("Type : ", 9), Patache::sTermColorYellow,
+          "VK_DEBUG_UTILS_MESSAGE_TYPE_DEVICE_ADDRESS_BINDING_BIT_EXT", Patache::sTermReset);
       break;
 
     case VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT:
       fast_io::io::println (PATACHE_FASTIO_BUFFOUT, fast_io::mnp::right ("Type : ", 9),
-                            PATACHE_TERM_COLOR_BLUE,
-                            "VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT", PATACHE_TERM_RESET);
+                            Patache::sTermColorBlue,
+                            "VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT", Patache::sTermReset);
       break;
     }
 
@@ -202,7 +204,7 @@ Patache::RaccoonRendererInit (Patache::Engine * pEngine, const Patache::EngineCr
                                                .pApplicationName   = pGameName,
                                                .applicationVersion = rInfo.gameVersion,
                                                .pEngineName        = PATACHE_ENGINE_NAME,
-                                               .engineVersion      = PATACHE_ENGINE_VERSION_VK,
+                                               .engineVersion      = Patache::sEngineVersionVk,
                                                .apiVersion         = VK_API_VERSION_1_2 };
 
     // The validation layers are activated with USE_VVL=ON.
@@ -418,15 +420,15 @@ Patache::RaccoonRendererInit (Patache::Engine * pEngine, const Patache::EngineCr
 
     if (result == VK_ERROR_INCOMPATIBLE_DRIVER)
       {
-        char errorText[PATACHE_ERROR_TEXT_SIZE]{ 0 };
+        char errorText[Patache::sErrorTextSizeExtraNull]{};
 
         PATACHE_STRNCPY (errorText,
                          "vkCreateInstance() You do not have Vulkan API compatible drivers or your "
                          "GPU does not support the Vulkan API. ",
-                         PATACHE_ERROR_TEXT_SIZE - 1, PATACHE_ERROR_TEXT_SIZE);
+                         Patache::sErrorTextSize, Patache::sErrorTextSizeExtraNull);
 
-        PATACHE_STRNCAT (errorText, string_VkResult (result), PATACHE_ERROR_TEXT_SIZE - 1,
-                         PATACHE_ERROR_TEXT_SIZE);
+        PATACHE_STRNCAT (errorText, string_VkResult (result), Patache::sErrorTextSize,
+                         Patache::sErrorTextSizeExtraNull);
 
         Patache::FatalErrorMessage ("Patache Engine - Raccoon Renderer", errorText,
                                     pEngine->configuration);
@@ -549,9 +551,10 @@ EXIT_CREATE_DEBUG_UTILS_MESSENGER:
     if (gpuCount == 1)
       {
         // If you only have one compatible GPU, I will take it directly.
-        fast_io::io::println (PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_BOLD, PATACHE_TERM_COLOR_PATACHE,
-                              "Raccoon Renderer", PATACHE_TERM_RESET, PATACHE_TERM_BOLD,
-                              " : Only one vulkan compatible device found", PATACHE_TERM_RESET);
+        fast_io::io::println (PATACHE_FASTIO_BUFFOUT, Patache::sTermBold,
+                              Patache::sTermColorPatache, "Raccoon Renderer", Patache::sTermReset,
+                              Patache::sTermBold, " : Only one vulkan compatible device found",
+                              Patache::sTermReset);
 
         // Select the only device available
         pEngine->vulkan.physicalDevice = pTmpPhysicalDevices[0];
@@ -577,9 +580,9 @@ EXIT_CREATE_DEBUG_UTILS_MESSENGER:
       }
 
     // Search one device from multiple devices
-    fast_io::io::println (PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_BOLD, PATACHE_TERM_COLOR_PATACHE,
-                          "Raccoon Renderer", PATACHE_TERM_RESET, PATACHE_TERM_BOLD, " : Found ",
-                          gpuCount, " vulkan compatible devices", PATACHE_TERM_RESET);
+    fast_io::io::println (PATACHE_FASTIO_BUFFOUT, Patache::sTermBold, Patache::sTermColorPatache,
+                          "Raccoon Renderer", Patache::sTermReset, Patache::sTermBold, " : Found ",
+                          gpuCount, " vulkan compatible devices", Patache::sTermReset);
 
     std::uint32_t * pGpuScore
         = static_cast<std::uint32_t *> (std::malloc (sizeof (std::uint32_t) * gpuCount));
@@ -621,10 +624,10 @@ EXIT_CREATE_DEBUG_UTILS_MESSENGER:
         pGpuScore[i] += physicalDeviceProperties.properties.limits.maxImageDimension2D;
 
         fast_io::io::println (
-            PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_DIM, PATACHE_TERM_COLOR_GRAY0, "  [",
+            PATACHE_FASTIO_BUFFOUT, Patache::sTermDim, Patache::sTermColorGray0, "  [",
             fast_io::mnp::os_c_str (
                 string_VkPhysicalDeviceType (physicalDeviceProperties.properties.deviceType)),
-            "] ", PATACHE_TERM_RESET,
+            "] ", Patache::sTermReset,
             fast_io::mnp::os_c_str (physicalDeviceProperties.properties.deviceName), " ",
             pGpuScore[i]);
       }
@@ -686,9 +689,9 @@ EXIT_CREATE_DEVICE:
       vkGetPhysicalDeviceQueueFamilyProperties (pEngine->vulkan.physicalDevice, &queueCount,
                                                 nullptr);
 
-      fast_io::io::println (PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_BOLD, PATACHE_TERM_COLOR_PATACHE,
-                            "Raccoon Renderer", PATACHE_TERM_RESET, PATACHE_TERM_BOLD, " : Found ",
-                            queueCount, " queues", PATACHE_TERM_RESET);
+      fast_io::io::println (PATACHE_FASTIO_BUFFOUT, Patache::sTermBold, Patache::sTermColorPatache,
+                            "Raccoon Renderer", Patache::sTermReset, Patache::sTermBold,
+                            " : Found ", queueCount, " queues", Patache::sTermReset);
 
       VkQueueFamilyProperties * pQueueFamilyProperties{ static_cast<VkQueueFamilyProperties *> (
           std::calloc (queueCount, sizeof (VkQueueFamilyProperties))) };
@@ -704,8 +707,8 @@ EXIT_CREATE_DEVICE:
       std::uint32_t i{ 0U };
       for (i = 0U; i < queueCount; ++i)
         {
-          fast_io::io::println (PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_BOLD,
-                                fast_io::mnp::right ("Index : ", 10U), PATACHE_TERM_RESET, i);
+          fast_io::io::println (PATACHE_FASTIO_BUFFOUT, Patache::sTermBold,
+                                fast_io::mnp::right ("Index : ", 10U), Patache::sTermReset, i);
 
           if (pQueueFamilyProperties[i].queueFlags & VK_QUEUE_GRAPHICS_BIT)
             {
@@ -764,10 +767,10 @@ EXIT_CREATE_DEVICE:
               pEngine->vulkan.graphicsQueueFamilyIndex = i;
 
               fast_io::io::println (
-                  PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_BOLD, PATACHE_TERM_COLOR_PATACHE,
-                  "Raccoon Renderer", PATACHE_TERM_RESET, PATACHE_TERM_BOLD, " : Found index ",
+                  PATACHE_FASTIO_BUFFOUT, Patache::sTermBold, Patache::sTermColorPatache,
+                  "Raccoon Renderer", Patache::sTermReset, Patache::sTermBold, " : Found index ",
                   pEngine->vulkan.graphicsQueueFamilyIndex,
-                  " that contains a (graphics and transfer) queue", PATACHE_TERM_RESET);
+                  " that contains a (graphics and transfer) queue", Patache::sTermReset);
 
               break;
             }
@@ -838,17 +841,15 @@ EXIT_CREATE_DEVICE:
 
         // Find extensions
 #if defined(_WIN64) && defined(VK_USE_PLATFORM_WIN32_KHR)
-  #define DEVICE_EXTENSION_COUNT_SEARCH 7 // ++VK_KHR_external_memory_win32
+      static constexpr std::uint8_t sDeviceExtensionCountSearch{
+        7U
+      }; // ++VK_KHR_external_memory_win32
 #else
-  #define DEVICE_EXTENSION_COUNT_SEARCH 6
+      static constexpr std::uint8_t sDeviceExtensionCountSearch{ 6U };
 #endif
 
       std::uint8_t deviceExtensionCount{ 1U };
-      bool         deviceExtensionIndices[DEVICE_EXTENSION_COUNT_SEARCH]{ false };
-
-#if defined(DEVICE_EXTENSION_COUNT_SEARCH)
-  #undef DEVICE_EXTENSION_COUNT_SEARCH
-#endif
+      bool         deviceExtensionIndices[sDeviceExtensionCountSearch]{ false };
 
       for (std::uint32_t i{ 0U }; i < propertyCount; ++i)
         {
@@ -1086,9 +1087,9 @@ EXIT_CREATE_DEVICE:
   if (!SDL_Vulkan_CreateSurface (pEngine->pGameWindow, pEngine->vulkan.instance, nullptr,
                                  &pEngine->vulkan.surface))
     {
-      fast_io::io::println (PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_RESET, PATACHE_TERM_BOLD,
-                            "SDL_Vulkan_CreateSurface() : ", PATACHE_TERM_RESET,
-                            PATACHE_TERM_COLOR_YELLOW, "Fail", PATACHE_TERM_RESET);
+      fast_io::io::println (PATACHE_FASTIO_BUFFOUT, Patache::sTermReset, Patache::sTermBold,
+                            "SDL_Vulkan_CreateSurface() : ", Patache::sTermReset,
+                            Patache::sTermColorYellow, "Fail", Patache::sTermReset);
 
       Patache::FatalErrorMessage ("SDL", SDL_GetError (), pEngine->configuration);
 
@@ -1215,9 +1216,9 @@ EXIT_CREATE_DEVICE:
 
               if (result != VK_SUCCESS)
                 {
-                  char errorText[PATACHE_ERROR_TEXT_SIZE]{};
+                  char errorText[Patache::sErrorTextSizeExtraNull]{};
 
-                  std::snprintf (errorText, PATACHE_ERROR_TEXT_SIZE - 1,
+                  std::snprintf (errorText, Patache::sErrorTextSize,
                                  "vkCreateCommandPool() Render Command Pool #%.3u", i);
 
                   Patache::VulkanCheck (errorText, result);

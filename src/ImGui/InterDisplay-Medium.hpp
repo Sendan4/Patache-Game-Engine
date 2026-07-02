@@ -1,8 +1,8 @@
 // File: 'InterDisplay-Medium.otf' (623380 bytes)
 // Exported using binary_to_compressed_c.exe -u8 "InterDisplay-Medium.otf"
 // InterDisplay-Medium
-static constexpr unsigned int  sInterDisplay_Medium_compressed_size         = 325443;
-static constexpr unsigned char sInterDisplay_Medium_compressed_data[325443] = {
+static constexpr unsigned int  sInterDisplay_Medium_compressed_size{ 325443U };
+static constexpr unsigned char sInterDisplay_Medium_compressed_data[325443]{
   87,  188, 0,   0,   0,   0,   0,   0,   0,   9,   131, 20,  0,   4,   0,   0,   8,   115, 79,
   84,  84,  79,  0,   12,  0,   128, 0,   3,   0,   64,  67,  70,  70,  32,  170, 4,   109, 56,
   0,   0,   110, 204, 0,   7,   34,  249, 71,  68,  69,  70,  144, 75,  139, 70,  0,   7,   145,

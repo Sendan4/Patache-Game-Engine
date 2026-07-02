@@ -1,9 +1,10 @@
 // ARGB 8888 Format
-
-#define PATACHE_SHADOW_BOTTOMRIGHT_HEIGHT     12
-#define PATACHE_SHADOW_BOTTOMRIGHT_WIDTH      12
-#define PATACHE_SHADOW_BOTTOMRIGHT_SIZE       144 // W * H
-#define PATACHE_SHADOW_BOTTOMRIGHT_PIXELCOUNT 576 // W * H * 4
+namespace Patache
+{
+static constexpr std::uint8_t sShadowBottomRightHeight{ 12U };
+static constexpr std::uint8_t sShadowBottomRightWidth{ 12U };
+static constexpr std::uint16_t sShadowBottomRightSize{ 144U };       // W * H
+static constexpr std::uint16_t sShadowBottomRightPixelCount{ 576U }; // W * H * 4
 
 // array size is 576
 static constexpr std::uint32_t sShadowBottomRight[]{
@@ -26,3 +27,4 @@ static constexpr std::uint32_t sShadowBottomRight[]{
   0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
   0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000
 };
+}

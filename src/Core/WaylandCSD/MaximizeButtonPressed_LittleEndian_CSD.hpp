@@ -1,5 +1,9 @@
-// ARGB 8888 Format
+#ifndef MAXIMIZEBUTTONPRESSED_LITTLEENDIAN_CSD_HPP
+#define MAXIMIZEBUTTONPRESSED_LITTLEENDIAN_CSD_HPP
 
+// ARGB 8888 Format
+namespace Patache
+{
 static constexpr std::uint32_t sMaximizeButtonPressedCSD[] = {
   0x00000000, 0xff07150b, 0xff07150b, 0xff07150b, 0xff07150b, 0xff07150b, 0xff07150b, 0xff07150b,
   0xff07150b, 0xff07150b, 0xff07150b, 0xff07150b, 0xff07150b, 0xff07150b, 0xff07150b, 0xff07150b,
@@ -63,3 +67,6 @@ static constexpr std::uint32_t sMaximizeButtonPressedCSD[] = {
   0xff07150b, 0xff07150b, 0xff07150b, 0xff07150b, 0xff07150b, 0xff07150b, 0xff07150b, 0xff07150b,
   0xff07150b, 0xff07150b, 0xff07150b, 0xff07150b, 0xff07150b, 0x00000000
 };
+}
+
+#endif

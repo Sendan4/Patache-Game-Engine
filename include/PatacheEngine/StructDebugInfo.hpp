@@ -1,4 +1,5 @@
-#pragma once
+#ifndef STRUCTDEBUGINFO_HPP
+#define STRUCTDEBUGINFO_HPP
 
 #include <chrono>
 #include "PatacheEngine/Queue.hpp"
@@ -142,3 +143,4 @@ struct EngineInfo
   ImVec4 engineStyles[21];
 };
 }
+#endif

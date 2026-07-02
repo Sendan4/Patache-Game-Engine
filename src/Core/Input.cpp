@@ -24,7 +24,7 @@ Patache::Engine::HandleEvent (const SDL_Event & rEvent)
                       if (!isMaximized)
                         {
                           // From window
-                          for (std::uint8_t i{ 0U }; i < PATACHE_BORDER_CSD_SIZE; ++i)
+                          for (std::uint8_t i{ 0U }; i < Patache::sBorderCSDSize; ++i)
                             {
                               wl_subsurface_destroy (waylandWindow.pBorderSubSurface[i]);
                               wl_subsurface_destroy (waylandWindow.pShadowSubSurface[i]);
@@ -48,7 +48,7 @@ Patache::Engine::HandleEvent (const SDL_Event & rEvent)
                           // un callback del protocolo wayland
                           xdg_toplevel_unset_maximized (waylandWindow.pDesktopWindow);
 
-                          for (std::uint8_t i{ 0U }; i < PATACHE_BORDER_CSD_SIZE; ++i)
+                          for (std::uint8_t i{ 0U }; i < Patache::sBorderCSDSize; ++i)
                             {
                               waylandWindow.pBorderSubSurface[i] = wl_subcompositor_get_subsurface (
                                   waylandWindow.pSubCompositor, waylandWindow.pBorderSurface[i],
@@ -115,7 +115,7 @@ Patache::Engine::HandleEvent (const SDL_Event & rEvent)
 
                       if (!isMaximized)
                         {
-                          for (std::uint8_t i{ 0U }; i < PATACHE_BORDER_CSD_SIZE; ++i)
+                          for (std::uint8_t i{ 0U }; i < Patache::sBorderCSDSize; ++i)
                             {
                               waylandWindow.pBorderSubSurface[i] = wl_subcompositor_get_subsurface (
                                   waylandWindow.pSubCompositor, waylandWindow.pBorderSurface[i],

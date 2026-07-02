@@ -1,5 +1,9 @@
-// ARGB 8888 Format
+#ifndef MINIMIZEBUTTONPRESSED_LITTLEENDIAN_CSD_HPP
+#define MINIMIZEBUTTONPRESSED_LITTLEENDIAN_CSD_HPP
 
+// ARGB 8888 Format
+namespace Patache
+{
 static constexpr std::uint32_t sMinimizeButtonPressedCSD[] = {
   0x00000000, 0xff181105, 0xff181105, 0xff181105, 0xff181105, 0xff181105, 0xff181105, 0xff181105,
   0xff181105, 0xff181105, 0xff181105, 0xff181105, 0xff181105, 0xff181105, 0xff181105, 0xff181105,
@@ -63,3 +67,6 @@ static constexpr std::uint32_t sMinimizeButtonPressedCSD[] = {
   0xff181105, 0xff181105, 0xff181105, 0xff181105, 0xff181105, 0xff181105, 0xff181105, 0xff181105,
   0xff181105, 0xff181105, 0xff181105, 0xff181105, 0xff181105, 0x00000000
 };
+}
+
+#endif

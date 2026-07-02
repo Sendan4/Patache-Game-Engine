@@ -1,5 +1,9 @@
-// ARGB 8888 Format
+#ifndef MAXIMIZEDBUTTONFOCUSLOST_LITTLEENDIAN_CSD_HPP
+#define MAXIMIZEDBUTTONFOCUSLOST_LITTLEENDIAN_CSD_HPP
 
+// ARGB 8888 Format
+namespace Patache
+{
 static constexpr std::uint32_t sMaximizedButtonFocusLostCSD[] = {
   0x00000000, 0xff414141, 0xff414141, 0xff414141, 0xff414141, 0xff414141, 0xff414141, 0xff414141,
   0xff414141, 0xff414141, 0xff414141, 0xff414141, 0xff414141, 0xff414141, 0xff414141, 0xff414141,
@@ -63,3 +67,6 @@ static constexpr std::uint32_t sMaximizedButtonFocusLostCSD[] = {
   0xff414141, 0xff414141, 0xff414141, 0xff414141, 0xff414141, 0xff414141, 0xff414141, 0xff414141,
   0xff414141, 0xff414141, 0xff414141, 0xff414141, 0xff414141, 0x00000000
 };
+}
+
+#endif

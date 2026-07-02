@@ -6,7 +6,9 @@
 #include <vulkan/vulkan.h>
 #include "PatacheEngine/VmaUsage.hpp"
 #include <SDL3/SDL.h>
-#include <fast_io.h>
+#if PATACHE_DEBUG == 1
+  #include <fast_io.h>
+#endif
 
 // Patache Engine
 #include "PatacheEngine/PatacheEngine.hpp"
@@ -175,9 +177,9 @@ Patache::Engine::Init (const Patache::EngineCreateInfo & rInfo)
       }
     else
       {
-        pWindowIcon = SDL_CreateSurfaceFrom (Patache::Icon::Width, Patache::Icon::Height,
-                                             SDL_PIXELFORMAT_BGRA8888, (void *)Patache::Icon::Data,
-                                             Patache::Icon::Pitch);
+        pWindowIcon = SDL_CreateSurfaceFrom (
+            Patache::sDefaultIconWidth, Patache::sDefaultIconHeight, SDL_PIXELFORMAT_BGRA8888,
+            (void *)Patache::sDefaultIcon, Patache::sDefaultIconPitch);
       }
 
     if (pWindowIcon == nullptr)
@@ -208,8 +210,8 @@ Patache::Engine::Init (const Patache::EngineCreateInfo & rInfo)
                             std::chrono::high_resolution_clock::now () - debugInfo.startTimer)
                             .count ();
 
-  fast_io::println (PATACHE_FASTIO_BUFFOUT, PATACHE_TERM_BOLD, PATACHE_TERM_COLOR_PATACHE,
-                    PATACHE_ENGINE_NAME, PATACHE_TERM_RESET,
+  fast_io::println (PATACHE_FASTIO_BUFFOUT, Patache::sTermBold, Patache::sTermColorPatache,
+                    PATACHE_ENGINE_NAME, Patache::sTermReset,
                     " : Start time : ", debugInfo.startTime, " milliseconds");
 #endif
 

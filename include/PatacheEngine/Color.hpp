@@ -1,9 +1,9 @@
-#pragma once
-
+#ifndef COLOR_HPP
+#define COLOR_HPP
 namespace Patache
 {
 // CSS Colors https://www.w3.org/wiki/CSS/Properties/color/keywords
-enum class Color : uint8_t
+enum class Color : std::uint8_t
 {
   // Basic Colors
   eBlack   = 0U,
@@ -156,3 +156,4 @@ enum class Color : uint8_t
   eYellowgreen          = 139U
 };
 }
+#endif

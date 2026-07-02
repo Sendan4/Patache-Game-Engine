@@ -16,7 +16,7 @@ main ([[maybe_unused]] int argc, [[maybe_unused]] char * argv[])
   if (!result)
     return -1;
 
-  patache.ClearColor (Patache::Color::eBlue);
+  patache.ClearColor (Patache::Color::eRed);
 
   Patache::Triangle exampleTriangle{ Patache::Triangle () };
 

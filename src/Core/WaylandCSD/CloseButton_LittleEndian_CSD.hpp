@@ -1,10 +1,15 @@
-// ARGB 8888 Format
-#define PATACHE_CLOSE_BUTTON_CSD_HEIGHT     18
-#define PATACHE_CLOSE_BUTTON_CSD_WIDTH      27
-#define PATACHE_CLOSE_BUTTON_CSD_SIZE       1944 // W * H * 4
-#define PATACHE_CLOSE_BUTTON_CSD_PIXELCOUNT 486  // W * H
+#ifndef CLOSEBUTTON_LITTLEENDIAN_CSD_HPP
+#define CLOSEBUTTON_LITTLEENDIAN_CSD_HPP
 
-static constexpr std::uint32_t sCloseButtonCSD[] = {
+// ARGB 8888 Format
+namespace Patache
+{
+static constexpr std::uint8_t sCloseButtonCSDHeight{ 18U };
+static constexpr std::uint8_t sCloseButtonCSDWidth{ 27U };
+static constexpr std::uint16_t sCloseButtonCSDSize{ 1944U };      // W * H * 4
+static constexpr std::uint16_t sCloseButtonCSDPixelCount{ 486U }; // W * H
+
+static constexpr std::uint32_t sCloseButtonCSD[]{
   0x00000000, 0xff462828, 0xff462828, 0xff462828, 0xff462828, 0xff462828, 0xff462828, 0xff462828,
   0xff462828, 0xff462828, 0xff462828, 0xff462828, 0xff462828, 0xff462828, 0xff462828, 0xff462828,
   0xff462828, 0xff462828, 0xff462828, 0xff462828, 0xff462828, 0xff462828, 0xff462828, 0xff462828,
@@ -67,3 +72,6 @@ static constexpr std::uint32_t sCloseButtonCSD[] = {
   0xff462828, 0xff462828, 0xff462828, 0xff462828, 0xff462828, 0xff462828, 0xff462828, 0xff462828,
   0xff462828, 0xff462828, 0xff462828, 0xff462828, 0xff462828, 0x00000000
 };
+}
+
+#endif

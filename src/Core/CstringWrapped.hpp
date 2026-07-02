@@ -1,4 +1,5 @@
-// cstring wrapped
+#ifndef CSTRINGWRAPPED_HPP
+#define CSTRINGWRAPPED_HPP
 
 #if defined(_MSC_VER) // Windows MSVC
   // strncpy
@@ -18,4 +19,6 @@
 
   // memcpy
   #define PATACHE_MEMCPY(DEST, SRC, SIZE, COUNT)  std::memcpy (DEST, SRC, SIZE)
+#endif
+
 #endif

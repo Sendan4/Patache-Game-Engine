@@ -1,5 +1,5 @@
-#pragma once
-
+#ifndef STRUCTCONFIG_HPP
+#define STRUCTCONFIG_HPP
 namespace Patache
 {
 enum ChangeConfigFlagBits : std::uint8_t
@@ -25,3 +25,4 @@ struct Config
   std::uint8_t triggeredChange{ Patache::ChangeConfigFlagBits::eNone };
 };
 }
+#endif

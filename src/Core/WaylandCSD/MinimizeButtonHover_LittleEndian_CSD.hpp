@@ -1,5 +1,9 @@
-// ARGB 8888 Format
+#ifndef MINIMIZEBUTTONHOVER_LITTLEENDIAN_CSD_HPP
+#define MINIMIZEBUTTONHOVER_LITTLEENDIAN_CSD_HPP
 
+// ARGB 8888 Format
+namespace Patache
+{
 static constexpr std::uint32_t sMinimizeButtonHoverCSD[] = {
   0x00000000, 0xff544f3f, 0xff544f3f, 0xff544f3f, 0xff544f3f, 0xff544f3f, 0xff544f3f, 0xff544f3f,
   0xff544f3f, 0xff544f3f, 0xff544f3f, 0xff544f3f, 0xff544f3f, 0xff544f3f, 0xff544f3f, 0xff544f3f,
@@ -63,3 +67,6 @@ static constexpr std::uint32_t sMinimizeButtonHoverCSD[] = {
   0xff544f3f, 0xff544f3f, 0xff544f3f, 0xff544f3f, 0xff544f3f, 0xff544f3f, 0xff544f3f, 0xff544f3f,
   0xff544f3f, 0xff544f3f, 0xff544f3f, 0xff544f3f, 0xff544f3f, 0x00000000
 };
+}
+
+#endif

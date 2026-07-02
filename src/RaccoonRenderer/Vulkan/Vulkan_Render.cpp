@@ -51,9 +51,9 @@ Patache::Engine::BeginRender (SDL_Event & rEvent)
 #if PATACHE_DEBUG == 1
   if (vulkan.renderResult != VK_SUCCESS)
     {
-      char errorText[PATACHE_ERROR_TEXT_SIZE]{ 0 };
+      char errorText[Patache::sErrorTextSizeExtraNull]{};
 
-      std::snprintf (errorText, PATACHE_ERROR_TEXT_SIZE - 1, "vkWaitForFences() Fence #%.3u",
+      std::snprintf (errorText, Patache::sErrorTextSize, "vkWaitForFences() Fence #%.3u",
                      vulkan.currentFrame);
 
       Patache::VulkanCheck (errorText, vulkan.renderResult);
@@ -135,9 +135,9 @@ Patache::Engine::BeginRender (SDL_Event & rEvent)
 #if PATACHE_DEBUG == 1
   if (vulkan.renderResult != VK_SUCCESS)
     {
-      char errorText[PATACHE_ERROR_TEXT_SIZE]{ 0 };
+      char errorText[Patache::sErrorTextSizeExtraNull]{};
 
-      std::snprintf (errorText, PATACHE_ERROR_TEXT_SIZE - 1, "vkResetFences() Fence #%.3u",
+      std::snprintf (errorText, Patache::sErrorTextSize, "vkResetFences() Fence #%.3u",
                      vulkan.currentFrame);
 
       Patache::VulkanCheck (errorText, vulkan.renderResult);
@@ -152,10 +152,10 @@ Patache::Engine::BeginRender (SDL_Event & rEvent)
 #if PATACHE_DEBUG == 1
   if (vulkan.renderResult != VK_SUCCESS)
     {
-      char errorText[PATACHE_ERROR_TEXT_SIZE]{ 0 };
+      char errorText[Patache::sErrorTextSizeExtraNull]{ 0 };
 
-      std::snprintf (errorText, PATACHE_ERROR_TEXT_SIZE - 1,
-                     "vkResetCommandPool() Command Pool #%.3u", vulkan.currentFrame);
+      std::snprintf (errorText, Patache::sErrorTextSize, "vkResetCommandPool() Command Pool #%.3u",
+                     vulkan.currentFrame);
 
       Patache::VulkanCheck (errorText, vulkan.renderResult);
     }
@@ -346,9 +346,9 @@ Patache::Engine::EndRender (SDL_Event & rEvent)
 #if PATACHE_DEBUG == 1
   if (vulkan.renderResult != VK_SUCCESS)
     {
-      char errorText[PATACHE_ERROR_TEXT_SIZE]{ 0 };
+      char errorText[Patache::sErrorTextSizeExtraNull]{};
 
-      std::snprintf (errorText, PATACHE_ERROR_TEXT_SIZE - 1,
+      std::snprintf (errorText, Patache::sErrorTextSize,
                      "vkEndCommandBuffer() Command Buffer #%.3u", vulkan.currentFrame);
 
       Patache::VulkanCheck (errorText, vulkan.renderResult);

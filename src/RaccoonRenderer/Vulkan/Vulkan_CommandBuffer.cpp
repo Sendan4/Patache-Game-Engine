@@ -9,8 +9,11 @@
 #include "PatacheEngine/VulkanBackend.hpp"
 #include "Vulkan_SetupLog.hpp"
 
-#define PATACHE_ERROR_TEXT_SIZE           70
-#define PATACHE_ERROR_TEXT_SIZE_EXTRANULL 71
+namespace Patache
+{
+static constexpr std::uint8_t sErrorTextSize{ 70U };
+static constexpr std::uint8_t sErrorTextSizeExtraNull{ 71U };
+}
 
 #include "Vulkan_CommandBuffer.hpp"
 
@@ -43,9 +46,9 @@ Patache::CreateCommandBuffer (Patache::VulkanBackend & rVulkan)
 
       if (result != VK_SUCCESS)
         {
-          char errorText[PATACHE_ERROR_TEXT_SIZE]{ 0 };
+          char errorText[Patache::sErrorTextSizeExtraNull]{ 0 };
 
-          std::snprintf (errorText, PATACHE_ERROR_TEXT_SIZE - 1,
+          std::snprintf (errorText, Patache::sErrorTextSize,
                          "vkAllocateCommandBuffers() Primary Render Command Buffer #%.3u", i);
 
           Patache::VulkanCheck (errorText, result);
